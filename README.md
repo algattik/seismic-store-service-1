@@ -42,19 +42,6 @@ npm run code-coverage
     --admin-email="admin email" \
     --run-parallel
 
-# run the e2e test suite continuously (single agent, sequential execution)
-#
-# *NOTE*: Auth tokens typically are only valid for 24 hours. It may be
-#         necessary to terminate the continuous testing loop on occasion
-#         in order to rotate to a new token value.
-#
-./tests/e2e/loop_tests.sh \
-    --seistore-svc-url="seismic store service url" \
-    --seistore-svc-api-key="seismic store service api key" \
-    --user-idtoken="user or service agent idtoken" \
-    --tenant="seistore working tenant" \
-    --admin-email="admin email"
-
 # run the linter on sources
 tslint -c tslint.json 'src/**/*.ts'
 ```
