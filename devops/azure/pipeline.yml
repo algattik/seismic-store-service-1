@@ -1,0 +1,67 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+  paths:
+    exclude:
+      - /**/*.md
+      - .gitignore
+      - /docs
+
+resources:
+  repositories:
+  - repository: FluxRepo
+    type: git
+    endpoint: slbswtserviceconnection
+    name: osdu-delfi/r3-gitops-manifests
+    ref: trunk
+
+variables:
+  - group: 'R3MVP - OSDU'
+  
+  - name: serviceName
+    value: "sdms"
+  - name: chartPath
+    value: "devops/azure/chart"
+  - name: hldRegPath
+    value: "providers/azure/hld-registry"
+  - name: 'MANIFEST_REPO'
+    value: r3-gitops-manifests
+  - name: environmentPrefix
+    value: "r3mvp"
+    
+stages:
+
+  - template: template/build-stage.yml
+    parameters:
+      serviceName: ${{ variables.serviceName }}
+      providers:
+        -  name: Azure
+  - template: template/deploy-stage.yml
+    parameters:
+      serviceName: ${{ variables.serviceName }}
+      chartPath: ${{ variables.chartPath }}
+      hldRegPath: ${{ variables.hldRegPath }}
+      manifestRepo: ${{ variables.MANIFEST_REPO }}
+      environmentPrefix: ${{ variables.environmentPrefix }}
+      installRequirements: false
+      providers:
+        -  name: Azure
+           environments:
+             - name: 'dev'
+               fluxEnabled: true
+               performE2Etests: true
+               continueIfE2Efails: true
+             - name: 'qa'
+               fluxEnabled: true
+               performE2Etests: true
+               continueIfE2Efails: false
+             - name: 'cvx'
+               fluxEnabled: true
+               performE2Etests: false
+               continueIfE2Efails: false
+             - name: 'prd'
+               fluxEnabled: true
+               performE2Etests: false
+               continueIfE2Efails: false

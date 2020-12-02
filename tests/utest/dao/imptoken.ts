@@ -1,0 +1,191 @@
+// ============================================================================
+// Copyright 2017-2019, Schlumberger
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ============================================================================
+
+import jsonwebtoken from 'jsonwebtoken';
+import request from 'request-promise';
+import sinon from 'sinon';
+
+import { google } from '../../../src/cloud/providers';
+import { Config } from '../../../src/cloud';
+import { ImpTokenDAO } from '../../../src/services/imptoken';
+import { Tx } from '../utils';
+
+export class TestImpToken {
+
+   public static run() {
+
+      Config.IMP_SERVICE_ACCOUNT_SIGNER = 'signer@seistore.com';
+
+      describe(Tx.testInit('seismic store dao imptoken test'), () => {
+
+         beforeEach(() => { this.sandbox = sinon.createSandbox(); });
+         afterEach(() => { this.sandbox.restore(); });
+
+         this.testCreate();
+         this.testCanBeRefreshed();
+         this.getImpTokenBody();
+         this.validate();
+
+      });
+   }
+   private static sandbox: sinon.SinonSandbox;
+
+   private static testCreate() {
+      Tx.sectionInit('create');
+
+      Tx.testExp(async (done: any) => {
+         this.sandbox.stub(google.Credentials.prototype, 'getServiceAccountAccessToken').resolves(
+            { access_token: 'access_token', expires_in: 100, token_type: 'token' });
+         this.sandbox.stub(request, 'post').resolves(JSON.stringify({ signedJwt: 'signed_jwt' }));
+         const result = await ImpTokenDAO.create({
+            iat: 100,
+            refreshUrl: 'refresh-url',
+            resources: [
+               {
+                  readonly: false,
+                  resource: 'resource-a',
+               },
+            ],
+            user: 'user-a',
+            userToken: 'user_token',
+
+         });
+         Tx.checkTrue(result.impersonation_token === 'signed_jwt', done);
+      });
+
+      Tx.testExp(async (done: any) => {
+         this.sandbox.stub(google.Credentials.prototype, 'getServiceAccountAccessToken').resolves(
+            { access_token: 'access_token', expires_in: 100, token_type: 'token' });
+         this.sandbox.stub(request, 'post').throws();
+
+         try {
+            await ImpTokenDAO.create({
+               iat: 100,
+               refreshUrl: 'refresh-url',
+               resources: [
+                  {
+                     readonly: false,
+                     resource: 'resource-a',
+                  },
+               ],
+               user: 'user-a',
+               userToken: 'user_token',
+
+            });
+         } catch (error) {
+            Tx.check500(error.error.code, done);
+         }
+      });
+   }
+
+   private static testCanBeRefreshed() {
+      Tx.sectionInit('can be refreshed');
+
+      Tx.testExp(async (done: any) => {
+         this.sandbox.stub(request, 'get').resolves();
+         await ImpTokenDAO.canBeRefreshed('https://google.com');
+         done();
+      });
+
+      Tx.testExp(async (done: any) => {
+         this.sandbox.stub(request, 'get').throws();
+         try {
+            await ImpTokenDAO.canBeRefreshed('https://refresh-url');
+         } catch (e) {
+            Tx.check400(e.error.code, done);
+         }
+      });
+   }
+
+   private static getImpTokenBody() {
+      Tx.sectionInit('get imptoken body');
+
+      Tx.testExp(async (done: any) => {
+         const result = await ImpTokenDAO.getImpTokenBody
+            ('Bearer ya.eyAiaWF0IjogImlhdCIsInJ1cmwiOiAicnVybCIsICJyc3JjIjogInJzcmMiLCJvYm8iOiAib2JvIn0=');
+         Tx.checkTrue(result.iat.toString() === 'iat' && result.refreshUrl === 'rurl', done);
+      });
+   }
+
+   private static validate() {
+      Tx.sectionInit('validate');
+
+      Tx.testExp(async (done: any) => {
+
+         this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(jsonwebtoken, 'verify').returns(
+            {
+               iss: Config.IMP_SERVICE_ACCOUNT_SIGNER,
+               obo: 'user-a',
+               rsrc: [{ resource: 'resource', readonly: true }],
+               rurl: 'rurl',
+            } as any);
+         const result = await ImpTokenDAO.validate('token');
+         Tx.checkTrue(result.user === 'user-a' && result.refreshUrl === 'rurl', done);
+
+      });
+
+      Tx.testExp(async (done: any) => {
+         try {
+            this.sandbox.stub(request, 'get').throws();
+            await ImpTokenDAO.validate('token');
+         } catch (e) {
+            Tx.check500(e.error.code, done);
+         }
+      });
+
+      Tx.testExp(async (done: any) => {
+
+         this.sandbox.stub(jsonwebtoken, 'decode').throws();
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         try {
+            await ImpTokenDAO.validate('token');
+         } catch (e) {
+            Tx.check400(e.error.code, done);
+         }
+      });
+
+      Tx.testExp(async (done: any) => {
+
+         this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(jsonwebtoken, 'verify').throws();
+         try {
+            await ImpTokenDAO.validate('token');
+         } catch (e) {
+            Tx.check400(e.error.code, done);
+         }
+      });
+
+      Tx.testExp(async (done: any) => {
+
+         this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(jsonwebtoken, 'verify').returns(
+            {
+               iss: Config.IMP_SERVICE_ACCOUNT_SIGNER,
+            } as any);
+         try {
+            await ImpTokenDAO.validate('token');
+         } catch (e) {
+            Tx.check400(e.error.code, done);
+         }
+      });
+
+   }
+
+}

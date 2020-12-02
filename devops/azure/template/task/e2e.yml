@@ -1,0 +1,19 @@
+parameters:
+  installRequirements: false
+  continueIfE2Efails: false
+steps:
+    # self to trigger clone of the current repo.
+    - checkout: self
+      persistCredentials: true
+    - template: install-e2e-requirements.yml
+      parameters:
+        installRequirements: ${{ parameters.installRequirements }}
+    - template: generate-token.yml
+    - template: run-e2e.yml
+      parameters:
+        continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
+    - task: PublishTestResults@1
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/newman/*.xml'
+        failTaskOnFailedTests: false

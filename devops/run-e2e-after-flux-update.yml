@@ -1,0 +1,90 @@
+# LEAVING THESE COMMENTS to support bugfix #2552
+# 
+# Trigger for this pipeline is configured to be the completion 
+# of k8_gitops_manifests pipeline  
+# pr:
+#   autoCancel: true
+#   branches:
+#     include:
+#     - '*'
+#     exclude:
+#     - master
+
+# resources:         
+#   pipelines:
+#   - pipeline: triggering_pipeline
+#     source: k8_gitops_manifests
+#     trigger:
+#       branches:
+#       - '*'
+
+pool:
+  vmImage: 'ubuntu-18.04'
+
+  container:
+    image: $(BUILD_IMAGE)
+    endpoint: $(ACR_SERVICE_CONNECTION)
+
+steps:
+  - task: Bash@3
+    displayName: 'Run e2e tests'
+    env:
+      sauthSvcApiKey: $(sauthSvcApiKey)
+      e2eProjectId: $(e2eProjectId)
+      e2eServiceId: $(e2eServiceId)
+      sauthTesterSvcAccountSecret: $(sauthTesterSvcAccountSecret)
+      e2eTargetServiceId: $(e2eTargetServiceId)
+      e2eTargetProjId: $(e2eTargetProjId)
+      e2eSdUrl: $(e2eSdUrl)
+      e2eApiKey: $(e2eApiKey)
+      e2eAdminEmail: $(e2eAdminEmail)
+      e2eSubproject: $(e2eSubproject)
+      e2eSubprojectLongname: $(e2eSubprojectLongname)
+      e2eTenant: $(e2eTenant)
+    inputs:
+      targetType: 'inline'
+      failOnStderr: false
+      script: |
+        #!/usr/bin/env bash
+
+        # This script grabs an auth token, then tries to run some Postman tests.
+        # It is based on prior work. Here are links to that work:
+        #  * A GCP-target ADO pipeline that runs these tests, too: https://dev.azure.com/slb-des-ext-collaboration/open-data-ecosystem/_apps/hub/ms.vss-ciworkflow.build-ci-hub?_a=edit-build-definition&id=225
+        #  * Some instructions on running these tests from a local dev machine: https://dev.azure.com/slb-des-ext-collaboration/open-data-ecosystem/_wiki/wikis/open-data-ecosystem.wiki/466/E2E-Setup-Guide
+
+        # Note: Omitting `set -euo pipefail` as it makes using grep to filter for changes a nightmare!
+        svctoken=$(curl -X POST https://tksvc-dot-cfsauth-preview.appspot.com/v1/svctk \
+        -H 'Cache-Control: no-cache' \
+        -H 'Content-Type: application/json' \
+        -H 'x-api-key: '"${sauthSvcApiKey}"'' \
+        -d '{
+                "projectid": "'"${e2eProjectId}"'", 
+                "serviceid": "'"${e2eServiceId}"'",
+                "secret": "'"${sauthTesterSvcAccountSecret}"'",
+                "targetserviceid": "'"${e2eTargetServiceId}"'",
+                "targetprojid": "'"${e2eTargetProjId}"'"
+            }' | jq ."svctoken" -r )
+
+        # Be sure the local _env template is really the template
+        git checkout -- ./tests/e2e/postman_env.json
+        chmod +x ./tests/e2e/run_e2e_tests.sh
+        
+        # help newman colorize the output when on ADO
+        export COLORTERM=true
+
+        ./tests/e2e/run_e2e_tests.sh \
+            --seistore-svc-url="${e2eSdUrl}" \
+            --seistore-svc-api-key="${e2eApiKey}" \
+            --user-idtoken="${svctoken}" \
+            --tenant="${e2eTenant}" \
+            --admin-email="${e2eAdminEmail}" \
+            --subproject="${e2eSubproject}" \
+            --subproject-long-name="${e2eSubprojectLongname}"
+
+        # Return a zero from this script
+        echo "ignoring test runner exit code"
+  - task: PublishTestResults@1
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '$(System.DefaultWorkingDirectory)/newman/*.xml'
+      failTaskOnFailedTests: false

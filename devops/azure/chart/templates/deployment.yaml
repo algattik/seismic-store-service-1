@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.global.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        aadpodidbinding: {{ .Values.global.podidentity }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          livenessProbe:
+            httpGet:
+              path: /seistore-svc/api/v3/svcstatus
+              port: 80
+              httpHeaders:
+                - name: X-Api-Key
+                  value: ""
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            periodSeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /seistore-svc/api/v3/svcstatus
+              port: 80
+              httpHeaders:
+                - name: X-Api-Key
+                  value: ""
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            periodSeconds: 60  
+          ports:
+            - protocol: TCP
+              containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: seistore-svc-properties

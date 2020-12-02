@@ -1,0 +1,28 @@
+parameters:
+  serviceName: ""
+  chartPath: ""
+  generationPath: ""
+  fluxEnabled: false
+
+steps:
+  - task: Bash@3
+    name: GenerateHelmTemplate
+    condition: |
+      eq(${{ parameters.fluxEnabled }},true)
+    displayName: Helm Template
+    env:
+      CHART_PATH: ${{parameters.chartPath}}
+      SERVICE_NAME: ${{parameters.serviceName}}
+      GENERATION_PATH: ${{parameters.generationPath}}
+    inputs:
+      targetType: 'inline'
+      script: |
+        #!/usr/bin/env bash
+
+          cd $(Build.SourcesDirectory)/$(Build.Repository.Name)
+
+          mkdir $CHART_PATH/$GENERATION_PATH
+          cat $(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/values.yaml
+
+          echo "Extracting Manifest"
+          helm template $SERVICE_NAME $CHART_PATH -f $(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/values.yaml --output-dir $CHART_PATH/$GENERATION_PATH

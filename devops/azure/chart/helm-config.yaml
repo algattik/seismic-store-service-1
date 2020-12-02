@@ -1,0 +1,18 @@
+global:
+  replicaCount: #{REPLICA_COUNT}#
+  namespace: osdu
+  podidentity: osdu-identity
+ 
+configEnv:
+  cloudProvider: #{PROVIDER_NAME}#
+  keyvaultUrl: #{KEYVAULT_NAME}#
+  desServiceHost: #{DNS_HOST}#
+  redisInstanceAddress: #{REDIS_HOST}#
+  redisInstancePort: #{REDIS_PORT}#
+  appEnvironmentIdentifier: #{ENVIRONMENT_NAME}#
+  port: #{PORT}#
+
+image:
+  repository: #{CONTAINER_REGISTRY_NAME}#.azurecr.io/#{utest.runtime.image}#
+  branch: master
+  tag: #{Build.SourceBranchName}#-#{Build.BuildNumber}#

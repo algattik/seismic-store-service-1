@@ -1,0 +1,1910 @@
+#  ***************************************************************************
+#  Copyright 2017 - 2020, Schlumberger
+#
+#  Licensed under the Apache License, Version 2.0(the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  ***************************************************************************
+
+# ===========================================================================
+# Endpoints Description
+# ===========================================================================
+
+swagger: '2.0'
+
+info:
+  title: 'Seismic Store Service (#{app.environment.identifier}#)'
+  version: '2.0.0'
+  description: "Seismic Domain Data Management APIs to store and manage seismic datasets ."
+
+host: "#{gcp.endpoints.service.name}#"
+basePath: "/"
+
+x-google-endpoints:
+- name: "#{gcp.endpoints.service.name}#"
+  allowCors: True
+
+x-google-allow: all
+
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - https
+
+# ===========================================================================
+# Endpoints Paths Section
+# ===========================================================================
+
+paths:
+
+  /api/v3/svcstatus:
+    get:
+      summary: "Seismic store service status (fast check)"
+      description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
+      security:
+        - api-key: []     
+      operationId: service-status
+      tags:
+        - General
+      responses:
+        200:
+          description: "service status"
+          schema:
+            type: string
+            example: "service OK"
+
+  /api/v3/svcstatus/access:
+    get:
+      summary: "Seismic store service status"
+      description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"      
+      operationId: service-status-check
+      tags:
+        - General
+      responses:
+        200:
+          description: "seismic store service status"
+          schema:
+            $ref: '#/definitions/Status'
+        401:
+            description: "Unauthorized"
+        403:
+            description: "Forbidden"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}:
+    post:
+      summary: "Register a new dataset"
+      description: "<ul><li>Register a new dataset in seismic store.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      operationId: dataset-register
+      tags:
+        - Dataset
+      parameters:
+      - description: "Legal tag of the dataset" 
+        in: header
+        name: ltag
+        type: string
+        required: false
+      - description: "Name of the tenant"
+        in: path
+        name: tenantid
+        required: true
+        type: string
+        default: 'common'
+      - description: "Name of the subproject"
+        in: path
+        name: subprojectid
+        required: true
+        type: string
+        default: 'carbon'
+      - description: "Hierarchical path of the dataset"
+        in: query
+        name: path
+        required: true
+        type: string 
+        default: 'a/b/c'
+      - description: "Name of the dataset"
+        in: path
+        name: datasetid
+        required: true
+        type: string
+        default: 'slb-dataset'
+      - description: "Request body"
+        in: body
+        name: request body
+        required: false
+        schema:
+          $ref: '#/definitions/DatasetRegisterBody'
+      responses:
+        200:
+          description: "Registered dataset metadata"
+          schema:
+            $ref: "#/definitions/Dataset"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        409:
+          description: "Conflict"
+        423:
+          description: "Locked"
+
+    get:
+      summary: "Retrieve a dataset"
+      description: "<ul><li>Return the dataset metadata from seismic store.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      operationId: dataset-get
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path of the dataset"
+          in: query
+          name: path
+          required: true
+          type: string       
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string
+        - description: "Include the seismic storage metadata record if it exists"
+          in: query
+          name: seismicmeta
+          required: false
+          type: boolean  
+      responses:
+        200:
+          description: "Metadata of the dataset"
+          schema:
+            $ref: "#/definitions/Dataset"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    delete:
+      summary: "Delete a dataset"
+      description: "<ul><li>Delete a dataset in seismic store.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"      
+      operationId: dataset-delete
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path of the dataset"
+          in: query
+          name: path
+          required: true
+          type: string       
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string
+      responses:
+        200:
+          description: "The resource was deleted successfully."
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    patch:
+      summary: "Patch the dataset metadata"
+      description: "<ul><li>Update the dataset meta information in seismic store or close(unlock) the dataset. If the endpoint is used without the close parameter, at least one body field is required or the endpoint will return an error.</li><li>Required roles: subproject.admin, subproject.editor</li><li>Patchable fields: <ul><li><b>dataset_new_name:</b> new name to use for the dataset (rename)</li><li><b>filemetadata:</b> this is a seistore specific field and describe how the physical data are stored in the cloud storage system (GCS/AzureContainer etc etc). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nOboject: N, totalSize: 1024, objsize: 64, sizeUnit: MB }”.</li><li><b>last_modified_date:</b> mark this field as true to update the dataset last modified date</li><li><b>gtags:</b> upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then new gtags are appended to this list.</li><li><b>ltag:</b> update the existing legalTag value</b></li><li><b>readonly:</b> update the dataset mode to readonly(true) or to read/write(false)</li><li><b>seismicmeta:</b> update the DataEcosystem storage metadata (refer to the DataEcosystem storage service tutorial for more help)</b></li></ul></li></ul>"
+      operationId: dataset-patch
+      tags:
+        - Dataset          
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path of the dataset"
+          in: query
+          name: path
+          required: true
+          type: string       
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string
+        - description: "Request body"
+          in: body
+          name: request body
+          schema:
+            $ref: "#/definitions/DatasetPatch"
+        - description: "Non null sbit value of the dataset. Using this value here will close the dataset"
+          in: query
+          name: close
+          required: false
+          type: string            
+      responses:
+        200:
+          description: "Metadata of the patched dataset"
+          schema:
+            $ref: "#/definitions/Dataset"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        409:
+          description: "Conflict"
+        423:
+          description: "Locked"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/lock:
+    put:
+      summary: "Acquire a lock for a dataset id"
+      description: "<ul><li>Open a dataset for read or write and lock its state.</li><li>Required roles open lock for write: subproject.admin, subproject.editor</li><li>Required roles open lock for read: subproject.admin, subproject.editor, subproject.viewer</ul>"
+      operationId: dataset-lock
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path of the dataset"
+          in: query
+          name: path
+          required: true
+          type: string       
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string
+        - description: "Type of the lock which can be set to 'read' (default) or 'write'"
+          in: query
+          name: openmode
+          required: false
+          type: string
+        - description: "Session identifier issued for a previous write lock acquisition operation"
+          in: query
+          name: wid
+          required: false
+          type: number       
+      responses:
+        200:
+          description: "Acquired a lock and the return value is the dataset metadata with session identifier stored in 'sbit' attribute"
+          schema:
+            $ref: "#/definitions/Dataset"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        423:
+          description: "Locked"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/unlock:
+    put:
+      summary: "Remove the lock associated with a dataset id."
+      description: "<ul><li>Removes the lock for a dataset id.</li><li>Required roles: subproject.admin</li></ul>" 
+      operationId: dataset-lock-rm
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path for the dataset"
+          in: query
+          name: path
+          required: true
+          type: string       
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Removed the lock value associated with dataset id"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        423:
+          description: "Locked"
+
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/permission:
+    get:
+      summary: "Retrieve the access permissions of a user on a dataset id."
+      description: "<ul><li>Retrieve the access permission of a user on a dataset.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      operationId: dataset-permission
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path for the dataset"
+          in: query
+          name: path
+          required: true
+          type: string       
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string
+      responses:
+        200:
+          description: "User access permission on the dataset."
+          schema:
+            $ref: "#/definitions/DatasetPermission"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/ctagcheck:
+    get:
+      summary:  "Validate if a dataset ctag matches the pre-existing ctag in metadata catalog."
+      description: "<ul><li>Check if the provided dataset cTag match the one stored in the metadata catalog.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"       
+      operationId: ctag-check
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path of the dataset"
+          in: query
+          name: path
+          required: true
+          type: string          
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string             
+        - description: "Ctag to be validated"
+          in: query
+          name: ctag
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Return true if the ctag is valid or false if it is invalid"
+          schema:
+            type: boolean
+            example: 'true'
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/gtags:
+    put:
+      summary:  "Upsert tags to a dataset"
+      description: "<ul><li>Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then  new gtags are appended to this list.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"       
+      operationId: add-tag
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Hierarchical path of the dataset"
+          in: query
+          name: path
+          required: true
+          type: string          
+        - description: "Name of the dataset"
+          in: path
+          name: datasetid
+          required: true
+          type: string             
+        - description: "Gtags array list"
+          in: query
+          name: gtag    
+          required: true
+          type: array
+          items:
+            type: string
+            enum:
+            - "tag1"
+            - "tag2"
+            - "tag3"
+            default: "tag1"
+      responses:
+        200:
+          description: "Gtags were upserted to the dataset metadata."
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  # To deprecate in favor of /utility/ls
+  # /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
+  #   get:
+  #     summary: "content list"
+  #     description: "<ul><li>List datasets and sub-directories for a directory path.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+  #     operationId: dataset-read-directory
+  #     tags:
+  #       - Dataset      
+  #     parameters:
+  #       - description: "The tenant project name"
+  #         in: path
+  #         name: tenantid
+  #         required: true
+  #         type: string
+  #       - description: "The sub-project name"
+  #         in: path
+  #         name: subprojectid
+  #         required: true
+  #         type: string
+  #       - description: "The hierarchy path"
+  #         in: query
+  #         name: path
+  #         required: true
+  #         type: string          
+  #     responses:
+  #       200:
+  #         description: "The list of datasets and directories in the requested directory path."
+  #         schema:
+  #           $ref: "#/definitions/DatasetAndDirectories"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}:
+    get:
+      summary: "Get the list of datasets in a subproject."
+      description: "<ul><li>Return the list of datasets in a sub-project.If gtags are in the request parameters, then get only those datasets that have the exact list of gtags.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"      
+      operationId: dataset-list
+      tags:
+        - Dataset      
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Gtags associated with dataset metadata"
+          in: query
+          name: gtag
+          type: array
+          items: 
+            type: string
+
+      responses:
+        200:
+          description: "The list of all datasets in the subproject if no gtags are in the request parameters. If gtags exist in the request parameters, then datasets that have the same list of gtags."
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Dataset"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/exist:
+    post:
+      summary: "Check if list of datasets exists in the subproject."
+      description: "<ul><li>Check if the dataset exists.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"         
+      operationId: dataset-exist
+      tags:
+        - Dataset     
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: '#/definitions/DatasetCheckList'
+      responses:
+        200:
+          description: "A list of boolean values for all the input datasets in the request body. If a value is true, then corresponding dataset exists and if it is false, then the dataset does not exist"
+          schema:
+            type: array
+            items:
+              type: boolean
+            example: [true, false]
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/sizes:
+    post:
+      summary: "Retrieve the size of datasets"
+      description: "<ul><li>Return a list with the sizes of the requested datasets.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      operationId: dataset-sizes
+      tags:
+        - Dataset
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: '#/definitions/DatasetCheckList'
+      responses:
+        200:
+          description: "The sizes list of all the datasets. If the dataset does not exist, the size would be -1"
+          schema:
+            type: array
+            items:
+              type: number
+            example: [1024, -1]
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/utility/ls:
+    get:
+      summary: "Retrieve list of datasets and sub-directories inside a seismic store path"
+      description: "<ul><li>Return the list of datasets and sub-directories of a seismic store path.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"      
+      operationId: ls
+      tags:
+        - Utility 
+      parameters:
+        - description: "Seismic store path, sd://tenant/sub-project/path"
+          in: query
+          name: sdpath
+          required: true
+          type: string
+        - description: "Working mode, dirs or datasets or undefined for both"
+          in: query
+          name: wmode
+          required: false
+          type: string
+        - description: "Limits total number of datasets to be returned"
+          in: query
+          name: limit
+          required: false
+          type: number
+        - description: "Pagination token - this query parameter can be omitted on first call"
+          in: query
+          name: cursor
+          required: false
+          type: string
+      responses:
+        200:
+          description: "Seismic store path content"
+          schema:
+              $ref: '#/definitions/LsDatasets'
+        201:
+          description: "Paginated seismic store path content - For documentation purpose if limit or cursor is given status code here is 200"
+          schema:
+              $ref: '#/definitions/LsPaginatedDatasets'
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/utility/cp:
+    post:
+      summary: "Copy dataset"
+      description: "<ul><li>Copy a seismic store dataset. The source and destination dataset must be in the same sub-project.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"      
+      operationId: cp
+      tags:
+        - Utility 
+      parameters:
+        - description: "Seismic store source dataset path"
+          in: query
+          name: sdpath_from
+          required: true
+          type: string
+        - description: "Seismic store destination dataset path"
+          in: query
+          name: sdpath_to
+          required: true
+          type: string
+        - description: "Lock source and destination while copying"
+          in: query
+          name: lock
+          required: false
+          type: boolean       
+      responses:
+        200:
+          description: "Copy operation succeeded"
+          schema:
+            type: object
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        409:
+          description: "Conflict"
+        423:
+          description: "Locked"
+
+  /api/v3/utility/gcs-access-token:
+    get:
+      summary: "Generate a GCS access token"    
+      description: "<ul><li>Generate a GCS access token for a specified seismic store resource. The source and destination dataset must be in the same sub-project.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"       
+      operationId: gcs-access-token
+      tags:
+        - Utility 
+      parameters:
+      - description: "Seismic store path in the format sd://tenant/sub-project"
+        in: query
+        name: sdpath
+        type: string
+        required: true
+      - description: "Readonly access, true(default) or false"
+        in: query
+        name: readonly
+        type: boolean 
+      responses:
+        200:
+          description: "The GCS access token"
+          schema:
+            $ref: '#/definitions/AccessToken'
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/imptoken:
+    post:
+      summary: "Generate impersonation credentials token"
+      description: "<ul><li>Generate an impersonation credential token of a user for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"        
+      operationId: imp-token
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: '#/definitions/ImpTokenRequest'
+      responses:
+        200:
+          description: "Generated a impersonation credentials token successfully"
+          schema:
+            $ref: '#/definitions/ImpToken'
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    put:
+      summary: "Refresh an impersonation credential token"
+      description: "<ul><li>Refresh an impersonation credential token.</li><li>Required roles: none</li></ul>"       
+      security:
+        - api-key: []      
+      operationId: imp-token-refresh
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: '#/definitions/RefreshTokenRequest'
+      responses:
+        200:
+          description: "Refreshed impersonation credential token successfully"
+          schema:
+            $ref: '#/definitions/ImpToken'   
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    patch:
+      summary: "Patch an impersonation credential token's refresh url and generate a new impersonation token"
+      description: "<ul><li>Patch an impersonation credential token's refresh url and generate a new impersonation token.</li><li>Required roles: none</li></ul>"
+      operationId: imp-token-patch
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: '#/definitions/ImpTokenPatchRequest'
+      responses:
+        200:
+          description: "Generated impersonation token successfully and its refresh url is updated"
+          schema:
+            $ref: '#/definitions/ImpToken'
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/subproject/tenant/{tenantid}/subproject/{subprojectid}:
+    post:
+      summary: "Create a new subproject"    
+      description: "<ul><li>Creates a new sub-project resource in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
+      operationId: subproject-create
+      tags:
+        - SubProject
+      parameters:
+      - description: "Legal tag of the datapartition/tenant" 
+        in: header
+        name: ltag
+        type: string
+        required: true      
+      - description: "Name of the subproject"
+        in: path
+        name: subprojectid
+        type: string
+        required: true
+      - description: "Name of the tenant"
+        in: path
+        name: tenantid
+        type: string
+        required: true        
+      - description: "Request body"
+        in: body
+        name: request body
+        required: true
+        schema:
+          $ref: '#/definitions/SubProjectCreateBody'
+      responses:
+        200:
+          description: "Creation of the subproject is successful."
+          schema:
+            $ref: "#/definitions/SubProject"          
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        409:
+          description: "Conflict"
+    get:
+      summary: "Retrieve the subproject metadata"
+      description: "<ul><li>Return the metadata for a requested sub-project.</li><li>Required roles: subproject.admin</li></ul>"
+      operationId: subproject-get
+      tags:
+        - SubProject 
+      parameters:
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string      
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Retrieved subproject metadata successfully"
+          schema:
+            $ref: "#/definitions/SubProject"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    delete:
+      summary: "Delete a subproject"
+      description: "<ul><li>Delete a subproject in seismic store.</li><li>Required roles: subproject.admin</li></ul>"
+      operationId: subproject-delete
+      tags:
+        - SubProject 
+      parameters:
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string      
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Deletion of the subproject completed"         
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    patch:
+      summary: "Patch a subproject metadata"
+      description: "<ul><li>Patch a subproject metadata in seismic store.</li><li>Required roles: subproject.admin</li></ul>"
+      operationId: subproject-patch
+      tags:
+        - SubProject       
+      parameters:
+        - description: "Legal tag of the subproject" 
+          in: header
+          name: ltag
+          type: string
+          required: true      
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "Name of the subproject"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "True if the legal tags of all datasets in a subproject needs to be updated"
+          in: query
+          name: recursive
+          required: false
+          type: boolean
+
+      responses:
+        200:
+          description: "Updated subproject metadata successfully"
+          schema:
+            $ref: "#/definitions/SubProject"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/subproject/tenant/{tenantid}:
+    get:
+      summary: "List subprojects in a tenant"
+      description: "<ul><li>Return the list of sub-project in a tenant.</li><li>Required roles: users.datalake.admin</li></ul>"
+      operationId: sub-project-list
+      tags:
+        - SubProject         
+      parameters:
+      - description: "Name of the tenant"
+        in: path
+        name: tenantid
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Retrieved the list of subprojects in the tenant successfully."
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/SubProject"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/tenant/{tenantid}:
+    post:
+      summary: "Create a new tenant"
+      description: "<ul><li>Create a new tenant resource in seismic store.</li><li>Required roles: seistore.system.admin</li></ul>"
+      operationId: tenant-create
+      tags:
+        - Tenant
+      parameters:
+      - description: "Name of the tenant"
+        in: path
+        name: tenantid
+        type: string
+        required: true
+      - description: "Request body"
+        in: body
+        name: request body
+        required: true
+        schema:
+          $ref: '#/definitions/TenantCreateBody'
+      responses:
+        200:
+          description: "Creation of the tenant was successful."
+          schema:
+            $ref: "#/definitions/Tenant"      
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        409:
+          description: "Conflict"
+
+    get:
+      summary: "Retrieve the tenant metadata"
+      description: "<ul><li>Return the tenant metadata.</li><li>Required roles: seistore.system.admin</li></ul>"
+      operationId: tenant-get
+      tags:
+        - Tenant
+      parameters:
+      - description: "Name of the tenant"
+        in: path
+        name: tenantid
+        type: string
+        required: true
+      responses:
+        200:
+          description: "Retrieved subproject metadata successfully"
+          schema:
+            $ref: "#/definitions/Tenant"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/tenant/sdpath:
+    get:
+      summary: "Retrieve the tenant seismic store path"
+      description: "<ul><li>Return the seistore path to a tenant associated with the data partition.</li><li>Required roles: none</li></ul>"
+      operationId: tenant-sdpath
+      tags:
+        - Tenant
+      parameters:
+      - description: "Datapartition of the tenant"
+        in: query
+        name: datapartition
+        type: string
+        required: true
+      responses:
+        200:
+          description: "Seismic store path to the tenant retrieved successfully"
+          schema:
+            type: string
+            example: "sd://tenant01"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/user:
+    put:
+      summary: "Add an user to a seismic store subproject authorization group"
+      description: "<ul><li>Add an user to a subproject authorization group.</li><li>Required roles: subproject.admin</li></ul>"      
+      operationId: user-add
+      tags:
+        - Users
+      parameters:
+      - description: "Request body"
+        in: body
+        name: request body
+        required: true
+        schema:
+          $ref: '#/definitions/UserAddRequest'
+      responses:
+        200:
+          description: "User was successfully added to a sub-project authorization group."
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    get:
+      summary: "List users in subproject's role based authorization groups"
+      description: "<ul><li>List users in subproject's role based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"      
+      operationId: user-list
+      tags:
+        - Users       
+      parameters:
+      - description: "Seismic store path, sd://tenant/sub-project"
+        in: query
+        name: sdpath
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Retrieved sub-project users in admin, viewer, editor groups successfully"
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: string
+              example: ["userA@email", "admin"]
+            example: [ ["userA@email", "admin"], ["userB@email", "editor"] ]
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    delete:
+      summary: "Remove user from subproject's role based authorization groups"
+      description: "<ul><li>Remove user from subproject's role based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"      
+      operationId: user-rm
+      tags:
+        - Users       
+      parameters:
+      - in: body
+        name: request body
+        required: true
+        schema:
+          $ref: '#/definitions/UserRemoveRequest'    
+      responses:
+        200:
+          description: Deletion of user email in subproject's role based authorization groups completed."          
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/user/roles:
+    get:
+      summary: "Retrieve user role in all subprojects of the tenant"
+      description: "<ul><li>Retrieve user role in all subprojects of the tenant.</li><li>Required roles: none/li></ul>"      
+      operationId: user-roles
+      tags:
+        - Users       
+      parameters:
+      - description: "Seismic store tenant path, sd://tenant"
+        in: query
+        name: sdpath
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Retrieved user roles in all subprojects of the tenant."
+          schema:
+            $ref: '#/definitions/UserRoles'        
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/app:
+    post:
+      summary: "Register a new application"
+      description: "<ul><li>Register a new application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"      
+      operationId: app-register
+      tags:
+        - Apps
+      parameters:
+      - description: "Service account email of the application"
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: "Seismic store tenant path, sd://tenant"
+        in: query
+        name: sdpath
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Registration of the application was successful."        
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    get:
+      summary: "Retrieve the list of registered applications"
+      description: "<ul><li>Retrieve the list of the registered application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"      
+      operationId: app-list
+      tags:
+        - Apps
+      parameters:
+      - description: "Seismic store tenant path, sd://tenant"
+        in: query
+        name: sdpath
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Retrieved list of all the registered applications successfully."
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["app01@email", "app02@email"]
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/app/trusted:
+    post:
+      summary: "Set a registered application as a trusted application"
+      description: "<ul><li>Set a registered application as a trusted application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      operationId: trustedapp-register
+      tags:
+        - Apps
+      parameters:
+      - description: "Service account email of the application"
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: "Seismic store tenant path, sd://tenant"
+        in: query
+        name: sdpath
+        required: true
+        type: string       
+      responses:
+        200:
+          description: "Marking the application as a trusted application was successful."           
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+    get:
+      summary: "List the trusted applications in a seismic store tenant"
+      description: "<ul><li>Return the list of the trusted application in seismic store tenant.</li><li>Required roles: users.datalake.admin/li></ul>"      
+      operationId: trustedapp-list
+      tags:
+        - Apps
+      parameters:
+      - description: "Seismic store tenant path in the format sd://tenant"
+        in: query
+        name: sdpath
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Retrieved the list of all the trusted applications in the tenant"
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["app01@email", "app02@email"]
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  # /api/v3/sre/maintenance:
+  #   put:
+  #     summary: "Service maintenance"
+  #     description: "<ul><li>Service maintenance.</li><li>Required roles: seistore.system.admin/li></ul>"      
+  #     operationId: maintenance
+  #     tags:
+  #       - SRE
+  #     parameters:
+  #     - description: "operation id"
+  #       in: query
+  #       name: opid
+  #       required: true
+  #       type: string
+  #     responses:
+  #       200:
+  #         description: "Results of maintainence"
+  #       400:
+  #         description: "Bad request"
+  #       401:
+  #         description: "Unauthorized"
+  #       403:
+  #         description: "Forbidden"
+  #       404:
+  #         description: "Not found"
+
+  # /api/v3/sre/diagnostic:
+  #   get:
+  #     summary: "Perform diagnostics on the service"
+  #     description: "<ul><li>Service diagnostic.</li><li>Required roles: seistore.system.admin/li></ul>"      
+  #     operationId: diagnostic
+  #     tags:
+  #       - SRE
+  #     parameters:
+  #     - description: "operation id"
+  #       in: query
+  #       name: opid
+  #       required: true
+  #       type: string
+  #     responses:
+  #       200:
+  #         description: "Results of the service diagnosis"
+  #       400:
+  #         description: "Bad request"
+  #       401:
+  #         description: "Unauthorized"
+  #       403:
+  #         description: "Forbidden"
+  #       404:
+  #         description: "Not found"
+
+# ===========================================================================
+# Endpoints Models Section
+# ===========================================================================    
+          
+definitions:
+
+  # OK
+  Status:
+    required: ["status"]
+    properties:
+      status:
+        type: string
+    example:
+      status: "running"
+  
+  # OK
+  DatasetRegisterBody:
+    properties:
+      type:
+        type: string
+      gtags: 
+        type: array
+        items:
+          type: string
+        description: Array of global tags associated with the dataset metadata. Once assigned, they can be used to filter datasets 
+      seismicmeta:
+        type: object
+        description: Seismic metadata to be stored as dataecosystem storage record
+        properties:
+          kind: 
+            type: string
+          data:
+            type: object
+    example:
+        type: "segy"
+        gtags: ["tagA", "tagB", "tagC"]
+        seismicmeta: { "kind": "slb:seistore:seismic2d:1.0.0", "legal": { "legaltags": [ "legal-tag" ], "otherRelevantDataCountries": [ "US" ] }, "data": { "msg": "hello world, from Data Ecosystem" } }
+
+  # OK
+  Dataset:
+    required: ["name", "tenant", "subproject", "path", "created_by", "created_date", "last_modified_date", "gcsurl", "ctag"]
+    properties:
+      name:
+        type: string
+        description: Name of the dataset
+      tenant:
+        type: string
+        description: Name of the tenant
+      subproject:
+        type: string
+        description: Name of the subproject
+      path:
+        type: string
+        description: Path to the dataset inside a subproject
+      created_by:
+        type: string
+        description: Creator of the dataset
+      created_date:
+        type: string
+        description: Date when the dataset was created
+      last_modified_date:
+        type: string
+        description: Date when the dataset was last modified
+      filemetadata:
+        type: object
+        description: Number of objects and the size in bytes of the dataset
+      metadata:
+        type: object
+        description: Generic information stored as key,value pairs for the dataset
+      gcsurl:
+        type: string
+        description: Cloud storage object identifier
+      readonly:
+        type: boolean
+        description: True if the dataset is readonly
+      ltag:
+        type: string
+        description: Legal tag associated with the dataset
+      ctag: 
+        type: string
+        description: The coherency tag associated with the dataset (it changed every time the dataset is update)
+      seismicmeta_guid:
+        type: string
+        description: Seismic storage record identifier
+      sbit:
+        type: string
+        description: The session lockID
+      sbit_count:
+        type: number
+        description: The number of sessions associated to the dataset.
+      seismicmeta:
+        type: object
+        description: Seismic metadata associated with the dataset which is used to create a data ecosystem storage record
+        properties:
+          kind: 
+            type: string
+          data:
+            type: object
+
+    example:
+      name: "dsx01"
+      tenant: "geosolution"
+      subproject: "spx01"
+      path: "/a/b/c"
+      created_by: "user@gtest.com"
+      created_date: "01/08/2017 10:30:19"
+      last_modified_date: "02/08/2017 12:44:22"
+      metadata: { "k1":"v1", "k2":"v2", "k3": {"k4":"v4"} }
+      gcsurl: "gs://sd_geosolution_spx01/12341234"
+      type: "segy"
+      readonly: false
+      filemetadata: { "size":10737418240, "type":"GENERIC", "nobjects":160 }
+      ltag: "legal-tag"
+      ctag: "1234567890abcdefg"
+      seismicmeta_guid: "slb:seismic:1234abcd5678efgh"
+      sbit: "Wx53vrogk0gr4ao"
+      sbit_count: 1
+      seismicmeta: { "kind": "slb:seistore:seismic2d:1.0.0", "legal": { "legaltags": [ "legal-tag" ], "otherRelevantDataCountries": [ "US" ] }, "data": { "msg": "sample data" } }
+
+  # OK
+  DatasetPatch:
+    properties:
+      dataset_new_name:
+        type: string
+        description: New name for the dataset
+      metadata:
+        type: object
+        description: Generic information about the dataset stored as key value pairs
+      filemetadata:
+        type: object
+        description: Number of objects and the size in bytes of the dataset
+      last_modified_date:
+        type: boolean
+        description: Date when the dataset was last modified
+      gtags: 
+        type: array
+        description: Array of tags associated with the dataset. After patching these tags, they can be used to filter the datasets
+        items:
+          type: string
+        default: []    
+      ltag:
+        type: string
+        description: Legal tag associated with the dataset
+      readonly:
+        type: boolean
+        description: True if the dataset is readonly
+      seismicmeta:
+        type: object
+        description: Seismic metadata associated with the dataset which is used to create a data ecosystem storage record
+        properties:
+          kind: 
+            type: string
+          data:
+            type: object
+    example:
+      dataset_new_name: "dsx02"
+      metadata: {"f1": "v1", "f2": "v2", "f3": "v3" }
+      filemetadata: {"f1": "v1", "f2": "v2", "f3": "v3" }      
+      last_modified_date: true
+      gtags: ["tag01", "tag02", "tag03"]
+      ltag: "legal-tag"
+      readonly: false
+      seismicmeta: { "kind": "slb:seistore:seismic2d:1.0.0", "legal": { "legaltags": [ "legal-tag" ], "otherRelevantDataCountries": [ "US" ] }, "data": { "msg": "sample data" } }
+
+  # OK
+  DatasetPermission:
+    required: ["read", "write", "delete"]
+    properties:
+      read:
+        type: boolean
+        description: True if the user has read permission on the dataset
+      write:
+        type: boolean
+        description: True if the user has write permission on the dataset
+      delete:
+        type: boolean
+        description: True if the user has delete permission on the dataset
+    example:
+      read: true
+      write: false
+      delete: false
+      
+  # OK
+  DatasetAndDirectories:
+    required: ["datasets", "directories"]
+    properties:
+      datasets:
+        type: array
+        description: Array of datasets inside the subproject
+        items:
+          type: string
+      directories:
+        type: array
+        description: Array of directories inside the subproject
+        items:
+          type: string
+    example:
+      datasets: ["/a/b/c/dsx01", "/a/b/c/dsx02"]
+      directories: ["/a/b/c/d", "/a/b/c/e"]      
+
+  # OK
+  DatasetCheckList:
+    required: ["datasets"]
+    properties:
+      datasets:
+        type: array
+        description: Array of datasets inside the subproject
+        items:
+          type: string
+    example:
+      datasets: ["a/b/c/dsx01", "a/b/c/dsx02"]
+
+  # OK
+  AccessToken:
+    required: ["access_token", "token_type", "expires_in"]
+    properties:
+      access_token: 
+        type: string
+        description: Access token
+      token_type:
+        type: string
+        description: Type of the token
+      expires_in:
+        type: number
+        description: Time in seconds for expiration of the access token
+    example:
+      access_token: "ya29.fgdgsdngevrjbinb0ednberoibnerbnerber-fdsfwefwe_cece"
+      token_type: "Bearer"
+      expires_in: 3600
+
+  # OK
+  ImpToken:
+    required: ["impersonation_token", "token_type", "expires_in"]
+    properties:
+      impersonation_token: 
+        type: string
+        description: Impersonation token 
+      token_type:
+        type: string
+        description: Type of the token
+      expires_in:
+        type: number
+        description: Time in seconds for the expiration of the impersonation token
+    example:
+      impersonation_token: "ya29.fgdgsdngevrjbinb0ednberoibnerbanerber-fdsfwefwe_cece"
+      token_type: "Bearer"
+      expires_in: 3600
+  
+  # OK
+  Resource:
+    required: ["resource"]
+    properties:
+      resource:
+        type: string
+      readonly:
+        type: boolean
+
+  # OK
+  ImpTokenRequest:
+    required: ["token", "resources", "refresh-url"]
+    properties:
+      token:
+        type: string
+        description: Impersonation token that was previously issued
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/Resource'
+      refresh-url:
+        type: string
+        description: A web service endpoint that the seismic store service will invoke to check if the impersonation token can be refreshed
+    example:
+      token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
+      resources: [{"resource": "sd://tnx01/spx01", "readonly":true}, {"resource": "sd://tnx01/spx02", "readonly":false}, {"resource": "sd://tnx01/spx03"}]
+      refresh-url: "https://httpstat.us/200"
+      
+  ImpTokenPatchRequest:
+    required: ["token", "refresh-url"]
+    properties:
+      token:
+        type: string
+        description: Impersonation token that was previously issued
+      refresh-url:
+        type: string
+        description: New endpoint that the seismic store service will invoke to check if the impersonation token can be refreshed
+    example:
+      token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
+      refresh-url: "https://httpstat.us/200"
+
+  # OK
+  RefreshTokenRequest:
+    required: ["token"]
+    properties:
+      token:
+        type: string
+        description: Impersonation token
+    example:
+      token: "eyJhbxGccCI6IkpX.fgdgsdngfwe_cec.xc2Vpc21pYy1ddzZXJ2aWNl"
+
+  # OK
+  SubProjectCreateBody:
+    required: ["admin", "storage_class", "storage_location"]
+    properties:
+      admin:
+        type: string
+        description: Administrator for the subproject
+      storage_class:
+        type: string
+        description: Storage class for the bucket
+      storage_location:
+        type: string
+        description: Storage location for the bucket
+    example:
+      admin: "test@email"
+      storage_class: "MULTI_REGIONAL"
+      storage_location: "US"
+
+  # OK
+  SubProject:
+    required: ["name", "tenant", "storage_class", "storage_location", "admin", "ltag", "gcs_bucket"]
+    properties:
+      name:
+        type: string
+        description: Name of the subproject
+      tenant:
+        type: string
+        description: Name of the tenant 
+      storage_class:
+        type: string
+        description: Storage class for the bucket
+      storage_location:
+        type: string
+        description: Storage location for the bucket
+      admin:
+        type: string
+        description: Administrator for the subproject
+      ltag:
+        type: string
+        description: Legal tag for the subproject
+      gcs_bucket:
+        type: string
+        description: Cloud storage bucket associated with the subproject
+    example:
+      name: "spx01"
+      tenant: "tnx01"
+      storage_class: "MULTI_REGIONAL"
+      storage_location: "US"
+      admin: "test@email"
+      ltag: "legal-tag"
+      gcs_bucket: "subproject-bucket"
+      
+  # OK      
+  TenantCreateBody:
+    required: ["gcpid", "des", "default_acl"]
+    properties:
+      gcpid:
+        type: string
+        description: Google cloud project id associated with the tenant
+      des:
+        type: string
+        description: Entitlements group sub domain. For instance, if the entitlements group is group-a.slb.env.cloud.com, the esd value is slb.env.cloud.com
+      default_acl:
+        type: string
+        description: Entitlements authorization group to manage tenant administrators
+    example:
+      gcpid: "google_project_id"
+      esd: "slb.p4d.cloud.slb-ds.com"
+      default_acl: "authgroup@data_partition.com"
+
+  # OK
+  Tenant:
+    required: ["name", "esd", "gcpid"]  
+    properties:
+      name:
+        type: string
+      esd:
+        type: string
+      gcpid:
+        type: string
+    example:
+      name: "tnx01"
+      esd: "slb.p4d.cloud.slb-ds.com"
+      gcpid: "google_project_id"
+
+  # OK
+  UserAddRequest:
+    required: ["email", "path", "group"]
+    properties:
+      email:
+        type: string
+        description: Email address of the user
+      path:
+        type: string
+        description: Seismic store path in the format sd://tenant/subproject
+      group:
+        type: string
+        description: Role to be assigned to the user.
+        enum: [viewer, editor, admin]
+    example:
+      email: "test@slb.com"
+      path: "sd://slb/testproject"
+      group: "editor"
+
+  # OK
+  UserRemoveRequest:
+    required: ["email", "path"]
+    properties:
+      email:
+        type: string
+        description: Email address of the user
+      path:
+        type: string
+        description: Seismic store path in the format sd://tenant/subproject
+    example:
+      email: "test@email"
+      path: "sd://slb/testproject"
+
+
+  # OK
+  UserRoles:
+    required: ["roles"]
+    properties:
+      roles:
+        type: array
+        description: Array of arrays with each array containing subproject and role of the user for the subproject
+        items:
+          type: array
+          items:
+            type: string
+          example: ["/spx01", "admin"]
+        example: [ ["/spx01", "admin"], ["/spx02", "viewer"] ]
+
+  # OK
+  LsDatasets:
+    type: array
+    description: Array of directories and datasets inside a subproject
+    items:
+      type: string
+    example: ["subdirA/", "subdirB/", "dataset01", "dataset02", "dataset03"]      
+
+  # OK
+  LsPaginatedDatasets:
+    required: ["datasets", "nextPageCursor"]
+    properties:
+      datasets:
+        type: array
+        description: Array of datasets inside the subproject
+        items:
+          type: string
+      nextPageCursor:
+       type: string
+       description: Next cursor for pagination
+    example: { datasets: ["subdirA/", "subdirB/", "dataset01"], nextPageCursor: "abc1234" }            
+
+# ===========================================================================
+# Endpoints Security Section
+# ===========================================================================
+
+security:
+  -
+    api-key: []
+    google-seismic-store-impersonation: []
+  -
+    api-key: []
+    google-idtoken: []
+#{XplaceHolderForExtraSecurity}#
+
+securityDefinitions:
+
+  api-key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+ 
+  google-seismic-store-impersonation:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "seismic-store-imp-token-signer@#{gcp.project.name}#.iam.gserviceaccount.com"
+    x-google-jwks_uri: "https://www.googleapis.com/robot/v1/metadata/x509/seismic-store-imp-token-signer@#{gcp.project.name}#.iam.gserviceaccount.com"
+    x-google-audiences: "https://www.googleapis.com/oauth2/v4/token"
+
+  google-idtoken:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
+    x-google-audiences: "#{app.seistore.des.targetaudience}#"
+    scopes: {}
+
+#{XplaceHolderForExtraSecurityDefinitions}#

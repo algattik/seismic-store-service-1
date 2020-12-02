@@ -1,0 +1,8 @@
+parameters:
+  installRequirements: false
+  continueIfE2Efails: false
+steps:
+  - template: e2e.yml
+    parameters:
+      installRequirements: ${{ parameters.installRequirements }}
+      continueIfE2Efails: ${{ parameters.continueIfE2Efails }}

@@ -1,0 +1,225 @@
+// ============================================================================
+// Copyright 2017-2019, Schlumberger
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ============================================================================
+
+import sinon from 'sinon';
+import { Auth, AuthGroups } from '../../../src/auth';
+import { Config } from '../../../src/cloud';
+import { DESCompliance, DESEntitlement, DESUtils } from '../../../src/dataecosystem';
+import { ImpTokenDAO } from '../../../src/services/imptoken';
+import { IImpTokenBodyModel as ImpTokenBodyModel } from '../../../src/services/imptoken/model';
+import { AppsDAO } from '../../../src/services/svcapp/dao';
+import { Tx } from '../utils';
+
+
+export class TestAuth {
+
+    public static run() {
+
+        Config.IMP_SERVICE_ACCOUNT_SIGNER = 'signer@seistore.com';
+
+        this.impToken = 'header.' + Buffer.from(JSON.stringify({
+            iss: Config.IMP_SERVICE_ACCOUNT_SIGNER, obo: 'obo',
+            rsrc: 'rsrc', rurl: 'rurl',
+        })).toString('base64') + '.signature';
+
+        this.userToken = 'header.' + Buffer.from(JSON.stringify({
+            email: 'user@user.com',
+        })).toString('base64') + '.signature';
+
+        describe(Tx.testInit('authorizations'), () => {
+
+            beforeEach(() => {
+                this.sandbox = sinon.createSandbox();
+                Config.CLOUDPROVIDER = 'google';
+            });
+            afterEach(() => { this.sandbox.restore(); });
+
+            this.isUserAuthorized();
+            this.isAppAuthorized();
+            this.writeAccess();
+            this.readAccess();
+            this.usersGroup();
+            this.legalTag();
+            this.listUsersInGroup();
+
+        });
+
+    }
+
+    private static sandbox: sinon.SinonSandbox;
+
+    private static impToken: string;
+    private static userToken: string;
+
+    private static writeAccess() {
+
+        Tx.sectionInit('write access');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'none' }] as never);
+            try {
+                await Auth.isWriteAuthorized(this.userToken, [], 't', 's', 'e', 'appkey');
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns(
+                { resources: [{ resource: 't/s', readonly: false }] } as ImpTokenBodyModel);
+            Tx.checkTrue(await Auth.isWriteAuthorized(this.impToken, [], 't', 's', 'e', 'appkey'), done);
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
+            Tx.checkFalse(await Auth.isWriteAuthorized(this.impToken, [], 't', 's', 'e', 'appkey',false), done);
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns(
+                { resources: [{ resource: 't/s', readonly: true }] } as ImpTokenBodyModel);
+            try {
+                await Auth.isWriteAuthorized(this.impToken, [], 't', 's', 'e', 'appkey');
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
+            try {
+                await Auth.isWriteAuthorized(this.impToken, [], 't', 's', 'e', 'appkey');
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+    }
+
+    private static readAccess() {
+
+        Tx.sectionInit('read access');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'none' }] as never);
+            try {
+                await Auth.isReadAuthorized(this.userToken, [], 't', 's', 'e', 'appkey');
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns(
+                { resources: [{ resource: 't/s', readonly: false }] } as ImpTokenBodyModel);
+            Tx.checkTrue(await Auth.isReadAuthorized(this.impToken, [], 't', 's', 'e', 'appkey'), done);
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
+            try {
+                await Auth.isReadAuthorized(this.impToken, [], 't', 's', 'e', 'appkey');
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+    }
+
+    private static usersGroup() {
+
+        Tx.sectionInit('user groups');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESEntitlement, 'getUserGroups');
+            await AuthGroups.getUserGroups('t', 'esd', 'appkey');
+            done();
+        });
+    }
+
+    private static legalTag() {
+
+        Tx.sectionInit('legal tag');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESCompliance, 'isLegaTagValid').resolves(true as never);
+            Tx.checkTrue(await Auth.isLegalTagValid('usertoken', 'xxx', 't','appkey'), done);
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESCompliance, 'isLegaTagValid').resolves(false as never);
+            try {
+                await Auth.isLegalTagValid('usertoken', 'xxx', 't', 'appkey');
+            } catch (e) { Tx.check404(e.error.code, done); }
+        });
+
+    }
+
+    private static isUserAuthorized() {
+
+        Tx.sectionInit('user authorizations');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'g' }] as never);
+            Tx.checkTrue(await Auth.isUserAuthorized(this.userToken, ['g'], 'e','appkey'), done);
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
+            this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'none' }] as never);
+            try {
+                await Auth.isUserAuthorized(this.userToken, ['t'], 'e', 'appkey');
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+    }
+
+    private static isAppAuthorized() {
+
+        Tx.sectionInit('apps authorizations');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(AppsDAO, 'get').resolves({ email: 'e', trusted: true });
+            Tx.checkTrue(await Auth.isAppAuthorized({ gcpid: 'x', name: 'x', esd: 'x', default_acls: 'x' }, 'e'), done);
+        });
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(AppsDAO, 'get').resolves({ email: 'e', trusted: false });
+            try {
+                Tx.checkTrue(await Auth.isAppAuthorized(
+                    { gcpid: 'x', name: 'x', esd: 'x', default_acls: 'x' }, 'e'), done);
+            } catch (e) { Tx.check403(e.error.code, done); }
+        });
+
+    }
+
+    private static listUsersInGroup() {
+        Tx.sectionInit('get group users');
+
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').resolves('entitlment-tenant');
+            this.sandbox.stub(DESEntitlement, 'listUsersInGroup').resolves({
+                members: [
+                    {
+                        email: 'user@email',
+                        role: 'role',
+                    },
+                ],
+                nextCursor: undefined,
+            });
+
+            const result = await AuthGroups.listUsersInGroup(undefined, 'group-a', 'esd', 'appkey');
+            Tx.checkTrue(result[0].email === 'user@email' && result[0].role === 'role', done);
+        });
+    }
+
+}

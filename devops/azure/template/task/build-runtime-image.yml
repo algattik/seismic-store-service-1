@@ -1,0 +1,12 @@
+parameters:
+  providerName: ""
+steps:
+  - task: Bash@3
+    displayName: "Build Runtime Image"
+    inputs:
+      targetType: "inline"
+      script: |
+        cd $(Build.Repository.LocalPath)
+        sudo docker build -t $(utest.runtime.image) --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
+        mkdir ${{ parameters.providerName }}
+        docker save -o ${{ parameters.providerName }}/$(utest.runtime.image).tar $(utest.runtime.image)

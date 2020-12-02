@@ -1,0 +1,72 @@
+parameters:
+  serviceName: ''
+  providers: []
+  manifestRepo: ''
+  environmentPrefix: ""
+  fluxEnabled: false
+  chartPath: ""
+  hldRegPath: ""
+  installRequirements: false
+
+stages:
+
+- ${{ each provider in parameters.providers }}:
+  - ${{ each environment in provider.environments }}:
+    - stage: 'Deploy_${{ provider.name }}_${{ environment.name }}'
+      variables:
+      - group: 'R3MVP - ${{ provider.name }} Target Env - ${{ environment.name }}'
+      - group: 'R3MVP - ${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
+      jobs:
+      - deployment: Deploy_Image
+        pool:
+          name: $(AGENT_POOL)
+          vmImage: $(AGENT_IMAGE)
+        environment: ${{ environment.name }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - download: none
+              - template: task/deployment-image-steps.yml
+                parameters:
+                  serviceName: ${{ parameters.serviceName }}
+                  providerName: ${{ provider.name }}
+                  environment: ${{ environment.name }}
+                  secureFile: ${{ environment.secureFile }}
+                  installRequirements: ${{ parameters.installRequirements }}
+      - deployment: Deploy_To_Cluster
+        dependsOn: Deploy_Image
+        pool:
+          name: $(AGENT_POOL)
+          vmImage: $(AGENT_IMAGE)
+        workspace:
+          clean: all
+        environment: ${{ parameters.environmentPrefix }}${{ environment.name }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - download: none
+              - template: task/deployment-helm-steps.yml
+                parameters:
+                  serviceName: ${{ parameters.serviceName }}
+                  providerName: ${{ provider.name }}
+                  chartPath: ${{ parameters.chartPath }}
+                  manifestRepo: ${{ parameters.manifestRepo }}
+                  hldRegPath: "${{ parameters.hldRegPath }}"
+                  environment: ${{ environment.name }}
+                  fluxEnabled: ${{ environment.fluxEnabled }}
+                  installRequirements: ${{ parameters.installRequirements }}
+      - job: E2E
+        dependsOn: Deploy_To_Cluster
+        pool:
+          name: $(AGENT_POOL)
+          vmImage: $(AGENT_IMAGE)
+        workspace:
+          clean: all
+        condition: ${{ environment.performE2Etests }}
+        steps:
+        - template: task/e2e-steps.yml
+          parameters:
+            installRequirements: ${{ parameters.installRequirements }}
+            continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
