@@ -32,8 +32,6 @@ export class ConfigGoogle extends Config {
     public static GOOGLE_EP_ROBOT = 'https://www.googleapis.com/robot/v1';
     public static GOOGLE_EP_RESOURCES = 'https://cloudresourcemanager.googleapis.com/v1';
 
-    // System Admin user agent email
-    public static SYSTEM_ADMIN_EMAIL_SUFFIX: string;
     // System admin role (tenant provisioning required role)
     public static SEISTORE_SYSTEM_ADMIN_ROLE = 'seismic_store.system.admin';
     // DE target audiance for service to service communication
@@ -56,10 +54,6 @@ export class ConfigGoogle extends Config {
     public static DES_GROUP_CHAR_LIMIT = 64;
 
     public async init(): Promise<void> {
-
-        // load system admins (a system admin can create a tenant)
-        ConfigGoogle.SYSTEM_ADMIN_EMAIL_SUFFIX = process.env.SYSTEM_ADMIN_EMAIL_SUFFIX;
-        Config.checkRequiredConfig(ConfigGoogle.SYSTEM_ADMIN_EMAIL_SUFFIX, 'SYSTEM_ADMIN_EMAIL_SUFFIX');
 
         // load des target audiance for service to service communication
         ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE = process.env.SEISTORE_DES_TARGET_AUDIENCE;
