@@ -29,5 +29,8 @@ keys
 # newman junit output
 newman
 
+.DS_Store
+.idea
+
 # backup files
 *.bak
