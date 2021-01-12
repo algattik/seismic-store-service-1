@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { AWSConfig } from './config';
-//export { AwsStorage } from './storage';
-//export { Credentials } from './credentials';
-//export { DatastoreDAO, DatastoreTransactionDAO } from './datastore';
-export { AwsTrace } from './trace';
-//export { AwsDataEcosystemServices } from './dataecosystem';
+import { AbstractTrace, TraceFactory } from '../../trace';
+
+@TraceFactory.register('aws')
+export class AwsTrace extends AbstractTrace {
+
+    // Tracer not implemented in Aws yet
+    public start() { return; }
+
+}
