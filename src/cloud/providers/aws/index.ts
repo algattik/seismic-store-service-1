@@ -15,6 +15,6 @@
 export { AWSConfig } from './config';
 //export { AwsStorage } from './storage';
 //export { Credentials } from './credentials';
-//export { DatastoreDAO, DatastoreTransactionDAO } from './datastore';
+export { AWSDynamoDbDAO} from './dynamodb';
 export { AwsTrace } from './trace';
 //export { AwsDataEcosystemServices } from './dataecosystem';
