@@ -22,9 +22,9 @@ import { AWSCredentials } from './credentials';
 @DataEcosystemCoreFactory.register('aws')
 export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
-    public getEntitlementBaseUrlPath(): string { return '/entitlements/v1'; };
-    public getComplianceBaseUrlPath(): string { return '/legal/v1'; };
-    public getStorageBaseUrlPath(): string { return '/storage/v2'; };
+    public getEntitlementBaseUrlPath(): string { return '/api/entitlements/v1'; };
+    public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
+    public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return 'Bearer ' + await new AWSCredentials().getServiceCredentials();
