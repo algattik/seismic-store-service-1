@@ -13,8 +13,8 @@
 // limitations under the License.
 
 export { AWSConfig } from './config';
-//export { AwsStorage } from './storage';
-//export { Credentials } from './credentials';
+export { AWSStorage } from './storage';
+export { AWSCredentials } from './credentials';
 export { AWSDynamoDbDAO} from './dynamodb';
 export { AwsTrace } from './trace';
-//export { AwsDataEcosystemServices } from './dataecosystem';
+export { AWSDataEcosystemServices } from './dataecosystem';

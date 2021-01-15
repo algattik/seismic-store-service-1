@@ -24,7 +24,7 @@ const converter = aws.DynamoDB.Converter;
 @JournalFactory.register('aws')
 export class AWSDynamoDbDAO extends AbstractJournal {
 
-    public KEY = Symbol('id');;
+    public KEY = Symbol('id');
     public constructor(tenant: TenantModel) {
         super();
         AWS.config.update({ region: AWSConfig.AWS_REGION });
