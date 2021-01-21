@@ -19,6 +19,7 @@ export class AWSConfig extends Config {
     public static AWS_EP_OAUTH2: string;
     public static AWS_EP_IAM: string;
     public static AWS_REGION: string;
+    public static AWS_ENVIRONMENT: string;
 
     // max len for a group name in DE
     public static DES_GROUP_CHAR_LIMIT = 256;
@@ -29,6 +30,7 @@ export class AWSConfig extends Config {
         AWSConfig.AWS_EP_OAUTH2 = process.env.WS_EP_OAUTH2;
         AWSConfig.AWS_EP_IAM = process.env.AWS_EP_IAM;
         AWSConfig.AWS_REGION = process.env.AWS_REGION;
+        AWSConfig.AWS_ENVIRONMENT = process.env.ENVIRONMENT;
 
         Config.initServiceConfiguration({
             SERVICE_ENV: process.env.SERVICE_ENV,

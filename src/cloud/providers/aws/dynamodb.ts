@@ -147,7 +147,8 @@ export class AWSDynamoDbDAO extends AbstractJournal {
         if (table_kind === AWSConfig.APPS_KIND) {
             partitionKey = strs[strs.length - 1] + ':' + name; //tenant:subprojet for id
         }
-        const table_name = AWSConfig.SERVICE_ENV + '-' + 'SeismicStore.' + specs.path[0];
+
+        const table_name = AWSConfig.AWS_ENVIRONMENT + '-' + 'SeismicStore.' + specs.path[0];
         return { table_name, name, table_kind, partitionKey };
     }
 
@@ -369,8 +370,7 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             delete this.queryStatement.ExpressionAttributeValues;
         }
 
-
-        this.queryStatement.TableName = AWSConfig.SERVICE_ENV + '-SeismicStore.' + tableName;
+        this.queryStatement.TableName = AWSConfig.AWS_ENVIRONMENT + '-SeismicStore.' + tableName;
         return this.queryStatement;
     }
 }
