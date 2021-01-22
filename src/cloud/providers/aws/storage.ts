@@ -17,76 +17,95 @@ import { AbstractStorage, StorageFactory } from '../../storage';
 import { TenantModel } from '../../../services/tenant';
 import AWS from 'aws-sdk/global';
 import S3 from "aws-sdk/clients/s3";
-
+import {AWSSSMhelper} from './ssmhelper';
 @StorageFactory.register('aws')
 export class AWSStorage extends AbstractStorage {
 
-    private projectID: string;
-    private BUCKET_PREFIX = 'ss-' + AWSConfig.SERVICE_ENV;
-    private s3: S3;
+    private static bucketName: string;
+    private s3: S3; // S3 service object
 
     public constructor(tenant: TenantModel) {
         super();
-        this.projectID = tenant.gcpid;
         AWS.config.update({ region: AWSConfig.AWS_REGION });
-        // Create S3 service object
         this.s3 = new S3({ apiVersion: '2006-03-01' });
     }
 
-    // generate a random bucket name
+    // get the bucketName from SSM
+    private async getBucketName(): Promise<void> {
+        if (AWSStorage.bucketName !== undefined)
+            return;
+        const awsSSMHelper = new AWSSSMhelper();
+        AWSStorage.bucketName = await awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name');
+        console.log(AWSStorage.bucketName);
+    }
+
+    private fixFolderFormat(folder: string): string {
+        if (folder) {
+            folder += '/';
+            while (folder.indexOf('//') !== -1) {
+                folder = folder.replace('//', '/');
+            }
+        }
+        return folder;
+    }
+
+    // generate a random bucket name, for aws, a random folder name 
     public randomBucketName(): string {
         let suffix = Math.random().toString(36).substring(2, 16);
         suffix = suffix + Math.random().toString(36).substring(2, 16);
         suffix = suffix.substr(0, 16);
-        return this.BUCKET_PREFIX + '-' + suffix;
+        return suffix;
     }
 
-    // Create a new bucket
+    // Create a new bucket, for aws, create a folder with folderName
     public async createBucket(
-        bucketName: string,
+        folderName: string,
         location: string, storageClass: string,
         adminACL: string, editorACL: string, viewerACL: string): Promise<void> {
 
-        const create_bucket_params = {
-            Bucket: bucketName,
+        await this.getBucketName();
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Key: folderName + '/',
+            Body: ''
         };
         try {
-            await this.s3.createBucket(create_bucket_params).promise();
+            await this.s3.putObject(params).promise();
         } catch (err) {
             console.log(err.code + ": " + err.message);
         }
-        // var params = {
-        //     Bucket: bucketName,
-        //     GrantFullControl: adminACL,
-        //     GrantWrite: editorACL,
-        //     GrantRead: viewerACL
-        // };
-        // await this.s3.putBucketAcl(params).promise();
     }
 
-    // Delete a bucket 
-    public async deleteBucket(bucketName: string, force = false): Promise<void> {
+    // Delete a bucket, for aws, delete folder folderName 
+    public async deleteBucket(folderName: string, force = false): Promise<void> {
+        await this.getBucketName();
         if (force) {
-            await this.deleteFiles(bucketName);
+            await this.deleteFiles(folderName);
         }
-        const delete_bucket_params = { Bucket: bucketName };
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Key: folderName + '/'
+        };
         try {
-            await this.s3.deleteBucket(delete_bucket_params).promise();
+            await this.s3.deleteObject(params).promise();
         } catch (err) {
             console.log(err.code + ": " + err.message);
         }
     }
 
-    // Delete all files in a bucket
-    public async deleteFiles(bucketName: string): Promise<void> {
-        console.log("start to delete all files in " + bucketName);
-        const params = { Bucket: bucketName };
+    // Delete all files in a bucket, for aws, delete all files in the folder
+    public async deleteFiles(folderName: string): Promise<void> {
+        await this.getBucketName();
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Prefix: folderName + '/'
+        };
         const listedObjects = await this.s3.listObjectsV2(params).promise();
         if (listedObjects.Contents.length === 0)
             return;
 
         const deleteParams = {
-            Bucket: bucketName,
+            Bucket: AWSStorage.bucketName,
             Delete: { Objects: [] }
         };
 
@@ -97,12 +116,17 @@ export class AWSStorage extends AbstractStorage {
         await this.s3.deleteObjects(deleteParams).promise();
 
         if (listedObjects.IsTruncated)  //continue delete files as there are more...
-            await this.deleteFiles(bucketName);
+            await this.deleteFiles(folderName);
     }
 
-    // save an object/file to a bucket, object name contains path
-    public async saveObject(bucketName: string, objectName: string, data: string): Promise<void> {
-        const params = { Bucket: bucketName, Key: objectName, Body: data };
+    // save an object/file to a bucket
+    public async saveObject(folderName: string, objectName: string, data: string): Promise<void> {
+        await this.getBucketName();
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Key: folderName + '/' + objectName,
+            Body: data
+        };
         try {
             this.s3.putObject(params).promise();
         } catch (err) {
@@ -110,9 +134,13 @@ export class AWSStorage extends AbstractStorage {
         }
     }
 
-    // delete an object from a bucket
-    public async deleteObject(bucketName: string, objectName: string): Promise<void> {
-        const params = { Bucket: bucketName, Key: objectName };
+    // delete an object from a bucket 
+    public async deleteObject(folderName: string, objectName: string): Promise<void> {
+        await this.getBucketName();
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Key: folderName + '/' + objectName
+        };
         try {
             this.s3.deleteObject(params).promise();
         } catch (err) {
@@ -120,17 +148,20 @@ export class AWSStorage extends AbstractStorage {
         }
     }
 
-    // delete multiple objects, prefix should end with /
-    public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
-        console.log("start deleteObjects in " + prefix + " in bucket " + bucketName);
+    // delete multiple objects
+    public async deleteObjects(folderName: string, prefix: string, async: boolean = false): Promise<void> {
+        await this.getBucketName();
 
-        const params = { Bucket: bucketName, Prefix: prefix };
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Prefix: folderName + '/' + prefix
+        };
         const listedObjects = await this.s3.listObjectsV2(params).promise();
 
         if (listedObjects.Contents.length === 0) return;
 
         const deleteParams = {
-            Bucket: bucketName,
+            Bucket: AWSStorage.bucketName,
             Delete: { Objects: [] }
         };
 
@@ -141,49 +172,48 @@ export class AWSStorage extends AbstractStorage {
         await this.s3.deleteObjects(deleteParams).promise();
 
         if (listedObjects.IsTruncated) //continue delete files as there are more...
-            await this.deleteObjects(bucketName, prefix);
+            await this.deleteObjects(folderName, prefix, async);
     }
 
     // copy multiple objects (skip the dummy file)
-    public async copy(bucketIn: string, prefixIn: string, bucketOut: string, prefixOut: string, ownerEmail: string) {
-        if (prefixIn) {
-            prefixIn += '/';
-            while (prefixIn.indexOf('//') !== -1) {
-                prefixIn = prefixIn.replace('//', '/');
-            }
-        }
-        if (prefixOut) {
-            prefixOut += '/';
-            while (prefixOut.indexOf('//') !== -1) {
-                prefixOut = prefixOut.replace('//', '/');
-            }
-        }
+    public async copy(folderIn: string, prefixIn: string, folderOut: string, prefixOut: string, ownerEmail: string) {
+        await this.getBucketName();
+
+        prefixIn = this.fixFolderFormat(prefixIn);
+        prefixOut = this.fixFolderFormat(prefixOut);
+
         const copyCalls = [];
-        const params = { Bucket: bucketIn, Prefix: prefixIn };
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Prefix: folderIn + '/' + prefixIn
+        };
         const files = await this.s3.listObjects(params).promise();
 
-        for (const file of files[0]) {
+        for (const file of files['Contents']) {
+            var newKey = file.Key.replace(folderIn, folderOut);
+            newKey = newKey.replace(prefixIn, prefixOut);
             const params = {
-                Bucket: bucketOut,
-                CopySource: bucketIn + '/' + file.Key,
-                Key: file.Key.replace(prefixIn, prefixOut)
+                Bucket: AWSStorage.bucketName,
+                CopySource: file.Key,
+                Key: newKey
             };
             copyCalls.push(this.s3.copyObject(params));
         }
         await Promise.all(copyCalls);
     }
 
-    // check if a bucket exist
-    public async bucketExists(bucketName: string): Promise<boolean> {
-        const bucket_params = { Bucket: bucketName };
-        try {
-            await this.s3.headBucket(bucket_params).promise();
-            return true;
-        } catch (err) {
-            if (err.statusCode === 404) { //404 if the bucket does not exist
-                return false;
-            }
-        }
+    // check if a bucket exist, for aws, check if folder in the bucket
+    // folderName is a string without / at the end
+    public async bucketExists(folderName: string): Promise<boolean> {
+        await this.getBucketName();
+        const params = {
+            Bucket: AWSStorage.bucketName,
+            Prefix: folderName
+        };
+
+        const listedObjects = await this.s3.listObjectsV2(params).promise();
+        if (listedObjects.Contents.length === 0)
+            return false;
         return true;
     }
 

@@ -19,6 +19,9 @@ import { AWSConfig } from './config';
 import {AWSSSMhelper} from './ssmhelper';
 import {AWSSTShelper} from './stshelper';
 
+import DynamoDB from 'aws-sdk/clients/dynamodb';
+
+import aws from 'aws-sdk';
 
 @CredentialsFactory.register('aws')
 export class AWSCredentials extends AbstractCredentials {
@@ -42,6 +45,24 @@ export class AWSCredentials extends AbstractCredentials {
         return undefined;
     }
 
+    async getBucketFolder(folder:string): Promise<string> {
+        const tableName = AWSConfig.AWS_ENVIRONMENT+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
+        const params = {
+            TableName: tableName,
+            Key: {
+                'id': {S: folder}
+            }
+        };
+        const db = new DynamoDB({});
+        const data = await db.getItem(params).promise();
+        const ret = aws.DynamoDB.Converter.unmarshall(data.Item);
+        if (Object.keys(ret).length === 0)
+            return undefined;
+        else
+            return ret['gcs_bucket'];
+    }
+
+
     async getUserCredentials(subject: string): Promise<IAccessTokenModel> {
         //subject = tenantName:subprojectName:1 ==> readOnly true
         //subject = tenantName:subprojectName:0 ==> readOnly false
@@ -56,7 +77,9 @@ export class AWSCredentials extends AbstractCredentials {
 
         var flagUpload=true;
 
-        const keypath = tenant+'/'+subproject;
+        const keypath =  await this.getBucketFolder(tenant+':'+subproject);
+
+
         // tslint:disable-next-line:triple-equals
         if(readOnly ==='1') { // readOnly True
              roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
