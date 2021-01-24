@@ -27,7 +27,7 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
-        return 'Bearer ' + await new AWSCredentials().getServiceCredentials();
+        return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;
     }
 
     public fixGroupMembersResponse(groupMembers: any): IDESEntitlementGroupMembersModel {
