@@ -87,6 +87,8 @@ export class AWSDynamoDbDAO extends AbstractJournal {
         else {
             //remove aws specific attribute id
             delete ret['id'];
+            // to pass integration test
+            delete ret[this.KEY.toString()];
             return [ret];
         }
     }
