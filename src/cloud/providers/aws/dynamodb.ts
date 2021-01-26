@@ -159,7 +159,7 @@ export class AWSDynamoDbDAO extends AbstractJournal {
     }
 
     public getQueryFilterSymbolContains(): string {
-        return 'contains';
+        return 'CONTAINS';
     }
 }
 
