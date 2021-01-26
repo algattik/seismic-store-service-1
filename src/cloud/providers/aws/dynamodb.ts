@@ -259,7 +259,7 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
     public constructor(namespace: string, kind: string) {
         this.namespace = namespace;
         this.kind = kind;
-        this.queryStatement = { TableName: kind, FilterExpression: '', ExpressionAttributeNames: {}, ExpressionAttributeValues: {} };
+        this.queryStatement = { TableName: kind, FilterExpression: '', ExpressionAttributeNames: {}, ExpressionAttributeValues: {}, ProjectionExpression:''  };
     }
     public namespace: string;
     public kind: string;
@@ -295,10 +295,19 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             this.queryStatement.FilterExpression += ' AND ';
         }
 
-        this.queryStatement.FilterExpression += '#' + property + operator + ':' + property;
-        this.queryStatement.ExpressionAttributeNames['#' + property] = property;
-        this.queryStatement.ExpressionAttributeValues[':' + property] = value;
-
+        if(property ==='path')
+        {
+            property='p';
+            const pathproperty='path';
+            this.queryStatement.FilterExpression += '#' + property + operator + ':' + property;
+            this.queryStatement.ExpressionAttributeNames['#' + property] = pathproperty;
+            this.queryStatement.ExpressionAttributeValues[':' + property] = value;
+        }
+        else {
+            this.queryStatement.FilterExpression += '#' + property + operator + ':' + property;
+            this.queryStatement.ExpressionAttributeNames['#' + property] = property;
+            this.queryStatement.ExpressionAttributeValues[':' + property] = value;
+        }
         return this;
     }
 
@@ -326,6 +335,9 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
         if (typeof fieldNames === 'string') {
             this.queryStatement.ProjectionExpression += fieldNames;
         } else {
+            if(fieldNames[0] === 'path')
+            this.queryStatement.ProjectionExpression += '#p';
+            else
             this.queryStatement.ProjectionExpression += fieldNames.join(',');
         }
         return this;
@@ -363,8 +375,12 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             this.queryStatement.ExpressionAttributeNames['#' + t_property] = t_property;
             this.queryStatement.ExpressionAttributeValues[':' + t_property] = value;
         }
+
         if (this.queryStatement.FilterExpression.length === 0)
             delete this.queryStatement.FilterExpression;
+        
+        if (this.queryStatement.ProjectionExpression.length === 0)
+            delete this.queryStatement.ProjectionExpression;
 
         //delete empty objects in query parameters
         if (Object.entries(this.queryStatement.ExpressionAttributeNames).length === 0) {
