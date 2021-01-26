@@ -28,7 +28,6 @@ steps:
     # self to trigger clone of the current repo.
     - checkout: self
       persistCredentials: true
-    # Uncomment if flux enabled
     - checkout: FluxRepo
       persistCredentials: true
     - task: Bash@3
@@ -92,7 +91,7 @@ steps:
         branchName: ${{parameters.environment}}
         hldRegPath: ${{parameters.hldRegPath}}
         skipDeploy: ${{parameters.skipDeploy}}
-        manifestRepo: ${{parameters.manifestRepo}}
+        manifestRepo: ${{ parameters.manifestRepo }}
         fluxEnabled: ${{ parameters.fluxEnabled }}
     - template: kube.yml
       parameters:

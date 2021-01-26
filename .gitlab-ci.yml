@@ -1,0 +1,48 @@
+variables:
+  #seismic store service variables
+  ENVIRONMENT: cloud
+  ISGITLAB: "true"
+  PORT: 80
+  REPLICA: 1
+  UTEST_RUNTIME_IMAGE: seistore-svc-runtime
+  #aws variables
+  #azure variables  
+  AZURE: 'true'
+  AZURE_SERVICE: seismic-store-service
+  #gcp variables
+  GCP: 'true'
+  GCP_APPLICATION_NAME: os-seismic-store-service
+  GCP_DEPLOY_FILE: $OSDU_GCP_DEPLOY_FILE
+  GCP_PROJECT: opendes-evt
+  GCP_SERVICE: seismic-store-service
+  GCP_VENDOR: gcp
+  #ibm variables
+  IBM: 'true'
+  IBM_OPENSHIFT_PROJECT: og-cicd
+  IBM_VENDOR: ibm
+
+include: 
+  # pipeline logic
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "standard-setup.yml"
+  
+  # build
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "build/seismic-store-service.yml"
+    
+  # containerize
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "containerize/seismic-store-service.yml"
+    
+  # deploy
+    #azure
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/azure-seismic-store-service.yml"
+    
+    #ibm  
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/ibm-seismic-store-service.yml"
+    
+    #gcp
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gcp-seismic-store-service.yml"

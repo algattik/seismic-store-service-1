@@ -1,6 +1,6 @@
 {
-	"id": "8d28be66-bc3c-4f31-8a00-69a8189e25bb",
-	"name": "seistore-test-e2e-env",
+	"id": "d60d5dac-8686-4944-b298-8a33c7a0c8c8",
+	"name": "seistore-test-e2e-defaults",
 	"values": [
 		{
 			"key": "SVC_API_KEY",
@@ -38,6 +38,11 @@
 			"enabled": true
 		},
 		{
+			"key": "STOKEN1",
+			"value": "#{STOKEN1}#",
+			"enabled": true
+		},
+		{
 			"key": "datapartition",
 			"value": "#{DATAPARTITION}#",
 			"enabled": true
@@ -56,9 +61,69 @@
 			"key": "newuser",
 			"value": "#{NEWUSEREMAIL}#",
 			"enabled": true
+		},
+		{
+			"key": "STOKEN_Ta",
+			"value": "#{STOKEN_Ta}#",
+			"enabled": true
+		},
+		{
+			"key": "STOKEN_Sa",
+			"value": "#{STOKEN_Sa}#",
+			"enabled": true
+		},
+		{
+			"key": "STOKEN_Se",
+			"value": "#{STOKEN_Se}#",
+			"enabled": true
+		},
+		{
+			"key": "STOKEN_Sv",
+			"value": "#{STOKEN_Sv}#",
+			"enabled": true
+		},
+		{
+			"key": "Ta_user",
+			"value": "#{TA_USER}#",
+			"enabled": true
+		},
+		{
+			"key": "Sa_user",
+			"value": "#{SA_USER}#",
+			"enabled": true
+		},
+		{
+			"key": "Se_user",
+			"value": "#{SE_USER}#",
+			"enabled": true
+		},
+		{
+			"key": "Sv_user",
+			"value": "#{SV_USER}#",
+			"enabled": true
+		},
+		{
+			"key": "EXPIRED_TOKEN",
+			"value": "#{EXPIRED_TOKEN}#",
+			"enabled": true
+		},
+		{
+			"key": "ServiceId",
+			"value": "#{SERVICEID}#",
+			"enabled": true
+		},
+		{
+			"key": "DE_APP_KEY",
+			"value": "#{DE_APP_KEY}#",
+			"enabled": true
+		},
+		{
+			"key": "VCS_Provider",
+			"value": "#{VCS_PROVIDER}#",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2020-10-05T07:38:21.456Z",
-	"_postman_exported_using": "Postman/7.33.1"
+	"_postman_exported_at": "2021-01-22T21:29:28.495Z",
+	"_postman_exported_using": "Postman/7.36.1"
 }

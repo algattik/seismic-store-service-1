@@ -4,13 +4,13 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.global.namespace }}
   labels:
-    app: {{ .Chart.Name }}
+    app: {{ .Release.Name }}
     chart: {{ .Values.image.tag }}
-    release: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
 spec:
   ports:
   - protocol: TCP
     port: 80
     targetPort: 80
   selector:
-    app: {{ .Chart.Name }}
+    app: {{ .Release.Name }}

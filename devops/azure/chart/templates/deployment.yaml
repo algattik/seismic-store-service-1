@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.global.namespace }}
   labels:
-    app: {{ .Chart.Name }}
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.global.replicaCount }}
   selector:
@@ -13,11 +13,11 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {{ .Release.Name }}
         aadpodidbinding: {{ .Values.global.podidentity }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Release.Name }}
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           livenessProbe:
             httpGet:
@@ -42,6 +42,12 @@ spec:
           ports:
             - protocol: TCP
               containerPort: 80
+          env:
+          - name: KEYVAULT_URL
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.configEnv.keyvaultUrl }}
+                key: ENV_KEYVAULT
           envFrom:
             - configMapRef:
                 name: seistore-svc-properties

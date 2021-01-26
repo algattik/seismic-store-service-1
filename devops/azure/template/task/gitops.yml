@@ -9,6 +9,22 @@ parameters:
   fluxEnabled: false
 
 steps:
+  - task: AzureCLI@1
+    name: LoadSP
+    displayName: 'Load SP'
+    condition: |
+      eq(${{ parameters.fluxEnabled }},true)
+    inputs:
+      azureSubscription: '$(SERVICE_CONNECTION_NAME)'
+      addSpnToEnvironment: true
+      scriptLocation: inlineScript
+      inlineScript: |
+       !/usr/bin/env bash
+        set -euo pipefail
+        
+        echo "##vso[task.setvariable variable=ARM_CLIENT_ID]${servicePrincipalId}"
+        echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET]${servicePrincipalKey}"
+        echo "##vso[task.setvariable variable=ARM_TENANT_ID]${tenantId}"
   - task: Bash@3
     displayName: "Flux Commit"
     condition: |
@@ -20,12 +36,20 @@ steps:
       SERVICE_NAME: ${{parameters.serviceName}}
       HLD_REG_PATH: ${{parameters.hldRegPath}}
       GENERATION_PATH: ${{parameters.generationPath}}
-      MANIFEST_REPO: ${{parameters.manifestRepo}}
+      BASE_NAME_SR: $(base-name-sr)
+      AZURE_CLIENT_ID: $(ARM_CLIENT_ID)
+      AZURE_SECRET: $(ARM_CLIENT_SECRET)
+      AZURE_TENANT: $(ARM_TENANT_ID)
+      runtimeTag: "$(Build.SourceBranchName)-$(Build.BuildNumber)"
+      MANIFEST_REPO: ${{ parameters.manifestRepo }}
     inputs:
       targetType: "inline"
       script: |
         #!/usr/bin/env bash
         set -euo pipefail
+
+        az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_SECRET --tenant $AZURE_TENANT
+        az aks get-credentials -g $BASE_NAME_SR-rg -n $BASE_NAME_SR-aks
 
         GITOPS_MANIFEST_DIRECTORY=$(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/$GENERATION_PATH
         cd $(Build.SourcesDirectory)/$MANIFEST_REPO
@@ -89,4 +113,5 @@ steps:
         git_commit
         git_pull
         git_push
-        sleep 10m
+        sleep 9m
+        kubectl rollout status deployment.v1.apps/$SERVICE_NAME -n osdu --timeout=900s
