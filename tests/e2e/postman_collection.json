@@ -390,7 +390,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT REGISTER",
+					"name": "SUBPROJECT GET New",
 					"event": [
 						{
 							"listen": "test",
@@ -405,6 +405,7 @@
 									"",
 									"pm.test(\"Subproject created\", function () {",
 									"    var child = Object.keys(jsonData);",
+									"    pm.expect(child.length).to.eql(8);",
 									"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
 									"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
 									"    pm.expect(jsonData.ltag).to.exist;",
@@ -1145,7 +1146,8 @@
 									"pm.environment.set(\"datasetsWithPaths\", JSON.stringify(dataSetsWithPaths));",
 									"pm.environment.set(\"datasetName\", makeid2(8));",
 									"pm.environment.set(\"datasetPath\", \"/ab/cd/ef/gh/ij/000/001\" + makeid2(4));",
-									"postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');"
+									"postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -1826,7 +1828,15 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\n\t\"datasets\":[\n\t\t\"{{path01}}/\",\n\t\t\"{{path01}}/a/b/c/{{dataset01}}\",\n\t\t\"{{path01}}/a/{{dataset01}}\",\n\t\t\"{{dataset01}}\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
+=======
+<<<<<<< HEAD
+							"raw": "{\n\t\"datasets\":[\n\t\t\"/async/dsx01\",\n\t\t\"/a/b/c/dsx02\",\n\t\t\"async/dsx03\",\n\t\t\"test/dsx01\",\n\t\t\"a/b/c/dsx01\"\n\t]\n}"
+=======
+							"raw": "{\n\t\"datasets\":[\n\t\t\"/async/dsx01\",\n\t\t\"/a/b/c/dsx02\",\n\t\t\"async/dsx03\",\n\t\t\"test/dsx01\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/exist",
@@ -1866,7 +1876,13 @@
 									"    });",
 									"};",
 									"",
+<<<<<<< HEAD
 									""
+=======
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"[-1,1021,-1,-1,1021]\");",
+									"});"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 								],
 								"type": "text/javascript"
 							}
@@ -1890,7 +1906,15 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\n\t\"datasets\":[\n\t\t\"{{path01}}/\",\n\t\t\"{{path01}}/a/b/c/{{dataset01}}\",\n\t\t\"{{path01}}/a/{{dataset01}}\",\n\t\t\"{{dataset01}}\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
+=======
+<<<<<<< HEAD
+							"raw": "{\n\t\"datasets\":[\n\t\t\"/async/dsx01\",\n\t\t\"/a/b/c/dsx02\",\n\t\t\"async/dsx03\",\n\t\t\"test/dsx01\",\n\t\t\"a/b/c/dsx01\"\n\t]\n}"
+=======
+							"raw": "{\n\t\"datasets\":[\n\t\t\"/async/dsx01\",\n\t\t\"/a/b/c/dsx02\",\n\t\t\"async/dsx03\",\n\t\t\"test/dsx01\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/sizes",
@@ -5619,7 +5643,15 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag2}}\"\r\n  ]\r\n} \r\n \r\n"
+=======
+<<<<<<< HEAD
+							"raw": "{\r\n  \"gtags\": [\r\n    \"tag1\",\r\n    \"tag2\"\r\n  ]\r\n} \r\n \r\n"
+=======
+							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag2}}\"\r\n  ]\r\n} \r\n \r\n"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData01}}?path={{taggedPath01}}",
@@ -5720,7 +5752,15 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag2}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\"\r\n  ]\r\n} \r\n \r\n"
+=======
+<<<<<<< HEAD
+							"raw": "{\r\n  \"gtags\": [\r\n    \"tag2\",\r\n    \"tag3\",\r\n    \"tag4\"\r\n  ]\r\n} \r\n \r\n"
+=======
+							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag2}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\"\r\n  ]\r\n} \r\n \r\n"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData02}}?path={{taggedPath02}}",
@@ -5822,7 +5862,15 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\",\r\n    \"{{tag5}}\"\r\n  ]\r\n} \r\n \r\n"
+=======
+<<<<<<< HEAD
+							"raw": "{\r\n  \"gtags\": [\r\n    \"tag1\",\r\n    \"tag3\",\r\n    \"tag4\",\r\n    \"tag5\"\r\n  ]\r\n} \r\n \r\n"
+=======
+							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\",\r\n    \"{{tag5}}\"\r\n  ]\r\n} \r\n \r\n"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData03}}?path={{taggedPath03}}",
@@ -6312,7 +6360,15 @@
 						],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\n\t\"gtags\": [\n    \"{{tagX}}\",\n    \"{{tag3}}\",\n    \"{{tag4}}\"\n  ]\n}"
+=======
+<<<<<<< HEAD
+							"raw": "{\n\t\"gtags\": [\n    \"tagX\",\n    \"tag3\",\n    \"tag4\"\n  ]\n}"
+=======
+							"raw": "{\n\t\"gtags\": [\n    \"{{tagX}}\",\n    \"{{tag3}}\",\n    \"{{tag4}}\"\n  ]\n}"
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData03}}?path={{taggedPath03}}",
@@ -8978,7 +9034,15 @@
 									"",
 									"",
 									"pm.test(\"Body matches string\", function () {",
+<<<<<<< HEAD
 									"    pm.expect(pm.response.text()).to.include((pm.environment.get(\"cdoTestData\")) + \" does not exist\");",
+=======
+<<<<<<< HEAD
+									"    pm.expect(pm.response.text()).to.include(\"cdoTestData does not exist\");",
+=======
+									"    pm.expect(pm.response.text()).to.include((pm.environment.get(\"cdoTestData\")) + \" does not exist\");",
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+>>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 									"});"
 								],
 								"type": "text/javascript"
