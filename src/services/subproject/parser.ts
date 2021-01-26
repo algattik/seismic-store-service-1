@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ export class SubProjectParser {
         subproject.ltag = req.headers.ltag as string;
 
         // check user input params
-        Params.checkEmail(subproject.admin, 'admin');
+        Params.checkEmail(subproject.admin, 'admin', false);
         Params.checkString(subproject.storage_class, 'storage_class');
         Params.checkString(subproject.storage_location, 'storage_location');
         Params.checkString(subproject.ltag, 'ltag');
@@ -55,7 +55,7 @@ export class SubProjectParser {
         // The method replace slb.com domain name with delfiserviceaccount.com
         // Temporary hardcoded can be removed on 01/22 when sauth v1 will be dismissed.
         // Others service domain won't be affected by this call
-        subproject.admin = Utils.checkSauthV1EmailDomainName(subproject.admin);
+        subproject.admin = subproject.admin ? Utils.checkSauthV1EmailDomainName(subproject.admin) : subproject.admin;
 
         subproject.storage_class = req.body.storage_class.toUpperCase();
         subproject.storage_location = req.body.storage_location.toUpperCase();

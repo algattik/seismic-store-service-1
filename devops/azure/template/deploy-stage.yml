@@ -3,10 +3,9 @@ parameters:
   providers: []
   manifestRepo: ''
   environmentPrefix: ""
-  fluxEnabled: false
-  chartPath: ""
-  hldRegPath: ""
+  fluxEnabled: true
   installRequirements: false
+  isGitlab: false
 
 stages:
 
@@ -14,14 +13,14 @@ stages:
   - ${{ each environment in provider.environments }}:
     - stage: 'Deploy_${{ provider.name }}_${{ environment.name }}'
       variables:
-      - group: 'R3MVP - ${{ provider.name }} Target Env - ${{ environment.name }}'
-      - group: 'R3MVP - ${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
+      - group: '${{ provider.name }} Target Env - ${{ environment.name }}'
+      - group: '${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
       jobs:
       - deployment: Deploy_Image
         pool:
           name: $(AGENT_POOL)
           vmImage: $(AGENT_IMAGE)
-        environment: ${{ environment.name }}
+        environment: ${{ parameters.environmentPrefix }}${{ environment.name }}
         strategy:
           runOnce:
             deploy:
@@ -51,9 +50,8 @@ stages:
                 parameters:
                   serviceName: ${{ parameters.serviceName }}
                   providerName: ${{ provider.name }}
-                  chartPath: ${{ parameters.chartPath }}
-                  manifestRepo: ${{ parameters.manifestRepo }}
-                  hldRegPath: "${{ parameters.hldRegPath }}"
+                  chartPath: $(chartPath)
+                  hldRegPath: "$(hldRegPath)"
                   environment: ${{ environment.name }}
                   fluxEnabled: ${{ environment.fluxEnabled }}
                   installRequirements: ${{ parameters.installRequirements }}
@@ -70,3 +68,4 @@ stages:
           parameters:
             installRequirements: ${{ parameters.installRequirements }}
             continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
+            isGitlab: ${{ parameters.isGitlab }}

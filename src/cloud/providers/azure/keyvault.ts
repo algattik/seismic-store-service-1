@@ -36,7 +36,7 @@ export class Keyvault {
     public static CreateSecretClient(): SecretClient {
         const credential = AzureCredentials.getCredential();
         const vaultName = AzureConfig.KEYVAULT_URL;
-        const url = `https://${vaultName}.vault.azure.net`;
+        const url = vaultName.startsWith('https') ? vaultName : `https://${vaultName}.vault.azure.net`;
         const client = new SecretClient(url, credential);
         return client;
     }

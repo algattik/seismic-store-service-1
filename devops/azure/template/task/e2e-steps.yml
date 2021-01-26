@@ -1,8 +1,10 @@
 parameters:
   installRequirements: false
   continueIfE2Efails: false
+  isGitlab: false
 steps:
   - template: e2e.yml
     parameters:
       installRequirements: ${{ parameters.installRequirements }}
       continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
+      isGitlab: ${{ parameters.isGitlab }}
