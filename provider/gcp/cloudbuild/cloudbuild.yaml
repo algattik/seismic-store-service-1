@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+            'build',
+            '-t', 'gcr.io/$PROJECT_ID/${_APPLICATION_NAME}/${_GCP_SERVICE}-${_PROVIDER_NAME}:${_SHORT_SHA}',
+            '-t', 'gcr.io/$PROJECT_ID/${_APPLICATION_NAME}/${_GCP_SERVICE}-${_PROVIDER_NAME}:latest',
+            '-f', 'provider/${_PROVIDER_NAME}/cloudbuild/Dockerfile',
+            '.'
+    ]
+
+images:
+  - 'gcr.io/$PROJECT_ID/${_APPLICATION_NAME}/${_GCP_SERVICE}-${_PROVIDER_NAME}'

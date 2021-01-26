@@ -88,6 +88,8 @@ export class SubProjectHandler {
         const userToken = req.headers.authorization;
         const userEmail = Utils.getEmailFromTokenPayload(userToken);
 
+        subproject.admin = subproject.admin || userEmail;
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
