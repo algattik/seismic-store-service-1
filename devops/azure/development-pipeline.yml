@@ -15,7 +15,6 @@ resources:
     type: git
     name: k8-gitops-manifests
 
-
 variables:
   - group: 'Azure - OSDU'
   - name: serviceName
@@ -30,7 +29,6 @@ variables:
     value: $[ resources.repositories['FluxRepo'].name ]
   - name: isGitlab
     value: true
-
     
 stages:
 
@@ -48,6 +46,6 @@ stages:
         -  name: Azure
            environments:
              - name: 'dev'
-               performE2Etests: false
-               continueIfE2Efails: false
+               performE2Etests: true
+               continueIfE2Efails: true
                fluxEnabled: true

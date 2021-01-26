@@ -46,9 +46,6 @@ steps:
         echo "------------------------------------"
         az acr login -n $(CONTAINER_REGISTRY_NAME)
 
-        previousRuntimeTag=$(az acr repository show-tags -n $(CONTAINER_REGISTRY_NAME) --repository seistore-svc-runtime --top 1 --orderby time_desc | jq .[0] -r)
-        echo "##vso[task.setvariable variable=previousRuntimeTag;isOutput=true]$previousRuntimeTag"
-
         echo "------------------------------------"
         docker load --input ${{ parameters.providerName }}_seistore-svc-runtime/$(utest.runtime.image).tar
         docker tag $(utest.runtime.image) $(CONTAINER_REGISTRY_NAME).azurecr.io/$(utest.runtime.image):$(Build.SourceBranchName)-$(Build.BuildNumber)
