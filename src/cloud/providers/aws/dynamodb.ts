@@ -246,7 +246,7 @@ export class AWSDynamoDbTransactionDAO extends AbstractJournalTransaction {
     }
 
     public getQueryFilterSymbolContains(): string {
-        return 'contains';
+        return 'CONTAINS';
     }
 
     private owner: AWSDynamoDbDAO;
@@ -271,6 +271,9 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
 
     filter(property: string, operator?: Operator, value?: {}): IJournalQueryModel {
         if (operator === 'CONTAINS') {
+            if (!!(this.queryStatement.FilterExpression)) {
+                this.queryStatement.FilterExpression += ' AND ';
+            }
             this.queryStatement.FilterExpression += 'contains(#' + property + ',:' + property + ')';
             this.queryStatement.ExpressionAttributeNames['#' + property] = property;
             this.queryStatement.ExpressionAttributeValues[':' + property] = value;
