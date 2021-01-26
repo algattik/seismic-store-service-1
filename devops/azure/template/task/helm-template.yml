@@ -14,15 +14,19 @@ steps:
       CHART_PATH: ${{parameters.chartPath}}
       SERVICE_NAME: ${{parameters.serviceName}}
       GENERATION_PATH: ${{parameters.generationPath}}
+      runtimeTag: "$(Build.SourceBranchName)-$(Build.BuildNumber)"
+      CONTAINER_REGISTRY_NAME: $(CONTAINER_REGISTRY_NAME)
+      utest_runtime_image: $(utest.runtime.image)
     inputs:
       targetType: 'inline'
       script: |
         #!/usr/bin/env bash
-
+        
           cd $(Build.SourcesDirectory)/$(Build.Repository.Name)
-
+        
           mkdir $CHART_PATH/$GENERATION_PATH
           cat $(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/values.yaml
 
           echo "Extracting Manifest"
-          helm template $SERVICE_NAME $CHART_PATH -f $(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/values.yaml --output-dir $CHART_PATH/$GENERATION_PATH
+          helm template $SERVICE_NAME $CHART_PATH -f $(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/values.yaml --output-dir $CHART_PATH/$GENERATION_PATH --set image.tag=$runtimeTag --set image.repository=$CONTAINER_REGISTRY_NAME.azurecr.io/$utest_runtime_image
+          cat $CHART_PATH/$GENERATION_PATH/sdms/templates/deployment.yaml

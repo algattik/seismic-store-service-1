@@ -1,9 +1,9 @@
 parameters:
   serviceName: ''
   providerName: ''
-  chartPath: ''
+  chartPath: 'devops/azure/chart'
   manifestRepo: ''
-  hldRegPath: ''
+  hldRegPath: 'providers/azure/hld-registry'
   environment: ''
   fluxEnabled: false
   installRequirements: false
