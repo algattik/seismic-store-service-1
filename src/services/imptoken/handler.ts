@@ -39,6 +39,11 @@ export class ImpTokenHandler {
                     'The impersonation token endpoints are not currently supported in azure.'));
             }
 
+            if (Config.CLOUDPROVIDER === 'aws') {
+                throw (Error.make(Error.Status.NOT_IMPLEMENTED,
+                    'The impersonation token endpoints are not currently supported in aws.'));
+            }
+
             // subproject endpoints are not available with impersonation token
             if (op !== ImpTokenOP.Refresh) {
                 if (Auth.isImpersonationToken(req.headers.authorization)) {
