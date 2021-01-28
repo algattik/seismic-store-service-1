@@ -55,6 +55,7 @@ stages:
                   environment: ${{ environment.name }}
                   fluxEnabled: ${{ environment.fluxEnabled }}
                   installRequirements: ${{ parameters.installRequirements }}
+                  manifestRepo: ${{ parameters.manifestRepo }}
       - job: E2E
         dependsOn: Deploy_To_Cluster
         pool:
