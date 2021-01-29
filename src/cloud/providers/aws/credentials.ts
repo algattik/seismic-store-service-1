@@ -96,7 +96,7 @@ export class AWSCredentials extends AbstractCredentials {
             const result = {
             access_token: credentials,
             expires_in: 3599,
-            token_type: 'STSToken',
+            token_type: 'Bearer',
         };
         return result;
     }

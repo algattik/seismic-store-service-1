@@ -51,6 +51,9 @@ phases:
       - echo "Building seismic-store-service"
       - npm run build
 
+      - echo "Building integration testing assemblies and gathering artifacts..."
+      - ./tests/aws-test/build-aws/prepare-dist.sh
+
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
 
@@ -69,7 +72,6 @@ phases:
           --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
           --artifact ${ECR_IMAGE_PROD}
 artifacts:
-  type: zip
   files:
     - "**/*"
   base-directory: "dist"
