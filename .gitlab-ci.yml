@@ -26,7 +26,11 @@ include:
   # build
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/seismic-store-service.yml"
-    
+  
+  # scann
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-node.yml"
+
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
     file: "containerize/seismic-store-service.yml"
@@ -38,6 +42,7 @@ include:
     
     #ibm  
   - project: "osdu/platform/ci-cd-pipelines"
+    ref: ibm-seismic-store-service
     file: "cloud-providers/ibm-seismic-store-service.yml"
     
     #gcp
