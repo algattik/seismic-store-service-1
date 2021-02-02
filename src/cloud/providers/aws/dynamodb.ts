@@ -274,9 +274,19 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             if (!!(this.queryStatement.FilterExpression)) {
                 this.queryStatement.FilterExpression += ' AND ';
             }
-            this.queryStatement.FilterExpression += 'contains(#' + property + ',:' + property + ')';
+            var i = 0;
+            var propertyValue = property;
+            while (true){
+                if (this.queryStatement.ExpressionAttributeValues[':'+propertyValue] != undefined){ //already used
+                    propertyValue = propertyValue+i;  //gtag0, gtag1, gtag2....
+                    i++;
+                }else {
+                    break; //break true
+                }
+            }
+            this.queryStatement.FilterExpression += 'contains(#' + property + ',:' + propertyValue + ')';
             this.queryStatement.ExpressionAttributeNames['#' + property] = property;
-            this.queryStatement.ExpressionAttributeValues[':' + property] = value;
+            this.queryStatement.ExpressionAttributeValues[':' + propertyValue] = value;
             return this;
         }
         if (value === undefined) {
