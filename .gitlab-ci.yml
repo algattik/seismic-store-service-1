@@ -42,7 +42,7 @@ include:
     
     #ibm  
   - project: "osdu/platform/ci-cd-pipelines"
-    ref: ibm-seismic-store-service
+    ref: feature/anuj/ibmcicd-seismic
     file: "cloud-providers/ibm-seismic-store-service.yml"
     
     #gcp
