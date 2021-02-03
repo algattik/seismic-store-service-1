@@ -25,6 +25,8 @@ env:
 phases:
   install:
     commands:
+      # fix error noted here: https://github.com/yarnpkg/yarn/issues/7866
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
       - apt-get update -y
       - npm install
 
