@@ -5,14 +5,18 @@ version: 2
 cli:
   server: https://app.fossa.com
   fetcher: custom
-  project: git@community.opengroup.org:osdu/platform/domain-data-mgmt-services/seismic/seismic-dms-suite/seismic-store-service.git
+  project: seismic-store-service
 analyze:
   modules:
   - name: .
     type: npm
     target: .
     path: .
-  - name: .
+  - name: src
+    type: npm
+    target: .
+    path: .
+  - name: node_modules
     type: npm
     target: .
     path: .
