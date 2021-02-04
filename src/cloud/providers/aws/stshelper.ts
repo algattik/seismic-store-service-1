@@ -50,8 +50,6 @@ export class AWSSTShelper {
 
       return tempCreds;
     }
-
-
     public  createUploadPolicy(bucketName: string, keypath: string): string {
 
         var UploadPolicy = {
@@ -94,6 +92,10 @@ export class AWSSTShelper {
                     Effect: "Allow",
                     Action: [
                         "s3:PutObject",
+                        "s3:DeleteObject",
+                        "s3:GetObject",
+                        "s3:HeadObject",
+                        "s3:ListObjects",
                         "s3:ListBucketMultipartUploads",
                         "s3:AbortMultipartUpload",
                         "s3:ListMultipartUploadParts"
@@ -107,6 +109,10 @@ export class AWSSTShelper {
                     Effect: "Allow",
                     Action: [
                         "s3:PutObject",
+                        "s3:DeleteObject",
+                        "s3:GetObject",
+                        "s3:HeadObject",
+                        "s3:ListObjects",
                         "s3:ListBucketMultipartUploads",
                         "s3:AbortMultipartUpload",
                         "s3:ListMultipartUploadParts"
@@ -165,6 +171,8 @@ export class AWSSTShelper {
                     Effect: "Allow",
                     Action: [
                         "s3:GetObject",
+                        "s3:HeadObject",
+                        "s3:ListObjects",
                         "s3:GetObjectVersion"
                     ],
                     Resource: [
@@ -176,6 +184,8 @@ export class AWSSTShelper {
                     Effect: "Allow",
                     Action: [
                         "s3:GetObject",
+                        "s3:HeadObject",
+                        "s3:ListObjects",
                         "s3:GetObjectVersion"
                     ],
                     Resource: [
