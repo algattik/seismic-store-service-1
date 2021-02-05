@@ -436,7 +436,7 @@
 							},
 							{
 								"key": "ltag",
-								"value": "{{legaltag01}}"
+								"value": "slb-public-usa-seistore-1"
 							},
 							{
 								"key": "",
@@ -449,7 +449,7 @@
 							"raw": "{\n    \"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
 						},
 						"url": {
-							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
+							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subprojectLongName}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -458,14 +458,14 @@
 								"tenant",
 								"{{tenant}}",
 								"subproject",
-								"{{subproject}}"
+								"{{subprojectLongName}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT REGISTER Gitlab",
+					"name": "SUBPROJECT REGISTER",
 					"event": [
 						{
 							"listen": "test",
@@ -624,7 +624,7 @@
 									"});",
 									"",
 									"",
-									"pm.test(\"Subproject created\", function () {",
+									"pm.test(\"Validate Subproject Details\", function () {",
 									"    var child = Object.keys(jsonData);",
 									"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
 									"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
@@ -637,7 +637,7 @@
 						}
 					],
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
@@ -650,21 +650,8 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "ltag",
-								"value": "{{legaltag01}}"
-							},
-							{
-								"key": "",
-								"value": "",
-								"disabled": true
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
-						},
 						"url": {
 							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
 							"host": [
