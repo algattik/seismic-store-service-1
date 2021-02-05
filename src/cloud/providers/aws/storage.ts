@@ -17,26 +17,15 @@ import { AbstractStorage, StorageFactory } from '../../storage';
 import { TenantModel } from '../../../services/tenant';
 import AWS from 'aws-sdk/global';
 import S3 from "aws-sdk/clients/s3";
-import {AWSSSMhelper} from './ssmhelper';
 @StorageFactory.register('aws')
 export class AWSStorage extends AbstractStorage {
 
-    private static bucketName: string;
     private s3: S3; // S3 service object
 
     public constructor(tenant: TenantModel) {
         super();
         AWS.config.update({ region: AWSConfig.AWS_REGION });
         this.s3 = new S3({ apiVersion: '2006-03-01' });
-    }
-
-    // get the bucketName from SSM
-    private async getBucketName(): Promise<void> {
-        if (AWSStorage.bucketName !== undefined)
-            return;
-        const awsSSMHelper = new AWSSSMhelper();
-        AWSStorage.bucketName = await awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name');
-        console.log(AWSStorage.bucketName);
     }
 
     private fixFolderFormat(folder: string): string {
@@ -54,19 +43,26 @@ export class AWSStorage extends AbstractStorage {
         let suffix = Math.random().toString(36).substring(2, 16);
         suffix = suffix + Math.random().toString(36).substring(2, 16);
         suffix = suffix.substr(0, 16);
-        return suffix;
+        return AWSConfig.AWS_BUCKET+"$$"+suffix;
     }
 
+    //whenever ask for a bucket, we return bucketName$$folderName for that subprject
+    //this function return the real folderName by remove bucketName$$ at the front of folderName
+    public getFolder(folderName:string): string {
+        var start = AWSConfig.AWS_BUCKET.length+2; 
+        var str = folderName.substr(start);
+        return str;
+    }
+    
     // Create a new bucket, for aws, create a folder with folderName
     public async createBucket(
         folderName: string,
         location: string, storageClass: string,
         adminACL: string, editorACL: string, viewerACL: string): Promise<void> {
-
-        await this.getBucketName();
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Key: folderName + '/',
+            Bucket: AWSConfig.AWS_BUCKET,
+            Key: folder + '/',
             Body: ''
         };
         try {
@@ -78,13 +74,13 @@ export class AWSStorage extends AbstractStorage {
 
     // Delete a bucket, for aws, delete folder folderName 
     public async deleteBucket(folderName: string, force = false): Promise<void> {
-        await this.getBucketName();
         if (force) {
             await this.deleteFiles(folderName);
         }
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Key: folderName + '/'
+            Bucket: AWSConfig.AWS_BUCKET,
+            Key: folder + '/'
         };
         try {
             await this.s3.deleteObject(params).promise();
@@ -95,17 +91,17 @@ export class AWSStorage extends AbstractStorage {
 
     // Delete all files in a bucket, for aws, delete all files in the folder
     public async deleteFiles(folderName: string): Promise<void> {
-        await this.getBucketName();
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Prefix: folderName + '/'
+            Bucket: AWSConfig.AWS_BUCKET,
+            Prefix: folder + '/'
         };
         const listedObjects = await this.s3.listObjectsV2(params).promise();
         if (listedObjects.Contents.length === 0)
             return;
 
         const deleteParams = {
-            Bucket: AWSStorage.bucketName,
+            Bucket: AWSConfig.AWS_BUCKET,
             Delete: { Objects: [] }
         };
 
@@ -121,10 +117,10 @@ export class AWSStorage extends AbstractStorage {
 
     // save an object/file to a bucket
     public async saveObject(folderName: string, objectName: string, data: string): Promise<void> {
-        await this.getBucketName();
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Key: folderName + '/' + objectName,
+            Bucket: AWSConfig.AWS_BUCKET,
+            Key: folder + '/' + objectName,
             Body: data
         };
         try {
@@ -136,10 +132,10 @@ export class AWSStorage extends AbstractStorage {
 
     // delete an object from a bucket 
     public async deleteObject(folderName: string, objectName: string): Promise<void> {
-        await this.getBucketName();
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Key: folderName + '/' + objectName
+            Bucket: AWSConfig.AWS_BUCKET,
+            Key: folder + '/' + objectName
         };
         try {
             this.s3.deleteObject(params).promise();
@@ -150,18 +146,17 @@ export class AWSStorage extends AbstractStorage {
 
     // delete multiple objects
     public async deleteObjects(folderName: string, prefix: string, async: boolean = false): Promise<void> {
-        await this.getBucketName();
-
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Prefix: folderName + '/' + prefix
+            Bucket: AWSConfig.AWS_BUCKET,
+            Prefix: folder + '/' + prefix
         };
         const listedObjects = await this.s3.listObjectsV2(params).promise();
 
         if (listedObjects.Contents.length === 0) return;
 
         const deleteParams = {
-            Bucket: AWSStorage.bucketName,
+            Bucket: AWSConfig.AWS_BUCKET,
             Delete: { Objects: [] }
         };
 
@@ -177,23 +172,25 @@ export class AWSStorage extends AbstractStorage {
 
     // copy multiple objects (skip the dummy file)
     public async copy(folderIn: string, prefixIn: string, folderOut: string, prefixOut: string, ownerEmail: string) {
-        await this.getBucketName();
 
         prefixIn = this.fixFolderFormat(prefixIn);
         prefixOut = this.fixFolderFormat(prefixOut);
 
+        const realFolderIn = this.getFolder(folderIn);
+        const realFolderOut = this.getFolder(folderOut);
+
         const copyCalls = [];
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Prefix: folderIn + '/' + prefixIn
+            Bucket: AWSConfig.AWS_BUCKET,
+            Prefix: realFolderIn + '/' + prefixIn
         };
         const files = await this.s3.listObjects(params).promise();
 
         for (const file of files['Contents']) {
-            var newKey = file.Key.replace(folderIn, folderOut);
-            newKey = newKey.replace(prefixIn, prefixOut);
+            var newKey = file.Key.replace(realFolderIn, realFolderOut);
+            newKey = newKey.replace(folderIn, prefixOut);
             const params = {
-                Bucket: AWSStorage.bucketName,
+                Bucket: AWSConfig.AWS_BUCKET,
                 CopySource: file.Key,
                 Key: newKey
             };
@@ -205,10 +202,10 @@ export class AWSStorage extends AbstractStorage {
     // check if a bucket exist, for aws, check if folder in the bucket
     // folderName is a string without / at the end
     public async bucketExists(folderName: string): Promise<boolean> {
-        await this.getBucketName();
+        const folder = this.getFolder(folderName);
         const params = {
-            Bucket: AWSStorage.bucketName,
-            Prefix: folderName
+            Bucket: AWSConfig.AWS_BUCKET,
+            Prefix: folder
         };
 
         const listedObjects = await this.s3.listObjectsV2(params).promise();
