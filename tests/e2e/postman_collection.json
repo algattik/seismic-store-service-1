@@ -282,11 +282,21 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+<<<<<<< HEAD
 									"pm.test(\"Status code is 200 or 404 or 403\", function () {",
 									"    pm.expect(pm.response.code).to.be.oneOf([200,404,403]);",
 									"});",
 									"",
 									"if (pm.response.headers.get('service-provider') !== 'google') {",
+=======
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if(pm.response.headers.get('service-provider') !== 'google') {",
+>>>>>>> solve merge conflict
 									"    postman.setNextRequest(\"SUBPROJECT REGISTER\");",
 									"}"
 								],
@@ -405,7 +415,10 @@
 									"",
 									"pm.test(\"Subproject created\", function () {",
 									"    var child = Object.keys(jsonData);",
+<<<<<<< HEAD
 									"    pm.expect(child.length).to.eql(8);",
+=======
+>>>>>>> solve merge conflict
 									"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
 									"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
 									"    pm.expect(jsonData.ltag).to.exist;",
@@ -415,6 +428,8 @@
 									"if (pm.environment.get(\"VCS_Provider\") !== 'gitlab') {",
 									"    postman.setNextRequest(\"SUBPROJECT GET New\");",
 									"};"
+<<<<<<< HEAD
+=======
 								],
 								"type": "text/javascript"
 							}
@@ -484,6 +499,90 @@
 									"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
 									"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
 									"    pm.expect(jsonData.ltag).to.exist;",
+									"    pm.expect(jsonData.gcs_bucket).to.exist;",
+									"});"
+>>>>>>> solve merge conflict
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "ltag",
+								"value": "{{legaltag01}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+<<<<<<< HEAD
+							"raw": "{\n    \"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
+=======
+							"raw": "{\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
+>>>>>>> solve merge conflict
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"subproject",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+<<<<<<< HEAD
+					"name": "SUBPROJECT REGISTER Gitlab",
+=======
+					"name": "SUBPROJECT GET New",
+>>>>>>> solve merge conflict
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Subproject created\", function () {",
+									"    var child = Object.keys(jsonData);",
+									"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
+									"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+<<<<<<< HEAD
+									"    pm.expect(jsonData.ltag).to.exist;",
+=======
+									"    pm.expect(jsonData.ltag).to.eql(pm.environment.get(\"legaltag01\"));",
+>>>>>>> solve merge conflict
 									"    pm.expect(jsonData.gcs_bucket).to.exist;",
 									"});"
 								],
@@ -1829,6 +1928,7 @@
 						"body": {
 							"mode": "raw",
 <<<<<<< HEAD
+<<<<<<< HEAD
 							"raw": "{\n\t\"datasets\":[\n\t\t\"{{path01}}/\",\n\t\t\"{{path01}}/a/b/c/{{dataset01}}\",\n\t\t\"{{path01}}/a/{{dataset01}}\",\n\t\t\"{{dataset01}}\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
 =======
 <<<<<<< HEAD
@@ -1837,6 +1937,9 @@
 							"raw": "{\n\t\"datasets\":[\n\t\t\"/async/dsx01\",\n\t\t\"/a/b/c/dsx02\",\n\t\t\"async/dsx03\",\n\t\t\"test/dsx01\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
 >>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 >>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+=======
+							"raw": "{\n\t\"datasets\":[\n\t\t\"{{path01}}/\",\n\t\t\"{{path01}}/a/b/c/{{dataset01}}\",\n\t\t\"{{path01}}/a/{{dataset01}}\",\n\t\t\"{{dataset01}}\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
+>>>>>>> solve merge conflict
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/exist",
@@ -1877,12 +1980,16 @@
 									"};",
 									"",
 <<<<<<< HEAD
+<<<<<<< HEAD
 									""
 =======
 									"pm.test(\"Body matches string\", function () {",
 									"    pm.expect(pm.response.text()).to.include(\"[-1,1021,-1,-1,1021]\");",
 									"});"
 >>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+=======
+									""
+>>>>>>> solve merge conflict
 								],
 								"type": "text/javascript"
 							}
@@ -1907,6 +2014,7 @@
 						"body": {
 							"mode": "raw",
 <<<<<<< HEAD
+<<<<<<< HEAD
 							"raw": "{\n\t\"datasets\":[\n\t\t\"{{path01}}/\",\n\t\t\"{{path01}}/a/b/c/{{dataset01}}\",\n\t\t\"{{path01}}/a/{{dataset01}}\",\n\t\t\"{{dataset01}}\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
 =======
 <<<<<<< HEAD
@@ -1915,6 +2023,9 @@
 							"raw": "{\n\t\"datasets\":[\n\t\t\"/async/dsx01\",\n\t\t\"/a/b/c/dsx02\",\n\t\t\"async/dsx03\",\n\t\t\"test/dsx01\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
 >>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 >>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
+=======
+							"raw": "{\n\t\"datasets\":[\n\t\t\"{{path01}}/\",\n\t\t\"{{path01}}/a/b/c/{{dataset01}}\",\n\t\t\"{{path01}}/a/{{dataset01}}\",\n\t\t\"{{dataset01}}\",\n\t\t\"{{path01}}/{{dataset01}}\"\n\t]\n}"
+>>>>>>> solve merge conflict
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/sizes",
@@ -5643,15 +5754,7 @@
 						],
 						"body": {
 							"mode": "raw",
-<<<<<<< HEAD
 							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag2}}\"\r\n  ]\r\n} \r\n \r\n"
-=======
-<<<<<<< HEAD
-							"raw": "{\r\n  \"gtags\": [\r\n    \"tag1\",\r\n    \"tag2\"\r\n  ]\r\n} \r\n \r\n"
-=======
-							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag2}}\"\r\n  ]\r\n} \r\n \r\n"
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData01}}?path={{taggedPath01}}",
@@ -5752,15 +5855,7 @@
 						],
 						"body": {
 							"mode": "raw",
-<<<<<<< HEAD
 							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag2}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\"\r\n  ]\r\n} \r\n \r\n"
-=======
-<<<<<<< HEAD
-							"raw": "{\r\n  \"gtags\": [\r\n    \"tag2\",\r\n    \"tag3\",\r\n    \"tag4\"\r\n  ]\r\n} \r\n \r\n"
-=======
-							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag2}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\"\r\n  ]\r\n} \r\n \r\n"
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData02}}?path={{taggedPath02}}",
@@ -5862,15 +5957,7 @@
 						],
 						"body": {
 							"mode": "raw",
-<<<<<<< HEAD
 							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\",\r\n    \"{{tag5}}\"\r\n  ]\r\n} \r\n \r\n"
-=======
-<<<<<<< HEAD
-							"raw": "{\r\n  \"gtags\": [\r\n    \"tag1\",\r\n    \"tag3\",\r\n    \"tag4\",\r\n    \"tag5\"\r\n  ]\r\n} \r\n \r\n"
-=======
-							"raw": "{\r\n  \"gtags\": [\r\n    \"{{tag1}}\",\r\n    \"{{tag3}}\",\r\n    \"{{tag4}}\",\r\n    \"{{tag5}}\"\r\n  ]\r\n} \r\n \r\n"
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData03}}?path={{taggedPath03}}",
@@ -6360,15 +6447,7 @@
 						],
 						"body": {
 							"mode": "raw",
-<<<<<<< HEAD
 							"raw": "{\n\t\"gtags\": [\n    \"{{tagX}}\",\n    \"{{tag3}}\",\n    \"{{tag4}}\"\n  ]\n}"
-=======
-<<<<<<< HEAD
-							"raw": "{\n\t\"gtags\": [\n    \"tagX\",\n    \"tag3\",\n    \"tag4\"\n  ]\n}"
-=======
-							"raw": "{\n\t\"gtags\": [\n    \"{{tagX}}\",\n    \"{{tag3}}\",\n    \"{{tag4}}\"\n  ]\n}"
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{taggedData03}}?path={{taggedPath03}}",
@@ -9034,15 +9113,7 @@
 									"",
 									"",
 									"pm.test(\"Body matches string\", function () {",
-<<<<<<< HEAD
 									"    pm.expect(pm.response.text()).to.include((pm.environment.get(\"cdoTestData\")) + \" does not exist\");",
-=======
-<<<<<<< HEAD
-									"    pm.expect(pm.response.text()).to.include(\"cdoTestData does not exist\");",
-=======
-									"    pm.expect(pm.response.text()).to.include((pm.environment.get(\"cdoTestData\")) + \" does not exist\");",
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
->>>>>>> Added CI/CD pipeline and updated base e2e test infra for OSDU
 									"});"
 								],
 								"type": "text/javascript"
