@@ -282,64 +282,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"",
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"if(pm.response.headers.get('service-provider') !== 'google') {",
-									"    postman.setNextRequest(\"SUBPROJECT REGISTER\");",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"subproject",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SUBPROJECT DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
 									"pm.test(\"Status code is 200 or 404 or 403\", function () {",
 									"    pm.expect(pm.response.code).to.be.oneOf([200,404,403]);",
 									"});",
 									"",
-									"if(pm.response.headers['service-provider'] !== 'google') {",
+									"if(pm.response.headers.get('service-provider') !== 'google') {",
 									"    postman.setNextRequest(\"SUBPROJECT REGISTER\");",
 									"}"
 								],
@@ -439,6 +386,81 @@
 						],
 						"body": {
 							"mode": "raw",
+							"raw": "{\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"subproject",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SUBPROJECT REGISTER Gitlab",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Subproject created\", function () {",
+									"    var child = Object.keys(jsonData);",
+									"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
+									"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    pm.expect(jsonData.ltag).to.exist;",
+									"    pm.expect(jsonData.gcs_bucket).to.exist;",
+									"});",
+									"",
+									"if (pm.environment.get(\"VCS_Provider\") !== 'gitlab') {",
+									"    postman.setNextRequest(\"SUBPROJECT GET New\");",
+									"};"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "ltag",
+								"value": "slb-public-usa-seistore-1"
+							},
+							{
+								"key": "",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
 							"raw": "{\n    \"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
 						},
 						"url": {
@@ -500,7 +522,7 @@
 							},
 							{
 								"key": "ltag",
-								"value": "slb-public-usa-seistore-1"
+								"value": "{{legaltag01}}"
 							},
 							{
 								"key": "",
