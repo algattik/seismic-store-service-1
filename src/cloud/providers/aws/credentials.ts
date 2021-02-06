@@ -56,10 +56,14 @@ export class AWSCredentials extends AbstractCredentials {
         const db = new DynamoDB({});
         const data = await db.getItem(params).promise();
         const ret = aws.DynamoDB.Converter.unmarshall(data.Item);
-        if (Object.keys(ret).length === 0)
+        if (Object.keys(ret).length === 0){
+            console.log("error to get folder: "+folder+"\n");
             return undefined;
-        else
-            return ret['gcs_bucket'];
+        }
+        else{
+            const vars = ret['gcs_bucket'].split("$$");
+            return vars[1];
+        }
     }
 
 
