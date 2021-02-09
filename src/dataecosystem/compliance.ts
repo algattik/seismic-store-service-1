@@ -47,7 +47,7 @@ export class DESCompliance {
                 'Content-Type': 'application/json'
             },
             json: { names: [ltag] },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getComplianceBaseUrlPath() + '/legaltags:validate',
+            url: Config.DES_SERVICE_HOST_COMPLIANCE + dataecosystem.getComplianceBaseUrlPath() + '/legaltags:validate',
         };
 
         // tslint:disable-next-line: no-string-literal

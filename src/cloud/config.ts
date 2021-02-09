@@ -30,7 +30,10 @@ export interface ConfigModel {
     DES_REDIS_INSTANCE_ADDRESS: string;
     DES_REDIS_INSTANCE_PORT: number;
     DES_REDIS_INSTANCE_KEY?: string;
-    DES_SERVICE_HOST: string;
+    DES_SERVICE_HOST_ENTITLEMENT: string;
+    DES_SERVICE_HOST_COMPLIANCE: string;
+    DES_SERVICE_HOST_STORAGE: string;
+    DES_SERVICE_HOST_PARTITION: string;
     DES_SERVICE_APPKEY: string;
     DES_GROUP_CHAR_LIMIT: number;
     JWKS_URL: string;
@@ -53,6 +56,9 @@ export abstract class Config implements IConfig {
 
     // Unit Test activation flag
     public static UTEST: string;
+
+    // Cache TLS DISABLE flag
+    public static CACHE_TLS_DISABLE: string;
 
     // Service base configurations
     public static SERVICE_ENV: string;
@@ -94,7 +100,10 @@ export abstract class Config implements IConfig {
     public static DES_REDIS_INSTANCE_KEY: string;
 
     // DataEcosystem Configuration
-    public static DES_SERVICE_HOST: string;
+    public static DES_SERVICE_HOST_ENTITLEMENT: string;
+    public static DES_SERVICE_HOST_COMPLIANCE: string;
+    public static DES_SERVICE_HOST_STORAGE: string;
+    public static DES_SERVICE_HOST_PARTITION: string;
     public static DES_SERVICE_APPKEY: string;
     public static DES_GROUP_CHAR_LIMIT: number;
     public static DE_FORWARD_APPKEY = Symbol('seismic-dms-fw-caller-appkey');
@@ -153,7 +162,10 @@ export abstract class Config implements IConfig {
         Config.FEATURE_FLAG_LOGGING = model.FEATURE_FLAG_LOGGING;
         Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = model.FEATURE_FLAG_STACKDRIVER_EXPORTER;
 
-        Config.DES_SERVICE_HOST = model.DES_SERVICE_HOST;
+        Config.DES_SERVICE_HOST_ENTITLEMENT = model.DES_SERVICE_HOST_ENTITLEMENT;
+        Config.DES_SERVICE_HOST_COMPLIANCE = model.DES_SERVICE_HOST_COMPLIANCE;
+        Config.DES_SERVICE_HOST_STORAGE = model.DES_SERVICE_HOST_STORAGE;
+        Config.DES_SERVICE_HOST_PARTITION = model.DES_SERVICE_HOST_PARTITION;
         Config.DES_SERVICE_APPKEY = model.DES_SERVICE_APPKEY;
         Config.DES_GROUP_CHAR_LIMIT = model.DES_GROUP_CHAR_LIMIT;
 
@@ -169,7 +181,10 @@ export abstract class Config implements IConfig {
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');
         Config.checkRequiredConfig(Config.IMP_SERVICE_ACCOUNT_SIGNER, 'IMP_SERVICE_ACCOUNT_SIGNER');
-        Config.checkRequiredConfig(Config.DES_SERVICE_HOST, 'DES_SERVICE_HOST');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST_ENTITLEMENT');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST_PARTITION');
         Config.checkRequiredConfig(Config.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
 
         // JWT validation
@@ -204,3 +219,6 @@ export class ConfigFactory extends CloudFactory {
 
 // Set the Utest flag correctly as sooon as the config class get loaded
 Config.UTEST = process.env.UTEST;
+
+// Set the CACHE(REDIS) TLS DISABLE flag correctly. If not SET TLS is assume enabled so that change is non breaking
+Config.CACHE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE;

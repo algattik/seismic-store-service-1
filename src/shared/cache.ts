@@ -37,12 +37,18 @@ export class Cache<T=string> {
         this._redisClient =
             Config.UTEST ?
                 require('redis-mock').createClient() :
-                connection.KEY ?
+                connection.KEY ? Config.CACHE_TLS_DISABLE ?
                     redis.createClient({
                         host: connection.ADDRESS,
                         port: connection.PORT,
                         auth_pass: connection.KEY,
-                        tls: {servername: connection.ADDRESS}}) :
+                    }) :
+                    redis.createClient({
+                        host: connection.ADDRESS,
+                        port: connection.PORT,
+                        auth_pass: connection.KEY,
+                        tls: { servername: connection.ADDRESS }
+                    }) :
                     redis.createClient({
                         host: connection.ADDRESS,
                         port: connection.PORT,

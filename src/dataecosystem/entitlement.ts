@@ -36,7 +36,7 @@ export class DESEntitlement {
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json',
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + group + '/members',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + group + '/members',
         };
 
         if (prevCursor !== undefined) { options.url += ('?cursor=' + prevCursor); }
@@ -75,7 +75,7 @@ export class DESEntitlement {
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
@@ -115,7 +115,8 @@ export class DESEntitlement {
                 'Content-Type': 'application/json'
             },
             json: undefined,
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT
+                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members',
         };
 
         options.json = dataecosystem.getUserAddBodyRequest(userEmail, role);
@@ -151,7 +152,8 @@ export class DESEntitlement {
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail,
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT
+                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail,
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
@@ -190,7 +192,7 @@ export class DESEntitlement {
                 description: groupDesc,
                 name: groupName,
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
