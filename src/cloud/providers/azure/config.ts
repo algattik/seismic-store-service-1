@@ -48,9 +48,15 @@ export class AzureConfig extends Config {
         await Keyvault.loadSecrets(Keyvault.CreateSecretClient());
 
         // data ecosystem host url and appkey
-        AzureConfig.DES_SERVICE_HOST = process.env.DES_SERVICE_HOST
+        AzureConfig.DES_SERVICE_HOST_COMPLIANCE = process.env.DES_SERVICE_HOST
+        AzureConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST
+        AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST
+        AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST
         AzureConfig.DES_SERVICE_APPKEY = 'undefined'
-        Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST, 'DES_SERVICE_HOST');
+        Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST');
+        Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST');
+        Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST');
+        Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST');
         Config.checkRequiredConfig(AzureConfig.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
 
         // the email of the service identity used to sign an impersonation token
@@ -74,7 +80,10 @@ export class AzureConfig extends Config {
             DES_REDIS_INSTANCE_ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
             DES_REDIS_INSTANCE_PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
             DES_REDIS_INSTANCE_KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
-            DES_SERVICE_HOST: AzureConfig.DES_SERVICE_HOST,
+            DES_SERVICE_HOST_COMPLIANCE: AzureConfig.DES_SERVICE_HOST_COMPLIANCE,
+            DES_SERVICE_HOST_ENTITLEMENT: AzureConfig.DES_SERVICE_HOST_ENTITLEMENT,
+            DES_SERVICE_HOST_STORAGE: AzureConfig.DES_SERVICE_HOST_STORAGE,
+            DES_SERVICE_HOST_PARTITION: AzureConfig.DES_SERVICE_HOST_PARTITION,
             DES_SERVICE_APPKEY: AzureConfig.DES_SERVICE_APPKEY,
             DES_GROUP_CHAR_LIMIT: AzureConfig.DES_GROUP_CHAR_LIMIT,
             JWKS_URL: process.env.JWKS_URL,

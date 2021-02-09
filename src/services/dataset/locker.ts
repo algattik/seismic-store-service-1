@@ -48,6 +48,13 @@ export class Locker {
         } else {
             const redis = require('redis');
             if(Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
+                Config.CACHE_TLS_DISABLE ?
+                this.redisClient = redis.createClient({
+                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                    auth_pass: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
+                    ///tls: {servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS}
+                }):
                 this.redisClient = redis.createClient({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,

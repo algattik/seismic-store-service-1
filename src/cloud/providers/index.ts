@@ -16,3 +16,4 @@
 
 export * as google from './google';
 export * as azure from './azure';
+export * as ibm from './ibm';
