@@ -98,7 +98,7 @@ export abstract class Config implements IConfig {
     public static DES_REDIS_INSTANCE_ADDRESS: string;
     public static DES_REDIS_INSTANCE_PORT: number;
     public static DES_REDIS_INSTANCE_KEY: string;
-    public static DES_REDIS_INSTANCE_KEY_TLS_DISABLE: boolean;
+    public static DES_REDIS_INSTANCE_TLS_DISABLE: boolean;
 
     // DataEcosystem Configuration
     public static DES_SERVICE_HOST_ENTITLEMENT: string;
@@ -154,7 +154,7 @@ export abstract class Config implements IConfig {
             model.DES_REDIS_INSTANCE_PORT || model.LOCKSMAP_REDIS_INSTANCE_PORT;
         Config.DES_REDIS_INSTANCE_KEY =
             model.DES_REDIS_INSTANCE_KEY || model.LOCKSMAP_REDIS_INSTANCE_KEY;
-        Config.DES_REDIS_INSTANCE_KEY_TLS_DISABLE =
+        Config.DES_REDIS_INSTANCE_TLS_DISABLE =
             model.DES_REDIS_INSTANCE_TLS_DISABLE || model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE;
 
         Config.FEATURE_FLAG_AUTHORIZATION = model.FEATURE_FLAG_AUTHORIZATION;
