@@ -92,14 +92,12 @@ export class IbmConfig extends Config {
         IbmConfig.LOCKSMAP_REDIS_INSTANCE_PORT = +process.env.REDIS_INSTANCE_PORT
         IbmConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS = process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS
         IbmConfig.LOCKSMAP_REDIS_INSTANCE_KEY = process.env.LOCKSMAP_REDIS_INSTANCE_KEY
-        IbmConfig.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE =
-            process.env.CACHE_TLS_DISABLE ? process.env.CACHE_TLS_DISABLE === 'true' : false;
+        IbmConfig.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false
 
         IbmConfig.DES_REDIS_INSTANCE_ADDRESS = process.env.DES_REDIS_INSTANCE_ADDRESS
         IbmConfig.DES_REDIS_INSTANCE_PORT = +process.env.DES_REDIS_INSTANCE_PORT
         IbmConfig.DES_REDIS_INSTANCE_KEY = process.env.DES_REDIS_INSTANCE_KEY
-        IbmConfig.DES_REDIS_INSTANCE_TLS_DISABLE =
-            process.env.CACHE_TLS_DISABLE ? process.env.CACHE_TLS_DISABLE === 'true' : false;
+        IbmConfig.DES_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false
 
         //Logger
         IbmConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'debug';
