@@ -112,7 +112,8 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
             this._storageConfigs = new Cache<string>({
                 ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
-                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY
+                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: AzureConfig.DES_REDIS_INSTANCE_KEY_TLS_DISABLE,
             }, 'storage')
         }
 
@@ -137,7 +138,8 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
             this._cosmosConfigs = new Cache<string>({
                 ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
-                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY
+                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: AzureConfig.DES_REDIS_INSTANCE_KEY_TLS_DISABLE,
             }, 'cosmos')
         }
 

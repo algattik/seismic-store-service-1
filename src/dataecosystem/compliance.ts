@@ -31,7 +31,8 @@ export class DESCompliance {
             this._cache = new Cache<boolean>({
                 ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: Config.DES_REDIS_INSTANCE_PORT,
-                KEY: Config.DES_REDIS_INSTANCE_KEY
+                KEY: Config.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: Config.DES_REDIS_INSTANCE_KEY_TLS_DISABLE,
             }, 'ltag')
         }
 

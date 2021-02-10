@@ -27,9 +27,11 @@ export interface ConfigModel {
     LOCKSMAP_REDIS_INSTANCE_ADDRESS: string;
     LOCKSMAP_REDIS_INSTANCE_PORT: number;
     LOCKSMAP_REDIS_INSTANCE_KEY?: string;
+    LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE?: boolean;
     DES_REDIS_INSTANCE_ADDRESS: string;
     DES_REDIS_INSTANCE_PORT: number;
     DES_REDIS_INSTANCE_KEY?: string;
+    DES_REDIS_INSTANCE_TLS_DISABLE?: boolean;
     DES_SERVICE_HOST_ENTITLEMENT: string;
     DES_SERVICE_HOST_COMPLIANCE: string;
     DES_SERVICE_HOST_STORAGE: string;
@@ -56,9 +58,6 @@ export abstract class Config implements IConfig {
 
     // Unit Test activation flag
     public static UTEST: string;
-
-    // Cache TLS DISABLE flag
-    public static CACHE_TLS_DISABLE: string;
 
     // Service base configurations
     public static SERVICE_ENV: string;
@@ -93,11 +92,13 @@ export abstract class Config implements IConfig {
     public static LOCKSMAP_REDIS_INSTANCE_ADDRESS: string;
     public static LOCKSMAP_REDIS_INSTANCE_PORT: number;
     public static LOCKSMAP_REDIS_INSTANCE_KEY: string;
+    public static LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE: boolean;
 
     // Redis cache for DataEcosystem results
     public static DES_REDIS_INSTANCE_ADDRESS: string;
     public static DES_REDIS_INSTANCE_PORT: number;
     public static DES_REDIS_INSTANCE_KEY: string;
+    public static DES_REDIS_INSTANCE_KEY_TLS_DISABLE: boolean;
 
     // DataEcosystem Configuration
     public static DES_SERVICE_HOST_ENTITLEMENT: string;
@@ -145,6 +146,7 @@ export abstract class Config implements IConfig {
         Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS = model.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
         Config.LOCKSMAP_REDIS_INSTANCE_PORT = model.LOCKSMAP_REDIS_INSTANCE_PORT;
         Config.LOCKSMAP_REDIS_INSTANCE_KEY = model.LOCKSMAP_REDIS_INSTANCE_KEY;
+        Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE  || false;
 
         Config.DES_REDIS_INSTANCE_ADDRESS =
             model.DES_REDIS_INSTANCE_ADDRESS || model.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
@@ -152,6 +154,8 @@ export abstract class Config implements IConfig {
             model.DES_REDIS_INSTANCE_PORT || model.LOCKSMAP_REDIS_INSTANCE_PORT;
         Config.DES_REDIS_INSTANCE_KEY =
             model.DES_REDIS_INSTANCE_KEY || model.LOCKSMAP_REDIS_INSTANCE_KEY;
+        Config.DES_REDIS_INSTANCE_KEY_TLS_DISABLE =
+            model.DES_REDIS_INSTANCE_TLS_DISABLE || model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE;
 
         Config.FEATURE_FLAG_AUTHORIZATION = model.FEATURE_FLAG_AUTHORIZATION;
         Config.FEATURE_FLAG_LEGALTAG = model.FEATURE_FLAG_LEGALTAG;
@@ -219,6 +223,3 @@ export class ConfigFactory extends CloudFactory {
 
 // Set the Utest flag correctly as sooon as the config class get loaded
 Config.UTEST = process.env.UTEST;
-
-// Set the CACHE(REDIS) TLS DISABLE flag correctly. If not SET TLS is assume enabled so that change is non breaking
-Config.CACHE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE;

@@ -21,7 +21,8 @@ import { Config } from '../cloud';
 export interface ICacheParameters {
     ADDRESS: string;
     PORT: number;
-    KEY?: string
+    KEY?: string;
+    DISABLE_TLS?: boolean;
 }
 
 export class Cache<T=string> {
@@ -37,7 +38,7 @@ export class Cache<T=string> {
         this._redisClient =
             Config.UTEST ?
                 require('redis-mock').createClient() :
-                connection.KEY ? Config.CACHE_TLS_DISABLE ?
+                connection.KEY ? connection.DISABLE_TLS ?
                     redis.createClient({
                         host: connection.ADDRESS,
                         port: connection.PORT,
