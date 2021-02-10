@@ -7,10 +7,8 @@ variables:
   UTEST_RUNTIME_IMAGE: seistore-svc-runtime
   #aws variables
   #azure variables  
-  AZURE: 'true'
   AZURE_SERVICE: seismic-store-service
   #gcp variables
-  GCP: 'true'
   GCP_APPLICATION_NAME: os-seismic-store-service
   GCP_DEPLOY_FILE: $OSDU_GCP_DEPLOY_FILE
   GCP_PROJECT: opendes-evt
