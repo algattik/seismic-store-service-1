@@ -32,7 +32,7 @@ export class DESCompliance {
                 ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: Config.DES_REDIS_INSTANCE_PORT,
                 KEY: Config.DES_REDIS_INSTANCE_KEY,
-                DISABLE_TLS: Config.DES_REDIS_INSTANCE_KEY_TLS_DISABLE,
+                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
             }, 'ltag')
         }
 
