@@ -1278,8 +1278,7 @@
 									"pm.environment.set(\"datasetsWithPaths\", JSON.stringify(dataSetsWithPaths));",
 									"pm.environment.set(\"datasetName\", makeid2(8));",
 									"pm.environment.set(\"datasetPath\", \"/ab/cd/ef/gh/ij/000/001\" + makeid2(4));",
-									"postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');",
-									""
+									"postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');"
 								],
 								"type": "text/javascript"
 							}
