@@ -31,7 +31,8 @@ export class DESCompliance {
             this._cache = new Cache<boolean>({
                 ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: Config.DES_REDIS_INSTANCE_PORT,
-                KEY: Config.DES_REDIS_INSTANCE_KEY
+                KEY: Config.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
             }, 'ltag')
         }
 
@@ -47,7 +48,7 @@ export class DESCompliance {
                 'Content-Type': 'application/json'
             },
             json: { names: [ltag] },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getComplianceBaseUrlPath() + '/legaltags:validate',
+            url: Config.DES_SERVICE_HOST_COMPLIANCE + dataecosystem.getComplianceBaseUrlPath() + '/legaltags:validate',
         };
 
         // tslint:disable-next-line: no-string-literal

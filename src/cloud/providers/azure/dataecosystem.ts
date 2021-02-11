@@ -97,7 +97,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
                     AzureConfig.SP_TENANT_ID, AzureConfig.SP_APP_RESOURCE_ID)).access_token,
                 'Content-Type': 'application/json'
             },
-            url: AzureConfig.DES_SERVICE_HOST + '/api/partition/v1/partitions/' + dataPartitionID
+            url: AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions/' + dataPartitionID
         };
         try {
             return JSON.parse(await request.get(options));
@@ -112,7 +112,8 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
             this._storageConfigs = new Cache<string>({
                 ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
-                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY
+                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: AzureConfig.DES_REDIS_INSTANCE_TLS_DISABLE,
             }, 'storage')
         }
 
@@ -137,7 +138,8 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
             this._cosmosConfigs = new Cache<string>({
                 ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
                 PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
-                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY
+                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: AzureConfig.DES_REDIS_INSTANCE_TLS_DISABLE,
             }, 'cosmos')
         }
 

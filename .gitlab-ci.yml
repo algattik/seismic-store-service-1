@@ -27,7 +27,7 @@ include:
   # build
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/seismic-store-service.yml"
-    
+
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
     file: "containerize/seismic-store-service.yml"

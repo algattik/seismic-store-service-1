@@ -27,10 +27,15 @@ export interface ConfigModel {
     LOCKSMAP_REDIS_INSTANCE_ADDRESS: string;
     LOCKSMAP_REDIS_INSTANCE_PORT: number;
     LOCKSMAP_REDIS_INSTANCE_KEY?: string;
+    LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE?: boolean;
     DES_REDIS_INSTANCE_ADDRESS: string;
     DES_REDIS_INSTANCE_PORT: number;
     DES_REDIS_INSTANCE_KEY?: string;
-    DES_SERVICE_HOST: string;
+    DES_REDIS_INSTANCE_TLS_DISABLE?: boolean;
+    DES_SERVICE_HOST_ENTITLEMENT: string;
+    DES_SERVICE_HOST_COMPLIANCE: string;
+    DES_SERVICE_HOST_STORAGE: string;
+    DES_SERVICE_HOST_PARTITION: string;
     DES_SERVICE_APPKEY: string;
     DES_GROUP_CHAR_LIMIT: number;
     JWKS_URL: string;
@@ -87,14 +92,19 @@ export abstract class Config implements IConfig {
     public static LOCKSMAP_REDIS_INSTANCE_ADDRESS: string;
     public static LOCKSMAP_REDIS_INSTANCE_PORT: number;
     public static LOCKSMAP_REDIS_INSTANCE_KEY: string;
+    public static LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE: boolean;
 
     // Redis cache for DataEcosystem results
     public static DES_REDIS_INSTANCE_ADDRESS: string;
     public static DES_REDIS_INSTANCE_PORT: number;
     public static DES_REDIS_INSTANCE_KEY: string;
+    public static DES_REDIS_INSTANCE_TLS_DISABLE: boolean;
 
     // DataEcosystem Configuration
-    public static DES_SERVICE_HOST: string;
+    public static DES_SERVICE_HOST_ENTITLEMENT: string;
+    public static DES_SERVICE_HOST_COMPLIANCE: string;
+    public static DES_SERVICE_HOST_STORAGE: string;
+    public static DES_SERVICE_HOST_PARTITION: string;
     public static DES_SERVICE_APPKEY: string;
     public static DES_GROUP_CHAR_LIMIT: number;
     public static DE_FORWARD_APPKEY = Symbol('seismic-dms-fw-caller-appkey');
@@ -136,6 +146,7 @@ export abstract class Config implements IConfig {
         Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS = model.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
         Config.LOCKSMAP_REDIS_INSTANCE_PORT = model.LOCKSMAP_REDIS_INSTANCE_PORT;
         Config.LOCKSMAP_REDIS_INSTANCE_KEY = model.LOCKSMAP_REDIS_INSTANCE_KEY;
+        Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE  || false;
 
         Config.DES_REDIS_INSTANCE_ADDRESS =
             model.DES_REDIS_INSTANCE_ADDRESS || model.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
@@ -143,6 +154,8 @@ export abstract class Config implements IConfig {
             model.DES_REDIS_INSTANCE_PORT || model.LOCKSMAP_REDIS_INSTANCE_PORT;
         Config.DES_REDIS_INSTANCE_KEY =
             model.DES_REDIS_INSTANCE_KEY || model.LOCKSMAP_REDIS_INSTANCE_KEY;
+        Config.DES_REDIS_INSTANCE_TLS_DISABLE =
+            model.DES_REDIS_INSTANCE_TLS_DISABLE || model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE;
 
         Config.FEATURE_FLAG_AUTHORIZATION = model.FEATURE_FLAG_AUTHORIZATION;
         Config.FEATURE_FLAG_LEGALTAG = model.FEATURE_FLAG_LEGALTAG;
@@ -153,7 +166,10 @@ export abstract class Config implements IConfig {
         Config.FEATURE_FLAG_LOGGING = model.FEATURE_FLAG_LOGGING;
         Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = model.FEATURE_FLAG_STACKDRIVER_EXPORTER;
 
-        Config.DES_SERVICE_HOST = model.DES_SERVICE_HOST;
+        Config.DES_SERVICE_HOST_ENTITLEMENT = model.DES_SERVICE_HOST_ENTITLEMENT;
+        Config.DES_SERVICE_HOST_COMPLIANCE = model.DES_SERVICE_HOST_COMPLIANCE;
+        Config.DES_SERVICE_HOST_STORAGE = model.DES_SERVICE_HOST_STORAGE;
+        Config.DES_SERVICE_HOST_PARTITION = model.DES_SERVICE_HOST_PARTITION;
         Config.DES_SERVICE_APPKEY = model.DES_SERVICE_APPKEY;
         Config.DES_GROUP_CHAR_LIMIT = model.DES_GROUP_CHAR_LIMIT;
 
@@ -169,7 +185,10 @@ export abstract class Config implements IConfig {
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');
         Config.checkRequiredConfig(Config.IMP_SERVICE_ACCOUNT_SIGNER, 'IMP_SERVICE_ACCOUNT_SIGNER');
-        Config.checkRequiredConfig(Config.DES_SERVICE_HOST, 'DES_SERVICE_HOST');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST_ENTITLEMENT');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');
+        Config.checkRequiredConfig(Config.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST_PARTITION');
         Config.checkRequiredConfig(Config.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
 
         // JWT validation
