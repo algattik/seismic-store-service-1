@@ -36,6 +36,7 @@ include:
     #azure
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/azure-seismic-store-service.yml"
+    ref: 'feature/dperez50/azure-seismic-store-service'
     
     #ibm  
   - project: "osdu/platform/ci-cd-pipelines"
