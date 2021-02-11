@@ -286,11 +286,7 @@
 									"    pm.expect(pm.response.code).to.be.oneOf([200,404,403]);",
 									"});",
 									"",
-<<<<<<< HEAD
 									"if (pm.response.headers.get('service-provider') !== 'google') {",
-=======
-									"if(pm.response.headers.get('service-provider') !== 'google') {",
->>>>>>> bf69135a5eede10c5d60d813ff8d4a86ff6f0cbe
 									"    postman.setNextRequest(\"SUBPROJECT REGISTER\");",
 									"}"
 								],
@@ -1149,12 +1145,7 @@
 									"pm.environment.set(\"datasetsWithPaths\", JSON.stringify(dataSetsWithPaths));",
 									"pm.environment.set(\"datasetName\", makeid2(8));",
 									"pm.environment.set(\"datasetPath\", \"/ab/cd/ef/gh/ij/000/001\" + makeid2(4));",
-<<<<<<< HEAD
 									"postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');"
-=======
-									"postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');",
-									""
->>>>>>> bf69135a5eede10c5d60d813ff8d4a86ff6f0cbe
 								],
 								"type": "text/javascript"
 							}
