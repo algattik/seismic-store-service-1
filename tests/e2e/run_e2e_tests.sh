@@ -149,7 +149,7 @@ case $i in
   shift
   ;;
   *)
-  usage "unknown option $i" && exit 1;
+  usage "unknown option $i";
   ;;
 esac
 done
