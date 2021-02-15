@@ -252,6 +252,7 @@ sed -i "s/#{LEGALTAG01}#/${legaltag01}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{LEGALTAG02}#/${legaltag02}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{NEWUSEREMAIL}#/${newuser}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
+sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 
 if [ "${authorization}" ]; then
   sed -i "s/#{STOKEN_Ta}#/${stoken_ta}/g" ./tests/e2e/postman_env.json
@@ -263,7 +264,6 @@ if [ "${authorization}" ]; then
   sed -i "s/#{SE_USER}#/${se_user}/g" ./tests/e2e/postman_env.json
   sed -i "s/#{SV_USER}#/${sv_user}/g" ./tests/e2e/postman_env.json
   sed -i "s/#{EXPIRED_TOKEN}#/${expired_token}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 fi
 
 # install requied packages
