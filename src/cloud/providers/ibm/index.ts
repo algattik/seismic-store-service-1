@@ -8,3 +8,4 @@ export { Cos } from './cos';
 export { IbmConfig } from './config';
 export { IbmTrace } from './trace';
 export { IbmDataEcosystemServices } from './dataecosystem';
+export { IbmSeistore } from './seistore';

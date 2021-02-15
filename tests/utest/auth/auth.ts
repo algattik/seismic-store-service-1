@@ -84,7 +84,7 @@ export class TestAuth {
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
-            Tx.checkFalse(await Auth.isWriteAuthorized(this.impToken, [], 't', 's', 'e', 'appkey',false), done);
+            Tx.checkFalse(await Auth.isWriteAuthorized(this.impToken, [], 't', 's', 'e', 'appkey', false), done);
         });
 
         Tx.test(async (done: any) => {
@@ -150,7 +150,7 @@ export class TestAuth {
         Tx.test(async (done: any) => {
             this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
             this.sandbox.stub(DESCompliance, 'isLegaTagValid').resolves(true as never);
-            Tx.checkTrue(await Auth.isLegalTagValid('usertoken', 'xxx', 't','appkey'), done);
+            Tx.checkTrue(await Auth.isLegalTagValid('usertoken', 'xxx', 't', 'appkey'), done);
         });
 
         Tx.test(async (done: any) => {
@@ -170,12 +170,14 @@ export class TestAuth {
         Tx.test(async (done: any) => {
             this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'g' }] as never);
-            Tx.checkTrue(await Auth.isUserAuthorized(this.userToken, ['g'], 'e','appkey'), done);
+            this.sandbox.stub(AuthGroups, 'isMemberOfAtleastOneGroup').resolves(true)
+            Tx.checkTrue(await Auth.isUserAuthorized(this.userToken, ['g'], 'e', 'appkey'), done);
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('esd');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'none' }] as never);
+            this.sandbox.stub(AuthGroups, 'isMemberOfAtleastOneGroup').resolves(false)
             try {
                 await Auth.isUserAuthorized(this.userToken, ['t'], 'e', 'appkey');
             } catch (e) { Tx.check403(e.error.code, done); }

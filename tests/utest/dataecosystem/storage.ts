@@ -74,7 +74,7 @@ export class TestStorage {
                'slb-data-partition-id': 'tenant-a',
             },
             json: JSON.stringify({ seismetadata: 'data' }),
-            url: Config.DES_SERVICE_HOST + '/storage/v2/records',
+            url: Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records',
          };
          Tx.checkTrue(requestStub.calledWith(options), done);
       });
@@ -128,7 +128,7 @@ export class TestStorage {
                'Content-Type': 'application/json',
                'slb-data-partition-id': 'tenant-a',
             },
-            url: Config.DES_SERVICE_HOST + '/storage/v2/records/uid' + ':delete',
+            url: Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records/uid' + ':delete',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);

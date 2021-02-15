@@ -21,11 +21,11 @@ import { Config } from '../../cloud';
 import { Error, Utils } from '../../shared';
 import { DatasetDAO } from './dao';
 
-
 // lock interface (this is the cache entry)
 interface ILock { id: string; cnt: number; }
 
-
+// Write Lock interface
+export interface IWriteLockSession {idempotent: boolean, wid: string, mutex: any, key: string};
 
 export class Locker {
 
@@ -48,12 +48,6 @@ export class Locker {
         } else {
             const redis = require('redis');
             if(Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
-                Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE ?
-                this.redisClient = redis.createClient({
-                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    auth_pass: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
-                }):
                 this.redisClient = redis.createClient({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
@@ -157,33 +151,72 @@ export class Locker {
         });
     }
 
-    // to create a write lock for new resources
-    public static async createWriteLock(dataset: DatasetModel): Promise<any> {
+    // create a write lock for new resources. This is a locking operation!
+    // it place the mutex on the required resource!!! (the caller shold remove the mutex)
+    public static async createWriteLock(
+        dataset: DatasetModel, idempotentWriteLock?: string): Promise<IWriteLockSession> {
 
         const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
-
         const cachelock = await this.acquireMutex(datasetPath);
-
         const lockValue = (await Locker.getLock(datasetPath));
+
+        // idempotency requirement
+        if(idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The provided idempotency key, for a write-lock operation, must start with the \'W\' letter'));
+        }
 
         // if the lockValue is not present in the rediscache,
         // create the [KEY,VALUE] = [datasetPath, wid(sbit)] pair in the redis cache
         if (!lockValue) {
-            dataset.sbit = this.generateWriteLockID();
+            dataset.sbit = idempotentWriteLock || this.generateWriteLockID();
             dataset.sbit_count = 1;
             this.set(datasetPath, dataset.sbit, this.EXP_WRITELOCK);
+            return {idempotent: false, wid: dataset.sbit, mutex: cachelock, key: datasetPath};
         }
-        return cachelock;
+
+        // check if writelock already exist and match the input one (idempotent call)
+        if(idempotentWriteLock && lockValue === idempotentWriteLock) {
+            return {idempotent: true, wid: idempotentWriteLock, mutex: cachelock, key: datasetPath};
+        }
+
+        throw (Error.make(Error.Status.LOCKED,
+            'The dataset ' + datasetPath + ' is ' +
+            (this.isWriteLock(lockValue) ? 'write' : 'read') + ' locked'));
     }
 
-    // acquire write lock on the resource
+    // remove both lock and mutex
+    public static async removeWriteLock(writeLockSession: IWriteLockSession, keepTheLock = false): Promise<void> {
+        if(writeLockSession && writeLockSession.mutex) {
+            await Locker.releaseMutex(writeLockSession.mutex, writeLockSession.key);
+        }
+        if(!keepTheLock) {
+            if (writeLockSession && writeLockSession.wid) {
+                await Locker.del(writeLockSession.key);
+            }
+        }
+    }
+
+    // acquire write lock on the resource and update the status on the metadata
     public static async acquireWriteLock(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, wid?: string): Promise<ILock> {
+        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
+        idempotentWriteLock: string, wid?: string): Promise<ILock> {
+
+        // idempotency requirement
+        if(idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The provided idempotency key, for a write-lock operation, must start with the \'W\' letter'));
+        }
 
         const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
         const cachelock = await this.acquireMutex(datasetPath);
-
         const lockValue = (await Locker.getLock(datasetPath));
+
+        // Already write locked but the idempotentWriteLock match the once in cache (idempotent call)
+        if(lockValue && idempotentWriteLock && lockValue === idempotentWriteLock) {
+            await this.releaseMutex(cachelock, datasetPath);
+            return {id: idempotentWriteLock, cnt: 0};
+        }
 
         if (lockValue && wid && wid !== lockValue && this.isWriteLock(lockValue)) {
             await this.releaseMutex(cachelock, datasetPath);
@@ -206,7 +239,7 @@ export class Locker {
             }
 
             // create a new write lock and save in cache and journalClient
-            const lockID = this.generateWriteLockID();
+            const lockID = idempotentWriteLock || this.generateWriteLockID();
             await Locker.set(datasetPath, lockID, this.EXP_WRITELOCK);
             datasetOut[0].sbit = lockID;
             datasetOut[0].sbit_count = 1;
@@ -249,12 +282,23 @@ export class Locker {
     // create lock existing resource
     public static async acquireReadLock(
         journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
-        wid?: string): Promise<ILock> {
+        idempotentReadLock?: string, wid?: string): Promise<ILock> {
+
+        // idempotency requirement
+        if(idempotentReadLock && !idempotentReadLock.startsWith('R')) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The provided idempotency key, for a read-lock operation, must start with the \'R\' letter'));
+        }
 
         const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
         const cachelock = await this.acquireMutex(datasetPath);
-
         const lockValue = (await Locker.getLock(datasetPath));
+
+        if(lockValue && idempotentReadLock && !this.isWriteLock(lockValue) &&
+            (lockValue as string[]).indexOf(idempotentReadLock) > -1) {
+            await this.releaseMutex(cachelock, datasetPath);
+            return { id: idempotentReadLock, cnt: (lockValue as string[]).length };
+        }
 
         if (this.isWriteLock(lockValue)) {
 
@@ -299,7 +343,7 @@ export class Locker {
             }
 
             // create a new read lock session and a new main read lock
-            const lockID = this.generateReadLockID();
+            const lockID = idempotentReadLock || this.generateReadLockID();
             await Locker.setLock(datasetPath + '/' + lockID, lockID, this.EXP_READLOCK);
             await Locker.setLock(datasetPath, [lockID], this.EXP_READLOCK + this.TIME_5MIN);
             // when the session key expired i have to remove the wid/lockid from the main read lock
@@ -315,7 +359,7 @@ export class Locker {
 
         // wid not present -> create a new read session and update the main read lock
         if (!wid) {
-            const lockID = this.generateReadLockID();
+            const lockID = idempotentReadLock || this.generateReadLockID();
             (lockValue as string[]).push(lockID);
             await Locker.setLock(datasetPath + '/' + lockID, lockID, this.EXP_READLOCK);
             await Locker.setLock(datasetPath, lockValue, this.EXP_READLOCK + this.TIME_5MIN);
@@ -487,6 +531,7 @@ export class Locker {
 
     }
 
+    // We are acquiring a shared mutex on redis using redlock
     public static async acquireMutex(key: string): Promise<any> {
 
         try {

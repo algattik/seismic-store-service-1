@@ -21,3 +21,4 @@ export { AzureConfig } from './config';
 export { AzureCredentials } from './credentials';
 export { AzureTrace } from './trace';
 export { AzureDataEcosystemServices } from './dataecosystem';
+export { AzureSeistore } from './seistore';

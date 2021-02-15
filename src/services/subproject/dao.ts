@@ -14,10 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
-import { SubProjectModel } from '.';
-import { IJournal, IJournalTransaction } from '../../cloud';
-import { Config } from '../../cloud';
+import { SubprojectGroups, SubProjectModel } from '.';
+import { Config, IJournal, IJournalTransaction } from '../../cloud';
 import { Error } from '../../shared';
+import { TenantDAO } from '../tenant';
 
 export class SubProjectDAO {
 
@@ -42,6 +42,24 @@ export class SubProjectDAO {
         entity = entity as SubProjectModel;
         if (!entity.name) { entity.name = subprojectName; }
         if (!entity.tenant) { entity.tenant = tenantName; }
+
+
+        // Fix entities with no acls
+        if (!entity.acls) {
+
+            const tenant = await TenantDAO.get(tenantName)
+
+            const acls = {
+                'admins': [],
+                'viewers': []
+            }
+
+            acls.admins.push(SubprojectGroups.adminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            acls.admins.push(SubprojectGroups.editorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            acls.viewers.push(SubprojectGroups.viewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+
+            entity.acls = acls
+        }
 
         return entity;
 

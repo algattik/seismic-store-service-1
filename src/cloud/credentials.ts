@@ -23,10 +23,7 @@ export interface IAccessTokenModel {
 }
 
 export interface ICredentials {
-    // [REVERT-DOWNSCOPE] add the following line getStorageCredentials
-    // getStorageCredentials(bucket: string, readonly: boolean): Promise<IAccessTokenModel>;
-    // [REVERT-DOWNSCOPE] remove the next line getUserCredentials
-    getUserCredentials(subject: string): Promise<IAccessTokenModel>;
+    getStorageCredentials(bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel>;
     getServiceAccountAccessToken(): Promise<IAccessTokenModel>;
     getIAMResourceUrl(serviceSigner: string): string;
     getAudienceForImpCredentials(): string;
@@ -34,11 +31,9 @@ export interface ICredentials {
 }
 
 export abstract class AbstractCredentials implements ICredentials {
-    // [REVERT-DOWNSCOPE] add the following line getStorageCredentials
-    // public abstract async getStorageCredentials(bucket: string, readonly: boolean): Promise<IAccessTokenModel>;
-    // [REVERT-DOWNSCOPE] remove the next line getUserCredentials
-    public abstract async getUserCredentials(subject: string): Promise<IAccessTokenModel>;
-    public abstract async getServiceAccountAccessToken(): Promise<IAccessTokenModel>;
+    public abstract getStorageCredentials(
+        bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel>;
+    public abstract getServiceAccountAccessToken(): Promise<IAccessTokenModel>;
     public abstract getIAMResourceUrl(serviceSigner: string): string;
     public abstract getAudienceForImpCredentials(): string;
     public abstract getPublicKeyCertificatesUrl(): string;

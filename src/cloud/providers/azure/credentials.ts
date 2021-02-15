@@ -108,36 +108,10 @@ export class AzureCredentials extends AbstractCredentials {
         }
     }
 
-    // [REVERT-DOWNSCOPE] add this method
-    // public async getStorageCredentials(
-    //     bucket: string,
-    //     readonly: boolean)
-    //     : Promise<IAccessTokenModel> {
-    //     const accountName = AzureConfig.STORAGE_ACCOUNT_NAME;
-    //     const now = new Date();
-    //     const expiration = this.addMinutes(now, SasExpirationInMinutes);
-    //     const sasToken = await this.generateSASToken(accountName, bucket, expiration, readonly);
-    //     const result = {
-    //         access_token: sasToken,
-    //         expires_in: 3599,
-    //         token_type: 'SasUrl',
-    //     };
-    //     return result;
-    // }
-
-    // [REVERT-DOWNSCOPE] remove this method
-    public async getUserCredentials(
-        subject: string)
-        : Promise<IAccessTokenModel> {
-        const accountName = await AzureDataEcosystemServices.getStorageAccountName(
-            subject.substr(0, subject.indexOf(';')));
-        subject = subject.substr(subject.indexOf(';') + 1);
+    public async getStorageCredentials(bucket: string,readonly: boolean,partition: string): Promise<IAccessTokenModel> {
+        const accountName = await AzureDataEcosystemServices.getStorageAccountName(partition);
         const now = new Date();
         const expiration = this.addMinutes(now, SasExpirationInMinutes);
-
-        const readonly = subject[subject.length - 1] === '1'
-        const bucket = subject.slice(0, -1);
-
         const sasToken = await this.generateSASToken(accountName, bucket, expiration, readonly);
         const result = {
             access_token: sasToken,

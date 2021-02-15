@@ -53,7 +53,7 @@ export class TestCompliance {
          'slb-data-partition-id': 'tenant-a',
       },
       json: { names: ['ltag'] },
-      url: Config.DES_SERVICE_HOST + '/legal/v1/legaltags:validate',
+      url: Config.DES_SERVICE_HOST_COMPLIANCE + '/legal/v1/legaltags:validate',
    };
 
    private static isLegalTagValid() {

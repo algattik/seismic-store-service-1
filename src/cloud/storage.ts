@@ -17,12 +17,8 @@
 import { CloudFactory } from './cloud';
 
 export interface IStorage {
-    // [REVERT-DOWNSCOPE] use the commented createBucket method (remove the other)
-    // createBucket(
-    //     bucketName: string, location: string, storageClass: string): Promise<void>;
     createBucket(
-        bucketName: string, location: string, storageClass: string,
-        adminACL: string, editorACL: string, viewerACL: string): Promise<void>;
+        bucketName: string, location: string, storageClass: string): Promise<void>;
     deleteBucket(bucketName: string): Promise<void>;
     deleteBucket(bucketName: string): void;
     bucketExists(bucketName: string): Promise<boolean>;
@@ -35,21 +31,17 @@ export interface IStorage {
 }
 
 export abstract class AbstractStorage implements IStorage {
-    // [REVERT-DOWNSCOPE] use the commented createBucket method (remove the other)
-    // public abstract async createBucket(
-    //     bucketName: string, location: string, storageClass: string): Promise<void>;
-    public abstract async createBucket(
-        bucketName: string, location: string, storageClass: string,
-        adminACL: string, editorACL: string, viewerACL: string): Promise<void>;
-    public abstract async deleteBucket(bucketName: string):  Promise<void>;
-    public abstract async bucketExists(bucketName: string): Promise<boolean>;
-    public abstract async deleteFiles(bucketName: string):  Promise<void>;
-    public abstract async deleteObject(bucketName: string, objectName: string):  Promise<void>;
-    public abstract async deleteObjects(bucketName: string, prefix: string):  Promise<void>;
-    public abstract async saveObject(bucketName: string, objectName: string, data: string):  Promise<void>;
-    public abstract async copy(
+    public abstract createBucket(
+        bucketName: string, location: string, storageClass: string): Promise<void>;
+    public abstract deleteBucket(bucketName: string): Promise<void>;
+    public abstract bucketExists(bucketName: string): Promise<boolean>;
+    public abstract deleteFiles(bucketName: string): Promise<void>;
+    public abstract deleteObject(bucketName: string, objectName: string): Promise<void>;
+    public abstract deleteObjects(bucketName: string, prefix: string): Promise<void>;
+    public abstract saveObject(bucketName: string, objectName: string, data: string): Promise<void>;
+    public abstract copy(
         bucketIn: string, prefixIn: string, bucketOut: string,
-        prefixOut: string, ownerEmail: string):  Promise<void>;
+        prefixOut: string, ownerEmail: string): Promise<void>;
     public abstract randomBucketName(): string;
 }
 
