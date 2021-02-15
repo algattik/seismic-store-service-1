@@ -23,16 +23,6 @@
 			"enabled": true
 		},
 		{
-			"key": "subproject",
-			"value": "#{SUBPROJECT}#",
-			"enabled": true
-		},
-		{
-			"key": "subprojectLongName",
-			"value": "#{SUBPROJECTLONGNAME}#",
-			"enabled": true
-		},
-		{
 			"key": "adminEmail",
 			"value": "#{ADMINEMAIL}#",
 			"enabled": true

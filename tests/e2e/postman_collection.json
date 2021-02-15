@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c1ab1b94-a009-450e-85c6-bc7434f45fc9",
+		"_postman_id": "0addbc0b-ed05-4a4c-8973-fd63a716eb97",
 		"name": "seismic-store-e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -23,6 +23,25 @@
 									"pm.test(\"Body matches string\", function () {",
 									"    pm.expect(pm.response.text()).to.include(\"service OK\");",
 									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function makeID_general(length) {\r",
+									"   var result           = '';\r",
+									"   var characters       = 'abcdefghijklmnopqrstuvwxyz';\r",
+									"   var charactersLength = characters.length;\r",
+									"   for ( var i = 0; i < length; i++ ) {\r",
+									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"   }\r",
+									"   return result;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable(\"subproject\", makeID_general(16));"
 								],
 								"type": "text/javascript"
 							}
@@ -13066,6 +13085,7 @@
 									"});",
 									"",
 									"pm.environment.unset('serviceCloudProvider');",
+									"pm.environment.unset('subproject');",
 									""
 								],
 								"type": "text/javascript"
