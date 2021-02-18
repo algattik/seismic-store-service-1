@@ -357,15 +357,15 @@ export class DatasetHandler {
         });
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIn.subproject, spkey);
 
-        // check authorization (write)
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check authorizations
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
-                tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
-
         try {
+
+            // check authorization (write)
+            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+                // Check authorizations
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    subproject.acls.admins,
+                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
 
             // Retrieve the dataset metadata
             const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
