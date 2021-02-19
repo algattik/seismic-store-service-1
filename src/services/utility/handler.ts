@@ -79,6 +79,7 @@ export class UtilityHandler {
         }
 
         return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
+            subproject.tenant, subproject.name,
             subproject.gcs_bucket, readOnly,  DESUtils.getDataPartitionID(tenant.esd));
 
     }

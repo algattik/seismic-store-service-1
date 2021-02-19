@@ -16,6 +16,7 @@ export class Credentials extends AbstractCredentials {
     private serviceAccountAccessTokenExpiresIn = 0;
 
     public async getStorageCredentials(
+        tenant: string, subproject: string,
         bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel> {
         logger.info('In Credentials.getStorageCredentials.');
         const adminClient = new KcAdminClient();

@@ -38,6 +38,7 @@ const KExpiresMargin = 300; // 5 minutes
 export class Credentials extends AbstractCredentials {
 
     public async getStorageCredentials(
+        tenant: string, subproject: string,
         bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
         return {
             access_token: (
