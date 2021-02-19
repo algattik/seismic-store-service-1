@@ -1979,3 +1979,6 @@ x-google-management:
         unit: "1/min/{project}"
         values:
           STANDARD: 3000000
+
+x-google-backend:
+  deadline: 180.0
