@@ -416,10 +416,32 @@ export class DatasetHandler {
 
         // Retrieve the dataset path information
         const [datasetIN, seismicmeta, newName, wid] = DatasetParser.patch(req);
+
         // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        // unlock the detaset for close opeartion
+        // return immediately if it is a simple close wiht empty body (no patch to apply)
+        if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
+
+            // Retrieve the dataset metadata
+            const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
+
+            // check if the dataset does not exist
+            if (!dataset) {
+                throw (Error.make(Error.Status.NOT_FOUND,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            }
+
+            // unlock the detaset
+            const unlockRes = await Locker.unlock(journalClient, datasetIN, wid)
+            dataset.sbit = unlockRes.id;
+            dataset.sbit_count = unlockRes.cnt;
+
+            return dataset;
+        }
+
+        // unlock the detaset for close opeartion (and patch)
         const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
 
         // lock the dataset access
@@ -456,13 +478,6 @@ export class DatasetHandler {
                 throw (Error.make(Error.Status.NOT_FOUND,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
-            }
-
-            // return immediately if it is a simple close
-            if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
-                // release lock access to the dataset
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-                return datasetOUT;
             }
 
             if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
