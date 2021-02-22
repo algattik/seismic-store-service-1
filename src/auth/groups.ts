@@ -69,9 +69,10 @@ export class AuthGroups {
     }
 
     public static async addUserToGroup(
-        userToken: string, group: string, userEmail: string, esd: string, appkey: string, role = 'MEMBER') {
+        userToken: string, group: string, userEmail: string,
+        esd: string, appkey: string, role = 'MEMBER', checkConsistencyForCreateGroup = false) {
         await DESEntitlement.addUserToGroup(userToken, group, DESUtils.getDataPartitionID(esd), userEmail,
-            role, appkey);
+            role, appkey, checkConsistencyForCreateGroup);
     }
 
     public static async removeUserFromGroup(
@@ -82,21 +83,21 @@ export class AuthGroups {
 
     public static async listUsersInGroup(userToken: string, group: string, esd: string, appkey: string):
         Promise<IDESEntitlementMemberModel[]> {
-            const entitlementTenant = DESUtils.getDataPartitionID(esd);
-            return (await DESEntitlement.listUsersInGroup(userToken, group, entitlementTenant, appkey)).members;
+        const entitlementTenant = DESUtils.getDataPartitionID(esd);
+        return (await DESEntitlement.listUsersInGroup(userToken, group, entitlementTenant, appkey)).members;
     }
 
     public static async getUserGroups(
         userToken: string, esd: string, appkey: string): Promise<IDESEntitlementGroupModel[]> {
-            const entitlementTenant = DESUtils.getDataPartitionID(esd);
-            return await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
+        const entitlementTenant = DESUtils.getDataPartitionID(esd);
+        return await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
     }
 
-    public static async hasOneInGroups(
-        userToken: string, groupsRef: string[], esd: string, appkey: string): Promise<boolean> {
+    public static async isMemberOfAtleastOneGroup(
+        userToken: string, groupEmails: string[], esd: string, appkey: string): Promise<boolean> {
         const entitlementTenant = DESUtils.getDataPartitionID(esd);
-            const groups = await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
-            return groupsRef.some((groupsRefItem) => (groups.map((group) => group.name)).includes(groupsRefItem));
+        const groups = await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
+        return groupEmails.some((groupEmail) => (groups.map((group) => group.email)).includes(groupEmail));
     }
 
     public static async isMemberOfaGroup(

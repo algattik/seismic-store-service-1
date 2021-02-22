@@ -14,7 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
-import { Config, TraceFactory, ConfigFactory } from '../cloud';
+import { Config, ConfigFactory, TraceFactory } from '../cloud';
+import { StorageJobManager } from '../cloud/shared/queue';
 import { Locker } from '../services/dataset/locker';
 import { Feature, FeatureFlags } from '../shared';
 
@@ -34,7 +35,16 @@ async function ServerStart() {
         console.log('- Initializing redis cache')
         await Locker.init();
 
-        if(FeatureFlags.isEnabled(Feature.TRACE))  {
+        // tslint:disable-next-line
+        console.log('- Initializing storage transfer deamon')
+        StorageJobManager.setup({
+            ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
+            PORT: Config.DES_REDIS_INSTANCE_PORT,
+            KEY: Config.DES_REDIS_INSTANCE_KEY,
+            DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE
+        })
+
+        if (FeatureFlags.isEnabled(Feature.TRACE)) {
             // tslint:disable-next-line
             console.log('- Initializing cloud tracer')
             TraceFactory.build(Config.CLOUDPROVIDER).start();

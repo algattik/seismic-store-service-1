@@ -17,9 +17,8 @@
 import { Request as expRequest, Response as expResponse } from 'express';
 import { TenantModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
-import { JournalFactoryTenantClient } from '../../cloud';
-import { Config } from '../../cloud';
-import { Error, ErrorModel, Response, FeatureFlags, Feature } from '../../shared';
+import { Config, JournalFactoryTenantClient } from '../../cloud';
+import { Error, ErrorModel, Feature, FeatureFlags, Response } from '../../shared';
 import { SubProjectDAO } from '../subproject';
 import { TenantDAO } from './dao';
 import { TenantGroups } from './groups';
@@ -75,8 +74,8 @@ export class TenantHandler {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupName()],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // Check if tenant already exists
@@ -101,8 +100,8 @@ export class TenantHandler {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupName()],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         return tenant;
@@ -117,8 +116,8 @@ export class TenantHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if who make the request is a data parititon admin admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupName()],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // retrieve the subprojects list

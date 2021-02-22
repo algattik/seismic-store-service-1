@@ -41,8 +41,7 @@ export class Cos extends AbstractStorage {
     //Create a new bucket
     public async createBucket(
         bucketName: string,
-        location: string, storageClass: string,
-        adminACL: string, editorACL: string, viewerACL: string): Promise<void> {
+        location: string, storageClass: string): Promise<void> {
         logger.info('In Cos.createBucket.');
         ///not sure how to use ACLs
         const bucketParams = {

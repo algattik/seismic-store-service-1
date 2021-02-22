@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,29 +14,19 @@
 // limitations under the License.
 // ============================================================================
 
-export interface IDatasetModel {
-    name: string;
-    tenant: string;
-    subproject: string;
-    path: string;
-    created_date: string;
-    last_modified_date: string;
-    created_by: string;
-    metadata: any;
-    filemetadata: any;
-    gcsurl: string;
-    type: string;
-    ltag: string;
-    ctag: string;
-    sbit: string;
-    sbit_count: number;
-    gtags: string[];
-    readonly: boolean;
-    seismicmeta_guid: string;
-    transfer_status: string;
+import { SubProjectModel } from '../services/subproject';
+import { CloudFactory } from './cloud';
+
+export interface ISeistore {
+    checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
 }
 
-export interface IPaginationModel {
-    limit: number;
-    cursor: string;
+export abstract class AbstractSeistore implements ISeistore {
+    public abstract checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
+}
+
+export class SeistoreFactory extends CloudFactory {
+    public static build(providerLabel: string): ISeistore {
+        return CloudFactory.build(providerLabel, AbstractSeistore) as ISeistore;
+    }
 }

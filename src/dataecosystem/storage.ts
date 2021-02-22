@@ -63,7 +63,7 @@ export class DESStorage {
         userToken: string, seismicUid: string, esd: string, appkey: string): Promise<void> {
 
         const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
-        
+
         const options = {
             headers: {
                 'Accept': 'application/json',

@@ -20,6 +20,7 @@ import { Datastore } from '@google-cloud/datastore';
 import { google } from '../../../src/cloud/providers';
 import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject';
 import { Tx } from '../utils';
+import { TenantDAO } from '../../../src/services/tenant';
 
 export class TestSubProject {
 
@@ -33,6 +34,7 @@ export class TestSubProject {
             this.journal = this.sandbox.createStubInstance(google.DatastoreDAO);
             this.journal.createKey.callsFake((specs) => TestSubProject.testDb.key(specs));
             this.journal.createQuery.callsFake((namespace, kind) => TestSubProject.testDb.createQuery(namespace, kind));
+            this.sandbox.stub(TenantDAO, 'get').resolves({default_acls: 'acl@acl.com', esd: 'esd', gcpid: 'gcpid', name: 'name'});
 
          });
          afterEach(() => { this.sandbox.restore(); });

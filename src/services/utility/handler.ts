@@ -16,16 +16,20 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth, AuthGroups, AuthRoles } from '../../auth';
-import { Config, CredentialsFactory, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
+import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
+import { StorageJobManager } from '../../cloud/shared/queue';
 import { DESEntitlement, DESStorage, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, DatasetModel } from '../dataset';
-import { Locker } from '../dataset/locker';
-import { SubProjectDAO, SubprojectGroups } from '../subproject';
+import { IWriteLockSession, Locker } from '../dataset/locker';
+import { SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantGroups } from '../tenant';
 import { UtilityOP } from './optype';
 import { UtilityParser } from './parser';
+import { v4 as uuidv4 } from 'uuid';
+
+import Bull from 'bull';
 
 export class UtilityHandler {
 
@@ -38,7 +42,8 @@ export class UtilityHandler {
             } else if (op === UtilityOP.LS) {
                 Response.writeOK(res, await this.ls(req));
             } else if (op === UtilityOP.CP) {
-                Response.writeOK(res, await this.cp(req));
+                const response = await this.cp(req)
+                Response.writeOK(res, { 'status': response.status }, response.code);
             } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
         } catch (error) { Response.writeError(res, error); }
 
@@ -65,25 +70,18 @@ export class UtilityHandler {
 
         if (readOnly) {
             await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(tenant.name, subproject.name),
+                subproject.acls.viewers.concat(subproject.acls.admins),
                 tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         } else {
             await Auth.isWriteAuthorized(req.headers.authorization,
-                SubprojectGroups.getWriteGroups(tenant.name, subproject.name),
+                subproject.acls.admins,
                 tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
-        // [REVERT-DOWNSCOPE] use the getStorageCredentials instead of getUserCredentials  (remove azure selector)
-        // return await credentials.getStorageCredentials(subproject.gcs_bucket, readOnly);
-        const credentials = CredentialsFactory.build(Config.CLOUDPROVIDER);
-        if(Config.CLOUDPROVIDER === 'azure') {
-            return await credentials.getUserCredentials(
-                DESUtils.getDataPartitionID(tenant.esd) + ';' + subproject.gcs_bucket + (readOnly ? '1' : '0'))
-        } else {
-            return await credentials.getUserCredentials(
-                Utils.getPropertyFromTokenPayload(req.headers.authorization, 'desid') ||
-                Utils.getEmailFromTokenPayload(req.headers.authorization));
-        }
+        return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
+            subproject.tenant, subproject.name,
+            subproject.gcs_bucket, readOnly,  DESUtils.getDataPartitionID(tenant.esd));
+
     }
 
     // list contents
@@ -124,7 +122,7 @@ export class UtilityHandler {
         // list the tenant subprojects for sdpaths <sd://tenant>
         const tenant = await TenantDAO.get(sdPath.tenant);
 
-        // Create journalClient client
+        // Create  tenant journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         if (!sdPath.subproject) {
@@ -134,19 +132,21 @@ export class UtilityHandler {
                 req.headers.authorization, entitlementTenant, req[Config.DE_FORWARD_APPKEY]);
 
             // List of all the subprojects including the ones which were previously deleted
-            const allSubProjects =  groups.filter((el) => this.validateEntitlements(el) &&
+            const allSubProjects = groups.filter((el) => this.validateEntitlements(el) &&
                 el.name.startsWith(TenantGroups.groupPrefix(sdPath.tenant)))
                 .map((el) => el.name.split('.')[4])
                 .filter((item, pos, self) => self.indexOf(item) === pos);
 
             // Registered subprojects in the journal
             const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant))
-                                            .map(subproject => subproject.name)
+                .map(sp => sp.name)
 
             // Intersection of two lists above
-            return allSubProjects.filter((subproject) => registeredSubprojects.includes(subproject))
+            return allSubProjects.filter((sp) => registeredSubprojects.includes(sp))
 
         }
+
+
 
         // list the folder content for sdpaths <sd://tenant/subproject>
         const dataset = {} as DatasetModel;
@@ -154,10 +154,18 @@ export class UtilityHandler {
         dataset.subproject = sdPath.subproject;
         dataset.path = sdPath.path || '/';
 
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant,
+            path: [Config.SUBPROJECTS_KIND, dataset.subproject],
+        });
+
+
+        const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject, spkey)
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             //  Check if user is authorized
             await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(sdPath.tenant, sdPath.subproject),
+                subproject.acls.viewers.concat(subproject.acls.admins),
                 sdPath.tenant, sdPath.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -185,37 +193,23 @@ export class UtilityHandler {
     // copy datasets (same tenancy required)
     private static async cp(req: expRequest) {
 
+        enum TransferStatus {
+            InProgress = 'InProgress',
+            Completed = 'Completed',
+            Aborted = 'Aborted'
+        }
+
         const userInputs = UtilityParser.cp(req);
         const sdPathFrom = userInputs.sdPathFrom;
         const sdPathTo = userInputs.sdPathTo;
-        let datasetPathMutex: any;
+        let copyJob: Bull.Job
+        let preRegisteredDataset: DatasetModel;
+        let writeLockSession: IWriteLockSession;
 
         const tenant = await TenantDAO.get(sdPathFrom.tenant);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            if (sdPathFrom.subproject === sdPathTo.subproject) {
-
-                // check if has write access on source/destination dataset (same subproject)
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    SubprojectGroups.getWriteGroups(sdPathFrom.tenant, sdPathFrom.subproject),
-                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-
-            } else {
-
-                // check if has write access on destination dataset and read access on the source subproject
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    SubprojectGroups.getWriteGroups(sdPathTo.tenant, sdPathTo.subproject),
-                    sdPathTo.tenant, sdPathTo.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                await Auth.isReadAuthorized(req.headers.authorization,
-                    SubprojectGroups.getReadGroups(sdPathFrom.tenant, sdPathFrom.subproject),
-                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-
-            }
-        }
-
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const transaction = journalClient.getTransaction();
 
         const spkey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + sdPathTo.tenant,
@@ -225,6 +219,28 @@ export class UtilityHandler {
         // retrieve the destination subproject info
         const subproject = await SubProjectDAO.get(journalClient, sdPathTo.tenant, sdPathTo.subproject, spkey);
 
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            if (sdPathFrom.subproject === sdPathTo.subproject) {
+
+                // check if has write access on source/destination dataset (same subproject)
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    subproject.acls.admins,
+                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
+            } else {
+
+                // check if has write access on destination dataset and read access on the source subproject
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    subproject.acls.admins,
+                    sdPathTo.tenant, sdPathTo.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    subproject.acls.viewers.concat(subproject.acls.admins),
+                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
+            }
+        }
+
         // retrieve the source dataset
         let datasetFrom = {} as DatasetModel;
         datasetFrom.tenant = sdPathFrom.tenant;
@@ -233,7 +249,6 @@ export class UtilityHandler {
         datasetFrom.name = sdPathFrom.dataset;
         const datasetModelFrom = await DatasetDAO.get(journalClient, datasetFrom);
         datasetFrom = datasetModelFrom[0];
-        const dsFromkey = datasetModelFrom[1];
 
         // check if the dataset does not exist
         if (!datasetFrom) {
@@ -263,51 +278,87 @@ export class UtilityHandler {
         datasetTo.name = sdPathTo.dataset;
         datasetTo.path = sdPathTo.path;
         datasetTo.last_modified_date = new Date().toString();
-        datasetTo.gcsurl = subproject.gcs_bucket + '/' + Utils.makeID(16);
+        datasetTo.gcsurl = subproject.gcs_bucket + '/' + uuidv4()
         datasetTo.ltag = datasetTo.ltag || subproject.ltag;
         datasetTo.sbit = Utils.makeID(16);
         datasetTo.sbit_count = 1;
         datasetTo.seismicmeta_guid = datasetFrom.seismicmeta_guid ? seismicmeta.id : undefined;
-        const datasetToPath = datasetTo.tenant + '/' + datasetTo.subproject + datasetTo.path + datasetTo.name;
-
-        // check if the source can be opened for read (no copy on writelock dataset)
-        const currlock = await Locker.getLockFromModel(datasetFrom);
-        if (currlock && Locker.isWriteLock(currlock)) {
-            throw (Error.make(Error.Status.BAD_REQUEST,
-                'The dataset ' + Config.SDPATHPREFIX + sdPathFrom.tenant + '/' + sdPathFrom.subproject +
-                sdPathFrom.path + sdPathFrom.dataset + ' is write locked and cannot be copied'));
-        }
-
-        // apply the read lock on the source if requested
-        let readlock: { id: string, cnt: number; };
-        if (userInputs.lock) {
-            readlock = await Locker.acquireReadLock(journalClient, datasetFrom);
-        }
-
-        if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
-            // Check if legal tag of the source is valid
-            if (datasetFrom.ltag) { // [TODO] we should always have ltag. some datasets does not have it (the old ones)
-                await Auth.isLegalTagValid(req.headers.authorization, datasetFrom.ltag,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            }
-
-            // Check if legal tag of the destination is valid
-            // [TODO] we should always have ltag. some datasets does not have it (the old ones)
-            if (datasetTo.ltag && datasetTo.ltag !== datasetFrom.ltag) {
-                await Auth.isLegalTagValid(req.headers.authorization, datasetTo.ltag,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            }
-        }
-
-        // Check if dataset already exists
-        if ((await DatasetDAO.get(journalClient, datasetTo))[0]) {
-            throw (Error.make(Error.Status.ALREADY_EXISTS,
-                'The dataset ' +
-                Config.SDPATHPREFIX + datasetTo.tenant + '/' + datasetTo.subproject + datasetTo.path + datasetTo.name +
-                ' already exists'));
-        }
+        datasetTo.transfer_status = TransferStatus.InProgress
 
         try {
+
+            // check if a copy is already in progress from a previous request
+            const toDatasetLock = await Locker.getLockFromModel(datasetTo)
+
+            const results = await DatasetDAO.get(journalClient, datasetTo)
+            preRegisteredDataset = results[0] as DatasetModel
+
+            if (toDatasetLock && Locker.isWriteLock(toDatasetLock)) {
+
+                if (preRegisteredDataset && 'transfer_status' in preRegisteredDataset &&
+                    preRegisteredDataset.transfer_status === TransferStatus.InProgress) {
+                    return {
+                        'status': 'Copy operation is already in progress..',
+                        'code': 202
+                    }
+                }
+                else {
+                    throw (Error.make(Error.Status.BAD_REQUEST,
+                        'The dataset ' + Config.SDPATHPREFIX + sdPathTo.tenant + '/' + sdPathTo.subproject +
+                        sdPathTo.path + sdPathTo.dataset + ' is write locked and cannot be copied'));
+                }
+            }
+
+            if (preRegisteredDataset) {
+
+                if ('transfer_status' in preRegisteredDataset) {
+                    return {
+                        'status': preRegisteredDataset.transfer_status,
+                        'code': preRegisteredDataset.transfer_status === TransferStatus.Aborted ? 500 : 200
+                    }
+                }
+
+                throw (Error.make(Error.Status.ALREADY_EXISTS,
+                    'The dataset ' +
+                    Config.SDPATHPREFIX + datasetTo.tenant + '/' +
+                    datasetTo.subproject + datasetTo.path + datasetTo.name +
+                    ' already exists'));
+            }
+
+            writeLockSession = await Locker.createWriteLock(datasetTo);
+
+            // check if the source can be opened for read (no copy on writelock dataset)
+            const fromDatasetLock = await Locker.getLockFromModel(datasetFrom);
+
+            if (fromDatasetLock && Locker.isWriteLock(fromDatasetLock)) {
+                throw (Error.make(Error.Status.BAD_REQUEST,
+                    'The dataset ' + Config.SDPATHPREFIX + sdPathFrom.tenant + '/' + sdPathFrom.subproject +
+                    sdPathFrom.path + sdPathFrom.dataset + ' is write locked and cannot be copied'));
+            }
+
+            // apply the read lock on the source if requested
+            let readlock: { id: string, cnt: number; };
+
+            if (userInputs.lock) {
+                readlock = await Locker.acquireReadLock(journalClient, datasetFrom);
+            }
+
+            if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
+                // Check if legal tag of the source is valid
+                if (datasetFrom.ltag) {
+                    // [TODO] we should always have ltag. some datasets does not have it (the old ones)
+                    await Auth.isLegalTagValid(req.headers.authorization, datasetFrom.ltag,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                }
+
+                // Check if legal tag of the destination is valid
+                // [TODO] we should always have ltag. some datasets does not have it (the old ones)
+                if (datasetTo.ltag && datasetTo.ltag !== datasetFrom.ltag) {
+                    await Auth.isLegalTagValid(req.headers.authorization, datasetTo.ltag,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                }
+            }
+
             const dsTokey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + datasetTo.tenant + '-' + datasetTo.subproject,
                 path: [Config.DATASETS_KIND],
@@ -321,14 +372,9 @@ export class UtilityHandler {
                 });
             }
 
-            await transaction.run();
-
-            // lock for write the destination
-            datasetPathMutex = await Locker.createWriteLock(datasetTo);
-
             // Register the dataset and lock the source if required
             await Promise.all([
-                DatasetDAO.register(transaction, { key: dsTokey, data: datasetTo }),
+                DatasetDAO.register(journalClient, { key: dsTokey, data: datasetTo }),
                 (datasetTo.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization, [seismicmeta],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
@@ -342,40 +388,39 @@ export class UtilityHandler {
 
             // copy the objects
             const usermail = Utils.getEmailFromTokenPayload(req.headers.authorization);
-            const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-            // await GCS.objectsCopy(bucketFrom, prefixFrom, bucketTo, prefixTo, usermail);
-            await storage.copy(bucketFrom, prefixFrom, bucketTo, prefixTo, usermail);
+            const RETRY_MAX_ATTEMPTS = 10
 
-            // replace the CDO object
-            const CDOName = prefixTo + '/' + Config.FILE_CDO;
-            const CDOMex = JSON.stringify({
-                gcs_prefix: prefixTo,
-                name: Config.SDPATHPREFIX + datasetTo.tenant + '/' +
-                    datasetTo.subproject + datasetTo.path + datasetTo.name,
-            });
-            // await GCS.objectSave(tenant.gcpid, subproject.gcs_bucket, CDOName, CDOMex);
-            await storage.saveObject(subproject.gcs_bucket, CDOName, CDOMex);
+            copyJob = await StorageJobManager.copyJobsQueue.add({
+                sourceBucket: bucketFrom,
+                destinationBucket: bucketTo,
+                datasetFrom,
+                datasetTo,
+                prefixFrom,
+                prefixTo,
+                usermail,
+                tenant,
+                subproject,
+                readlockId: readlock ? readlock.id : null
+            }, {
+                attempts: RETRY_MAX_ATTEMPTS
+            })
 
-            // commit transaction and release destination mutex if previously acquired
-            await transaction.commit();
-            if (datasetPathMutex) {
-                await Locker.releaseMutex(datasetPathMutex, datasetToPath);
-            }
+            // release the mutex but keep the lock
+            await Locker.removeWriteLock(writeLockSession, true);
 
-            // unlock the destination
-            await Locker.unlock(journalClient, datasetTo, datasetTo.sbit);
-
-            // remove the read lock on the source if requested
-            if (userInputs.lock) {
-                await Locker.unlock(journalClient, datasetFrom, readlock.id);
+            return {
+                'status': 'Copy in progress',
+                'code': 202
             }
 
         } catch (err) {
-            transaction.rollback();
 
-            if (datasetPathMutex) {
-                await Locker.del(datasetToPath);
+            await Locker.removeWriteLock(writeLockSession);
+
+            if (copyJob) {
+                await copyJob.remove()
             }
+
             throw (err);
         }
     }

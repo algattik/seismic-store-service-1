@@ -59,7 +59,7 @@ export class DatasetParser {
         if (seismicmeta) {
             Params.checkString(seismicmeta.kind, 'kind'); // mandatory string
             Params.checkObject(seismicmeta.data, 'data');
-            seismicmeta.recordType = seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic:';
+            seismicmeta.recordType = seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic3d:';
         }
 
         return [dataset, seismicmeta];

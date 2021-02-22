@@ -15,9 +15,10 @@
 // ============================================================================
 
 import { Storage } from '@google-cloud/storage';
-import { ConfigGoogle } from './config';
-import { AbstractStorage, StorageFactory } from '../../storage';
 import { TenantModel } from '../../../services/tenant';
+import { Config } from '../../config';
+import { AbstractStorage, StorageFactory } from '../../storage';
+import { ConfigGoogle } from './config';
 
 @StorageFactory.register('google')
 export class GCS extends AbstractStorage {
@@ -54,37 +55,18 @@ export class GCS extends AbstractStorage {
     }
 
     // Create a new bucket
-    // [REVERT-DOWNSCOPE] replace the signature method
-    // public async createBucket(
-    //     bucketName: string, location: string, storageClass: string): Promise<void> {
     public async createBucket(
-        bucketName: string,
-        location: string, storageClass: string,
-        adminACL: string, editorACL: string, viewerACL: string): Promise<void> {
+        bucketName: string, location: string, storageClass: string): Promise<void> {
         const bucket = this.getStorageclient().bucket(bucketName);
 
-        await bucket.create({ location, storageClass });
-
-        // [REVERT-DOWNSCOPE] remove this block until line "await bucket.iam.setPolicy(policy)" included
-        const [policy] = await bucket.iam.getPolicy();
-        policy.bindings.push(
-            {
-                members: ['group:' + adminACL, 'group:' + editorACL, 'group:' + viewerACL],
-                role: 'roles/storage.legacyObjectReader',
-            },
-            { members: ['group:' + adminACL], role: 'roles/storage.legacyBucketOwner' },
-            { members: ['group:' + editorACL], role: 'roles/storage.legacyBucketWriter' },
-            { members: ['group:' + viewerACL], role: 'roles/storage.legacyBucketReader' });
-        await bucket.iam.setPolicy(policy);
-
-        // [REVERT-DOWNSCOPE] add this commented section
-        // await bucket.setMetadata({
-        //     iamConfiguration: {
-        //         uniformBucketLevelAccess: {
-        //             enabled: true
-        //         }
-        //     }
-        // });
+            await bucket.create({ location, storageClass });
+            await bucket.setMetadata({
+                iamConfiguration: {
+                    uniformBucketLevelAccess: {
+                        enabled: false
+                    }
+                }
+            });
     }
 
     // Delete a bucket

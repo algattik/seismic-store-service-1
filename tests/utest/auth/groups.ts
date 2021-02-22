@@ -158,7 +158,7 @@ export class TestAuthGroups {
             },
          ];
          this.spy.stub(DESEntitlement, 'getUserGroups').resolves(groups);
-         const result = await AuthGroups.hasOneInGroups('token', ['group-a'], 'esd', 'appkey');
+         const result = await AuthGroups.isMemberOfAtleastOneGroup('token', ['email-a'], 'esd', 'appkey');
 
          Tx.checkTrue(result === true, done);
       });
@@ -177,7 +177,7 @@ export class TestAuthGroups {
          }];
 
          this.spy.stub(DESEntitlement, 'getUserGroups').resolves(groups);
-         const result = await AuthGroups.getUserGroups('token', 'esd','appkey');
+         const result = await AuthGroups.getUserGroups('token', 'esd', 'appkey');
 
          Tx.checkTrue(result === groups, done);
       });
@@ -199,7 +199,7 @@ export class TestAuthGroups {
          listUsersInGroupStub.resolves({ members, nextCursor });
 
          this.spy.stub(DESUtils, 'getDataPartitionID').returns('data-partition-a');
-         const result = await AuthGroups.listUsersInGroup(undefined, 'group-a', 'esd','appkey');
+         const result = await AuthGroups.listUsersInGroup(undefined, 'group-a', 'esd', 'appkey');
 
          Tx.checkTrue(result === members, done);
       });
@@ -216,7 +216,7 @@ export class TestAuthGroups {
 
          await AuthGroups.addUserToGroup(undefined, 'group-a', 'useremail', 'esd', 'appkey', 'role-a');
 
-         const calledWithResult = addUserToGroupStub.calledWith(undefined, 'group-a', 'data-partition-a', 'useremail',  'role-a', 'appkey');
+         const calledWithResult = addUserToGroupStub.calledWith(undefined, 'group-a', 'data-partition-a', 'useremail', 'role-a', 'appkey');
 
          Tx.checkTrue(calledWithResult === true, done);
       });

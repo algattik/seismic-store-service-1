@@ -18,9 +18,9 @@
 # usage menu function
 usage() {
     printf  "\n[USAGE] ./e2e/tests/run_e2e_tests.sh --seistore-svc-url=... " \
-            "--seistore-svc-api-key=... --user-idtoken=... --tenant=... --subproject=... " \
+            "--seistore-svc-api-key=... --user-idtoken=... --tenant=..." \
             "--admin-email=... --datapartition=... --legaltag01=... --legaltag02=... " \
-            "--newuser(optional)=... --VCS-provider(optional)=... --subproject-long-name(optional)=... --user1-idtoken(optional)=... " \
+            "--newuser(optional)=... --VCS-provider(optional)=... --user1-idtoken(optional)=... " \
             "--stoken-ta(optional)=... --stoken-sa(optional)=... --stoken-se(optional)=... --stoken-sv(optional)=... " \
             "--ta-user(optional)=... --sa-user(optional)=... --se-user(optional)=... --sv-user(optional)=..." \
             "--expired-token(optional)=... --de-app-key(optional)=... --authorization(optional)=...\n"
@@ -39,13 +39,11 @@ fi
 # argument [seistore-svc-api-key] seismic store service api key - required
 # argument [user-idtoken] user credentail token - required
 # argument [tenant] seismic store working tenant name - required
-# argument [subproject] seismic store working subproject name - required
 # argument [admin-email] user credentail email - required
 # argument [datapartition] data partition id - required
 # argument [legaltag01] test legal tag - required
 # argument [legaltag02] test legal tag  - required
 # argument [newuser] user email for a new user to add partition id - required
-# argument [subproject-long-name] subproject long name - optional
 # argument [VCS-Provider] version control system provider - optional
 # argument [user1-idtoken] not-whitelisted user credentail token - required for authorization
 # argument [stoken-ta] user credentail token for tenant admin - required for authorization
@@ -76,14 +74,6 @@ case $i in
   ;;
   --tenant=*)
   working_tenant="${i#*=}"
-  shift
-  ;;
-  --subproject=*)
-  working_subproject="${i#*=}"
-  shift
-  ;;
-  --subproject-long-name=*)
-  working_subproject_long_name="${i#*=}"
   shift
   ;;
   --admin-email=*)
@@ -159,7 +149,7 @@ case $i in
   shift
   ;;
   *)
-  usage "unknown option $i" && exit 1;
+  usage "unknown option $i"
   ;;
 esac
 done
@@ -169,7 +159,6 @@ if [ -z "${seistore_svc_api_key}" ]; then usage "seistore-svc-api-key not define
 if [ -z "${seistore_svc_url}" ]; then usage "seistore-svc-url not defined" && exit 1; fi
 if [ -z "${user_idtoken}" ]; then usage "user-idtoken not defined" && exit 1; fi
 if [ -z "${working_tenant}" ]; then usage "tenant not defined" && exit 1; fi
-if [ -z "${working_subproject}" ]; then usage "subproject not defined" && exit 1; fi
 if [ -z "${admin_email}" ]; then usage "admin-email not defined" && exit 1; fi
 if [ -z "${datapartition}" ]; then usage "datapartition not defined" && exit 1; fi
 if [ -z "${legaltag01}" ]; then usage "legaltag01 not defined" && exit 1; fi
@@ -199,12 +188,10 @@ if [ "${authorization}" ]; then
 fi
 
 # optional parameters (with defaults)
-if [ -z "${working_subproject_long_name}" ]; then
-   working_subproject_long_name="this_is_a_veryveryveryveryveryveryvery_long_test_name"
-fi
 if [ -z "${de_app_key}" ]; then
    de_app_key="random_string"
 fi
+
 if [ ${VCS_Provider} ]; then
    VCS_Provider="gitlab"
 else 
@@ -218,8 +205,6 @@ printf "%s\n" "--------------------------------------------"
 printf "%s\n" "seistore service apikey = ${seistore_svc_api_key}"
 printf "%s\n" "seistore service url = ${seistore_svc_url}"
 printf "%s\n" "working tenant = ${working_tenant}"
-printf "%s\n" "working subroject = ${working_subproject}"
-printf "%s\n" "working subroject long name = ${working_subproject_long_name}"
 printf "%s\n" "user test admin = ${admin_email}"
 printf "%s\n" "datapartition = ${datapartition}"
 printf "%s\n" "legaltag01 = ${legaltag01}"
@@ -244,14 +229,13 @@ sed -i "s/#{SVC_API_KEY}#/${seistore_svc_api_key}/g" ./tests/e2e/postman_env.jso
 sed -i "s/#{STOKEN}#/${user_idtoken}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{STOKEN1}#/${user1_idtoken}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{TENANT}#/${working_tenant}/g" ./tests/e2e/postman_env.json
-sed -i "s/#{SUBPROJECT}#/${working_subproject}/g" ./tests/e2e/postman_env.json
-sed -i "s/#{SUBPROJECTLONGNAME}#/${working_subproject_long_name}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{ADMINEMAIL}#/${admin_email}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DATAPARTITION}#/${datapartition}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{LEGALTAG01}#/${legaltag01}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{LEGALTAG02}#/${legaltag02}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{NEWUSEREMAIL}#/${newuser}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
+sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 
 if [ "${authorization}" ]; then
   sed -i "s/#{STOKEN_Ta}#/${stoken_ta}/g" ./tests/e2e/postman_env.json
@@ -263,7 +247,6 @@ if [ "${authorization}" ]; then
   sed -i "s/#{SE_USER}#/${se_user}/g" ./tests/e2e/postman_env.json
   sed -i "s/#{SV_USER}#/${sv_user}/g" ./tests/e2e/postman_env.json
   sed -i "s/#{EXPIRED_TOKEN}#/${expired_token}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 fi
 
 # install requied packages

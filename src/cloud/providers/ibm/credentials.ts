@@ -15,8 +15,10 @@ export class Credentials extends AbstractCredentials {
     private serviceAccountAccessToken: IAccessTokenModel;
     private serviceAccountAccessTokenExpiresIn = 0;
 
-    public async getUserCredentials(subject: string): Promise<IAccessTokenModel> {
-        logger.info('In Credentials.getUserCredentials.');
+    public async getStorageCredentials(
+        tenant: string, subproject: string,
+        bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel> {
+        logger.info('In Credentials.getStorageCredentials.');
         const adminClient = new KcAdminClient();
         adminClient.setConfig(
             {
@@ -56,7 +58,7 @@ export class Credentials extends AbstractCredentials {
         const token_expiry:number = +Utils.getPropertyFromTokenPayload(token,'exp');//conversted string to number
         
         
-        logger.info('Returning from Credentials.getUserCredentials.');
+        logger.info('Returning from Credentials.getStorageCredentials.');
         return {
             access_token : token,
             expires_in : token_expiry,
@@ -98,7 +100,7 @@ export class Credentials extends AbstractCredentials {
         logger.info('Getting token by calling getAccessToken.');
         const token = adminClient.getAccessToken();
         logger.debug('Token - '+token);
-        logger.info('Returning from Credentials.getUserCredentials.');
+        logger.info('Returning from Credentials.getStorageCredentials.');
         return token;
     }
 

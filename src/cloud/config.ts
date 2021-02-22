@@ -85,9 +85,6 @@ export abstract class Config implements IConfig {
     // Impersonation Token Service Account [this is the account used to sign the impersonation token]
     public static IMP_SERVICE_ACCOUNT_SIGNER: string;
 
-    // Consistency Data Object
-    public static FILE_CDO = 'dataconsistency.cdo';
-
     // Redis cache for lock
     public static LOCKSMAP_REDIS_INSTANCE_ADDRESS: string;
     public static LOCKSMAP_REDIS_INSTANCE_PORT: number;
@@ -127,6 +124,14 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_TRACE = true;
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
+
+    // WriteLock Skip
+    // This is an open issue to discuss.
+    // Checking the write lock is the correct behaviour and this varialbe shoudl be set to "false".
+    // The current client libraries are not capable to send the lockin session id on mutable operations.
+    // As results imposing this check will break the functionalities of many current running applications.
+    // The C++ SDK mainly reuqire a fix on how behave on mutable calls.
+    public static SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS = true;
 
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;

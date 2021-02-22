@@ -93,9 +93,9 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
-                userToken, [TenantGroups.adminGroupName(tenant)], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                userToken, [TenantGroups.adminGroup(tenant)], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
-        if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
+        if (FeatureFlags.isEnabled(Feature.LEGALTAG) && subproject.ltag) {
             // Check if the legal tag is valid
             await Auth.isLegalTagValid(req.headers.authorization,
                 subproject.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
@@ -165,23 +165,26 @@ export class SubProjectHandler {
 
         subproject.gcs_bucket = await this.getBucketName(tenant);
 
+        const adminGroups = [SubprojectGroups.adminGroup(tenant.name, subproject.name, tenant.esd),
+        SubprojectGroups.editorGroup(tenant.name, subproject.name, tenant.esd)]
+        const viewerGroups = [SubprojectGroups.viewerGroup(tenant.name, subproject.name, tenant.esd)]
+
+        subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins.concat(adminGroups)
+            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups
+        subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers.concat(viewerGroups)
+            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups
+
         // Create the GCS bucket resource
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-        // [REVERT-DOWNSCOPE] swap the methods
-        // await storage.createBucket(
-        //     subproject.gcs_bucket,
-        //     subproject.storage_location, subproject.storage_class);
         await storage.createBucket(
             subproject.gcs_bucket,
-            subproject.storage_location, subproject.storage_class,
-            SubprojectGroups.adminGroup(tenant.name, subproject.name, tenant.esd),
-            SubprojectGroups.editorGroup(tenant.name, subproject.name, tenant.esd),
-            SubprojectGroups.viewerGroup(tenant.name, subproject.name, tenant.esd));
+            subproject.storage_location, subproject.storage_class);
 
         spkey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + subproject.tenant,
             path: [Config.SUBPROJECTS_KIND, subproject.name],
         });
+
 
         // Register the subproject
         await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
@@ -189,12 +192,15 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // if admin is not the requestor, assign the admin and rm the requestor, has to be a sequential op
             if (subproject.admin !== userEmail) {
-                await Promise.all([AuthGroups.addUserToGroup(userToken, SubprojectGroups.adminGroup(tenant.name,
-                    subproject.name, tenant.esd), subproject.admin, tenant.esd, req[Config.DE_FORWARD_APPKEY],'OWNER'),
-                AuthGroups.addUserToGroup(userToken, SubprojectGroups.editorGroup(tenant.name,
-                    subproject.name, tenant.esd), subproject.admin, tenant.esd,req[Config.DE_FORWARD_APPKEY],'OWNER'),
-                AuthGroups.addUserToGroup(userToken, SubprojectGroups.viewerGroup(tenant.name,
-                    subproject.name, tenant.esd), subproject.admin, tenant.esd, req[Config.DE_FORWARD_APPKEY],'OWNER')])
+                await AuthGroups.addUserToGroup(userToken, SubprojectGroups.adminGroup(tenant.name,
+                    subproject.name, tenant.esd), subproject.admin,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
+                await AuthGroups.addUserToGroup(userToken, SubprojectGroups.editorGroup(tenant.name,
+                    subproject.name, tenant.esd), subproject.admin,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
+                await AuthGroups.addUserToGroup(userToken, SubprojectGroups.viewerGroup(tenant.name,
+                    subproject.name, tenant.esd), subproject.admin,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
             }
         }
 
@@ -203,13 +209,6 @@ export class SubProjectHandler {
 
     // retrieve the subproject metadata
     private static async get(req: expRequest, tenant: TenantModel): Promise<SubProjectModel> {
-
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check if user is a subproject admin
-            await Auth.isUserAuthorized(req.headers.authorization,
-                [SubprojectGroups.adminGroupName(
-                    tenant.name, req.params.subprojectid)], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -221,6 +220,13 @@ export class SubProjectHandler {
 
         // get subproject
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            // Check if user is member of any of the subproject's acl admin groups
+            await Auth.isUserAuthorized(req.headers.authorization,
+                subproject.acls.admins, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
 
         if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
             // Check if the legal tag is valid
@@ -238,12 +244,7 @@ export class SubProjectHandler {
     // delete the subproject
     private static async delete(req: expRequest, tenant: TenantModel) {
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if user is a subproject admin
-            await Auth.isUserAuthorized(req.headers.authorization,
-                [SubprojectGroups.adminGroupName(
-                    tenant.name, req.params.subprojectid)], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -255,6 +256,13 @@ export class SubProjectHandler {
 
         // get the subproject metadata
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            // check if user is member of any of the subproject's acl admin groups
+            await Auth.isUserAuthorized(req.headers.authorization, subproject.acls.admins,
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
 
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
 
@@ -284,13 +292,6 @@ export class SubProjectHandler {
     // delete the subproject
     private static async patch(req: expRequest, tenant: TenantModel) {
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check if user is a subproject admin
-            await Auth.isUserAuthorized(req.headers.authorization,
-                [SubprojectGroups.adminGroupName(
-                    tenant.name, req.params.subprojectid)], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
-
         const parsedUserInput = SubProjectParser.patch(req);
 
         // bad request if tehere are no field to patch
@@ -301,6 +302,7 @@ export class SubProjectHandler {
 
         // init journalClient client and key
         const journalClient = JournalFactoryTenantClient.get(tenant);
+
         const spkey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
             path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
@@ -309,10 +311,32 @@ export class SubProjectHandler {
         // get subproject
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
 
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            // Check if user is a subproject admin
+            await Auth.isUserAuthorized(req.headers.authorization,
+                subproject.acls.admins, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
+        if (parsedUserInput.acls) {
+            subproject.acls = parsedUserInput.acls
+        }
+
+
+        const adminGroups = [SubprojectGroups.adminGroup(tenant.name, subproject.name, tenant.esd),
+        SubprojectGroups.editorGroup(tenant.name, subproject.name, tenant.esd)]
+        const viewerGroups = [SubprojectGroups.viewerGroup(tenant.name, subproject.name, tenant.esd)]
+
+        subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins
+            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups
+        subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers
+            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups
+
+
         // update the legal tag (check if the new one is valid)
         if (parsedUserInput.ltag) {
 
-            if (!FeatureFlags.isEnabled(Feature.LEGALTAG)) {
+            if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
                 await Auth.isLegalTagValid(
                     req.headers.authorization, parsedUserInput.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
@@ -322,8 +346,6 @@ export class SubProjectHandler {
 
                 // update the subproject ltag
                 subproject.ltag = parsedUserInput.ltag;
-                await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
-
                 // recursively update all datasets legal tag
                 if (parsedUserInput.recursive) {
                     const pagination = { limit: 1000, cursor: undefined } as PaginationModel;
@@ -347,6 +369,10 @@ export class SubProjectHandler {
 
         }
 
+        if (parsedUserInput.ltag || parsedUserInput.acls) {
+            await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
+        }
+
         return subproject
 
     }
@@ -357,8 +383,8 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroupName(tenant)],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // init journalClient client
@@ -376,7 +402,7 @@ export class SubProjectHandler {
                 if (validatedLtag.indexOf(subproject.ltag) !== -1) {
                     results.push(subproject);
                 } else if (await Auth.isLegalTagValid(req.headers.authorization, subproject.ltag,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY], false)) {
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY], false)) {
                     validatedLtag.push(subproject.ltag);
                     results.push(subproject);
                 }

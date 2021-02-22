@@ -15,11 +15,11 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
-import { ImpTokenModel  } from '.';
+import { ImpTokenModel } from '.';
 import { Auth } from '../../auth';
-import { Config } from '../../cloud';
-import { Error, Response, Utils, FeatureFlags, Feature } from '../../shared';
-import { SubprojectGroups } from '../subproject';
+import { Config, JournalFactoryTenantClient } from '../../cloud';
+import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
+import { SubProjectDAO } from '../subproject';
 import { TenantDAO } from '../tenant';
 import { ImpTokenDAO } from './dao';
 import { ImpTokenOP } from './optype';
@@ -77,15 +77,30 @@ export class ImpTokenHandler {
         const checkAuthorizations = [];
         for (const item of tokenBody.resources) {
             const resourcePath = item.resource.split('/');
+
+            const subprojectName = resourcePath[1]
+
+
+            // init journalClient client
+            const journalClient = JournalFactoryTenantClient.get(tenant);
+
+            const spkey = journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+                path: [Config.SUBPROJECTS_KIND, subprojectName],
+            });
+
+            // retrieve the destination subproject info
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, subprojectName, spkey);
+
             if (item.readonly) {
                 checkAuthorizations.push(
                     Auth.isReadAuthorized(tokenBody.userToken,
-                        SubprojectGroups.getReadGroups(resourcePath[0], resourcePath[1]),
+                        subproject.acls.viewers.concat(subproject.acls.admins),
                         resourcePath[0], resourcePath[1], tenant.esd, req[Config.DE_FORWARD_APPKEY], false));
             } else {
                 checkAuthorizations.push(
                     Auth.isWriteAuthorized(tokenBody.userToken,
-                        SubprojectGroups.getWriteGroups(resourcePath[0], resourcePath[1]),
+                        subproject.acls.admins,
                         resourcePath[0], resourcePath[1], tenant.esd, req[Config.DE_FORWARD_APPKEY], false));
             }
         }

@@ -14,29 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
-export interface IDatasetModel {
-    name: string;
-    tenant: string;
-    subproject: string;
-    path: string;
-    created_date: string;
-    last_modified_date: string;
-    created_by: string;
-    metadata: any;
-    filemetadata: any;
-    gcsurl: string;
-    type: string;
-    ltag: string;
-    ctag: string;
-    sbit: string;
-    sbit_count: number;
-    gtags: string[];
-    readonly: boolean;
-    seismicmeta_guid: string;
-    transfer_status: string;
-}
+import { SubProjectModel } from '../../../services/subproject';
+import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 
-export interface IPaginationModel {
-    limit: number;
-    cursor: string;
+@SeistoreFactory.register('azure')
+export class AzureSeistore extends AbstractSeistore {
+    public checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel) { return; }
 }
