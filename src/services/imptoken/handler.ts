@@ -18,6 +18,7 @@ import { Request as expRequest, Response as expResponse } from 'express';
 import { ImpTokenModel } from '.';
 import { Auth } from '../../auth';
 import { Config, JournalFactoryTenantClient } from '../../cloud';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubProjectDAO } from '../subproject';
 import { TenantDAO } from '../tenant';
@@ -64,12 +65,13 @@ export class ImpTokenHandler {
 
         if (!FeatureFlags.isEnabled(Feature.IMPTOKEN)) return {} as ImpTokenModel;
 
-        const tokenBody = ImpTokenParser.create(req);
+        const tokenBody = await ImpTokenParser.create(req);
         const tenantName = tokenBody.resources[0].resource.split('/')[0];
         const tenant = await TenantDAO.get(tenantName);
 
         // check if it is a trusted application
-        const appEmail = Utils.getEmailFromTokenPayload(req.headers.authorization, false);
+        const appEmail = await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, false);
 
         await Auth.isAppAuthorized(tenant, appEmail);
 

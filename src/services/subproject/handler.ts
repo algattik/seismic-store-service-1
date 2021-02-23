@@ -18,6 +18,7 @@ import { Request as expRequest, Response as expResponse } from 'express';
 import { SubProjectModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
 import { Config, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
 import { TenantGroups, TenantModel } from '../tenant';
@@ -84,9 +85,10 @@ export class SubProjectHandler {
     private static async create(req: expRequest, tenant: TenantModel): Promise<SubProjectModel> {
 
         // Parse input parameters
-        const subproject = SubProjectParser.create(req);
+        const subproject = await SubProjectParser.create(req);
         const userToken = req.headers.authorization;
-        const userEmail = Utils.getEmailFromTokenPayload(userToken);
+        const userEmail = await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
 
         subproject.admin = subproject.admin || userEmail;
 

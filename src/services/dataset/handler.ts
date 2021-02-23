@@ -99,7 +99,7 @@ export class DatasetHandler {
     private static async register(req: expRequest, tenant: TenantModel) {
 
         // parse the user input and create the dataset metadata model
-        const userInput = DatasetParser.register(req);
+        const userInput = await DatasetParser.register(req);
         const dataset = userInput[0];
         const seismicmeta = userInput[1];
         let writeLockSession: IWriteLockSession;

@@ -33,12 +33,6 @@ export class Utils {
             email.replace('slbservice.com@slb.com', 'slbservice.com@delfiserviceaccount.com') : email;
     }
 
-    public static getEmailFromTokenPayload(base64jwtpayload: string, swapSauthEmailClaimToV2=true): string {
-        const payload = this.getPayloadFromStringToken(base64jwtpayload);
-        const email = payload.email === Config.IMP_SERVICE_ACCOUNT_SIGNER ? payload.obo : payload.email;
-        return swapSauthEmailClaimToV2 ? this.checkSauthV1EmailDomainName(email) : email;
-    }
-
     public static getIssFromPayload(base64jwtpayload: string): string {
         return this.getPayloadFromStringToken(base64jwtpayload).iss;
     }
@@ -56,7 +50,7 @@ export class Utils {
         return id;
     }
 
-    private static getPayloadFromStringToken(base64jwtpayload: string): any {
+    public static getPayloadFromStringToken(base64jwtpayload: string): any {
 
         if (base64jwtpayload === undefined) { return undefined; }
 

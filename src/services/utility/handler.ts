@@ -30,6 +30,7 @@ import { UtilityParser } from './parser';
 import { v4 as uuidv4 } from 'uuid';
 
 import Bull from 'bull';
+import { SeistoreFactory } from '../../cloud/seistore';
 
 export class UtilityHandler {
 
@@ -387,7 +388,8 @@ export class UtilityHandler {
             const prefixTo = datasetTo.gcsurl.split('/')[1];
 
             // copy the objects
-            const usermail = Utils.getEmailFromTokenPayload(req.headers.authorization);
+            const usermail = await SeistoreFactory.build(
+                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
             const RETRY_MAX_ATTEMPTS = 10
 
             copyJob = await StorageJobManager.copyJobsQueue.add({

@@ -18,6 +18,7 @@ import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth, AuthGroups, AuthRoles } from '../../auth';
 import { Config } from '../../cloud';
 import { JournalFactoryTenantClient } from '../../cloud/journal';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubProjectDAO, SubprojectGroups } from '../subproject';
 import { TenantDAO, TenantGroups } from '../tenant';
@@ -135,7 +136,8 @@ export class UserHandler {
 
         // user cannot remove himself
         // DE allows this operation, why do we disallow?
-        if (Utils.getEmailFromTokenPayload(req.headers.authorization) === userEmail) {
+        if ((await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true)) === userEmail) {
             throw (Error.make(Error.Status.BAD_REQUEST, 'A user cannot remove himself.'));
         }
         // retrieve the tenant informations
