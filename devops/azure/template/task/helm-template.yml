@@ -29,4 +29,4 @@ steps:
 
           echo "Extracting Manifest"
           helm template $SERVICE_NAME $CHART_PATH -f $(Build.SourcesDirectory)/$(Build.Repository.Name)/$CHART_PATH/values.yaml --output-dir $CHART_PATH/$GENERATION_PATH --set image.tag=$runtimeTag --set image.repository=$CONTAINER_REGISTRY_NAME.azurecr.io/$utest_runtime_image
-          cat $CHART_PATH/$GENERATION_PATH/sdms/templates/deployment.yaml
+          cat $CHART_PATH/$GENERATION_PATH/sdms/templates/configmap.yaml
