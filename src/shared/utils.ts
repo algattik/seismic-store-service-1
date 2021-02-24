@@ -33,7 +33,7 @@ export class Utils {
             email.replace('slbservice.com@slb.com', 'slbservice.com@delfiserviceaccount.com') : email;
     }
 
-    public static getEmailFromTokenPayload(base64jwtpayload: string, swapSauthEmailClaimToV2=true): string {
+    public static getEmailFromTokenPayload(base64jwtpayload: string, swapSauthEmailClaimToV2 = true): string {
         const payload = this.getPayloadFromStringToken(base64jwtpayload);
         const email = payload.email === Config.IMP_SERVICE_ACCOUNT_SIGNER ? payload.obo : payload.email;
         return swapSauthEmailClaimToV2 ? this.checkSauthV1EmailDomainName(email) : email;
@@ -45,6 +45,10 @@ export class Utils {
 
     public static getExpTimeFromPayload(base64jwtpayload: string): number {
         return Number(this.getPayloadFromStringToken(base64jwtpayload).exp);
+    }
+
+    public static getAudienceFromPayload(base64jwtpayload: string): string {
+        return this.getPayloadFromStringToken(base64jwtpayload).aud
     }
 
     public static makeID(len: number): string {
