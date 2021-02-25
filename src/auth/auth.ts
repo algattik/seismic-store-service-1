@@ -44,7 +44,8 @@ export class Auth {
             }, 'auth')
         }
 
-        const cacheKey = Utils.getEmailFromTokenPayload(authToken) + ',' + authGroupEmails.sort().join(',');
+        const cacheKey = Utils.getEmailFromTokenPayload(authToken) + ','
+            + Utils.getAudienceFromPayload(authToken) + ',' + authGroupEmails.sort().join(',');
 
         let isAuthorized = await this._cache.get(cacheKey);
         if (isAuthorized === undefined) { // key not exist in cache -> canll entitlement
