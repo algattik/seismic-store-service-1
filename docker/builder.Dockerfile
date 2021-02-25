@@ -1,4 +1,3 @@
-
 # ============================================================================
 # Copyright 2017-2019, Schlumberger
 #
@@ -35,5 +34,5 @@ RUN bash tmp/nodesource_setup.sh
 RUN rm -f tmp/nodesource_setup.sh
 
 # install nodejs and typescript globally
-RUN apt-get install -y nodejs
+RUN apt-get update && apt-get install -y nodejs
 RUN npm install -g typescript
