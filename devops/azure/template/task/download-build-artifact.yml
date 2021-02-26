@@ -4,5 +4,5 @@ steps:
   - task: DownloadBuildArtifacts@0
     displayName: 'Pull Build Artifacts'
     inputs:
-      artifactName: '${{ parameters.providerName }}_$(utest.runtime.image)'
+      artifactName: '${{ parameters.providerName }}_$(utest_runtime_image)'
       downloadPath: '$(System.DefaultWorkingDirectory)'

@@ -14,5 +14,5 @@ steps:
       script: |
         #!/usr/bin/env bash
         gcloud container clusters get-credentials $(cluster_name) --zone $(cluster_zone) --project $(gcp_project)
-        kubectl set image deployment/$SERVICE_NAME $SERVICE_NAME=$(CONTAINER_REGISTRY_NAME)/$(container_registry_path)/$(utest.runtime.image):$(Build.SourceBranchName)-$(Build.BuildNumber)
+        kubectl set image deployment/$SERVICE_NAME $SERVICE_NAME=$(CONTAINER_REGISTRY_NAME)/$(container_registry_path)/$(utest_runtime_image):$(Build.SourceBranchName)-$(Build.BuildNumber)
         kubectl rollout status deployment/$SERVICE_NAME --watch

@@ -47,5 +47,4 @@ stages:
            environments:
              - name: 'dev'
                performE2Etests: true
-               continueIfE2Efails: true
                fluxEnabled: true

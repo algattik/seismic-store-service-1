@@ -1,0 +1,12 @@
+parameters:
+  pathToClone: ""
+steps:
+  - task: Bash@3
+    displayName: "Clone OSDU"
+    env:
+      osdu_pat: $(osdu_pat)
+      osdu_branch: $(osdu_branch)
+      path_to_clone: ${{ parameters.pathToClone }}
+    inputs:
+      targetType: "filePath"
+      filePath: ${{ parameters.pathToClone }}/devops/scripts/clone-osdu.sh

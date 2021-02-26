@@ -14,6 +14,7 @@ stages:
     - stage: 'Deploy_${{ provider.name }}_${{ environment.name }}'
       variables:
       - group: '${{ provider.name }} Target Env - ${{ environment.name }}'
+      - group: '${{ provider.name }} Target Env Secrets - ${{ environment.name }}'
       - group: '${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
       jobs:
       - deployment: Deploy_Image
@@ -68,5 +69,4 @@ stages:
         - template: task/e2e-steps.yml
           parameters:
             installRequirements: ${{ parameters.installRequirements }}
-            continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
             isGitlab: ${{ parameters.isGitlab }}

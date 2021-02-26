@@ -1,11 +1,13 @@
 parameters:
   installRequirements: false
-  continueIfE2Efails: false
   isGitlab: false
 steps:
     # self to trigger clone of the current repo.
     - checkout: self
       persistCredentials: true
+    - template: clone-osdu.yml
+      parameters:
+        pathToClone: $(Build.SourcesDirectory)
     - template: install-e2e-requirements.yml
       parameters:
         installRequirements: ${{ parameters.installRequirements }}
@@ -14,7 +16,6 @@ steps:
         isGitlab: ${{ parameters.isGitlab }}
     - template: run-e2e.yml
       parameters:
-        continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
         isGitlab: ${{ parameters.isGitlab }}
     - task: PublishTestResults@1
       inputs:

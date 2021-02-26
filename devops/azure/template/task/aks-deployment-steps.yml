@@ -30,6 +30,9 @@ steps:
       persistCredentials: true
     - checkout: FluxRepo
       persistCredentials: true
+    - template: clone-osdu.yml
+      parameters:
+        pathToClone: $(Build.SourcesDirectory)/$(Build.Repository.Name)
     - task: Bash@3
       displayName: "Install requirements in container"
       condition: ${{ parameters.installRequirements }} 
@@ -72,6 +75,8 @@ steps:
         helmVersionToInstall: 3.3.0
     - task: qetza.replacetokens.replacetokens-task.replacetokens@3
       displayName: 'Helm Values'
+      env:
+        KEYVAULT_NAME: "$(ENVIRONMENT_RG_PREFIX)-kv"
       condition: |
         eq(${{ parameters.fluxEnabled }},true)
       inputs:
@@ -97,5 +102,3 @@ steps:
       parameters:
         fluxEnabled: ${{ parameters.fluxEnabled }}
         serviceName: ${{parameters.serviceName}}
-    
-      

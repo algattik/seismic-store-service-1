@@ -47,10 +47,10 @@ steps:
         az acr login -n $(CONTAINER_REGISTRY_NAME)
 
         echo "------------------------------------"
-        docker load --input ${{ parameters.providerName }}_seistore-svc-runtime/$(utest.runtime.image).tar
-        docker tag $(utest.runtime.image) $(CONTAINER_REGISTRY_NAME).azurecr.io/$(utest.runtime.image):$(Build.SourceBranchName)-$(Build.BuildNumber)
+        docker load --input ${{ parameters.providerName }}_seistore-svc-runtime/$(utest_runtime_image).tar
+        docker tag $(utest_runtime_image) $(CONTAINER_REGISTRY_NAME).azurecr.io/$(utest_runtime_image):$(Build.SourceBranchName)-$(Build.BuildNumber)
         
-        docker push $(CONTAINER_REGISTRY_NAME).azurecr.io/$(utest.runtime.image):$(Build.SourceBranchName)-$(Build.BuildNumber)
+        docker push $(CONTAINER_REGISTRY_NAME).azurecr.io/$(utest_runtime_image):$(Build.SourceBranchName)-$(Build.BuildNumber)
   - task: Bash@3
     displayName: "Push Runtime Image"
     condition: and(succeeded(), eq('${{ parameters.providerName }}', 'GCP'))
@@ -59,7 +59,7 @@ steps:
       script: |
         gcloud auth activate-service-account --key-file $(downloadKey.secureFilePath) --project "$(gcp_project)"
         gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://$(CONTAINER_REGISTRY_NAME)
-        docker load --input ${{ parameters.providerName }}_seistore-svc-runtime/$(utest.runtime.image).tar
-        docker tag $(utest.runtime.image) $(CONTAINER_REGISTRY_NAME)/$(container_registry_path)/$(utest.runtime.image):$(Build.SourceBranchName)-$(Build.BuildNumber)
+        docker load --input ${{ parameters.providerName }}_seistore-svc-runtime/$(utest_runtime_image).tar
+        docker tag $(utest_runtime_image) $(CONTAINER_REGISTRY_NAME)/$(container_registry_path)/$(utest_runtime_image):$(Build.SourceBranchName)-$(Build.BuildNumber)
         cat $(downloadKey.secureFilePath) | docker login -u _json_key --password-stdin https://$(CONTAINER_REGISTRY_NAME)
-        docker push $(CONTAINER_REGISTRY_NAME)/$(container_registry_path)/$(utest.runtime.image):$(Build.SourceBranchName)-$(Build.BuildNumber)
+        docker push $(CONTAINER_REGISTRY_NAME)/$(container_registry_path)/$(utest_runtime_image):$(Build.SourceBranchName)-$(Build.BuildNumber)
