@@ -333,14 +333,9 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const datasetIn = DatasetParser.delete(req);
 
-        // lock the dataset access
-        const cacheMutexKey = datasetIn.tenant + datasetIn.subproject + datasetIn.path + datasetIn.name;
-        const cacheMutex = await Locker.acquireMutex(cacheMutexKey);
-
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
             if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIn))) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
                     datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
@@ -371,10 +366,7 @@ export class DatasetHandler {
             const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
 
             // if the dataset does not exist return ok
-            if (!dataset) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-                return;
-            }
+            if (!dataset) { return; }
 
             // check if valid url
             if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
@@ -400,12 +392,10 @@ export class DatasetHandler {
             const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
             await storage.deleteObjects(bucketName, gcsprefix);
 
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
+            // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
+            await Locker.unlock(journalClient, dataset)
 
         } catch (err) {
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-
             throw (err);
 
         }
@@ -444,14 +434,9 @@ export class DatasetHandler {
         // unlock the detaset for close opeartion (and patch)
         const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
 
-        // lock the dataset access
-        const cacheMutexKey = datasetIN.tenant + datasetIN.subproject + datasetIN.path + datasetIN.name;
-        const cacheMutex = await Locker.acquireMutex(cacheMutexKey);
-
         // ensure nobody got the lock between the close and the mutext acquistion
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
             if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
@@ -613,15 +598,10 @@ export class DatasetHandler {
                 datasetOUT.sbit = lockres.id;
                 datasetOUT.sbit_count = lockres.cnt;
             }
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
             return datasetOUT;
 
         } catch (err) {
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
             throw (err);
-
         }
     }
 
@@ -850,14 +830,9 @@ export class DatasetHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        // lock the dataset access
-        const cacheMutexKey = datasetIN.tenant + datasetIN.subproject + datasetIN.path + datasetIN.name;
-        const cacheMutex = await Locker.acquireMutex(cacheMutexKey);
-
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
             if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
@@ -900,12 +875,7 @@ export class DatasetHandler {
 
             await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
 
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-
         } catch (err) {
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-
             throw (err);
         }
 
