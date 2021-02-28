@@ -105,8 +105,11 @@ export class DatasetHandler {
         let writeLockSession: IWriteLockSession;
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const transaction = journalClient.getTransaction();
 
         try {
+
+            await transaction.run();
 
             // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
             // a mutex is applied on the resource on the shared cahce (removed at the end of the method)
@@ -206,7 +209,7 @@ export class DatasetHandler {
 
             // save the dataset entity
             await Promise.all([
-                DatasetDAO.register(journalClient, { key: dskey, data: dataset }),
+                DatasetDAO.register(transaction, { key: dskey, data: dataset }),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
                         [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
@@ -217,14 +220,14 @@ export class DatasetHandler {
 
             // release the mutex and keep the lock session
             await Locker.removeWriteLock(writeLockSession, true);
-
+            await transaction.commit();
             return dataset;
 
         } catch (err) {
 
             // release the mutex and unlock the resource
             await Locker.removeWriteLock(writeLockSession);
-
+            await transaction.rollback();
             throw (err);
 
         }
@@ -409,6 +412,7 @@ export class DatasetHandler {
 
         // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const transaction = journalClient.getTransaction();
 
         // return immediately if it is a simple close wiht empty body (no patch to apply)
         if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
@@ -444,6 +448,8 @@ export class DatasetHandler {
         }
 
         try {
+
+            await transaction.run();
 
             const spkey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
@@ -585,7 +591,7 @@ export class DatasetHandler {
             }
 
             await Promise.all([
-                DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey),
+                DatasetDAO.update(transaction, datasetOUT, datasetOUTKey),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
                     ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
@@ -598,9 +604,11 @@ export class DatasetHandler {
                 datasetOUT.sbit = lockres.id;
                 datasetOUT.sbit_count = lockres.cnt;
             }
+            await transaction.commit();
             return datasetOUT;
 
         } catch (err) {
+            await transaction.rollback();
             throw (err);
         }
     }
@@ -829,6 +837,7 @@ export class DatasetHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const transaction = journalClient.getTransaction();
 
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
@@ -840,6 +849,8 @@ export class DatasetHandler {
         }
 
         try {
+
+            await transaction.run();
 
             const results = await DatasetDAO.get(journalClient, datasetIN);
             const datasetOUT = results[0];
@@ -873,9 +884,11 @@ export class DatasetHandler {
                     datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
 
-            await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
+            await DatasetDAO.update(transaction, datasetOUT, datasetOUTKey);
+            await transaction.commit();
 
         } catch (err) {
+            await transaction.rollback();
             throw (err);
         }
 
