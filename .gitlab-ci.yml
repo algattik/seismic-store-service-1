@@ -15,7 +15,6 @@ variables:
   GCP_SERVICE: seismic-store-service
   GCP_VENDOR: gcp
   #ibm variables
-  IBM: 'true'
   IBM_OPENSHIFT_PROJECT: og-cicd
   IBM_VENDOR: ibm
 
