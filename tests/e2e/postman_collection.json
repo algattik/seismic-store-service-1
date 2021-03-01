@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "6fee8335-3bfb-4b68-934a-3d3e3022e2c8",
+		"_postman_id": "71fed468-cc91-4066-a862-b621d2f4633b",
 		"name": "seismic-store-e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -12202,6 +12202,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
+									"setTimeout(function(){}, 5000);\r",
 									"pm.variables.set(\"acsSasX2Url\", pm.variables.get(\"gcsAccessToken\").replace('?', '/' + pm.variables.get(\"gcsObjectPrefix\") + '/o?'));"
 								],
 								"type": "text/javascript"
