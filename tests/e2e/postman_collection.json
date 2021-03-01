@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8a039f51-d07f-43c1-9719-e9718e9b3589",
+		"_postman_id": "71fed468-cc91-4066-a862-b621d2f4633b",
 		"name": "seismic-store-e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -11658,13 +11658,15 @@
 									"",
 									"pm.test(\"Validate Subproject Details\", function () {",
 									"    pm.expect(jsonData.access_token).to.exist;",
-									"    pm.expect(jsonData.expires_in).to.eql(3599);",
+									"    pm.expect(jsonData.expires_in).to.greaterThan(0);",
 									"    postman.setEnvironmentVariable(\"tokenType\", jsonData.token_type);",
-									"    if (jsonData.token_type == 'SasUrl') {",
+									"    if(pm.environment.get('serviceCloudProvider') === 'azure') {",
 									"        postman.setNextRequest(\"UPLOAD OBJECT X1 IN ACS\");",
-									"    } else {",
+									"    } else if(pm.environment.get('serviceCloudProvider') === 'google') {",
 									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
 									"        postman.setNextRequest(\"UPLOAD OBJECT X1 IN GCS\");",
+									"    } else {",
+									"        postman.setNextRequest(\"DATASET DELETE X1\");",
 									"    }",
 									"});"
 								],
@@ -12200,6 +12202,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
+									"setTimeout(function(){}, 5000);\r",
 									"pm.variables.set(\"acsSasX2Url\", pm.variables.get(\"gcsAccessToken\").replace('?', '/' + pm.variables.get(\"gcsObjectPrefix\") + '/o?'));"
 								],
 								"type": "text/javascript"

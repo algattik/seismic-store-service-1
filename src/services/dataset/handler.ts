@@ -105,8 +105,11 @@ export class DatasetHandler {
         let writeLockSession: IWriteLockSession;
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const transaction = journalClient.getTransaction();
 
         try {
+
+            await transaction.run();
 
             // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
             // a mutex is applied on the resource on the shared cahce (removed at the end of the method)
@@ -206,7 +209,7 @@ export class DatasetHandler {
 
             // save the dataset entity
             await Promise.all([
-                DatasetDAO.register(journalClient, { key: dskey, data: dataset }),
+                DatasetDAO.register(transaction, { key: dskey, data: dataset }),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
                         [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
@@ -217,14 +220,14 @@ export class DatasetHandler {
 
             // release the mutex and keep the lock session
             await Locker.removeWriteLock(writeLockSession, true);
-
+            await transaction.commit();
             return dataset;
 
         } catch (err) {
 
             // release the mutex and unlock the resource
             await Locker.removeWriteLock(writeLockSession);
-
+            await transaction.rollback();
             throw (err);
 
         }
@@ -333,14 +336,9 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const datasetIn = DatasetParser.delete(req);
 
-        // lock the dataset access
-        const cacheMutexKey = datasetIn.tenant + datasetIn.subproject + datasetIn.path + datasetIn.name;
-        const cacheMutex = await Locker.acquireMutex(cacheMutexKey);
-
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
             if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIn))) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
                     datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
@@ -371,10 +369,7 @@ export class DatasetHandler {
             const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
 
             // if the dataset does not exist return ok
-            if (!dataset) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-                return;
-            }
+            if (!dataset) { return; }
 
             // check if valid url
             if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
@@ -400,12 +395,10 @@ export class DatasetHandler {
             const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
             await storage.deleteObjects(bucketName, gcsprefix);
 
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
+            // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
+            await Locker.unlock(journalClient, dataset)
 
         } catch (err) {
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-
             throw (err);
 
         }
@@ -419,6 +412,7 @@ export class DatasetHandler {
 
         // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const transaction = journalClient.getTransaction();
 
         // return immediately if it is a simple close wiht empty body (no patch to apply)
         if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
@@ -444,14 +438,9 @@ export class DatasetHandler {
         // unlock the detaset for close opeartion (and patch)
         const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
 
-        // lock the dataset access
-        const cacheMutexKey = datasetIN.tenant + datasetIN.subproject + datasetIN.path + datasetIN.name;
-        const cacheMutex = await Locker.acquireMutex(cacheMutexKey);
-
         // ensure nobody got the lock between the close and the mutext acquistion
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
             if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
@@ -459,6 +448,8 @@ export class DatasetHandler {
         }
 
         try {
+
+            await transaction.run();
 
             const spkey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
@@ -600,28 +591,27 @@ export class DatasetHandler {
             }
 
             await Promise.all([
-                DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey),
+                DatasetDAO.update(transaction, datasetOUT, datasetOUTKey),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
                     ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
 
-            // attach the gcpid for fast check
-            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             // attach lock information
             if (wid) {
                 datasetOUT.sbit = lockres.id;
                 datasetOUT.sbit_count = lockres.cnt;
             }
+            await transaction.commit();
 
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
+            // attach the gcpid for fast check
+            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+
             return datasetOUT;
 
         } catch (err) {
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
+            await transaction.rollback();
             throw (err);
-
         }
     }
 
@@ -849,15 +839,11 @@ export class DatasetHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-
-        // lock the dataset access
-        const cacheMutexKey = datasetIN.tenant + datasetIN.subproject + datasetIN.path + datasetIN.name;
-        const cacheMutex = await Locker.acquireMutex(cacheMutexKey);
+        const transaction = journalClient.getTransaction();
 
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
             if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
-                await Locker.releaseMutex(cacheMutex, cacheMutexKey);
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
@@ -865,6 +851,8 @@ export class DatasetHandler {
         }
 
         try {
+
+            await transaction.run();
 
             const results = await DatasetDAO.get(journalClient, datasetIN);
             const datasetOUT = results[0];
@@ -898,14 +886,11 @@ export class DatasetHandler {
                     datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
 
-            await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
+            await DatasetDAO.update(transaction, datasetOUT, datasetOUTKey);
+            await transaction.commit();
 
         } catch (err) {
-
-            await Locker.releaseMutex(cacheMutex, cacheMutexKey);
-
+            await transaction.rollback();
             throw (err);
         }
 
