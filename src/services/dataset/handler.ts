@@ -596,8 +596,6 @@ export class DatasetHandler {
                     ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
 
-            // attach the gcpid for fast check
-            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             // attach lock information
             if (wid) {
@@ -605,6 +603,10 @@ export class DatasetHandler {
                 datasetOUT.sbit_count = lockres.cnt;
             }
             await transaction.commit();
+
+            // attach the gcpid for fast check
+            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+
             return datasetOUT;
 
         } catch (err) {
