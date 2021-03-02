@@ -57,8 +57,7 @@ export class AWSStorage extends AbstractStorage {
     // Create a new bucket, for aws, create a folder with folderName
     public async createBucket(
         folderName: string,
-        location: string, storageClass: string,
-        adminACL: string, editorACL: string, viewerACL: string): Promise<void> {
+        location: string, storageClass: string): Promise<void> {
         const folder = this.getFolder(folderName);
         const params = {
             Bucket: AWSConfig.AWS_BUCKET,

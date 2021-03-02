@@ -22,7 +22,8 @@ export class AWSConfig extends Config {
     public static AWS_REGION: string;
     public static AWS_ENVIRONMENT: string;
     public static AWS_BUCKET: string;
-
+    //Logger
+    public static LOGGER_LEVEL;
     // max len for a group name in DE
     public static DES_GROUP_CHAR_LIMIT = 256;
 
@@ -37,6 +38,9 @@ export class AWSConfig extends Config {
         const awsSSMHelper = new AWSSSMhelper();
         AWSConfig.AWS_BUCKET = await awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name');
        
+        //Logger
+        AWSConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';
+
         Config.initServiceConfiguration({
             SERVICE_ENV: process.env.SERVICE_ENV,
             SERVICE_PORT: +process.env.PORT || 5000,

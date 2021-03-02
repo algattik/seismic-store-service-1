@@ -20,7 +20,7 @@ import express from 'express';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
 import { Config, LoggerFactory } from '../../..';
 import { ServiceRouter } from '../../../../services';
-import { Feature, FeatureFlags, TraceLog } from '../../../../shared';
+import { Feature, FeatureFlags} from '../../../../shared';
 import fs from 'fs';
 import https from 'https';
 
@@ -75,14 +75,18 @@ export class Server {
         this.app.options('*', cors());
         this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 
-            // create and start a new trace object
-            res.locals.trace = new TraceLog(req.method + ':' + req.url);
-
             // not required anymore - to verify
             if (req.get('slb-on-behalf-of') !== undefined) {
                 req.headers.authorization = req.get('slb-on-behalf-of');
             }
 
+            // track caller to the main log
+            const key = req.headers['x-api-key'] as string;
+            const logger = LoggerFactory.build(Config.CLOUDPROVIDER);
+            logger.info(
+                ((key && key.length > 5) ? ('[***' + key.substr(key.length - 5) +  '] ') : '')
+                + '[' + req.method + '] ' + req.url);
+            
             // init the metrics logger
             if(FeatureFlags.isEnabled(Feature.LOGGING))  {
                 LoggerFactory.build(Config.CLOUDPROVIDER).metric('Request Size',

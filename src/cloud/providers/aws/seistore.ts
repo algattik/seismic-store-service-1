@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { AWSConfig } from './config';
-export { AWSStorage } from './storage';
-export { AWSCredentials } from './credentials';
-export { AWSDynamoDbDAO, AWSDynamoDbTransactionDAO, AWSDynamoDbQuery } from './dynamodb';
-export { AwsTrace } from './trace';
-export { AWSDataEcosystemServices } from './dataecosystem';
-export { AwsSeistore } from './seistore';
-export { AwsLogger } from './logger';
+
+import { SubProjectModel } from '../../../services/subproject';
+import { AbstractSeistore, SeistoreFactory } from '../../seistore';
+
+@SeistoreFactory.register('aws')
+export class AwsSeistore extends AbstractSeistore {
+    public checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel) { return; }
+}

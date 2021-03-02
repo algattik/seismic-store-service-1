@@ -65,44 +65,37 @@ export class AWSCredentials extends AbstractCredentials {
             return vars[1];
         }
     }
+    
+    public async getStorageCredentials(
+        tenant: string, subproject: string,
+        bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
+            const s3bucket = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name')
+            const expDuration = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/temp-cred-expiration-duration')
+            var roleArn='';
+            var credentials='';
+    
+            var flagUpload=true;
+    
+            const keypath =  await this.getBucketFolder(tenant+':'+subproject);
+    
+            // tslint:disable-next-line:triple-equals
+            if(readonly ) { // readOnly True
+                 roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
+                flagUpload = false;
+            } else   // readOnly False
+            {
+                roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
+                flagUpload = true;
+            }
+    
+            credentials = await this.awsSTSHelper.getCredentials(s3bucket,keypath,roleArn,flagUpload,expDuration);
 
-
-    async getUserCredentials(subject: string): Promise<IAccessTokenModel> {
-        //subject = tenantName:subprojectName:1 ==> readOnly true
-        //subject = tenantName:subprojectName:0 ==> readOnly false
-        const s3bucket = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name')
-        const expDuration = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/temp-cred-expiration-duration')
-        const vars = subject.split(':')
-        const tenant = vars[0];
-        const subproject = vars[1];
-        const readOnly = vars[2];
-        var roleArn='';
-        var credentials='';
-
-        var flagUpload=true;
-
-        const keypath =  await this.getBucketFolder(tenant+':'+subproject);
-
-
-        // tslint:disable-next-line:triple-equals
-        if(readOnly ==='1') { // readOnly True
-             roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
-            flagUpload = false;
-        } else if (readOnly ==='0')  // readOnly False
-        {
-            roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
-            flagUpload = true;
-        }
-
-        credentials = await this.awsSTSHelper.getCredentials(s3bucket,keypath,roleArn,flagUpload,expDuration);
-
-
-            const result = {
-            access_token: credentials,
-            expires_in: 3599,
-            token_type: 'Bearer',
-        };
-        return result;
+                const result = {
+                access_token: credentials,
+                expires_in: 3599,
+                token_type: 'Bearer',
+            };
+            return result;
     }
 
     // this will return serviceprincipal access token

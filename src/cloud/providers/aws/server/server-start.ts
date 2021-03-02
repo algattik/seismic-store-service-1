@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { Config, TraceFactory, ConfigFactory } from '../../..';
+import { StorageJobManager } from '../../../../cloud/shared/queue';
 import { Locker } from '../../../../services/dataset/locker';
 import { Feature, FeatureFlags } from '../../../../shared';
 
@@ -33,6 +34,13 @@ async function ServerStart() {
         // tslint:disable-next-line
         console.log('- Initializing redis cache')
         await Locker.init();
+
+        // tslint:disable-next-line
+        console.log('- Initializing storage transfer deamon')
+        StorageJobManager.setup({
+           ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
+           PORT: Config.DES_REDIS_INSTANCE_PORT
+        })
 
         if(FeatureFlags.isEnabled(Feature.TRACE))  {
             // tslint:disable-next-line
