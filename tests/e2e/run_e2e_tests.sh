@@ -20,12 +20,8 @@ usage() {
     printf  "\n[USAGE] ./e2e/tests/run_e2e_tests.sh --seistore-svc-url=... " \
             "--seistore-svc-api-key=... --user-idtoken=... --tenant=..." \
             "--admin-email=... --datapartition=... --legaltag01=... --legaltag02=... " \
-            "--newuser(optional)=... --VCS-provider(optional)=... --user1-idtoken(optional)=... " \
-            "--stoken-ta(optional)=... --stoken-sa(optional)=... --stoken-se(optional)=... --stoken-sv(optional)=... " \
-            "--ta-user(optional)=... --sa-user(optional)=... --se-user(optional)=... --sv-user(optional)=..." \
-            "--expired-token(optional)=... --de-app-key(optional)=... --authorization(optional)=...\n"
+            "--newuser(optional)=... --VCS-provider(optional)=... --de-app-key(optional)=... \n "
     printf "\n[ERROR] %s\n" "$1"
-
 }
 
 # script to execute from root directory
@@ -45,18 +41,7 @@ fi
 # argument [legaltag02] test legal tag  - required
 # argument [newuser] user email for a new user to add partition id - required
 # argument [VCS-Provider] version control system provider - optional
-# argument [user1-idtoken] not-whitelisted user credentail token - required for authorization
-# argument [stoken-ta] user credentail token for tenant admin - required for authorization
-# argument [stoken-sa] user credentail token for subproject admin - required for authorization
-# argument [stoken-se] user credentail token for subproject editor - required for authorization
-# argument [stoken-sv] user credentail token for subproject viewer - required for authorization
-# argument [ta-user] user credentail email for tenant admin - required for authorization
-# argument [sa-user] user credentail email for subproject admin - required for authorization
-# argument [se-user] user credentail email for subproject editor - required for authorization
-# argument [sv-user] user credentail email for subproject viewer - required for authorization
-# argument [expired-token] expired JWT token - required for authorization
 # argument [de-app-key] DELFI application key - optional for authorization
-# argument [authorization] switch for authorization tests - required for authorization
 
 for i in "$@"; do
 case $i in
@@ -96,52 +81,8 @@ case $i in
   newuser="${i#*=}"
   shift
   ;;
-  --user1-idtoken=*)
-  user1_idtoken="${i#*=}"
-  shift
-  ;;
-  --stoken-ta=*)
-  stoken_ta="${i#*=}"
-  shift
-  ;;
-  --stoken-sa=*)
-  stoken_sa="${i#*=}"
-  shift
-  ;;
-  --stoken-se=*)
-  stoken_se="${i#*=}"
-  shift
-  ;;
-  --stoken-sv=*)
-  stoken_sv="${i#*=}"
-  shift
-  ;;
-  --ta-user=*)
-  ta_user="${i#*=}"
-  shift
-  ;;
-  --sa-user=*)
-  sa_user="${i#*=}"
-  shift
-  ;;
-  --se-user=*)
-  se_user="${i#*=}"
-  shift
-  ;;
-  --sv-user=*)
-  sv_user="${i#*=}"
-  shift
-  ;;
-  --expired-token=*)
-  expired_token="${i#*=}"
-  shift
-  ;;
   --de-app-key=*)
   de_app_key="${i#*=}"
-  shift
-  ;;
-  --authorization=*)
-  authorization="${i#*=}"
   shift
   ;;
   --VCS-Provider=*)
@@ -173,20 +114,6 @@ if [ "${VCS_Provider}" = false ]; then
   if [ -z "${newuser}" ]; then usage "newuser not defined" && exit 1; fi
 fi
 
-# parameters required for authorization
-if [ "${authorization}" ]; then
-  if [ -z "${user1_idtoken}" ]; then usage "user1-idtoken not defined" && exit 1; fi
-  if [ -z "${stoken_ta}" ]; then usage "stoken-ta not defined" && exit 1; fi
-  if [ -z "${stoken_sa}" ]; then usage "stoken-sa not defined" && exit 1; fi
-  if [ -z "${stoken_se}" ]; then usage "stoken-se not defined" && exit 1; fi
-  if [ -z "${stoken_sv}" ]; then usage "stoken-sv not defined" && exit 1; fi
-  if [ -z "${ta_user}" ]; then usage "ta-user not defined" && exit 1; fi
-  if [ -z "${sa_user}" ]; then usage "sa-user not defined" && exit 1; fi
-  if [ -z "${se_user}" ]; then usage "se-user not defined" && exit 1; fi
-  if [ -z "${sv_user}" ]; then usage "sv-user not defined" && exit 1; fi
-  if [ -z "${expired_token}" ]; then usage "expired-token not defined" && exit 1; fi
-fi
-
 # optional parameters (with defaults)
 if [ -z "${de_app_key}" ]; then
    de_app_key="random_string"
@@ -211,15 +138,6 @@ printf "%s\n" "legaltag01 = ${legaltag01}"
 printf "%s\n" "legaltag02 = ${legaltag02}"
 printf "%s\n" "newuser = ${newuser}"
 printf "%s\n" "VCS_Provider = ${VCS_Provider}"
-
-if [ "${authorization}" ]; then
-  printf "%s\n" "user credentail email for tenant admin = ${ta_user}"
-  printf "%s\n" "user credentail email for subproject admin = ${sa_user}"
-  printf "%s\n" "user credentail email for subproject editor = ${se_user}"
-  printf "%s\n" "user credentail email for subproject viewer = ${sv_user}"
-  printf "%s\n" "expired JWT token = ${expired_token}"
-  printf "%s\n" "authorization switch = ${authorization}"
-fi
 printf "%s\n" "--------------------------------------------"
 
 # replace values in the main env
@@ -237,37 +155,15 @@ sed -i "s/#{NEWUSEREMAIL}#/${newuser}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 
-if [ "${authorization}" ]; then
-  sed -i "s/#{STOKEN_Ta}#/${stoken_ta}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{STOKEN_Sa}#/${stoken_sa}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{STOKEN_Se}#/${stoken_se}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{STOKEN_Sv}#/${stoken_sv}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{TA_USER}#/${ta_user}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{SA_USER}#/${sa_user}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{SE_USER}#/${se_user}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{SV_USER}#/${sv_user}/g" ./tests/e2e/postman_env.json
-  sed -i "s/#{EXPIRED_TOKEN}#/${expired_token}/g" ./tests/e2e/postman_env.json
-fi
-
 # install requied packages
 npm install
 
-if [ -z "${authorization}" ]; then
-  # run parallel tests
-  ./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \
+# run parallel tests
+./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \
     -e ./tests/e2e/postman_env.json \
     --insecure \
     --timeout 600000 \
     --reporters junit,cli
-
-else
-  # run authorization tests
-  ./node_modules/newman/bin/newman.js run ./tests/e2e/seismic_store_e2e_authorization_tests.postman_collection.json \
-    -e ./tests/e2e/postman_env.json \
-    --insecure \
-    --timeout 600000 \
-    --reporters junit,cli
-fi
 
 resTest=$?
 
