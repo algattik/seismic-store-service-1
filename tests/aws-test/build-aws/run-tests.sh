@@ -73,6 +73,4 @@ TEST_EXIT_CODE=$?
 mv newman newman_test_reports
 popd
 
-#temporarily returning '0' for known failures.. MUST change after tests are fixed by SLB
-#exit $TEST_EXIT_CODE
-exit 0
+exit $TEST_EXIT_CODE
