@@ -15,8 +15,6 @@ headers = {
 full_url="https://"+url+"/auth/realms/OSDU/protocol/openid-connect/token"
 response = requests.request("POST", full_url, data=payload, headers=headers)
 
-print(response.text)
-
 result = response.json()
 token = result['access_token']
 print(token)
