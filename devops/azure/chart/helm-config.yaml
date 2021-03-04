@@ -11,6 +11,7 @@ configEnv:
   redisInstancePort: #{REDIS_PORT}#
   appEnvironmentIdentifier: #{ENVIRONMENT_NAME}#
   port: #{PORT}#
+  domainName: #{DOMAIN}#
 
 image:
   repository: #{CONTAINER_REGISTRY_NAME}#
