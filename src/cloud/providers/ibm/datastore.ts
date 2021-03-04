@@ -17,28 +17,31 @@ export class DatastoreDAO extends AbstractJournal {
         super();
         logger.info('In datastore.constructor.');
 		const dbUrl = IbmConfig.DOC_DB_URL;
-        logger.debug('Connecting to dbUrl-'+dbUrl);
+        logger.debug(dbUrl);
         const cloudantOb = cloudant(dbUrl);
-        logger.debug('DB object created. cloudantOb-'+cloudantOb);
+        logger.info('DB object created. cloudantOb-');
+        logger.debug(cloudantOb);
 		docDb = cloudantOb.db.use(IbmConfig.DOC_DB_COLLECTION);
 	}
 
     public async get(key: any): Promise<[any | any[]]> {
         logger.info('In datastore get.');
-        logger.debug('Key passed - '+key);
+        logger.debug(key);
         let entityDocument;
         ///using the field 'name' to fetch the document. Note: the get() is expecting the field _id
 		entityDocument = await docDb.get(key.name).then(
             result => {
                 result[this.KEY] = result[this.KEY.toString()];
                 delete result[this.KEY.toString()];
-                logger.debug('Deleted field -'+result[this.KEY.toString()]);
+                logger.info('Deleted field');
+                logger.debug(result[this.KEY.toString()]);
                 return [result];}
 		).catch((error)=>{
-            logger.error('Get failed to fetch the document. Error - '+error);
+            logger.error('Get failed to fetch the document.');
+            logger.error(error);
 		    return [undefined];
         })
-        logger.debug('Document fetched - '+entityDocument);
+        logger.debug(entityDocument);
         logger.info('returning from datastore');
 		return entityDocument;
     }
@@ -46,7 +49,7 @@ export class DatastoreDAO extends AbstractJournal {
     
     public async save(entity: any): Promise<void> {
         logger.info('In datastore.save.');
-        logger.debug('Entity passed - '+entity);
+        logger.debug(entity);
         let self = this;
         logger.info('Fetching document.');
         await docDb.get(entity.key.name, { revs_info: true }, function(err, existingDoc) {///changed from entity.name to entity.key.name
@@ -60,6 +63,8 @@ export class DatastoreDAO extends AbstractJournal {
                     docTemp.trusted = entity.data.trusted;
                 
                 Object.assign(docTemp, entity.data);
+                logger.debug(docTemp);
+                docDb.insert(docTemp,entity.key.name);
                 logger.info('Document updated.');
             }
             else///insert record
@@ -74,6 +79,7 @@ export class DatastoreDAO extends AbstractJournal {
                         if(!((entity.key.kind == 'datasets' || entity.key.kind == 'seismicmeta') && element == '_rev'))
                             customizedOb[element] = entity.data[element];
                 };
+                logger.debug(customizedOb);
                 docDb.insert(customizedOb,entity.key.name);
                 logger.info('Document inserted.');
             }
@@ -91,30 +97,32 @@ export class DatastoreDAO extends AbstractJournal {
         }
         catch(err)
         {
-            logger.error('Deletion failed. Error - '+ err);
+            logger.error('Deletion failed. Error - ');
+            logger.error(err);
         }
         logger.info('Returning from datastore.delete.');
 	}
     
 	public createQuery(namespace: string, kind: string): IJournalQueryModel {
         logger.info('In datastore.createQuery. Returning.');
-        logger.debug('namespace -'+namespace + ' kind - '+kind)
+        logger.debug(namespace);
+        logger.debug(kind);
 		return new IbmDocDbQuery(namespace, kind);
 	}
     
 	public async runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]> {
         logger.info('In datastore.runQuery.');
         const queryObject = (query as IbmDocDbQuery);
-        logger.debug('queryObject - '+queryObject);
+        logger.debug(queryObject);
         const mangoQuery = queryObject.prepareStatement(Config.DATASETS_KIND, queryObject.namespace, queryObject.kind);///tablemane datasets??
-        logger.debug('mangoQuery - '+mangoQuery);
+        logger.debug(mangoQuery);
 
         let docs;
         await docDb.find(mangoQuery).then((doc) => {
             docs = doc.docs;
-			logger.debug('quryr result - ',doc.docs);
+			logger.debug(doc.docs);
 		});
-
+        logger.info('Find query executed.');
         
         const results = docs.map(result => {
             if (!result) {
@@ -134,6 +142,7 @@ export class DatastoreDAO extends AbstractJournal {
     
 	public createKey(specs: any): object {
         logger.info('In datastore.createKey');
+        logger.debug(specs);
         const kind = specs.path[0];
         const partitionKey = specs.namespace + '-' + kind;
         let name: string;
@@ -144,7 +153,9 @@ export class DatastoreDAO extends AbstractJournal {
         } else {
             name = specs.path[1];
         }
-        logger.debug('name,  partitionKey, kind - '+ {name, partitionKey, kind});
+        logger.debug(name);
+        logger.debug(partitionKey);
+        logger.debug(kind);
         logger.info('returning from createKey');
         return { name, partitionKey, kind };
 	}
@@ -165,6 +176,8 @@ export class IbmDocDbTransactionOperation {
 
     public constructor (type: OperationType, entityOrKey: any) {
         logger.info('In datastore.IbmDocDbTransactionOperation.constructor.');
+        logger.debug(type);
+        logger.debug(entityOrKey);
         this.type = type;
         this.entityOrKey = entityOrKey;
     }
@@ -184,35 +197,41 @@ export class IbmDocDbTransactionDAO extends AbstractJournalTransaction {
     public constructor(owner: DatastoreDAO) {
         super();
         logger.info('In datastore.IbmDocDbTransactionDAO.constructor.');
+        logger.debug(owner);
         this.owner = owner;
         this.KEY = this.owner.KEY;
     }
 
     public async save(entity: any): Promise<void> {
         logger.info('In datastore.IbmDocDbTransactionDAO.save.');
+        logger.debug(entity);
         this.queuedOperations.push(new IbmDocDbTransactionOperation('save', entity));
         await Promise.resolve();
     }
 
     public async get(key: any): Promise<[any | any[]]> {
         logger.info('In datastore.IbmDocDbTransactionDAO.get.');
+        logger.debug(key);
         return await this.owner.get(key);
     }
 
     public async delete(key: any): Promise<void> {
         logger.info('In datastore.IbmDocDbTransactionDAO.delete.');
+        logger.debug(key);
         this.queuedOperations.push(new IbmDocDbTransactionOperation('delete', key));
         await Promise.resolve();
     }
 
     public createQuery(namespace: string, kind: string): IJournalQueryModel {
         logger.info('In datastore.IbmDocDbTransactionDAO.createQuery.');
+        logger.debug(namespace);
+        logger.debug(kind);
         return this.owner.createQuery(namespace, kind);
     }
 
     public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {
         logger.info('In datastore.IbmDocDbTransactionDAO.runQuery.');
-        logger.debug('query-'+query)
+        logger.debug(query)
         return await this.owner.runQuery(query);
     }
 
@@ -293,6 +312,8 @@ export class IbmDocDbQuery implements IJournalQueryModel {
 
     public constructor(namespace: string, kind: string) {
         logger.info('In datastore.IbmDocDbQuery.constructor.');
+        logger.debug(namespace);
+        logger.debug(kind);
         this.namespace = namespace;
         this.kind = kind;
     }
@@ -306,7 +327,10 @@ export class IbmDocDbQuery implements IJournalQueryModel {
     filter(property: string, operator?: Operator, value?: {}): IJournalQueryModel {
         logger.info('In datastore.IbmDocDbQuery.filter.');
         logger.info('in filter("esd","=",esd)');
-        logger.debug('filter args - '+property+':'+operator+':'+value);
+        logger.debug(property);
+        logger.debug(operator);
+        logger.debug(value);
+
         if (value === undefined) {
             value = operator;
             operator = '=';
@@ -318,7 +342,10 @@ export class IbmDocDbQuery implements IJournalQueryModel {
             value = '';
         }
 
-        logger.debug('filter args after- '+property+':'+operator+':'+value);
+        logger.info('modifird values');
+        logger.debug(property);
+        logger.debug(operator);
+        logger.debug(value);
 
         let cdbOperator;
 
@@ -344,7 +371,7 @@ export class IbmDocDbQuery implements IJournalQueryModel {
 
         const filter = new IbmQueryFilter(property, cdbOperator, value);
         this.filters.push(filter);
-        logger.debug('filter - '+filter);
+        logger.debug(filter);
         return this;
     }
 
@@ -356,12 +383,13 @@ export class IbmDocDbQuery implements IJournalQueryModel {
     limit(n: number): IJournalQueryModel {
         logger.info('In datastore.IbmDocDbQuery.limit.');
         this.pagingLimit = n;
-        logger.debug('pagingLimit-'+this.pagingLimit);
+        logger.debug(this.pagingLimit);
         return this;
     }
 
     groupBy(fieldNames: string | string[]): IJournalQueryModel {
         logger.info('In datastore.IbmDocDbQuery.groupBy. Have to work on this.');
+        logger.debug(fieldNames);
         return this;
     }
 
@@ -369,6 +397,7 @@ export class IbmDocDbQuery implements IJournalQueryModel {
     select(fieldNames: string | string[]): IJournalQueryModel {
         ///if you wondering, converts string to an array
         logger.info('In datastore.IbmDocDbQuery.select.');
+        logger.debug(fieldNames);
         if (typeof fieldNames  === 'string') {
             this.projectedFieldNames = [fieldNames];
         } else {
@@ -386,9 +415,11 @@ export class IbmDocDbQuery implements IJournalQueryModel {
 	//public prepareSqlStatement(tableName: string): { spec: SqlQuerySpec, options: FeedOptions } {
     public prepareStatement(tableName: string, namespace: string, kind: string): any {
         logger.info('In datastore.IbmDocDbQuery.prepareStatement.');
-        logger.debug(tableName+':'+namespace+':'+kind);
+        logger.debug(tableName);
+        logger.debug(namespace);
+        logger.debug(kind);
         const builder = new QueryStatementBuilder(tableName, namespace, kind);
-        logger.debug('builder -'+builder);
+        logger.debug(builder);
 
         for(const filter of this.filters) {
             filter.addFilterExpression(builder);
@@ -399,7 +430,7 @@ export class IbmDocDbQuery implements IJournalQueryModel {
         /*builder.groupByFieldNames = this.groupByFieldNames;*////walter commented as working on basic query
 
         const spec = builder.build();
-        logger.debug('spec -'+spec);
+        logger.debug(spec);
         return spec;
     }
 
@@ -413,7 +444,9 @@ class IbmQueryFilter {
         this.property = property;
         this.operator = operator;
         this.value = value;
-        logger.debug('class properties - '+this.property+':'+this.operator+':'+this.value);
+        logger.debug(this.property);
+        logger.debug(this.operator);
+        logger.debug(this.value);
     }
 
     public property: string;
@@ -424,7 +457,7 @@ class IbmQueryFilter {
 
     public addFilterExpression(toStatement: QueryStatementBuilder) {
         logger.info('In datastore.IbmQueryFilter.addFilterExpression.');
-        logger.debug('class properties - '+this.property+':'+this.operator+':'+this.value);
+        logger.debug(toStatement);
         toStatement.addFilterExpression(this.property, this.operator, this.value);
     }
 }
@@ -442,12 +475,16 @@ class QueryStatementBuilder {
         this.tableName = tableName;
         this.namespace = namespace;
         this.kind = kind;
-        logger.debug('class properties - '+this.tableName+':'+this.namespace+':'+this.kind);
+        logger.debug(this.tableName);
+        logger.debug(this.namespace);
+        logger.debug(this.kind);
     }
     
     public addFilterExpression(property: string, operator: string, value: {}) {
         logger.info('In datastore.QueryStatementBuilder.addFilterExpression.');
-        logger.debug('class properties - '+property+':'+operator+':'+value);
+        logger.debug(property);
+        logger.debug(operator);
+        logger.debug(value);
         this.filterExpressions.push('{"property": "' + property +'", "operator": "' + operator + '", "value": "' + value + '"}');
     }
 
@@ -477,7 +514,8 @@ class QueryStatementBuilder {
             andWrapper['$and'].push(filterQuery);
         }
 
-        logger.debug('query AND clause - '+andWrapper);
+        logger.debug('Created query AND clause - ');
+        logger.debug(andWrapper);
 
         if (this.projectedFieldNames.length) {
             selectorQuery[IbmConfig.DOC_DB_QUERY_SELECT_FIELDS] = fieldsOption;
@@ -490,7 +528,7 @@ class QueryStatementBuilder {
             this.pagingLimit = IbmConfig.DOC_DB_QUERY_RESULT_LIMIT_VALUE;
         
         selectorQuery[IbmConfig.DOC_DB_QUERY_RESULT_LIMIT] = this.pagingLimit;
-        logger.debug('selectorQuery - '+selectorQuery);
+        logger.debug(selectorQuery);
 		return selectorQuery;
     }
 }
