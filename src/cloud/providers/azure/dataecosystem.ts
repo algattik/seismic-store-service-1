@@ -34,7 +34,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     private static _cosmosConfigs: Cache<string>
 
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
-    public getEntitlementBaseUrlPath(): string { return '/entitlements/v1'; };
+    public getEntitlementBaseUrlPath(): string { return '/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
 
