@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "71fed468-cc91-4066-a862-b621d2f4633b",
+		"_postman_id": "90280e38-eb09-4bec-aac1-9f1a4f3bce6f",
 		"name": "seismic-store-e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -252,17 +252,25 @@
 									"    pm.expect(pm.response.code).to.be.oneOf([200,404,403]);",
 									"});",
 									"",
-									"// check if subproject is exist in Gitlab environment and skip its creation if true",
+									"// check if subproject is exist with VCS_Provider = \"gitlab\" variable and skip its creation if true",
 									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
 									"    if (responseCode.code === 200) {",
 									"        var jsonData = pm.response.json();",
 									"        if (pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"))) {",
 									"            postman.setNextRequest(\"SUBPROJECT LIST\");",
 									"        } else {",
-									"            postman.setNextRequest(\"SUBPROJECT REGISTER Gitlab\");",
+									"            if(pm.environment.get('serviceCloudProvider') === 'ibm') {",
+									"                postman.setNextRequest(\"SUBPROJECT REGISTER\")",
+									"            } else {",
+									"                postman.setNextRequest(\"SUBPROJECT REGISTER Gitlab\");",
+									"            }",
 									"        };",
 									"    } else {",
-									"        postman.setNextRequest(\"SUBPROJECT REGISTER Gitlab\")",
+									"        if(pm.environment.get('serviceCloudProvider') === 'ibm') {",
+									"            postman.setNextRequest(\"SUBPROJECT REGISTER\")",
+									"        } else {",
+									"            postman.setNextRequest(\"SUBPROJECT REGISTER Gitlab\")",
+									"        }",
 									"    };",
 									"};"
 								],
@@ -935,120 +943,6 @@
 							],
 							"path": [
 								"svcstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DATASET DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"});",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DATASET DELETE 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}?path={{testPathEncoded}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx02}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded}}"
-								}
 							]
 						}
 					},
@@ -2478,58 +2372,6 @@
 							],
 							"path": [
 								"svcstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DATASET DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"});",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
 							]
 						}
 					},
@@ -4686,62 +4528,6 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "DATASET REGISTER + SEISMICMETA",
 					"event": [
 						{
@@ -6337,62 +6123,6 @@
 							],
 							"path": [
 								"svcstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DELETE TAGGED DATA",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded01}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded01}}"
-								}
 							]
 						}
 					},
@@ -8153,62 +7883,6 @@
 							],
 							"path": [
 								"svcstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DATASET MAIN DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded01}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded01}}"
-								}
 							]
 						}
 					},
@@ -11238,118 +10912,6 @@
 					"response": []
 				},
 				{
-					"name": "CLEAR DATASET X1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded01}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded01}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "CLEAR DATASET X2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}?path={{testPathEncoded02}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx02}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded02}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "DATASET REGISTER X1 + SeimicMeta",
 					"event": [
 						{
@@ -12474,62 +12036,6 @@
 							],
 							"path": [
 								"svcstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DATASET DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded}}"
-								}
 							]
 						}
 					},
