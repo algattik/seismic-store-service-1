@@ -16,6 +16,7 @@
 
 import { Config } from '../cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
+import { SeistoreFactory } from '../cloud/seistore';
 import { DESEntitlement, DESUtils } from '../dataecosystem';
 import { Utils } from '../shared';
 
@@ -44,7 +45,8 @@ export class AuthGroups {
     }
 
     public static async clearGroup(userToken: string, group: string, esd: string, appkey: string) {
-        const userEmail = Utils.getEmailFromTokenPayload(userToken);
+        const userEmail = await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(userToken, true);
         const dataPartition = DESUtils.getDataPartitionID(esd);
         const members = (await DESEntitlement.listUsersInGroup(userToken, group, dataPartition, appkey)).members;
 

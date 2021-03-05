@@ -15,7 +15,8 @@
 // ============================================================================
 
 import { SubProjectModel } from '../../../services/subproject';
-import { Error, Params } from '../../../shared';
+import { Error, Params, Utils } from '../../../shared';
+import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 
 // reference time zone and clss locations
@@ -95,5 +96,11 @@ export class GoogleSeistore extends AbstractSeistore {
         }
 
         return null;
+    }
+    public async getEmailFromTokenPayload(
+        userCredentials: string, internalSwapForSauth: boolean): Promise<string> { // swapSauthEmailClaimToV2=true
+        const payload = Utils.getPayloadFromStringToken(userCredentials);
+        const email = payload.email === Config.IMP_SERVICE_ACCOUNT_SIGNER ? payload.obo : payload.email;
+        return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
     }
 }

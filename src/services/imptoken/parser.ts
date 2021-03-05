@@ -16,6 +16,7 @@
 
 import { Request as expRequest } from 'express';
 import { Config } from '../../cloud';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Params, SDPath, Utils } from '../../shared';
 import { IImpTokenBodyModel as ImpTokenBodyModel, IResourceModel as ResourceModel } from './model';
 
@@ -41,7 +42,7 @@ export class ImpTokenParser {
 
     }
 
-    public static create(req: expRequest): ImpTokenBodyModel {
+    public static async create(req: expRequest): Promise<ImpTokenBodyModel> {
 
         Params.checkBody(req.body);
 
@@ -64,7 +65,8 @@ export class ImpTokenParser {
         }
 
         impToken.user = Utils.getPropertyFromTokenPayload(impToken.userToken, 'desid') ||
-            Utils.getEmailFromTokenPayload(impToken.userToken);
+            (await SeistoreFactory.build(
+                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true));
 
         impToken.userToken = 'Bearer ' + impToken.userToken;
 

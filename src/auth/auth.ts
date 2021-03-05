@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { Config } from '../cloud';
+import { SeistoreFactory } from '../cloud/seistore';
 import { DESCompliance, DESUtils } from '../dataecosystem';
 import { ImpTokenDAO } from '../services/imptoken';
 import { AppsDAO } from '../services/svcapp/dao';
@@ -44,7 +45,8 @@ export class Auth {
             }, 'auth')
         }
 
-        const cacheKey = Utils.getEmailFromTokenPayload(authToken) + ','
+        const cacheKey = (await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(authToken, true)) + ','
             + Utils.getAudienceFromPayload(authToken) + ',' + authGroupEmails.sort().join(',');
 
         let isAuthorized = await this._cache.get(cacheKey);

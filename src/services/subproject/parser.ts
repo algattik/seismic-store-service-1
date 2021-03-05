@@ -24,7 +24,7 @@ import { ISubprojectAcl } from './model';
 
 export class SubProjectParser {
 
-    public static create(req: expRequest): SubProjectModel {
+    public static async create(req: expRequest): Promise<SubProjectModel> {
 
         const subproject = {} as SubProjectModel;
         subproject.name = req.params.subprojectid;
@@ -32,7 +32,8 @@ export class SubProjectParser {
         subproject.ltag = req.headers.ltag as string;
         // optional parameters
         subproject.admin = (req.body && req.body.admin) ?
-            req.body.admin : Utils.getEmailFromTokenPayload(req.headers.authorization);
+            req.body.admin : (await SeistoreFactory.build(
+                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true));
 
         subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] }
         // check user input params
