@@ -1,9 +1,6 @@
 parameters:
   providerName: ""
 steps:
-  - template: clone-osdu.yml
-    parameters:
-      pathToClone: $(Build.SourcesDirectory)
   - template: build-and-unit-test.yml
   - template: publish-unit-test-results.yml
   - template: copy-code-coverage-report.yml

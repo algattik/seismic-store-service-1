@@ -5,9 +5,6 @@ steps:
     # self to trigger clone of the current repo.
     - checkout: self
       persistCredentials: true
-    - template: clone-osdu.yml
-      parameters:
-        pathToClone: $(Build.SourcesDirectory)
     - template: install-e2e-requirements.yml
       parameters:
         installRequirements: ${{ parameters.installRequirements }}

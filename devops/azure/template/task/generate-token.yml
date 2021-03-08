@@ -7,16 +7,20 @@ steps:
         eq(${{ parameters.isGitlab }},true)
       env:
         AZURE_AD_APP_RESOURCE_ID: $(aad-client-id)
-        AZURE_AD_TENANT_ID: $(tenant-id)
+        AZURE_TENANT_ID: $(tenant-id)
         INTEGRATION_TESTER: $(app-dev-sp-username)
         AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $(app-dev-sp-password)
       inputs:
         targetType: "inline"
         script: |
-          #!/usr/bin/env bash
-
-          svctoken=$(python devops/scripts/azure_jwt_client.py)
-          echo "##vso[task.setvariable variable=e2eIdToken]$svctoken"
+         #!/usr/bin/env bash
+         python3 -m pip install wheel
+         python3 setup.py bdist_wheel 
+         python3 -m pip install --upgrade "pip < 21.0"
+         python3 -m pip install --upgrade setuptools
+         python3 -m pip install msal
+         svctoken=$(python3 devops/scripts/azure_jwt_client.py)
+         echo "##vso[task.setvariable variable=e2eIdToken]$svctoken"
     - task: Bash@3
       displayName: "Generate tokens"
       condition: |

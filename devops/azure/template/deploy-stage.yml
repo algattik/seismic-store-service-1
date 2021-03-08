@@ -18,9 +18,6 @@ stages:
       - group: '${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
       jobs:
       - deployment: Deploy_Image
-        pool:
-          name: $(AGENT_POOL)
-          vmImage: $(AGENT_IMAGE)
         environment: ${{ parameters.environmentPrefix }}${{ environment.name }}
         strategy:
           runOnce:
@@ -36,9 +33,6 @@ stages:
                   installRequirements: ${{ parameters.installRequirements }}
       - deployment: Deploy_To_Cluster
         dependsOn: Deploy_Image
-        pool:
-          name: $(AGENT_POOL)
-          vmImage: $(AGENT_IMAGE)
         workspace:
           clean: all
         environment: ${{ parameters.environmentPrefix }}${{ environment.name }}
