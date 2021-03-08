@@ -15,8 +15,15 @@
 
 import { SubProjectModel } from '../../../services/subproject';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
-
+import { Utils } from '../../../shared';
 @SeistoreFactory.register('aws')
 export class AwsSeistore extends AbstractSeistore {
     public checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel) { return; }
+
+    public async getEmailFromTokenPayload(
+        userCredentials: string, internalSwapForSauth: boolean): Promise<string> { // swapSauthEmailClaimToV2=true
+        const payload = Utils.getPayloadFromStringToken(userCredentials);
+        const email = payload.username;
+        return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
+    }
 }
