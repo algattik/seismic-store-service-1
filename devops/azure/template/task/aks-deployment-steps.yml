@@ -30,9 +30,6 @@ steps:
       persistCredentials: true
     - checkout: FluxRepo
       persistCredentials: true
-    - template: clone-osdu.yml
-      parameters:
-        pathToClone: $(Build.SourcesDirectory)/$(Build.Repository.Name)
     - task: Bash@3
       displayName: "Install requirements in container"
       condition: ${{ parameters.installRequirements }} 
@@ -98,6 +95,11 @@ steps:
         skipDeploy: ${{parameters.skipDeploy}}
         manifestRepo: ${{ parameters.manifestRepo }}
         fluxEnabled: ${{ parameters.fluxEnabled }}
+    - template: flux-service-wait.yml
+      parameters:
+        serviceName: ${{parameters.serviceName}}
+        environment: ${{ parameters.environment }}
+        imageRepoName: '${{ parameters.serviceName }}'
     - template: kube.yml
       parameters:
         fluxEnabled: ${{ parameters.fluxEnabled }}

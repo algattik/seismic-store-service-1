@@ -48,3 +48,4 @@ stages:
              - name: 'dev'
                performE2Etests: true
                fluxEnabled: true
+               isGitlab: ${{ variables.isGitlab }}
