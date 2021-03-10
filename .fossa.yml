@@ -10,7 +10,7 @@ analyze:
   modules:
   - name: .
     type: npm
-    target: .
+    target: npm-shrinkwrap.json
     path: .
   - name: src
     type: npm
