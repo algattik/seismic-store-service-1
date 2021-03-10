@@ -15,7 +15,8 @@ steps:
         e2eIdToken: $(e2eIdToken)
         e2eSubproject: $(e2eSubproject)
         e2eTenant: $(e2eTenant)
-        ISGITLAB: "${{ parameters.isGitlab }}"
+        isGitlab: "${{ parameters.isGitlab }}"
+        newuser: $(e2eAdminEmail)
       inputs:
         targetType: "inline"
         script: |
@@ -24,6 +25,7 @@ steps:
           export COLORTERM=true
           ./tests/e2e/run_e2e_tests.sh \
             --seistore-svc-url="https://${DNS_HOST}/${serviceUrlSuffix}" \
+            --seistore-svc-api-key="NA" \
             --user-idtoken="${e2eIdToken}" \
             --tenant="${e2eTenant}" \
             --subproject="${e2eSubproject}" \
@@ -31,7 +33,7 @@ steps:
             --datapartition="${e2eDataPartition}" \
             --legaltag01="${e2eLegaltag01}" \
             --legaltag02="${e2eLegaltag02}" \
-            --VCS_Provider="${ISGITLAB}"
+            --VCS_Provider="${isGitlab}"
     - task: Bash@3
       displayName: "Run e2e"
       condition: |
