@@ -21,3 +21,4 @@ export { Logger } from './logger';
 export { ConfigGoogle } from './config';
 export { GoogleTrace } from './trace';
 export { GoogleDataEcosystemServices } from './dataecosystem';
+export { GoogleSeistore } from './seistore';

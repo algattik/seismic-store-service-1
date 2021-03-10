@@ -23,7 +23,7 @@ import { Credentials } from './credentials';
 @DataEcosystemCoreFactory.register('google')
 export class GoogleDataEcosystemServices extends AbstractDataEcosystemCore {
     public getDataPartitionIDRestHeaderName(): string { return 'slb-data-partition-id'; }
-    public getEntitlementBaseUrlPath(): string { return '/entitlements/v1'; };
+    public getEntitlementBaseUrlPath(): string { return '/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/storage/v2'; };
 

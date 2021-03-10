@@ -36,7 +36,7 @@ export class DESEntitlement {
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json',
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + group + '/members',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + group + '/members',
         };
 
         if (prevCursor !== undefined) { options.url += ('?cursor=' + prevCursor); }
@@ -75,7 +75,7 @@ export class DESEntitlement {
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
@@ -101,9 +101,14 @@ export class DESEntitlement {
 
     }
 
+    // ensure strong consistency on cascade operation createGroup -> addMEmber
+    // in seismic-dms when a subproject is create an extra admin user can also added to the created group
+    // because of the imposed eventual consistency on createGroup (mex declared latency ~2s) we should ensure
+    // a small retry logic is applied around the call on the returned error message
+    // { "code": 404, "reason": "Not Found" }
     public static async addUserToGroup(
         userToken: string, groupName: string, dataPartitionID: string, userEmail: string,
-            role: string, appkey: string) {
+        role: string, appkey: string, checkConsistencyForCreateGroup = false) {
 
         const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
 
@@ -115,7 +120,8 @@ export class DESEntitlement {
                 'Content-Type': 'application/json'
             },
             json: undefined,
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT
+                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members',
         };
 
         options.json = dataecosystem.getUserAddBodyRequest(userEmail, role);
@@ -126,8 +132,24 @@ export class DESEntitlement {
 
         try {
 
-            await request.post(options);
-            entitlementLatency.record(DESService.ENTITLEMENT);
+            // let's have a simple linear retry backoff with 1s wait time between iterations
+            // to ensure the gorup is created before add a user (if explicitly required)
+            let counter = 0;
+            while (counter < 10) {
+                try {
+                    await request.post(options);
+                    entitlementLatency.record(DESService.ENTITLEMENT);
+                    return;
+                } catch (error) { // check eventual consistency
+                    if (!(checkConsistencyForCreateGroup && error && error.error &&
+                        error.error.code && error.error.code === 404 &&
+                        error.error.reason && (error.error.reason as string).toLocaleLowerCase() === 'not found')) {
+                        throw (error);
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s constant (no exp backoff required)
+                counter = counter + 1;
+            }
 
         } catch (error) {
 
@@ -151,7 +173,8 @@ export class DESEntitlement {
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail,
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT
+                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail,
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
@@ -190,7 +213,7 @@ export class DESEntitlement {
                 description: groupDesc,
                 name: groupName,
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;

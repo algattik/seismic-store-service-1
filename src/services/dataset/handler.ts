@@ -16,16 +16,16 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth } from '../../auth';
-import { JournalFactoryTenantClient, StorageFactory } from '../../cloud';
-import { Config } from '../../cloud';
+import { Config, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
 import { DESStorage, DESUtils } from '../../dataecosystem';
-import { Error, Response, TraceLog, Utils, FeatureFlags, Feature, Params } from '../../shared';
-import { SubProjectDAO, SubprojectGroups } from '../subproject';
+import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
+import { SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
 import { DatasetDAO } from './dao';
-import { Locker } from './locker';
+import { Locker, IWriteLockSession } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
+import { v4 as uuidv4 } from 'uuid';
 
 export class DatasetHandler {
 
@@ -37,12 +37,10 @@ export class DatasetHandler {
                 Response.writeOK(res, await this.checkCTag(req));
             } else {
 
-                if (op === DatasetOP.Register) { res.locals.trace.start('tenant-get'); }
                 const tenant = await TenantDAO.get(req.params.tenantid);
-                if (op === DatasetOP.Register) { res.locals.trace.stop(); }
 
                 if (op === DatasetOP.Register) {
-                    Response.writeOK(res, await this.register(req, tenant, res.locals.trace));
+                    Response.writeOK(res, await this.register(req, tenant));
                 } else if (op === DatasetOP.Get) {
                     Response.writeOK(res, await this.get(req, tenant));
                 } else if (op === DatasetOP.List) {
@@ -79,7 +77,8 @@ export class DatasetHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get({
-            gcpid:  userInput.tenantID, esd: userInput.dataPartitionID, default_acls: 'any', name: 'any' });
+            gcpid: userInput.tenantID, esd: userInput.dataPartitionID, default_acls: 'any', name: 'any'
+        });
 
         // Retrieve the dataset metadata
         const datasetOUT = (await DatasetDAO.get(journalClient, userInput.dataset))[0];
@@ -97,14 +96,13 @@ export class DatasetHandler {
     }
 
     // register a new dataset
-    private static async register(req: expRequest, tenant: TenantModel, trace: TraceLog) {
+    private static async register(req: expRequest, tenant: TenantModel) {
 
         // parse the user input and create the dataset metadata model
-        const userInput = DatasetParser.register(req);
+        const userInput = await DatasetParser.register(req);
         const dataset = userInput[0];
         const seismicmeta = userInput[1];
-        const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
-        let datasetPathMutex: any;
+        let writeLockSession: IWriteLockSession;
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
         const transaction = journalClient.getTransaction();
@@ -113,8 +111,17 @@ export class DatasetHandler {
 
             await transaction.run();
 
-            // attempt to acquire a mutex on the dataset name and set the sbit for the dataset in redis
-            datasetPathMutex = await Locker.createWriteLock(dataset);
+            // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
+            // a mutex is applied on the resource on the shared cahce (removed at the end of the method)
+            writeLockSession = await Locker.createWriteLock(
+                dataset, req.headers['x-seismic-dms-lockid'] as string);
+
+            // if the call is idempotent return the dataset value
+            if(writeLockSession.idempotent) {
+                const alreadyRegisteredDataset =  (await DatasetDAO.get(journalClient, dataset))[0];
+                await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
+                return alreadyRegisteredDataset;
+            }
 
             const spkey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
@@ -122,35 +129,31 @@ export class DatasetHandler {
             });
 
             // get the subproject info
-            trace.start('subproject-get');
             const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
-            trace.stop();
 
             // set gcs URL and LegaTag with the subproject information
-            dataset.gcsurl = subproject.gcs_bucket + '/' + Utils.makeID(16);
+            dataset.gcsurl = subproject.gcs_bucket + '/' + uuidv4()
             dataset.ltag = dataset.ltag || subproject.ltag;
 
             // ensure that a legal tag exist
             if (!dataset.ltag) {
-                Error.make(Error.Status.NOT_FOUND,
+                throw Error.make(Error.Status.NOT_FOUND,
                     'No legal-tag has been found for the subproject resource ' +
                     Config.SDPATHPREFIX + dataset.tenant + '/' + dataset.subproject +
                     ' the storage metdatada cannot be updated without a valida legal-tag');
             }
 
             // check if has read access, if legal tag is valid, and if the dataset does not already exist
-            trace.start('parallel-block01');
             await Promise.all([
                 FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
                     Auth.isWriteAuthorized(req.headers.authorization,
-                        SubprojectGroups.getWriteGroups(tenant.name, subproject.name),
+                        subproject.acls.admins,
                         dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
                 FeatureFlags.isEnabled(Feature.LEGALTAG) ?
                     dataset.ltag ? Auth.isLegalTagValid(
                         req.headers.authorization, dataset.ltag,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined,
             ]);
-            trace.stop();
 
             // check if dataset already exist
             if ((await DatasetDAO.get(journalClient, dataset))[0]) {
@@ -197,14 +200,6 @@ export class DatasetHandler {
 
             }
 
-            // build the CDO object
-            const bucket = dataset.gcsurl.split('/')[0];
-            const prefixid = dataset.gcsurl.split('/')[1];
-            const CDOName = prefixid + '/' + Config.FILE_CDO;
-            const CDOMex = JSON.stringify({
-                gcs_prefix: prefixid,
-                name: Config.SDPATHPREFIX + dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name,
-            });
 
             // prepare the keys
             const dskey = journalClient.createKey({
@@ -212,39 +207,28 @@ export class DatasetHandler {
                 path: [Config.DATASETS_KIND],
             });
 
-            const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-            // save the dataset entity and save the CDO object
-            trace.start('parallel-block02');
+            // save the dataset entity
             await Promise.all([
                 DatasetDAO.register(transaction, { key: dskey, data: dataset }),
-                storage.saveObject(bucket, CDOName, CDOMex),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
                         [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
-            await transaction.commit();
-
-            trace.stop();
-
             // attach the gcpid for fast check
             dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
+            // release the mutex and keep the lock session
+            await Locker.removeWriteLock(writeLockSession, true);
+            await transaction.commit();
             return dataset;
+
         } catch (err) {
 
+            // release the mutex and unlock the resource
+            await Locker.removeWriteLock(writeLockSession);
             await transaction.rollback();
-
-            if (datasetPathMutex) {
-                await Locker.del(datasetPath);
-            }
-
             throw (err);
-        } finally {
-
-            if (datasetPathMutex) {
-                await Locker.releaseMutex(datasetPathMutex, datasetPath);
-            }
 
         }
 
@@ -257,11 +241,18 @@ export class DatasetHandler {
         const userInput = DatasetParser.get(req);
         const datasetIN = userInput[0];
 
-        // retrieve journalClient client and begin transaction
+        // retrieve journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Retrieve the dataset metadata
         const datasetOUT = (await DatasetDAO.get(journalClient, datasetIN))[0];
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, datasetIN.subproject],
+        });
+
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIN.subproject, spkey)
 
         // check if the dataset does not exist
         if (!datasetOUT) {
@@ -276,12 +267,12 @@ export class DatasetHandler {
         // Check if user has read access and legal tag is valid
         await Promise.all([
             FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
-            Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(datasetIN.tenant, datasetIN.subproject),
-                datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
+                Auth.isReadAuthorized(req.headers.authorization,
+                    subproject.acls.viewers.concat(subproject.acls.admins),
+                    datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             FeatureFlags.isEnabled(Feature.LEGALTAG) ?
-            datasetOUT.ltag ? Auth.isLegalTagValid(
-                req.headers.authorization, datasetOUT.ltag,
+                datasetOUT.ltag ? Auth.isLegalTagValid(
+                    req.headers.authorization, datasetOUT.ltag,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined
         ]);
 
@@ -307,15 +298,24 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const dataset = DatasetParser.list(req);
 
+        // init journalClient client
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, dataset.subproject],
+        });
+
+        // Retrieve subproject information
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, dataset.subproject, spkey)
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(dataset.tenant, dataset.subproject),
+                subproject.acls.viewers.concat(subproject.acls.admins),
                 dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
-        // init journalClient client
-        const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Retrieve the list of datasets metadata
         const datasets = await DatasetDAO.list(journalClient, dataset);
@@ -336,28 +336,40 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const datasetIn = DatasetParser.delete(req);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check authorizations
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                SubprojectGroups.getWriteGroups(tenant.name, datasetIn.subproject),
-                tenant.name, datasetIn.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        // ensure is not write locked
+        if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
+            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIn))) {
+                throw (Error.make(Error.Status.LOCKED,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
+                    datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
+            }
         }
 
         // init datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const transaction = journalClient.getTransaction();
+
+        // retrieve subproject meta info
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, datasetIn.subproject],
+        });
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIn.subproject, spkey);
 
         try {
-            await transaction.run();
+
+            // check authorization (write)
+            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+                // Check authorizations
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    subproject.acls.admins,
+                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
+
             // Retrieve the dataset metadata
             const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
 
-            // check if the dataset does not exist
-            if (!dataset) {
-                throw (Error.make(Error.Status.NOT_FOUND,
-                    'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
-                    datasetIn.subproject + datasetIn.path + datasetIn.name + ' does not exist'));
-            }
+            // if the dataset does not exist return ok
+            if (!dataset) { return; }
 
             // check if valid url
             if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
@@ -370,46 +382,25 @@ export class DatasetHandler {
             // Delete the dataset metadata (both firestore and DEStorage)
             await Promise.all([
                 // delete the dataset entity
-                DatasetDAO.delete(transaction, dataset),
+                DatasetDAO.delete(journalClient, dataset),
                 // delete des storage record
                 (dataset.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.deleteRecord(req.headers.authorization,
                         dataset.seismicmeta_guid, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
-            // Delete CDO Object and all phisical objects (not wait for full objects deletion)
+            // Delete all phisical objects (not wait for full objects deletion)
             const bucketName = dataset.gcsurl.split('/')[0];
             const gcsprefix = dataset.gcsurl.split('/')[1];
-            const CDOName = gcsprefix + '/' + Config.FILE_CDO;
-
             const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-
-            try {
-                // Delete the CDO object
-                await storage.deleteObject(bucketName, CDOName);
-
-            } catch (err) {
-
-                await transaction.commit();
-
-                // unlock the dataset
-                await Locker.unlock(journalClient, dataset, undefined, true);
-
-                return;
-
-            }
-
             await storage.deleteObjects(bucketName, gcsprefix);
 
-            await transaction.commit();
-
-            // unlock the dataset
-            await Locker.unlock(journalClient, dataset, undefined, true);
+            // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
+            await Locker.unlock(journalClient, dataset)
 
         } catch (err) {
-            await transaction.rollback();
-
             throw (err);
+
         }
     }
 
@@ -418,19 +409,55 @@ export class DatasetHandler {
 
         // Retrieve the dataset path information
         const [datasetIN, seismicmeta, newName, wid] = DatasetParser.patch(req);
-        // retrieve datastore client and begin transaction
+
+        // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
         const transaction = journalClient.getTransaction();
 
-        let seismicmetaDE: any;
-        let patchSeismicMeta: any;
+        // return immediately if it is a simple close wiht empty body (no patch to apply)
+        if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
 
-        // unlock the detaset for close opeartion
+            // Retrieve the dataset metadata
+            const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
+
+            // check if the dataset does not exist
+            if (!dataset) {
+                throw (Error.make(Error.Status.NOT_FOUND,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            }
+
+            // unlock the detaset
+            const unlockRes = await Locker.unlock(journalClient, datasetIN, wid)
+            dataset.sbit = unlockRes.id;
+            dataset.sbit_count = unlockRes.cnt;
+
+            return dataset;
+        }
+
+        // unlock the detaset for close opeartion (and patch)
         const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
+
+        // ensure nobody got the lock between the close and the mutext acquistion
+        if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
+            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
+                throw (Error.make(Error.Status.LOCKED,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
+            }
+        }
 
         try {
 
             await transaction.run();
+
+            const spkey = journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+                path: [Config.SUBPROJECTS_KIND, datasetIN.subproject]
+            });
+
+            // Retrieve subproject information
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
 
             // Retrieve the dataset metadata
             const results = await DatasetDAO.get(journalClient, datasetIN);
@@ -444,16 +471,11 @@ export class DatasetHandler {
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
             }
 
-            // return immediately if it is a simple close
-            if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
-                return datasetOUT;
-            }
-
             if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
                 // Check authorizations
                 await Auth.isWriteAuthorized(req.headers.authorization,
-                    SubprojectGroups.getWriteGroups(tenant.name, datasetIN.subproject),
-                    datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    subproject.acls.admins,
+                    datasetIN.tenant, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
 
             // patch datasetOUT with datasetIN
@@ -491,13 +513,11 @@ export class DatasetHandler {
             }
 
             // Populate the storage record with other mandatory field if not supplied.
+            let seismicmetaDE: any;
             if (seismicmeta) {
 
-                // Check if seismic metadata has been already ingested
-                patchSeismicMeta = datasetOUT.seismicmeta_guid !== undefined;
-
                 // return the seismicmetadata (if exists)
-                if (patchSeismicMeta) {
+                if (datasetOUT.seismicmeta_guid) {
 
                     // seismicmeta is already there, need to patch
                     seismicmetaDE = await DESStorage.getRecord(req.headers.authorization, datasetOUT.seismicmeta_guid,
@@ -514,7 +534,8 @@ export class DatasetHandler {
                     // mandatory field required if a new seismic metadata record is ingested (kind/data required)
                     Params.checkString(seismicmeta.kind, 'kind');
                     Params.checkObject(seismicmeta.data, 'data');
-                    seismicmeta.recordType = seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic:';
+                    seismicmeta.recordType =
+                        seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic3d:';
 
                     // if id is given, take it. otherwise generate
                     if (!seismicmeta.id) {
@@ -546,12 +567,6 @@ export class DatasetHandler {
                         // ensure that a legal tag exist
                         if (!datasetOUT.ltag) {
 
-                            const subproject = await SubProjectDAO.get(journalClient,
-                                tenant.name, req.params.subprojectid, journalClient.createKey({
-                                    namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-                                    path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
-                                }));
-
                             throw (!subproject.ltag ?
                                 Error.make(Error.Status.NOT_FOUND,
                                     'No legal-tag has been found for the subproject resource ' +
@@ -581,18 +596,19 @@ export class DatasetHandler {
                     ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
 
-            await transaction.commit();
-
-            // attach the gcpid for fast check
-            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             // attach lock information
             if (wid) {
                 datasetOUT.sbit = lockres.id;
                 datasetOUT.sbit_count = lockres.cnt;
             }
+            await transaction.commit();
+
+            // attach the gcpid for fast check
+            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             return datasetOUT;
+
         } catch (err) {
             await transaction.rollback();
             throw (err);
@@ -608,11 +624,19 @@ export class DatasetHandler {
         const open4write = userInput.open4write;
         const wid = userInput.wid;
 
-       // retrieve datastore client and begin transaction
+        // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Retrieve the dataset metadata
         const datasetOUT = (await DatasetDAO.get(journalClient, datasetIN))[0];
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, datasetIN.subproject],
+        });
+
+
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIN.subproject, spkey)
 
         // check if the dataset does not exist
         if (!datasetOUT) {
@@ -625,10 +649,10 @@ export class DatasetHandler {
             FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
                 open4write ?
                     Auth.isWriteAuthorized(req.headers.authorization,
-                        SubprojectGroups.getWriteGroups(tenant.name, datasetIN.subproject),
+                        subproject.acls.admins,
                         datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) :
                     Auth.isReadAuthorized(req.headers.authorization,
-                        SubprojectGroups.getReadGroups(tenant.name, datasetIN.subproject),
+                        subproject.acls.viewers.concat(subproject.acls.admins),
                         datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) :
                 undefined,
             FeatureFlags.isEnabled(Feature.LEGALTAG) ?
@@ -655,8 +679,10 @@ export class DatasetHandler {
 
         // lock in cache
         const lockres = open4write ?
-            await Locker.acquireWriteLock(journalClient, datasetIN, wid) :
-            await Locker.acquireReadLock(journalClient, datasetIN, wid);
+            await Locker.acquireWriteLock(
+                journalClient, datasetIN, req.headers['x-seismic-dms-lockid'] as string, wid) :
+            await Locker.acquireReadLock(
+                journalClient, datasetIN, req.headers['x-seismic-dms-lockid'] as string, wid);
 
         // attach lock information
         datasetOUT.sbit = lockres.id;
@@ -672,14 +698,22 @@ export class DatasetHandler {
     // unlock the dataset metadata for opening
     private static async unlock(req: expRequest, tenant: TenantModel) {
 
-       // parse user request
+        // parse user request
         const datasetIN = DatasetParser.unlock(req);
 
-        // retrieve datastore client and begin transaction
+        // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Retrieve the dataset metadata
         const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
+
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, datasetIN.subproject],
+        });
+
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIN.subproject, spkey)
 
         // check if the dataset does not exist
         if (!dataset) {
@@ -690,7 +724,7 @@ export class DatasetHandler {
 
         // check if user is write authorized
         await Auth.isWriteAuthorized(req.headers.authorization,
-            SubprojectGroups.getWriteGroups(tenant.name, dataset.subproject),
+            subproject.acls.admins,
             tenant.name, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // unlock
@@ -704,14 +738,23 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const datasets = DatasetParser.exists(req);
 
+        // init journalClient client
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + datasets[0].tenant,
+            path: [Config.SUBPROJECTS_KIND, datasets[0].subproject],
+        });
+
+        // Retrieve subproject information
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(datasets[0].tenant, datasets[0].subproject),
+                subproject.acls.viewers.concat(subproject.acls.admins),
                 datasets[0].tenant, datasets[0].subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
-        // init journalClient client
-        const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Check if the required datasets exist
         const results: boolean[] = [];
@@ -728,14 +771,23 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const datasets = DatasetParser.sizes(req);
 
+        // init journalClient client
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + datasets[0].tenant,
+            path: [Config.SUBPROJECTS_KIND, datasets[0].subproject],
+        });
+
+        const subproject = await SubProjectDAO.get(journalClient, datasets[0].tenant, datasets[0].subproject, spkey);
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(datasets[0].tenant, datasets[0].subproject),
+                subproject.acls.viewers.concat(subproject.acls.admins),
                 datasets[0].tenant, datasets[0].subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
-        // init journalClient client
-        const journalClient = JournalFactoryTenantClient.get(tenant);
+
 
         // Check if the required datasets exist
         const results: number[] = [];
@@ -759,15 +811,22 @@ export class DatasetHandler {
         // Retrieve the dataset information
         const dataset = DatasetParser.listContent(req);
 
-       if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check authorizations
-            await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectGroups.getReadGroups(dataset.tenant, dataset.subproject),
-                dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
-
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
+
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant,
+            path: [Config.SUBPROJECTS_KIND, dataset.subproject],
+        });
+
+        const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject, spkey)
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            // Check authorizations
+            await Auth.isReadAuthorized(req.headers.authorization,
+                subproject.acls.viewers.concat(subproject.acls.admins),
+                dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
 
         // list the folder content
         return await DatasetDAO.listContent(journalClient, dataset);
@@ -780,11 +839,21 @@ export class DatasetHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-
         const transaction = journalClient.getTransaction();
 
+        // ensure is not write locked
+        if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
+            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
+                throw (Error.make(Error.Status.LOCKED,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
+            }
+        }
+
         try {
+
             await transaction.run();
+
             const results = await DatasetDAO.get(journalClient, datasetIN);
             const datasetOUT = results[0];
             const datasetOUTKey = results[1];
@@ -803,18 +872,24 @@ export class DatasetHandler {
                 datasetOUT.gtags = datasetIN.gtags;
             }
 
+            // Retrieve subproject information
+            const spkey = journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+                path: [Config.SUBPROJECTS_KIND, datasetIN.subproject],
+            });
+
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIN.subproject, spkey);
+
             if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
                 await Auth.isWriteAuthorized(req.headers.authorization,
-                    SubprojectGroups.getWriteGroups(datasetIN.tenant, datasetIN.subproject),
+                    subproject.acls.admins,
                     datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
 
             await DatasetDAO.update(transaction, datasetOUT, datasetOUTKey);
-
             await transaction.commit();
 
         } catch (err) {
-            // cancel the transaction and rethrow the error
             await transaction.rollback();
             throw (err);
         }
@@ -824,7 +899,7 @@ export class DatasetHandler {
     // check the permissions of a user on a dataset
     private static async checkPermissions(req: expRequest, tenant: TenantModel) {
 
-       // Retrieve the dataset path information
+        // Retrieve the dataset path information
         const dataset = DatasetParser.checkPermissions(req);
 
         // init journalClient client
@@ -837,16 +912,23 @@ export class DatasetHandler {
                 dataset.subproject + dataset.path + dataset.name + ' does not exist'));
         }
 
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, dataset.subproject],
+        });
+
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, dataset.subproject, spkey)
+
         const res = { read: false, write: false, delete: false };
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if has write and read access
             res.write = await Auth.isWriteAuthorized(req.headers.authorization,
-                SubprojectGroups.getWriteGroups(dataset.tenant, dataset.subproject),
+                subproject.acls.admins,
                 dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY], false);
             res.read = await Auth.isReadAuthorized(
                 req.headers.authorization,
-                SubprojectGroups.getReadGroups(dataset.tenant, dataset.subproject),
+                subproject.acls.viewers.concat(subproject.acls.admins),
                 dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY], false);
         } else {
             res.write = true;

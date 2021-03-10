@@ -46,7 +46,7 @@ spec:
           - name: KEYVAULT_URL
             valueFrom:
               configMapKeyRef:
-                name: {{ .Values.configEnv.keyvaultUrl }}
+                name: osdu-svc-properties
                 key: ENV_KEYVAULT
           envFrom:
             - configMapRef:

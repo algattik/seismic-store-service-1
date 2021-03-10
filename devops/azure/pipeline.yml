@@ -28,9 +28,6 @@ variables:
     value: "devops/azure/chart/helm-config.yaml"
   - name: 'MANIFEST_REPO'
     value: $[ resources.repositories['FluxRepo'].name ]
-  - name: isGitlab
-    value: true
-
     
 stages:
 
@@ -44,10 +41,11 @@ stages:
       serviceName: ${{ variables.serviceName }}
       environmentPrefix: ${{ variables.environmentPrefix }}
       installRequirements: false
+      isGitlab: true
       providers:
         -  name: Azure
            environments:
-             - name: 'dev'
+             - name: 'demo'
                performE2Etests: false
-               continueIfE2Efails: false
                fluxEnabled: true
+               isGitlab: true

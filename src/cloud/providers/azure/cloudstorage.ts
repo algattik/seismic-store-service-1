@@ -17,12 +17,12 @@
 import { TokenCredential } from '@azure/identity';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { Readable } from 'stream';
-
-import { Config } from '../../config';
-import { AzureCredentials } from './credentials';
-import { AbstractStorage, StorageFactory } from '../../storage';
-import { AzureDataEcosystemServices } from './dataecosystem';
 import { TenantModel } from '../../../services/tenant';
+import { Config } from '../../config';
+import { AbstractStorage, StorageFactory } from '../../storage';
+import { AzureCredentials } from './credentials';
+import { AzureDataEcosystemServices } from './dataecosystem';
+
 
 @StorageFactory.register('azure')
 export class AzureCloudStorage extends AbstractStorage {
@@ -58,13 +58,8 @@ export class AzureCloudStorage extends AbstractStorage {
     }
 
     // Create a new container
-    // [REVERT-DOWNSCOPE] change method signature with the commented one
-    // public async createBucket(
-    //     bucketName: string, location: string, storageClass: string): Promise<void> {
     public async createBucket(
-        bucketName: string,
-        location: string, storageClass: string,
-        adminACL: string, editorACL: string, viewerACL: string): Promise<void> {
+        bucketName: string, location: string, storageClass: string): Promise<void> {
         const container = (await this.getBlobServiceClient()).getContainerClient(bucketName);
         await container.create();
     }

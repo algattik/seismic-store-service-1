@@ -112,6 +112,4 @@ steps:
         git_checkout
         git_commit
         git_pull
-        git_push
-        sleep 9m
-        kubectl rollout status deployment.v1.apps/$SERVICE_NAME -n osdu --timeout=900s
+        git_push        

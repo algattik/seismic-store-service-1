@@ -16,13 +16,13 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth } from '../../auth';
-import { Error, Response, FeatureFlags, Feature, Utils } from '../../shared';
+import { Config } from '../../cloud';
+import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { TenantDAO, TenantGroups } from '../tenant';
 import { AppsDAO } from './dao';
 import { IAppModel } from './model';
 import { AppOp } from './optype';
 import { AppParser } from './parser';
-import { Config } from '../../cloud';
 
 
 export class AppHandler {
@@ -74,8 +74,8 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroupName(tenant)],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // check if application already exists
@@ -105,8 +105,8 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroupName(tenant)],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // check if the app has been previously registered
@@ -132,8 +132,8 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroupName(tenant)],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // retrieve entity list
@@ -157,8 +157,8 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroupName(tenant)],
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // retrieve entity list

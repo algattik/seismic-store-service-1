@@ -23,23 +23,8 @@
 			"enabled": true
 		},
 		{
-			"key": "subproject",
-			"value": "#{SUBPROJECT}#",
-			"enabled": true
-		},
-		{
-			"key": "subprojectLongName",
-			"value": "#{SUBPROJECTLONGNAME}#",
-			"enabled": true
-		},
-		{
 			"key": "adminEmail",
 			"value": "#{ADMINEMAIL}#",
-			"enabled": true
-		},
-		{
-			"key": "STOKEN1",
-			"value": "#{STOKEN1}#",
 			"enabled": true
 		},
 		{
@@ -60,51 +45,6 @@
 		{
 			"key": "newuser",
 			"value": "#{NEWUSEREMAIL}#",
-			"enabled": true
-		},
-		{
-			"key": "STOKEN_Ta",
-			"value": "#{STOKEN_Ta}#",
-			"enabled": true
-		},
-		{
-			"key": "STOKEN_Sa",
-			"value": "#{STOKEN_Sa}#",
-			"enabled": true
-		},
-		{
-			"key": "STOKEN_Se",
-			"value": "#{STOKEN_Se}#",
-			"enabled": true
-		},
-		{
-			"key": "STOKEN_Sv",
-			"value": "#{STOKEN_Sv}#",
-			"enabled": true
-		},
-		{
-			"key": "Ta_user",
-			"value": "#{TA_USER}#",
-			"enabled": true
-		},
-		{
-			"key": "Sa_user",
-			"value": "#{SA_USER}#",
-			"enabled": true
-		},
-		{
-			"key": "Se_user",
-			"value": "#{SE_USER}#",
-			"enabled": true
-		},
-		{
-			"key": "Sv_user",
-			"value": "#{SV_USER}#",
-			"enabled": true
-		},
-		{
-			"key": "EXPIRED_TOKEN",
-			"value": "#{EXPIRED_TOKEN}#",
 			"enabled": true
 		},
 		{

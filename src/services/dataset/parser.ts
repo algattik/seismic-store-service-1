@@ -16,6 +16,8 @@
 
 import { Request as expRequest } from 'express';
 import { DatasetModel } from '.';
+import { Config } from '../../cloud';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Params, Utils } from '../../shared';
 
 export class DatasetParser {
@@ -39,13 +41,14 @@ export class DatasetParser {
 
     }
 
-    public static register(req: expRequest): [DatasetModel, any] {
+    public static async register(req: expRequest): Promise<[DatasetModel, any]> {
 
         // Init the dataset model from user input parameters
         const dataset = this.createDatasetModelFromRequest(req);
         dataset.ltag = (req.headers.ltag) as string;
         dataset.type = req.body ? req.body.type : undefined;
-        dataset.created_by = Utils.getEmailFromTokenPayload(req.headers.authorization);
+        dataset.created_by = await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
         dataset.created_date = dataset.last_modified_date = new Date().toString();
         dataset.gtags = req.body ? req.body.gtags : undefined;
 
@@ -59,7 +62,7 @@ export class DatasetParser {
         if (seismicmeta) {
             Params.checkString(seismicmeta.kind, 'kind'); // mandatory string
             Params.checkObject(seismicmeta.data, 'data');
-            seismicmeta.recordType = seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic:';
+            seismicmeta.recordType = seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic3d:';
         }
 
         return [dataset, seismicmeta];

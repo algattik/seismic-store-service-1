@@ -164,6 +164,7 @@ export class TestTenantSVC {
             expReq.query.datapartition = 'datapartition';
             this.sandbox.stub(TenantDAO, 'get').resolves(this.tenant);
             this.sandbox.stub(Auth, 'isUserAuthorized').resolves(true);
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
 
             await TenantHandler.handler(expReq, expRes, TenantOP.GET);
             Tx.checkTrue(expRes.statusCode === 200, done);
@@ -173,6 +174,7 @@ export class TestTenantSVC {
             expReq.query.datapartition = 'datapartition';
             this.sandbox.stub(TenantDAO, 'get').resolves(this.tenant);
             this.sandbox.stub(Auth, 'isUserAuthorized').resolves(false);
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
 
             await TenantHandler.handler(expReq, expRes, TenantOP.GET);
             Tx.checkTrue(expRes.statusCode === 200, done);
@@ -189,6 +191,7 @@ export class TestTenantSVC {
             this.sandbox.stub(Auth, 'isUserAuthorized').resolves(true);
             this.sandbox.stub(TenantDAO, 'delete').resolves();
             this.sandbox.stub(SubProjectDAO, 'list').resolves([]);
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
 
 
             await TenantHandler.handler(expReq, expRes, TenantOP.DELETE);
@@ -201,6 +204,7 @@ export class TestTenantSVC {
             expReq.query.datapartition = 'datapartition';
             this.sandbox.stub(TenantDAO, 'get').resolves(this.tenant);
             this.sandbox.stub(TenantDAO, 'delete').resolves();
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             this.sandbox.stub(SubProjectDAO, 'list').resolves([{ name: 'subproject-a', tenant: 'tenant-a', admin: 'admin', storage_class: 'class', storage_location: 'location', ltag: 'ltag', gcs_bucket: 'bucket' }]);
             const errorStub = this.sandbox.stub(Response, 'writeError');
             errorStub.returns();
@@ -217,6 +221,7 @@ export class TestTenantSVC {
             this.sandbox.stub(TenantDAO, 'delete').resolves();
             this.sandbox.stub(SubProjectDAO, 'list').resolves([]);
             this.sandbox.stub(AuthGroups, 'clearGroup').resolves();
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
 
 
             await TenantHandler.handler(expReq, expRes, TenantOP.DELETE);

@@ -69,7 +69,7 @@ export class TestDESEntitlement {
                'Content-Type': 'application/json',
                'slb-data-partition-id': 'tenant-one',
             },
-            url: Config.DES_SERVICE_HOST + '/entitlements/v1/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups',
          };
          Tx.checkTrue(requestStub.calledWith(options), done);
       });
@@ -107,7 +107,7 @@ export class TestDESEntitlement {
                email: 'user@email',
                role: 'role-a',
             },
-            url: Config.DES_SERVICE_HOST + '/entitlements/v1/groups/' + 'group-a' + '/members',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups/' + 'group-a' + '/members',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);
@@ -141,7 +141,7 @@ export class TestDESEntitlement {
                'Content-Type': 'application/json',
                'slb-data-partition-id': 'tenant-a',
             },
-            url: Config.DES_SERVICE_HOST + '/entitlements/v1/groups/' + 'group-a' + '/members/' + 'user@email',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups/' + 'group-a' + '/members/' + 'user@email',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);
@@ -178,7 +178,7 @@ export class TestDESEntitlement {
                description: 'group desc',
                name: 'group-a',
             },
-            url: Config.DES_SERVICE_HOST + '/entitlements/v1/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);

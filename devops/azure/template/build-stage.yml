@@ -6,7 +6,7 @@ stages:
 - ${{ each provider in parameters.providers }}:
   - stage: 'Build_${{ provider.name }}'
     variables:
-    - group: 'R3MVP - ${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
+    - group: '${{ provider.name }} Service Release - ${{ parameters.serviceName }}'
   
     jobs:
     - job: Build

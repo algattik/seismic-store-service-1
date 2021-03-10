@@ -2,7 +2,7 @@
 
 # This script generate a detailed changelog for the released changes to the seismic store service
 
-logname='../CHANGELOG.md'
+logname='CHANGELOG.md'
 
 printf "%s\n" "# Seismic Store Change Log" > $logname
 

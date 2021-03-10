@@ -7,16 +7,20 @@ steps:
         eq(${{ parameters.isGitlab }},true)
       env:
         AZURE_AD_APP_RESOURCE_ID: $(aad-client-id)
-        AZURE_AD_TENANT_ID: $(tenant-id)
+        AZURE_TENANT_ID: $(tenant-id)
         INTEGRATION_TESTER: $(app-dev-sp-username)
         AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $(app-dev-sp-password)
       inputs:
         targetType: "inline"
         script: |
-          #!/usr/bin/env bash
-
-          svctoken=$(python devops/scripts/azure_jwt_client.py)
-          echo "##vso[task.setvariable variable=e2eIdToken]$svctoken"
+         #!/usr/bin/env bash
+         python3 -m pip install wheel
+         python3 setup.py bdist_wheel 
+         python3 -m pip install --upgrade "pip < 21.0"
+         python3 -m pip install --upgrade setuptools
+         python3 -m pip install msal
+         svctoken=$(python3 devops/scripts/azure_jwt_client.py)
+         echo "##vso[task.setvariable variable=e2eIdToken]$svctoken"
     - task: Bash@3
       displayName: "Generate tokens"
       condition: |
@@ -29,18 +33,6 @@ steps:
         e2esauthTesterSvcAccountSecret: $(sauthTesterSvcAccountSecret)
         e2eTargetProjId: $(e2eTargetProjectId)
         e2eTargetServiceId: $(e2eTargetServiceId)
-        e2eServiceId1: $(e2eServiceId1)
-        e2esauthTesterSvcAccountSecret1: $(sauthTesterSvcAccountSecret1)
-        e2eServiceIdSa: $(e2eServiceIdSa)
-        e2eServiceIdSe: $(e2eServiceIdSe)
-        e2eServiceIdSv: $(e2eServiceIdSv)
-        e2estoken_ta: $(e2estoken_ta)
-        e2estoken_sa: $(e2estoken_sa)
-        e2estoken_se: $(e2estoken_se)
-        e2estoken_sv: $(e2estoken_sv)
-        e2esauthTesterSvcAccountSecretSa: $(e2esauthTesterSvcAccountSecretSa)
-        e2esauthTesterSvcAccountSecretSe: $(e2esauthTesterSvcAccountSecretSe)
-        e2esauthTesterSvcAccountSecretSv: $(e2esauthTesterSvcAccountSecretSv)
       inputs:
         targetType: "inline"
         script: |
@@ -58,56 +50,5 @@ steps:
                 "targetprojid": "'"${e2eTargetProjId}"'"
               }' | jq ."svctoken" -r )
           echo "##vso[task.setvariable variable=e2eIdToken]$svctoken"
-          echo "##vso[task.setvariable variable=e2estoken_ta]$svctoken"
-          
-          e2eIdToken1=$(curl -X POST ${e2esauthurl} \
-          -H 'Cache-Control: no-cache' \
-          -H 'Content-Type: application/json' \
-          -H 'x-api-key: '"${sauthSvcApiKey}"'' \
-          -d '{
-            "projectid": "'"${e2eProjectId}"'", 
-            "serviceid": "'"${e2eServiceId1}"'",
-            "secret": "'"${e2esauthTesterSvcAccountSecret1}"'",
-            "targetserviceid": "'"${e2eTargetServiceId}"'",
-            "targetprojid": "'"${e2eTargetProjId}"'"
-          }' | jq ."svctoken" -r )
-          echo "##vso[task.setvariable variable=e2eIdToken1]$e2eIdToken1"
 
-          e2eIdTokenSa=$(curl -X POST ${e2esauthurl} \
-          -H 'Cache-Control: no-cache' \
-          -H 'Content-Type: application/json' \
-          -H 'x-api-key: '"${sauthSvcApiKey}"'' \
-          -d '{
-            "projectid": "'"${e2eProjectId}"'", 
-            "serviceid": "'"${e2eServiceIdSa}"'",
-            "secret": "'"${e2esauthTesterSvcAccountSecretSa}"'",
-            "targetserviceid": "'"${e2eTargetServiceId}"'",
-            "targetprojid": "'"${e2eTargetProjId}"'"
-          }' | jq ."svctoken" -r )
-          echo "##vso[task.setvariable variable=e2estoken_sa]$e2eIdTokenSa"
-          
-          e2eIdTokenSe=$(curl -X POST ${e2esauthurl} \
-          -H 'Cache-Control: no-cache' \
-          -H 'Content-Type: application/json' \
-          -H 'x-api-key: '"${sauthSvcApiKey}"'' \
-          -d '{
-            "projectid": "'"${e2eProjectId}"'", 
-            "serviceid": "'"${e2eServiceIdSe}"'",
-            "secret": "'"${e2esauthTesterSvcAccountSecretSe}"'",
-            "targetserviceid": "'"${e2eTargetServiceId}"'",
-            "targetprojid": "'"${e2eTargetProjId}"'"
-          }' | jq ."svctoken" -r )
-          echo "##vso[task.setvariable variable=e2estoken_se]$e2eIdTokenSe"
-
-          e2eIdTokenSv=$(curl -X POST ${e2esauthurl} \
-          -H 'Cache-Control: no-cache' \
-          -H 'Content-Type: application/json' \
-          -H 'x-api-key: '"${sauthSvcApiKey}"'' \
-          -d '{
-            "projectid": "'"${e2eProjectId}"'", 
-            "serviceid": "'"${e2eServiceIdSv}"'",
-            "secret": "'"${e2esauthTesterSvcAccountSecretSv}"'",
-            "targetserviceid": "'"${e2eTargetServiceId}"'",
-            "targetprojid": "'"${e2eTargetProjId}"'"
-          }' | jq ."svctoken" -r )
-          echo "##vso[task.setvariable variable=e2estoken_sv]$e2eIdTokenSv"
+          if [ -z "${svctoken}" ]; then exit 1; fi

@@ -14,17 +14,16 @@
 // limitations under the License.
 // ============================================================================
 
-import xssfilters from 'xss-filters';
-
 import { Response as expResponse } from 'express';
-import { LoggerFactory } from '../cloud';
-import { Config } from '../cloud';
+import xssfilters from 'xss-filters';
+import { Config, LoggerFactory } from '../cloud';
 import { Feature, FeatureFlags } from './featureflags';
+
 
 export class Response {
 
-    public static writeOK(res: expResponse, data: any = {}) {
-        this.write(res, 200, data);
+    public static writeOK(res: expResponse, data: any = {}, code: number = 200) {
+        this.write(res, code, data);
     }
 
     public static writeError(res: expResponse, err: any) {
@@ -46,8 +45,6 @@ export class Response {
     }
 
     public static write(res: expResponse, code: number, data: any = {}) {
-        res.locals.trace.flush();
-
         res.set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Content-Security-Policy': 'script-src \'self\' \'' +
@@ -63,7 +60,7 @@ export class Response {
         this.writeMetric('Response Size', res.get('content-length') ? +res.get('content-length') : 0);
     }
     public static writeMetric(key: string, val: any): void {
-        if(FeatureFlags.isEnabled(Feature.LOGGING))  {
+        if (FeatureFlags.isEnabled(Feature.LOGGING)) {
             LoggerFactory.build(Config.CLOUDPROVIDER).metric(key, val);
         }
     }

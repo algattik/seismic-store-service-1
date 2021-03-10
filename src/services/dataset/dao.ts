@@ -22,8 +22,8 @@ import { Locker } from './locker';
 
 export class DatasetDAO {
 
-    public static async register(journalClient: IJournal | IJournalTransaction, datasetEntity: any) {
-        datasetEntity.ctag = Utils.makeID(16);
+    public static async register(journalClient: IJournal | IJournalTransaction, datasetEntity: {key: object, data: DatasetModel}) {
+        datasetEntity.data.ctag = Utils.makeID(16);
         journalClient.save(datasetEntity);
     }
 

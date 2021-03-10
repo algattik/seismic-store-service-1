@@ -33,6 +33,7 @@ export interface IDatasetModel {
     gtags: string[];
     readonly: boolean;
     seismicmeta_guid: string;
+    transfer_status: string;
 }
 
 export interface IPaginationModel {

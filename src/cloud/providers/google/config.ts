@@ -22,8 +22,6 @@ export class ConfigGoogle extends Config {
 
     // scopes
     public static GOOGLE_SCOPE_PLATFORM = 'https://www.googleapis.com/auth/cloud-platform';
-    // [REVERT-DOWNSCOPE] remove this scope
-    public static GOOGLE_SCOPE_FULLCONTROL = 'https://www.googleapis.com/auth/devstorage.full_control';
 
     // endpoints
     public static GOOGLE_EP_IAM = 'https://iam.googleapis.com/v1';
@@ -51,7 +49,7 @@ export class ConfigGoogle extends Config {
     public static API_BASE_URL_PATH = '/api/' + ConfigGoogle.API_VERSION;
 
     // max len for a group name in DE
-    public static DES_GROUP_CHAR_LIMIT = 64;
+    public static DES_GROUP_CHAR_LIMIT = 128;
 
     public async init(): Promise<void> {
 
@@ -83,7 +81,10 @@ export class ConfigGoogle extends Config {
             DES_REDIS_INSTANCE_ADDRESS: process.env.DES_REDIS_INSTANCE_ADDRESS,
             DES_REDIS_INSTANCE_PORT: +process.env.DES_REDIS_INSTANCE_PORT,
             DES_REDIS_INSTANCE_KEY: process.env.DES_REDIS_INSTANCE_KEY,
-            DES_SERVICE_HOST: process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_COMPLIANCE: process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_ENTITLEMENT: process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_STORAGE: process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_PARTITION: process.env.SEISTORE_DES_HOST,
             DES_SERVICE_APPKEY: process.env.SEISTORE_DES_APPKEY,
             DES_GROUP_CHAR_LIMIT: ConfigGoogle.DES_GROUP_CHAR_LIMIT,
             JWKS_URL: process.env.JWKS_URL,

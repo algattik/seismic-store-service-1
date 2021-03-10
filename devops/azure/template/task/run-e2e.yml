@@ -1,6 +1,5 @@
 parameters:
   pathSuffix: "."
-  continueIfE2Efails: false
   isGitlab: false
 steps:
     - task: Bash@3
@@ -15,36 +14,26 @@ steps:
         e2eLegaltag02: $(e2eLegaltag02)
         e2eIdToken: $(e2eIdToken)
         e2eSubproject: $(e2eSubproject)
-        e2eSubprojectLongname: $(e2eSubprojectLongname)
         e2eTenant: $(e2eTenant)
-        continueIfE2Efails: "${{ parameters.continueIfE2Efails }}"
-        ISGITLAB: "${{ parameters.isGitlab }}"
+        isGitlab: "${{ parameters.isGitlab }}"
+        newuser: $(e2eAdminEmail)
       inputs:
         targetType: "inline"
         script: |
-          if [ "true" == "$continueIfE2Efails" ]; then
-            set -e
-          else
-            set +e
-          fi
           cd ${{ parameters.pathSuffix }}
           chmod +x ./tests/e2e/run_e2e_tests.sh
           export COLORTERM=true
           ./tests/e2e/run_e2e_tests.sh \
             --seistore-svc-url="https://${DNS_HOST}/${serviceUrlSuffix}" \
+            --seistore-svc-api-key="NA" \
             --user-idtoken="${e2eIdToken}" \
-            --user1-idtoken="${e2eIdToken}" \
             --tenant="${e2eTenant}" \
             --subproject="${e2eSubproject}" \
             --admin-email="${e2eAdminEmail}" \
-            --subproject-long-name="${e2eSubprojectLongname}" \
             --datapartition="${e2eDataPartition}" \
             --legaltag01="${e2eLegaltag01}" \
             --legaltag02="${e2eLegaltag02}" \
-            --VCS_Provider="${ISGITLAB}"
-          if [ "true" = "$continueIfE2Efails"]; then
-            set +e
-          fi
+            --VCS_Provider="${isGitlab}"
     - task: Bash@3
       displayName: "Run e2e"
       condition: |
@@ -57,31 +46,14 @@ steps:
         e2eTenant: $(e2eTenant)
         e2eSubproject: $(e2eSubproject)
         e2eAdminEmail: $(e2eAdminEmail)
-        e2eSubprojectLongname: $(e2eSubprojectLongname)
         e2eDataPartition: $(e2eDataPartition)
         e2eLegaltag01: $(e2eLegaltag01)
         e2eLegaltag02: $(e2eLegaltag02)
         e2eNewUser: $(e2eNewUser)
-        e2eIdToken1: $(e2eIdToken1)
-        e2estoken_ta: $(e2estoken_ta)
-        e2estoken_sa: $(e2estoken_sa)
-        e2estoken_se: $(e2estoken_se)
-        e2estoken_sv: $(e2estoken_sv)
-        e2eta_user: $(e2eta_user)
-        e2esa_user: $(e2esa_user)
-        e2ese_user: $(e2ese_user)
-        e2esv_user: $(e2esv_user)
-        e2eexpired_token: $(e2eExpired_token)
         e2eDE_APP_KEY: $(e2eDE_APP_KEY)
-        continueIfE2Efails: "${{ parameters.continueIfE2Efails }}"
       inputs:
         targetType: "inline"
         script: |
-          if [ "true" == "$continueIfE2Efails" ]; then
-            set -e
-          else
-            set +e
-          fi
           cd ${{ parameters.pathSuffix }}
           chmod +x ./tests/e2e/run_e2e_tests.sh
           export COLORTERM=true
@@ -90,24 +62,9 @@ steps:
             --seistore-svc-api-key="${sauthSvcApiKey}" \
             --user-idtoken="${e2eIdToken}" \
             --tenant="${e2eTenant}" \
-            --subproject="${e2eSubproject}" \
             --admin-email="${e2eAdminEmail}" \
-            --subproject-long-name="${e2eSubprojectLongname}" \
             --datapartition="${e2eDataPartition}" \
             --legaltag01="${e2eLegaltag01}" \
             --legaltag02="${e2eLegaltag02}" \
             --newuser="${e2eNewUser}" \
-            --user1-idtoken="${e2eIdToken1}" \
-            --stoken-ta="${e2estoken_ta}" \
-            --stoken-sa="${e2estoken_sa}" \
-            --stoken-se="${e2estoken_se}" \
-            --stoken-sv="${e2estoken_sv}" \
-            --ta-user="${e2eta_user}" \
-            --sa-user="${e2esa_user}" \
-            --se-user="${e2ese_user}" \
-            --sv-user="${e2esv_user}" \
-            --expired-token="${e2eexpired_token}"
             --de-app-key="${e2eDE_APP_KEY}"
-          if [ "true" = "$continueIfE2Efails"]; then
-            set +e
-          fi

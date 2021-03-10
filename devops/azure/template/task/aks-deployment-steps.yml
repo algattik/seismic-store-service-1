@@ -72,6 +72,8 @@ steps:
         helmVersionToInstall: 3.3.0
     - task: qetza.replacetokens.replacetokens-task.replacetokens@3
       displayName: 'Helm Values'
+      env:
+        KEYVAULT_NAME: "$(ENVIRONMENT_RG_PREFIX)-kv"
       condition: |
         eq(${{ parameters.fluxEnabled }},true)
       inputs:
@@ -93,9 +95,12 @@ steps:
         skipDeploy: ${{parameters.skipDeploy}}
         manifestRepo: ${{ parameters.manifestRepo }}
         fluxEnabled: ${{ parameters.fluxEnabled }}
+    - template: flux-service-wait.yml
+      parameters:
+        serviceName: ${{parameters.serviceName}}
+        environment: ${{ parameters.environment }}
+        imageRepoName: '${{ parameters.serviceName }}'
     - template: kube.yml
       parameters:
         fluxEnabled: ${{ parameters.fluxEnabled }}
         serviceName: ${{parameters.serviceName}}
-    
-      

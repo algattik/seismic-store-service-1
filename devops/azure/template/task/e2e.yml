@@ -1,6 +1,5 @@
 parameters:
   installRequirements: false
-  continueIfE2Efails: false
   isGitlab: false
 steps:
     # self to trigger clone of the current repo.
@@ -14,7 +13,6 @@ steps:
         isGitlab: ${{ parameters.isGitlab }}
     - template: run-e2e.yml
       parameters:
-        continueIfE2Efails: ${{ parameters.continueIfE2Efails }}
         isGitlab: ${{ parameters.isGitlab }}
     - task: PublishTestResults@1
       inputs:

@@ -15,27 +15,51 @@
 // ============================================================================
 
 import { Config } from '../cloud';
+import { SeistoreFactory } from '../cloud/seistore';
 import { DESCompliance, DESUtils } from '../dataecosystem';
 import { ImpTokenDAO } from '../services/imptoken';
 import { AppsDAO } from '../services/svcapp/dao';
 import { TenantModel } from '../services/tenant';
-import { Error, Utils } from '../shared';
+import { Cache, Error, Utils } from '../shared';
 import { AuthGroups } from './groups';
 
 export class Auth {
+
+    private static _cache: Cache<boolean>;
+    private static _cacheItemTTL = 60; // cache item expire after
 
     public static async isUserRegistered(userToken: string, esd: string, appkey: string) {
         await AuthGroups.getUserGroups(userToken, esd, appkey);
     }
 
     public static async isUserAuthorized(
-        authToken: string, authGroupsName: string[],
+        authToken: string, authGroupEmails: string[],
         esd: string, appkey: string, mustThrow = true): Promise<boolean> {
-        const isAuthorized = await AuthGroups.hasOneInGroups(authToken, authGroupsName, esd, appkey);
+
+        if (!this._cache) {
+            this._cache = new Cache<boolean>({
+                ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
+                PORT: Config.DES_REDIS_INSTANCE_PORT,
+                KEY: Config.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
+            }, 'auth')
+        }
+
+        const cacheKey = (await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getEmailFromTokenPayload(authToken, true)) + ','
+            + Utils.getAudienceFromPayload(authToken) + ',' + authGroupEmails.sort().join(',');
+
+        let isAuthorized = await this._cache.get(cacheKey);
+        if (isAuthorized === undefined) { // key not exist in cache -> canll entitlement
+            isAuthorized = await AuthGroups.isMemberOfAtleastOneGroup(authToken, authGroupEmails, esd, appkey);
+            await this._cache.set(cacheKey, isAuthorized, this._cacheItemTTL);
+        }
+
         if (mustThrow && !isAuthorized) {
             throw (Error.make(Error.Status.PERMISSION_DENIED,
                 'User not authorized to perform this operation'));
         }
+
         return isAuthorized;
     }
 
@@ -77,7 +101,7 @@ export class Auth {
     }
 
     public static async isLegalTagValid(
-        userToken: string,ltag: string, esd: string, appkey: string, mustThrow: boolean = true): Promise<boolean> {
+        userToken: string, ltag: string, esd: string, appkey: string, mustThrow: boolean = true): Promise<boolean> {
         const entitlementTenant = DESUtils.getDataPartitionID(esd);
         const isValid = await DESCompliance.isLegaTagValid(userToken, ltag, entitlementTenant, appkey);
         if (mustThrow && !isValid) {

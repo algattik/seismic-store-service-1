@@ -4,7 +4,7 @@ steps:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact'
     inputs:
-      PathtoPublish: '$(Build.Repository.LocalPath)/${{ parameters.providerName }}/$(utest.runtime.image).tar'
-      ArtifactName: '${{ parameters.providerName }}_$(utest.runtime.image)'
+      PathtoPublish: '$(Build.Repository.LocalPath)/${{ parameters.providerName }}/$(utest_runtime_image).tar'
+      ArtifactName: '${{ parameters.providerName }}_$(utest_runtime_image)'
       publishLocation: 'Container'
     condition: succeededOrFailed()

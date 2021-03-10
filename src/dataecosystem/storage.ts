@@ -35,7 +35,7 @@ export class DESStorage {
                 'Content-Type': 'application/json'
             },
             json: seismicMeta,
-            url: Config.DES_SERVICE_HOST + dataecosystem.getStorageBaseUrlPath() + '/records',
+            url: Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records',
         };
 
         // tslint:disable-next-line: no-string-literal
@@ -70,7 +70,7 @@ export class DESStorage {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Content-Type': 'application/json',
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid + ':delete',
+            url: Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid + ':delete',
         };
 
         // tslint:disable-next-line: no-string-literal
@@ -104,7 +104,7 @@ export class DESStorage {
                 'Accept': 'application/json',
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
             },
-            url: Config.DES_SERVICE_HOST + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid,
+            url: Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid,
         };
 
         // tslint:disable-next-line: no-string-literal

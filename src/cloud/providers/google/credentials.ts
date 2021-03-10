@@ -30,6 +30,7 @@ interface IDownScopedToken {
     access_token: string;
     token_type: string;
     issued_token_type: string;
+    expires_in: string;
 }
 
 const KExpiresMargin = 300; // 5 minutes
@@ -37,80 +38,56 @@ const KExpiresMargin = 300; // 5 minutes
 @CredentialsFactory.register('google')
 export class Credentials extends AbstractCredentials {
 
-    // [REVERT-DOWNSCOPE] add method
-    // public async getStorageCredentials(bucket: string, readonly: boolean): Promise<IAccessTokenModel> {
-    //     return {
-    //         access_token: (
-    //             await this.exchangeJwtWithDownScopedAccessToken(
-    //                 (await this.getServiceAccountAccessToken()).access_token, bucket, readonly)).access_token,
-    //         expires_in: 3599,
-    //         token_type: 'Bearer',
-    //     };
-    // }
+    public async getStorageCredentials(
+        tenant: string, subproject: string,
+        bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
 
-    // [REVERT-DOWNSCOPE] add method
-    // private async exchangeJwtWithDownScopedAccessToken(accessToken: string,
-    //     bucket: string, readonly: boolean): Promise<IDownScopedToken> {
-    //     try {
-    //         return JSON.parse(await request.post({
-    //             form: {
-    //             access_boundary: JSON.stringify({
-    //                 accessBoundaryRules : [{
-    //                     availablePermissions: [
-    //                         'inRole:roles/' + (readonly ? 'storage.objectViewer' : 'storage.objectAdmin') ],
-    //                     availableResource : '//storage.googleapis.com/projects/_/buckets/' + bucket,
-    //                 }],
-    //             }),
-    //             grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
-    //             requested_token_type: 'urn:ietf:params:oauth:token-type:access_token',
-    //             subject_token: accessToken,
-    //             subject_token_type: 'urn:ietf:params:oauth:token-type:access_token',
-    //             },
-    //             headers: {
-    //             'Content-Type': 'application/x-www-form-urlencoded',
-    //             },
-    //             url: 'https://securetoken.googleapis.com/v2beta1/token',
-    //         }));
-    //     } catch (error) {
-    //         throw (Error.makeForHTTPRequest(error));
-    //     }
-    // }
+        const serviceAccessToken = await this.getServiceAccountAccessToken(false);
+        const serviceAccessTokenDownscoped = await this.exchangeJwtWithDownScopedAccessToken(
+            serviceAccessToken.access_token, bucket, readonly);
 
-    // [REVERT-DOWNSCOPE] remove method
-    public async getUserCredentials(subject: string): Promise<IAccessTokenModel> {
-        const now = Math.floor(Date.now() / 1000);
-        this.serviceAccountEmail = await this.getServiceAccountEmail();
-        const svcToken = (await this.getServiceAccountAccessToken()).access_token;
-        const options = {
-            body: {
-                payload: JSON.stringify({
-                    aud: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
-                    exp: now + 3600,
-                    iat: now,
-                    iss: this.serviceAccountEmail,
-                    scope: ConfigGoogle.GOOGLE_SCOPE_FULLCONTROL,
-                    sub: subject,
-                }),
-            },
-            headers: {
-                'Authorization': 'Bearer ' + svcToken,
-                'Content-Type': 'application/json',
-            },
-            json: true,
-            url: ConfigGoogle.GOOGLE_EP_IAM + '/projects/' +
-                ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' + this.serviceAccountEmail + ':signJwt',
+        return {
+            access_token: serviceAccessTokenDownscoped.access_token,
+            expires_in: +serviceAccessTokenDownscoped.expires_in,
+            token_type: serviceAccessTokenDownscoped.token_type,
         };
-        return await this.signJWT((await request.post(options)).signedJwt) as IAccessTokenModel;
+    }
+
+    private async exchangeJwtWithDownScopedAccessToken(accessToken: string,
+        bucket: string, readonly: boolean): Promise<IDownScopedToken> {
+        try {
+            return JSON.parse(await request.post({
+                form: {
+                    access_boundary: JSON.stringify({
+                        accessBoundaryRules: [{
+                            availablePermissions: [
+                                'inRole:roles/' + (readonly ? 'storage.objectViewer' : 'storage.objectAdmin')],
+                            availableResource: '//storage.googleapis.com/projects/_/buckets/' + bucket,
+                        }],
+                    }),
+                    grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+                    requested_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+                    subject_token: accessToken,
+                    subject_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+                },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                url: 'https://securetoken.googleapis.com/v2beta1/token',
+            }));
+        } catch (error) {
+            throw (Error.makeForHTTPRequest(error));
+        }
     }
 
     public async getServiceCredentials(): Promise<string> {
 
         const now = Math.floor(Date.now() / 1000);
-        if (this.serviceAccountIdTokenExpiresIn > now) {
-            return this.serviceAccountIdToken;
+        if (Credentials.serviceAccountIdTokenExpiresIn > now) {
+            return Credentials.serviceAccountIdToken;
         }
 
-        this.serviceAccountEmail = await this.getServiceAccountEmail();
+        Credentials.serviceAccountEmail = await this.getServiceAccountEmail();
         const svcToken = (await this.getServiceAccountAccessToken()).access_token;
 
         const options = {
@@ -119,7 +96,7 @@ export class Credentials extends AbstractCredentials {
                     aud: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
                     exp: (now + 3600),
                     iat: now,
-                    iss: this.serviceAccountEmail,
+                    iss: Credentials.serviceAccountEmail,
                     target_audience: ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE,
                 }),
             },
@@ -128,18 +105,18 @@ export class Credentials extends AbstractCredentials {
                 'Content-Type': 'application/json',
             },
             url: ConfigGoogle.GOOGLE_EP_IAM + '/projects/' +
-                ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' + this.serviceAccountEmail + ':signJwt',
+                ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' + Credentials.serviceAccountEmail + ':signJwt',
         };
 
         try {
             const idToken = await this.signJWT(
                 JSON.parse(await request.post(options)).signedJwt) as IDTokenModel;
 
-            this.serviceAccountIdToken = idToken.id_token;
-            this.serviceAccountIdTokenExpiresIn =
-                Utils.getExpTimeFromPayload(this.serviceAccountIdToken) - KExpiresMargin;
+            Credentials.serviceAccountIdToken = idToken.id_token;
+            Credentials.serviceAccountIdTokenExpiresIn =
+                Utils.getExpTimeFromPayload(Credentials.serviceAccountIdToken) - KExpiresMargin;
 
-            return this.serviceAccountIdToken;
+            return Credentials.serviceAccountIdToken;
 
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
@@ -147,11 +124,12 @@ export class Credentials extends AbstractCredentials {
 
     }
 
-    public async getServiceAccountAccessToken(): Promise<IAccessTokenModel> {
+    public async getServiceAccountAccessToken(useCached = true): Promise<IAccessTokenModel> {
 
         const now = Math.floor(Date.now() / 1000);
-        if (this.serviceAccountAccessToken && this.serviceAccountAccessTokenExpiresIn > now) {
-            return this.serviceAccountAccessToken;
+        if (useCached && Credentials.serviceAccountAccessToken &&
+            Credentials.serviceAccountAccessTokenExpiresIn > now) {
+            return Credentials.serviceAccountAccessToken;
         }
 
         if (ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY) {
@@ -169,10 +147,10 @@ export class Credentials extends AbstractCredentials {
                 },
             });
 
-            this.serviceAccountAccessToken = await this.signJWT(jwt) as IAccessTokenModel;
-            this.serviceAccountAccessTokenExpiresIn =
-                Math.floor(Date.now() / 1000) + this.serviceAccountAccessToken.expires_in - KExpiresMargin;
-            return this.serviceAccountAccessToken;
+            Credentials.serviceAccountAccessToken = await this.signJWT(jwt) as IAccessTokenModel;
+            Credentials.serviceAccountAccessTokenExpiresIn =
+                Math.floor(Date.now() / 1000) + Credentials.serviceAccountAccessToken.expires_in - KExpiresMargin;
+            return Credentials.serviceAccountAccessToken;
         }
 
         const options = {
@@ -181,10 +159,10 @@ export class Credentials extends AbstractCredentials {
         };
 
         try {
-            this.serviceAccountAccessToken = JSON.parse(await request.get(options));
-            this.serviceAccountAccessTokenExpiresIn =
-                Math.floor(Date.now() / 1000) + this.serviceAccountAccessToken.expires_in - KExpiresMargin;
-            return this.serviceAccountAccessToken;
+            Credentials.serviceAccountAccessToken = JSON.parse(await request.get(options));
+            Credentials.serviceAccountAccessTokenExpiresIn =
+                Math.floor(Date.now() / 1000) + Credentials.serviceAccountAccessToken.expires_in - KExpiresMargin;
+            return Credentials.serviceAccountAccessToken;
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
         }
@@ -192,11 +170,11 @@ export class Credentials extends AbstractCredentials {
 
     public async getServiceAccountEmail(): Promise<string> {
 
-        if (this.serviceAccountEmail) { return this.serviceAccountEmail; }
+        if (Credentials.serviceAccountEmail) { return Credentials.serviceAccountEmail; }
 
         if (ConfigGoogle.SERVICE_IDENTITY_EMAIL) {
-            this.serviceAccountEmail = ConfigGoogle.SERVICE_IDENTITY_EMAIL;
-            return this.serviceAccountEmail;
+            Credentials.serviceAccountEmail = ConfigGoogle.SERVICE_IDENTITY_EMAIL;
+            return Credentials.serviceAccountEmail;
         }
 
         const options = {
@@ -225,11 +203,11 @@ export class Credentials extends AbstractCredentials {
     }
 
     // cache the services tokens
-    private serviceAccountEmail: string;
-    private serviceAccountAccessToken: IAccessTokenModel;
-    private serviceAccountAccessTokenExpiresIn = 0;
-    private serviceAccountIdToken: string;
-    private serviceAccountIdTokenExpiresIn = 0;
+    private static serviceAccountEmail: string;
+    private static serviceAccountAccessToken: IAccessTokenModel;
+    private static serviceAccountAccessTokenExpiresIn = 0;
+    private static serviceAccountIdToken: string;
+    private static serviceAccountIdTokenExpiresIn = 0;
 
     public async signJWT(jwt: string): Promise<IDTokenModel | IAccessTokenModel> {
 
