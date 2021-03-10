@@ -26,6 +26,10 @@ include:
   # build
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/seismic-store-service.yml"
+    
+  # scan
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-node.yml"
 
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
