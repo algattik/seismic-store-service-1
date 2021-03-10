@@ -167,7 +167,7 @@ export class DatastoreDAO extends AbstractJournal {
     
     public getQueryFilterSymbolContains(): string {
         logger.info('In datastore.getQueryFilterSymbolContains. Not implemented');
-        return '';//not implemented
+        return 'CONTAINS';//not implemented
     }
 }
 
@@ -291,6 +291,7 @@ enum  CouchOperators {
     LesserThan = "$lt",
     GreaterThanEqualTo = "$gte",
     LesserThanEqualTo = "$lte",
+    Contains = "$elemMatch",
 }
 
 enum  ConditionalOperators {
@@ -299,6 +300,7 @@ enum  ConditionalOperators {
     LesserThan = "<",
     GreaterThanEqualTo = ">=",
     LesserThanEqualTo = "<=",
+    Contains = "CONTAINS",
 }
 
 
@@ -364,6 +366,9 @@ export class IbmDocDbQuery implements IJournalQueryModel {
                 break;
             case ConditionalOperators.LesserThanEqualTo:
                 cdbOperator = CouchOperators.LesserThanEqualTo
+                break;
+            case ConditionalOperators.Contains:
+                cdbOperator = CouchOperators.Contains
                 break;
           }
 
@@ -509,8 +514,15 @@ class QueryStatementBuilder {
             let op = filterObject.operator;
 
             let filterQuery = {};
-            filterQuery = {[filterObject.property]: {[filterObject.operator]: filterObject.value}};
-            logger.debug('filterQuery - '+filterQuery);
+            if(filterObject.operator === '$elemMatch')
+            {
+                logger.debug('$elemMatch operator');
+                filterQuery = {[filterObject.property]: {[filterObject.operator]: {"$eq":filterObject.value}}};
+            }
+            else
+                filterQuery = {[filterObject.property]: {[filterObject.operator]: filterObject.value}};
+            logger.debug('filterQuery - ');
+            logger.debug(filterQuery);
             andWrapper['$and'].push(filterQuery);
         }
 
