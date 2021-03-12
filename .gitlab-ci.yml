@@ -6,6 +6,7 @@ variables:
   REPLICA: 1
   UTEST_RUNTIME_IMAGE: seistore-svc-runtime
   #aws variables
+  AWS_ECR_REGION: us-east-1
   #azure variables  
   AZURE_SERVICE: seismic-store-service
   #gcp variables
@@ -34,8 +35,11 @@ include:
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
     file: "containerize/seismic-store-service.yml"
+    ref: slb/dperez50/aws-seismic-store-service
     
   # deploy
+    #aws
+    
     #azure
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/azure-seismic-store-service.yml"
