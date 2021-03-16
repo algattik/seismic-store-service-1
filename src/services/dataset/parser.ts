@@ -62,7 +62,14 @@ export class DatasetParser {
         if (seismicmeta) {
             Params.checkString(seismicmeta.kind, 'kind'); // mandatory string
             Params.checkObject(seismicmeta.data, 'data');
-            seismicmeta.recordType = seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic3d:';
+
+            // {data-parititon(delfi)|auhtority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
+            if((seismicmeta.kind as string).split(':').length !== 4) {
+                throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
+            }
+            // (recortdType == entityType)
+            seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
+
         }
 
         return [dataset, seismicmeta];
