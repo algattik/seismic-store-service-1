@@ -47,18 +47,18 @@ export class SubProjectDAO {
         // Fix entities with no acls
         if (!entity.acls) {
 
-            const tenant = await TenantDAO.get(tenantName)
+            // const tenant = await TenantDAO.get(tenantName)
 
-            const acls = {
-                'admins': [],
-                'viewers': []
-            }
+            // const acls = {
+            //     'admins': [],
+            //     'viewers': []
+            // }
 
-            acls.admins.push(SubprojectGroups.oldAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            acls.admins.push(SubprojectGroups.oldEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            acls.viewers.push(SubprojectGroups.oldViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            // acls.admins.push(SubprojectGroups.oldAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            // acls.admins.push(SubprojectGroups.oldEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            // acls.viewers.push(SubprojectGroups.oldViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
 
-            entity.acls = acls
+            entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
         }
 
         return entity;
@@ -100,6 +100,11 @@ export class SubProjectDAO {
             for (const entity of entities) {
                 if (!entity.name) { entity.name = entity[journalClient.KEY].name; }
                 if (!entity.tenant) { entity.tenant = tenantName; }
+
+                if (!entity.acls) {
+                    entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
+                }
+
             }
         }
         return entities;
@@ -111,6 +116,23 @@ export class SubProjectDAO {
         const [entity] = await journalClient.get(key);
 
         return entity !== undefined;
+    }
+
+    public static async constructServiceGroupACLs(entity, tenantName: string) {
+
+        const tenant = await TenantDAO.get(tenantName)
+
+        const acls = {
+            'admins': [],
+            'viewers': []
+        }
+
+        acls.admins.push(SubprojectGroups.oldAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.admins.push(SubprojectGroups.oldEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.viewers.push(SubprojectGroups.oldViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+
+        return acls
+
     }
 
 }
