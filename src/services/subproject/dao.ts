@@ -54,9 +54,9 @@ export class SubProjectDAO {
                 'viewers': []
             }
 
-            acls.admins.push(SubprojectGroups.adminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            acls.admins.push(SubprojectGroups.editorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            acls.viewers.push(SubprojectGroups.viewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            acls.admins.push(SubprojectGroups.oldAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            acls.admins.push(SubprojectGroups.oldEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+            acls.viewers.push(SubprojectGroups.oldViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
 
             entity.acls = acls
         }
