@@ -101,42 +101,42 @@ export class UserHandler {
 
                     // First rm the user from the groups since the user can be exclus Owner or Member
                     await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.oldAdminGroup(
+                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceAdminGroup(
                             tenant.name, sdPath.subproject, tenant.esd), userEmail,
                             tenant.esd, req[Config.DE_FORWARD_APPKEY]));
                     await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.oldEditorGroup(
+                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceEditorGroup(
                             tenant.name, sdPath.subproject, tenant.esd), userEmail,
                             tenant.esd, req[Config.DE_FORWARD_APPKEY]));
                     await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.oldViewerGroup(
+                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceViewerGroup(
                             tenant.name, sdPath.subproject, tenant.esd), userEmail,
                             tenant.esd, req[Config.DE_FORWARD_APPKEY]));
 
                     await AuthGroups.addUserToGroup(req.headers.authorization,
-                        SubprojectGroups.oldAdminGroup(tenant.name,
+                        SubprojectGroups.serviceAdminGroup(tenant.name,
                             sdPath.subproject, tenant.esd), userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
 
                     await AuthGroups.addUserToGroup(req.headers.authorization,
-                        SubprojectGroups.oldEditorGroup(tenant.name,
+                        SubprojectGroups.serviceEditorGroup(tenant.name,
                             sdPath.subproject, tenant.esd), userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
 
                     await AuthGroups.addUserToGroup(req.headers.authorization,
-                        SubprojectGroups.oldViewerGroup(tenant.name,
+                        SubprojectGroups.serviceViewerGroup(tenant.name,
                             sdPath.subproject, tenant.esd), userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
 
                 } else if (userGroupRole === AuthRoles.editor) {
 
                     await AuthGroups.addUserToGroup(
                         req.headers.authorization,
-                        SubprojectGroups.oldEditorGroup(tenant.name, sdPath.subproject, tenant.esd),
+                        SubprojectGroups.serviceEditorGroup(tenant.name, sdPath.subproject, tenant.esd),
                         userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
                 } else if (userGroupRole === AuthRoles.viewer) {
 
                     await AuthGroups.addUserToGroup(
                         req.headers.authorization,
-                        SubprojectGroups.oldViewerGroup(tenant.name, sdPath.subproject, tenant.esd),
+                        SubprojectGroups.serviceViewerGroup(tenant.name, sdPath.subproject, tenant.esd),
                         userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
                 } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
@@ -203,15 +203,15 @@ export class UserHandler {
             // remove user from the subproject groups
             // could this be done in parallel, via Promise?
             await this.doNotThrowIfNotMember(
-                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.oldAdminGroup(
+                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceAdminGroup(
                     tenant.name, sdPath.subproject, tenant.esd), userEmail,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY]));
             await this.doNotThrowIfNotMember(
-                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.oldEditorGroup(
+                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceEditorGroup(
                     tenant.name, sdPath.subproject, tenant.esd), userEmail,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY]));
             await this.doNotThrowIfNotMember(
-                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.oldViewerGroup(
+                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceViewerGroup(
                     tenant.name, sdPath.subproject, tenant.esd), userEmail,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY]));
 
@@ -236,13 +236,13 @@ export class UserHandler {
         // retrieve the users in the subproject groups
         // can be done in parallel via promise?
         const admins = await AuthGroups.listUsersInGroup(req.headers.authorization,
-            SubprojectGroups.oldAdminGroup(tenant.name, sdPath.subproject, tenant.esd),
+            SubprojectGroups.serviceAdminGroup(tenant.name, sdPath.subproject, tenant.esd),
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         const editors = await AuthGroups.listUsersInGroup(req.headers.authorization,
-            SubprojectGroups.oldEditorGroup(tenant.name, sdPath.subproject, tenant.esd),
+            SubprojectGroups.serviceEditorGroup(tenant.name, sdPath.subproject, tenant.esd),
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         const viewers = await AuthGroups.listUsersInGroup(req.headers.authorization,
-            SubprojectGroups.oldViewerGroup(tenant.name, sdPath.subproject, tenant.esd),
+            SubprojectGroups.serviceViewerGroup(tenant.name, sdPath.subproject, tenant.esd),
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         return admins.map((el) => [el.email, 'admin']).concat(

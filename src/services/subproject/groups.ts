@@ -26,48 +26,37 @@ export class SubprojectGroups {
         return TenantGroups.groupPrefix(tenantName) + '.' + subprojectName;
     }
 
-    public static oldAdminGroupName(tenant: string, subproject: string): string {
+    public static serviceAdminGroupName(tenant: string, subproject: string): string {
         return this.groupPrefix(tenant, subproject) + '.admin';
     }
 
-    public static oldEditorGroupName(tenant: string, subproject: string): string {
+    public static serviceEditorGroupName(tenant: string, subproject: string): string {
         return this.groupPrefix(tenant, subproject) + '.editor';
     }
 
-    public static oldViewerGroupName(tenant: string, subproject: string): string {
+    public static serviceViewerGroupName(tenant: string, subproject: string): string {
         return this.groupPrefix(tenant, subproject) + '.viewer';
     }
 
-    public static oldAdminGroup(tenant: string, subproject: string, esd: string): string {
-        return this.oldAdminGroupName(tenant, subproject) + '@' + esd;
+    public static serviceAdminGroup(tenant: string, subproject: string, esd: string): string {
+        return this.serviceAdminGroupName(tenant, subproject) + '@' + esd;
     }
 
-    public static oldEditorGroup(tenant: string, subproject: string, esd: string): string {
-        return this.oldEditorGroupName(tenant, subproject) + '@' + esd;
+    public static serviceEditorGroup(tenant: string, subproject: string, esd: string): string {
+        return this.serviceEditorGroupName(tenant, subproject) + '@' + esd;
     }
 
-    public static oldViewerGroup(tenant: string, subproject: string, esd: string): string {
-        return this.oldViewerGroupName(tenant, subproject) + '@' + esd;
+    public static serviceViewerGroup(tenant: string, subproject: string, esd: string): string {
+        return this.serviceViewerGroupName(tenant, subproject) + '@' + esd;
     }
 
 
-    public static adminGroup(tenant: string, subproject: string, esd: string): string {
+    public static dataAdminGroup(tenant: string, subproject: string, esd: string): string {
         return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.admin' + '@' + esd;
     }
 
-    public static viewerGroup(tenant: string, subproject: string, esd: string): string {
+    public static dataViewerGroup(tenant: string, subproject: string, esd: string): string {
         return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.viewer' + '@' + esd;
-    }
-
-    public static getReadGroups(tenant: string, subproject: string): string[] {
-        return [this.oldViewerGroupName(tenant, subproject),
-        this.oldEditorGroupName(tenant, subproject),
-        this.oldAdminGroupName(tenant, subproject)];
-    }
-
-    public static getWriteGroups(tenant: string, subproject: string): string[] {
-        return [this.oldEditorGroupName(tenant, subproject),
-        this.oldAdminGroupName(tenant, subproject)];
     }
 
 }

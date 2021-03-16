@@ -119,8 +119,8 @@ export class SubProjectHandler {
                 ' already exists in the tenant project ' + subproject.tenant));
         }
 
-        const adminGroup = SubprojectGroups.adminGroup(tenant.name, subproject.name, tenant.esd)
-        const viewerGroup = SubprojectGroups.viewerGroup(tenant.name, subproject.name, tenant.esd)
+        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd)
+        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd)
 
         const adminGroupName = adminGroup.split('@')[0]
         const viewerGroupName = viewerGroup.split('@')[0]
@@ -272,11 +272,11 @@ export class SubProjectHandler {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // clear by removing all MEMBER users the 3 subproject groups
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.oldAdminGroup(tenant.name,
+            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.serviceAdminGroup(tenant.name,
                 subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.oldEditorGroup(tenant.name,
+            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.serviceEditorGroup(tenant.name,
                 subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.oldViewerGroup(tenant.name,
+            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.serviceViewerGroup(tenant.name,
                 subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -318,9 +318,9 @@ export class SubProjectHandler {
         }
 
 
-        const adminGroups = [SubprojectGroups.oldAdminGroup(tenant.name, subproject.name, tenant.esd),
-        SubprojectGroups.oldEditorGroup(tenant.name, subproject.name, tenant.esd)]
-        const viewerGroups = [SubprojectGroups.oldViewerGroup(tenant.name, subproject.name, tenant.esd)]
+        const adminGroups = [SubprojectGroups.serviceAdminGroup(tenant.name, subproject.name, tenant.esd),
+        SubprojectGroups.serviceEditorGroup(tenant.name, subproject.name, tenant.esd)]
+        const viewerGroups = [SubprojectGroups.serviceViewerGroup(tenant.name, subproject.name, tenant.esd)]
 
         subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins
             .filter((group, index, self) => self.indexOf(group) === index) : adminGroups

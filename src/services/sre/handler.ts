@@ -179,15 +179,15 @@ export class SreHandler {
 
                 res[subproject.name]['des-admin-group'] = groups.map(
                     (group: any) => group.name).includes(
-                        SubprojectGroups.oldAdminGroupName(tenant.name, subproject.name)) ? true : false;
+                        SubprojectGroups.serviceAdminGroupName(tenant.name, subproject.name)) ? true : false;
 
                 res[subproject.name]['des-editor-group'] = groups.map(
                     (group: any) => group.name).includes(
-                        SubprojectGroups.oldEditorGroupName(tenant.name, subproject.name)) ? true : false;
+                        SubprojectGroups.serviceEditorGroupName(tenant.name, subproject.name)) ? true : false;
 
                 res[subproject.name]['des-viewer-group'] = groups.map(
                     (group: any) => group.name).includes(
-                        SubprojectGroups.oldViewerGroupName(tenant.name, subproject.name)) ? true : false;
+                        SubprojectGroups.serviceViewerGroupName(tenant.name, subproject.name)) ? true : false;
 
             }
 
@@ -232,35 +232,35 @@ export class SreHandler {
 
                 res[subproject.name]['des-admin-group'] = groups.map(
                     (group: any) => group.name).includes(
-                        SubprojectGroups.oldAdminGroupName(tenant.name, subproject.name)) ? true : false;
+                        SubprojectGroups.serviceAdminGroupName(tenant.name, subproject.name)) ? true : false;
 
                 res[subproject.name]['des-editor-group'] = groups.map(
                     (group: any) => group.name).includes(
-                        SubprojectGroups.oldEditorGroupName(tenant.name, subproject.name)) ? true : false;
+                        SubprojectGroups.serviceEditorGroupName(tenant.name, subproject.name)) ? true : false;
 
                 res[subproject.name]['des-viewer-group'] = groups.map(
                     (group: any) => group.name).includes(
-                        SubprojectGroups.oldViewerGroupName(tenant.name, subproject.name)) ? true : false;
+                        SubprojectGroups.serviceViewerGroupName(tenant.name, subproject.name)) ? true : false;
 
                 if (req.query.exfe === '1TaZpRj8IAhG7xp9') {
                     if (res[subproject.name]['des-admin-group']) {
                         res[subproject.name]['des-admin-members'] =
                             (await AuthGroups.listUsersInGroup(req.headers.authorization,
-                                SubprojectGroups.oldAdminGroup(tenant.name,
+                                SubprojectGroups.serviceAdminGroup(tenant.name,
                                     subproject.name, tenant.esd),
                                 tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
                     }
                     if (res[subproject.name]['des-editor-group']) {
                         res[subproject.name]['des-editor-members'] =
                             (await AuthGroups.listUsersInGroup(req.headers.authorization,
-                                SubprojectGroups.oldEditorGroup(tenant.name,
+                                SubprojectGroups.serviceEditorGroup(tenant.name,
                                     subproject.name, tenant.esd),
                                 tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
                     }
                     if (res[subproject.name]['des-viewer-group']) {
                         res[subproject.name]['des-viewer-members'] =
                             (await AuthGroups.listUsersInGroup(req.headers.authorization,
-                                SubprojectGroups.oldViewerGroup(tenant.name,
+                                SubprojectGroups.serviceViewerGroup(tenant.name,
                                     subproject.name, tenant.esd),
                                 tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
                     }

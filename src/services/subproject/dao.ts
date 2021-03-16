@@ -127,9 +127,9 @@ export class SubProjectDAO {
             'viewers': []
         }
 
-        acls.admins.push(SubprojectGroups.oldAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-        acls.admins.push(SubprojectGroups.oldEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-        acls.viewers.push(SubprojectGroups.oldViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.admins.push(SubprojectGroups.serviceAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.admins.push(SubprojectGroups.serviceEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.viewers.push(SubprojectGroups.serviceViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
 
         return acls
 
