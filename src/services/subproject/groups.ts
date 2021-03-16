@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { v4 as uuidv4 } from 'uuid';
+import { Config } from '../../cloud';
 import { TenantGroups } from '../tenant';
 
 
@@ -51,11 +52,11 @@ export class SubprojectGroups {
 
 
     public static adminGroup(tenant: string, subproject: string, esd: string): string {
-        return 'data.sdms.' + tenant + '.' + subproject + '.' + uuidv4() + '.admin' + '@' + esd;
+        return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.admin' + '@' + esd;
     }
 
     public static viewerGroup(tenant: string, subproject: string, esd: string): string {
-        return 'data.sdms.' + tenant + '.' + subproject + '.' + uuidv4() + '.viewer' + '@' + esd;
+        return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.viewer' + '@' + esd;
     }
 
     public static getReadGroups(tenant: string, subproject: string): string[] {

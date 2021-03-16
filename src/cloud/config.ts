@@ -125,6 +125,9 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
 
+    // DataGroups prefix
+    public static DATAGROUPS_PREFIX = 'data.sdms'
+
     // WriteLock Skip
     // This is an open issue to discuss.
     // Checking the write lock is the correct behaviour and this varialbe shoudl be set to "false".
@@ -151,7 +154,7 @@ export abstract class Config implements IConfig {
         Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS = model.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
         Config.LOCKSMAP_REDIS_INSTANCE_PORT = model.LOCKSMAP_REDIS_INSTANCE_PORT;
         Config.LOCKSMAP_REDIS_INSTANCE_KEY = model.LOCKSMAP_REDIS_INSTANCE_KEY;
-        Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE  || false;
+        Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE || false;
 
         Config.DES_REDIS_INSTANCE_ADDRESS =
             model.DES_REDIS_INSTANCE_ADDRESS || model.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
