@@ -208,44 +208,88 @@ export class SreHandler {
             });
             const subproject = await SubProjectDAO.get(journalClient, tenant.name, subprojectName, spkey);
 
+            const serviceGroupRegex = new RegExp('service.seistore.' + Config.SERVICE_ENV
+                + '.' + subproject.tenant + '.' + subproject.name)
+
+            const dataGroupRegex = new RegExp(Config.DATAGROUPS_PREFIX + '.' +
+                subproject.tenant + '.' + subproject.name)
+
+            const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex))
+
+
+            const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex))
+            const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex))
+
+            const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups)
+
+
             const res = {};
 
             res[subproject.name] = {};
 
-            res[subproject.name]['des-admin-group'] = groups.map(
-                (group: any) => group.name).includes(
-                    SubprojectGroups.oldAdminGroupName(tenant.name, subproject.name)) ? true : false;
 
-            res[subproject.name]['des-editor-group'] = groups.map(
-                (group: any) => group.name).includes(
-                    SubprojectGroups.oldEditorGroupName(tenant.name, subproject.name)) ? true : false;
+            if (subprojectServiceGroups.length > 0) {
 
-            res[subproject.name]['des-viewer-group'] = groups.map(
-                (group: any) => group.name).includes(
-                    SubprojectGroups.oldViewerGroupName(tenant.name, subproject.name)) ? true : false;
+                res[subproject.name]['des-admin-group'] = groups.map(
+                    (group: any) => group.name).includes(
+                        SubprojectGroups.oldAdminGroupName(tenant.name, subproject.name)) ? true : false;
 
-            if (req.query.exfe === '1TaZpRj8IAhG7xp9') {
-                if (res[subproject.name]['des-admin-group']) {
+                res[subproject.name]['des-editor-group'] = groups.map(
+                    (group: any) => group.name).includes(
+                        SubprojectGroups.oldEditorGroupName(tenant.name, subproject.name)) ? true : false;
+
+                res[subproject.name]['des-viewer-group'] = groups.map(
+                    (group: any) => group.name).includes(
+                        SubprojectGroups.oldViewerGroupName(tenant.name, subproject.name)) ? true : false;
+
+                if (req.query.exfe === '1TaZpRj8IAhG7xp9') {
+                    if (res[subproject.name]['des-admin-group']) {
+                        res[subproject.name]['des-admin-members'] =
+                            (await AuthGroups.listUsersInGroup(req.headers.authorization,
+                                SubprojectGroups.oldAdminGroup(tenant.name,
+                                    subproject.name, tenant.esd),
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
+                    }
+                    if (res[subproject.name]['des-editor-group']) {
+                        res[subproject.name]['des-editor-members'] =
+                            (await AuthGroups.listUsersInGroup(req.headers.authorization,
+                                SubprojectGroups.oldEditorGroup(tenant.name,
+                                    subproject.name, tenant.esd),
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
+                    }
+                    if (res[subproject.name]['des-viewer-group']) {
+                        res[subproject.name]['des-viewer-members'] =
+                            (await AuthGroups.listUsersInGroup(req.headers.authorization,
+                                SubprojectGroups.oldViewerGroup(tenant.name,
+                                    subproject.name, tenant.esd),
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
+                    }
+                }
+
+            }
+
+
+            if (subprojectDataGroups.length > 0) {
+                res[subproject.name]['des-admin-group'] = adminSubprojectDataGroups[0]
+
+                res[subproject.name]['des-viewer-group'] = viewerSuprojectDataGroups[0]
+
+
+                if (req.query.exfe === '1TaZpRj8IAhG7xp9') {
+
                     res[subproject.name]['des-admin-members'] =
                         (await AuthGroups.listUsersInGroup(req.headers.authorization,
-                            SubprojectGroups.oldAdminGroup(tenant.name,
-                                subproject.name, tenant.esd),
+                            adminSubprojectDataGroups[0],
                             tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
-                }
-                if (res[subproject.name]['des-editor-group']) {
-                    res[subproject.name]['des-editor-members'] =
-                        (await AuthGroups.listUsersInGroup(req.headers.authorization,
-                            SubprojectGroups.oldEditorGroup(tenant.name,
-                                subproject.name, tenant.esd),
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
-                }
-                if (res[subproject.name]['des-viewer-group']) {
+
                     res[subproject.name]['des-viewer-members'] =
                         (await AuthGroups.listUsersInGroup(req.headers.authorization,
-                            SubprojectGroups.oldViewerGroup(tenant.name,
-                                subproject.name, tenant.esd),
+                            viewerSuprojectDataGroups[0],
                             tenant.esd, req[Config.DE_FORWARD_APPKEY])).map((e) => e.email);
+
                 }
+
+
             }
 
             return res;
