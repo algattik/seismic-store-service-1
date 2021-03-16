@@ -34,6 +34,9 @@ export class AzureInsightsLogger extends AbstractLogger {
                 .setUseDiskRetryCaching(true)
                 .setDistributedTracingMode(appinsights.DistributedTracingModes.AI_AND_W3C);
 
+                appinsights.defaultClient.context.tags[
+                    appinsights.defaultClient.context.keys.cloudRole] = 'seismic-dms';
+
                 appinsights.start();
         }
     }
