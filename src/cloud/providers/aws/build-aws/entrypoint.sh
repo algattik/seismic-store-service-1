@@ -1,4 +1,4 @@
 
 ./ssl.sh;
 
-node ./dist/cloud/providers/aws/server/server-start.js
+node ./dist/server/server-start.js

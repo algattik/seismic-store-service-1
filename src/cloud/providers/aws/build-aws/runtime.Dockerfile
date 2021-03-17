@@ -45,5 +45,4 @@ WORKDIR /seistore-service
 COPY src/cloud/providers/aws/build-aws/ssl.sh /seistore-service/ssl.sh
 COPY src/cloud/providers/aws/build-aws/entrypoint.sh /seistore-service/entrypoint.sh
 RUN npm install --production
-EXPOSE 5000
 ENTRYPOINT ["/bin/sh", "-c", "/seistore-service/entrypoint.sh"]
