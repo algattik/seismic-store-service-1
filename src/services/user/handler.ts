@@ -233,22 +233,35 @@ export class UserHandler {
         // retrieve the tenant informations
         const tenant = await TenantDAO.get(sdPath.tenant);
 
-        // retrieve the users in the subproject groups
-        // can be done in parallel via promise?
-        const admins = await AuthGroups.listUsersInGroup(req.headers.authorization,
-            SubprojectGroups.serviceAdminGroup(tenant.name, sdPath.subproject, tenant.esd),
-            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        const editors = await AuthGroups.listUsersInGroup(req.headers.authorization,
-            SubprojectGroups.serviceEditorGroup(tenant.name, sdPath.subproject, tenant.esd),
-            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        const viewers = await AuthGroups.listUsersInGroup(req.headers.authorization,
-            SubprojectGroups.serviceViewerGroup(tenant.name, sdPath.subproject, tenant.esd),
-            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+        const spkey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            path: [Config.SUBPROJECTS_KIND, sdPath.subproject],
+        });
 
-        return admins.map((el) => [el.email, 'admin']).concat(
-            editors.map((el) => [el.email, 'editor'])).concat(
-                viewers.map((el) => [el.email, 'viewer']));
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
 
+        let users = []
+
+        if (subproject.acls.admins.length > 0) {
+
+            for (const adminGroup of subproject.acls.admins) {
+                const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, adminGroup, tenant.esd,
+                    req[Config.DE_FORWARD_APPKEY]))
+                users = users.concat(result.map((el) => [el.email, 'admin']))
+            }
+        }
+
+        if (subproject.acls.viewers.length > 0) {
+
+            for (const viewerGroup of subproject.acls.viewers) {
+                const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, viewerGroup, tenant.esd,
+                    req[Config.DE_FORWARD_APPKEY]))
+                users = users.concat(result.map((el) => [el.email, 'viewer']))
+            }
+        }
+
+        return users
     }
 
     // retrieve the roles of a user
