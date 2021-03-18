@@ -63,6 +63,9 @@ export class AWSConfig extends Config {
             JWT_AUDIENCE: process.env.JWT_AUDIENCE||'',
             JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
             TENANT_JOURNAL_ON_DATA_PARTITION: true,
+            SSL_ENABLED: process.env.SSL_ENABLED === 'true',
+            SSL_KEY_PATH: process.env.SSL_KEY_PATH,
+            SSL_CERT_PATH: process.env.SSL_CERT_PATH,
             FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
                 process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,
             FEATURE_FLAG_LEGALTAG: process.env.FEATURE_FLAG_LEGALTAG !== undefined ?

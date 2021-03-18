@@ -124,11 +124,11 @@ export class Server {
 
 
         // SSL
-        if (process.env.SSL_ENABLED === 'true'){
-        const privateKey  = fs.readFileSync(process.env.SSL_KEY_PATH, 'utf8');
-        const certificate = fs.readFileSync(process.env.SSL_CERT_PATH, 'utf8');
-        const credentials = {key: privateKey, cert: certificate};
-        this.httpsServer = https.createServer(credentials, this.app).listen(this.port, () => {
+        if (Config.SSL_ENABLED){
+            const privateKey  = fs.readFileSync(Config.SSL_KEY_PATH, 'utf8');
+            const certificate = fs.readFileSync(Config.SSL_CERT_PATH, 'utf8');
+            const credentials = {key: privateKey, cert: certificate};
+            this.httpsServer = https.createServer(credentials, this.app).listen(this.port, () => {
                 // tslint:disable-next-line
                 console.log(`- Server is listening on port ${this.port}...`);
             });

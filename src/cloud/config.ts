@@ -44,6 +44,9 @@ export interface ConfigModel {
     JWT_ENABLE_FEATURE: boolean;
     API_BASE_PATH: string;
     TENANT_JOURNAL_ON_DATA_PARTITION: boolean;
+    SSL_ENABLED?: boolean;
+    SSL_KEY_PATH?: string;
+    SSL_CERT_PATH?: string;
     FEATURE_FLAG_AUTHORIZATION: boolean;
     FEATURE_FLAG_LEGALTAG: boolean;
     FEATURE_FLAG_SEISMICMETA_STORAGE: boolean;
@@ -125,6 +128,11 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
 
+    // Server SSL
+    public static SSL_ENABLED = false;
+    public static SSL_KEY_PATH: string;
+    public static SSL_CERT_PATH: string;
+
     // WriteLock Skip
     // This is an open issue to discuss.
     // Checking the write lock is the correct behaviour and this varialbe shoudl be set to "false".
@@ -186,6 +194,10 @@ export abstract class Config implements IConfig {
         Config.API_BASE_PATH = model.API_BASE_PATH;
 
         Config.TENANT_JOURNAL_ON_DATA_PARTITION = model.TENANT_JOURNAL_ON_DATA_PARTITION || false;
+
+        Config.SSL_ENABLED = model.SSL_ENABLED || false;
+        Config.SSL_KEY_PATH = model.SSL_KEY_PATH;
+        Config.SSL_CERT_PATH = model.SSL_CERT_PATH;
 
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');
