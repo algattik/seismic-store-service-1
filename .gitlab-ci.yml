@@ -5,8 +5,17 @@ variables:
   PORT: 80
   REPLICA: 1
   UTEST_RUNTIME_IMAGE: seistore-svc-runtime
+
   #aws variables
-  #azure variables  
+  AWS_SERVICE: seismic-store
+  AWS_BUILD_SUBDIR: src/cloud/providers/aws/build-aws
+  AWS_TEST_SUBDIR: tests
+  AWS_ENVIRONMENT: dev
+  AWS_BUILDER_DOCKERFILE_PATH: src/cloud/providers/aws/build-aws/builder.Dockerfile
+  AWS_RUNTIME_DOCKERFILE_PATH: src/cloud/providers/aws/build-aws/runtime.Dockerfile
+  # skipping tests here. Using a local file to run tests
+  AWS_SKIP_TESTS: "true"
+  #azure variables
   AZURE_SERVICE: seismic-store-service
   #gcp variables
   GCP_APPLICATION_NAME: os-seismic-store-service
@@ -30,7 +39,13 @@ include:
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
     file: "containerize/seismic-store-service.yml"
-    
+
+  # aws
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws.yml"
+
+  - local: "/devops/aws/awstest.yml"
+
   # deploy
     #azure
   - project: "osdu/platform/ci-cd-pipelines"
@@ -39,7 +54,8 @@ include:
     #ibm  
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-seismic-store-service.yml"
-    
+
+
     #gcp
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/gcp-seismic-store-service.yml"
