@@ -451,7 +451,7 @@ export class AzureCosmosDbQuery implements IJournalQueryModel {
             options: {
                 partitionKey: `${this.namespace}-${this.kind}`,
                 continuationToken: this.pagingStart,
-                maxItemCount: this.pagingLimit
+                maxItemCount: this.pagingLimit || -1
             }
         };
     }
