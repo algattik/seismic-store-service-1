@@ -16,7 +16,7 @@ import { AWSConfig } from './config';
 import { AbstractStorage, StorageFactory } from '../../storage';
 import { TenantModel } from '../../../services/tenant';
 import AWS from 'aws-sdk/global';
-import S3 from "aws-sdk/clients/s3";
+import S3 from 'aws-sdk/clients/s3';
 @StorageFactory.register('aws')
 export class AWSStorage extends AbstractStorage {
 
@@ -38,22 +38,22 @@ export class AWSStorage extends AbstractStorage {
         return folder;
     }
 
-    // generate a random bucket name, for aws, a random folder name 
+    // generate a random bucket name, for aws, a random folder name
     public randomBucketName(): string {
         let suffix = Math.random().toString(36).substring(2, 16);
         suffix = suffix + Math.random().toString(36).substring(2, 16);
         suffix = suffix.substr(0, 16);
-        return AWSConfig.AWS_BUCKET+"$$"+suffix;
+        return AWSConfig.AWS_BUCKET+'$$'+suffix;
     }
 
-    //whenever ask for a bucket, we return bucketName$$folderName for that subprject
-    //this function return the real folderName by remove bucketName$$ at the front of folderName
+    // whenever ask for a bucket, we return bucketName$$folderName for that subprject
+    // this function return the real folderName by remove bucketName$$ at the front of folderName
     public getFolder(folderName:string): string {
-        var start = AWSConfig.AWS_BUCKET.length+2; 
-        var str = folderName.substr(start);
+        const start = AWSConfig.AWS_BUCKET.length+2;
+        const str = folderName.substr(start);
         return str;
     }
-    
+
     // Create a new bucket, for aws, create a folder with folderName
     public async createBucket(
         folderName: string,
@@ -67,11 +67,12 @@ export class AWSStorage extends AbstractStorage {
         try {
             await this.s3.putObject(params).promise();
         } catch (err) {
-            console.log(err.code + ": " + err.message);
+            // tslint:disable-next-line:no-console
+            console.log(err.code + ': ' + err.message);
         }
     }
 
-    // Delete a bucket, for aws, delete folder folderName 
+    // Delete a bucket, for aws, delete folder folderName
     public async deleteBucket(folderName: string, force = false): Promise<void> {
         if (force) {
             await this.deleteFiles(folderName);
@@ -84,7 +85,8 @@ export class AWSStorage extends AbstractStorage {
         try {
             await this.s3.deleteObject(params).promise();
         } catch (err) {
-            console.log(err.code + ": " + err.message);
+            // tslint:disable-next-line:no-console
+            console.log(err.code + ': ' + err.message);
         }
     }
 
@@ -110,7 +112,7 @@ export class AWSStorage extends AbstractStorage {
 
         await this.s3.deleteObjects(deleteParams).promise();
 
-        if (listedObjects.IsTruncated)  //continue delete files as there are more...
+        if (listedObjects.IsTruncated)  // continue delete files as there are more...
             await this.deleteFiles(folderName);
     }
 
@@ -125,11 +127,12 @@ export class AWSStorage extends AbstractStorage {
         try {
             this.s3.putObject(params).promise();
         } catch (err) {
-            console.log(err.code + ": " + err.message);
+            // tslint:disable-next-line:no-console
+            console.log(err.code + ': ' + err.message);
         }
     }
 
-    // delete an object from a bucket 
+    // delete an object from a bucket
     public async deleteObject(folderName: string, objectName: string): Promise<void> {
         const folder = this.getFolder(folderName);
         const params = {
@@ -139,7 +142,8 @@ export class AWSStorage extends AbstractStorage {
         try {
             this.s3.deleteObject(params).promise();
         } catch (err) {
-            console.log(err.code + ": " + err.message);
+            // tslint:disable-next-line:no-console
+            console.log(err.code + ': ' + err.message);
         }
     }
 
@@ -165,7 +169,7 @@ export class AWSStorage extends AbstractStorage {
 
         await this.s3.deleteObjects(deleteParams).promise();
 
-        if (listedObjects.IsTruncated) //continue delete files as there are more...
+        if (listedObjects.IsTruncated) // continue delete files as there are more...
             await this.deleteObjects(folderName, prefix, async);
     }
 
@@ -186,14 +190,14 @@ export class AWSStorage extends AbstractStorage {
         const files = await this.s3.listObjects(params).promise();
 
         for (const file of files['Contents']) {
-            var newKey = file.Key.replace(realFolderIn, realFolderOut);
+            let newKey = file.Key.replace(realFolderIn, realFolderOut);
             newKey = newKey.replace(folderIn, prefixOut);
-            const params = {
+            const param = {
                 Bucket: AWSConfig.AWS_BUCKET,
                 CopySource: file.Key,
                 Key: newKey
             };
-            copyCalls.push(this.s3.copyObject(params));
+            copyCalls.push(this.s3.copyObject(param));
         }
         await Promise.all(copyCalls);
     }

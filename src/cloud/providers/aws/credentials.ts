@@ -57,27 +57,28 @@ export class AWSCredentials extends AbstractCredentials {
         const data = await db.getItem(params).promise();
         const ret = aws.DynamoDB.Converter.unmarshall(data.Item);
         if (Object.keys(ret).length === 0){
-            console.log("error to get folder: "+folder+"\n");
+            // tslint:disable-next-line:no-console
+            console.log('error to get folder: '+folder+'\n');
             return undefined;
         }
         else{
-            const vars = ret['gcs_bucket'].split("$$");
+            const vars = ret['gcs_bucket'].split('$$');
             return vars[1];
         }
     }
-    
+
     public async getStorageCredentials(
         tenant: string, subproject: string,
         bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
             const s3bucket = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name')
             const expDuration = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/temp-cred-expiration-duration')
-            var roleArn='';
-            var credentials='';
-    
-            var flagUpload=true;
-    
+            let roleArn='';
+            let credentials='';
+
+            let flagUpload=true;
+
             const keypath =  await this.getBucketFolder(tenant+':'+subproject);
-    
+
             // tslint:disable-next-line:triple-equals
             if(readonly ) { // readOnly True
                  roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
@@ -87,7 +88,7 @@ export class AWSCredentials extends AbstractCredentials {
                 roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
                 flagUpload = true;
             }
-    
+
             credentials = await this.awsSTSHelper.getCredentials(s3bucket,keypath,roleArn,flagUpload,expDuration);
 
                 const result = {
