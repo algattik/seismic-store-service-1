@@ -534,8 +534,14 @@ export class DatasetHandler {
                     // mandatory field required if a new seismic metadata record is ingested (kind/data required)
                     Params.checkString(seismicmeta.kind, 'kind');
                     Params.checkObject(seismicmeta.data, 'data');
-                    seismicmeta.recordType =
-                        seismicmeta.recordType ? ':' + seismicmeta.recordType + ':' : ':seismic3d:';
+
+                    // {data-parititon(delfi)|auhtority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
+                    if((seismicmeta.kind as string).split(':').length !== 4) {
+                        throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
+                    }
+
+                    // (recortdType == entityType)
+                    seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
 
                     // if id is given, take it. otherwise generate
                     if (!seismicmeta.id) {
