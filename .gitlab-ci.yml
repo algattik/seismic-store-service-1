@@ -31,11 +31,11 @@ include:
   # pipeline logic
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
-    ref: slb/dperez50/adding-check-in-seismic-store-service
   
   # build
   - project: "osdu/platform/ci-cd-pipelines"
     file: "build/seismic-store-service.yml"
+    ref: slb/dperez50/adding-check-in-seismic-store-service
 
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
