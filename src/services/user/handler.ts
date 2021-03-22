@@ -200,20 +200,29 @@ export class UserHandler {
         // check authorizations
         if (sdPath.subproject) {
 
-            // remove user from the subproject groups
-            // could this be done in parallel, via Promise?
-            await this.doNotThrowIfNotMember(
-                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceAdminGroup(
-                    tenant.name, sdPath.subproject, tenant.esd), userEmail,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-            await this.doNotThrowIfNotMember(
-                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceEditorGroup(
-                    tenant.name, sdPath.subproject, tenant.esd), userEmail,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-            await this.doNotThrowIfNotMember(
-                AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceViewerGroup(
-                    tenant.name, sdPath.subproject, tenant.esd), userEmail,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+            const journalClient = JournalFactoryTenantClient.get(tenant);
+            const spkey = journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+                path: [Config.SUBPROJECTS_KIND, sdPath.subproject],
+            });
+
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
+
+            const adminGroups = subproject.acls.admins
+            const viewerGroups = subproject.acls.viewers
+
+            for (const group of adminGroups) {
+                await this.doNotThrowIfNotMember(
+                    AuthGroups.removeUserFromGroup(req.headers.authorization, group, userEmail,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+            }
+
+            for (const group of viewerGroups) {
+                await this.doNotThrowIfNotMember(
+                    AuthGroups.removeUserFromGroup(req.headers.authorization, group, userEmail,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+            }
+
 
         } else {
             throw (Error.make(Error.Status.BAD_REQUEST,
