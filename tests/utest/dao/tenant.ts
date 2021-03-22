@@ -68,7 +68,7 @@ export class TestTenant {
          } as ITenantModel]);
 
          const result = await TenantDAO.get('tenant-a');
-         Tx.checkTrue(result.name === 'tenant-a' && result.esd === 'esd' && result.gcpid === 'gcpid', done);
+         Tx.checkTrue(result.name === 'tenant-a' && result.esd === '1esd' && result.gcpid === 'gcpid', done);
 
       });
    }
