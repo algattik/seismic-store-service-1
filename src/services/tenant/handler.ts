@@ -32,7 +32,7 @@ export class TenantHandler {
 
         try {
 
-            //tenant endpoints are not available with impersonation token
+            // tenant endpoints are not available with impersonation token
             if (Auth.isImpersonationToken(req.headers.authorization)) {
                 throw (Error.make(Error.Status.PERMISSION_DENIED,
                     'tenant endpoints not available' +

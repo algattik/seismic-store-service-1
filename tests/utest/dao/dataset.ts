@@ -82,13 +82,13 @@ export class TestDataset {
 
 		Tx.test(async (done: any) => {
 			this.journal.save.resolves({} as never);
-			await DatasetDAO.register(this.journal, { key: 'dskey', data: 'data' });
+			await DatasetDAO.register(this.journal, { key: {'key': 'dskey'}, data: TestDataset.dataset });
 			done();
 		});
 
 		Tx.test(async (done: any) => {
 			this.journal.save.resolves();
-			await DatasetDAO.register(this.journal, { key: 'dskey', data: 'data' });
+			await DatasetDAO.register(this.journal, { key: {'key': 'dskey'}, data: TestDataset.dataset });
 			done();
 		});
 	}

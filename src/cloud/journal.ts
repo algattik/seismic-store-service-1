@@ -57,27 +57,27 @@ export interface IJournalTransaction {
 
 export abstract class AbstractJournal implements IJournal {
     public abstract KEY: symbol;
-    public abstract async get(key: any): Promise<[any | any[]]>;
-    public abstract async save(entity: any): Promise<void>;
-    public abstract async delete(key: any): Promise<void>;
+    public abstract get(key: any): Promise<[any | any[]]>;
+    public abstract save(entity: any): Promise<void>;
+    public abstract delete(key: any): Promise<void>;
     public abstract createQuery(namespace: string, kind: string): IJournalQueryModel;
-    public abstract async runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]>;
+    public abstract runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]>;
     public abstract createKey(specs: any): object;
     public abstract getTransaction(): IJournalTransaction;
-    public abstract  getQueryFilterSymbolContains(): string;
+    public abstract getQueryFilterSymbolContains(): string;
 }
 
 export abstract class AbstractJournalTransaction implements IJournalTransaction {
     public abstract KEY: symbol;
-    public abstract async get(key: any): Promise<[any | any[]]>;;
-    public abstract async save(entity: any): Promise<void>;
-    public abstract async delete(key: any): Promise<void>;
+    public abstract get(key: any): Promise<[any | any[]]>;;
+    public abstract save(entity: any): Promise<void>;
+    public abstract delete(key: any): Promise<void>;
     public abstract createQuery(namespace: string, kind: string): IJournalQueryModel;
-    public abstract async runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]>;
-    public abstract async run(): Promise<void>;
-    public abstract async rollback(): Promise<void>;
-    public abstract async commit(): Promise<void>;
-    public abstract  getQueryFilterSymbolContains(): string;
+    public abstract runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]>;
+    public abstract run(): Promise<void>;
+    public abstract rollback(): Promise<void>;
+    public abstract commit(): Promise<void>;
+    public abstract getQueryFilterSymbolContains(): string;
 }
 
 export class JournalFactory extends CloudFactory {
