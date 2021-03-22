@@ -46,18 +46,6 @@ export class SubProjectDAO {
 
         // Fix entities with no acls
         if (!entity.acls) {
-
-            // const tenant = await TenantDAO.get(tenantName)
-
-            // const acls = {
-            //     'admins': [],
-            //     'viewers': []
-            // }
-
-            // acls.admins.push(SubprojectGroups.oldAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            // acls.admins.push(SubprojectGroups.oldEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            // acls.viewers.push(SubprojectGroups.oldViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-
             entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
         }
 
