@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -126,7 +126,20 @@ export class DatasetDAO {
 
         const output = { datasets: [], nextPageCursor: null };
 
-        // Retrieve the content datasets
+        if (!pagination.cursor) {
+            // Retrieve directories
+            let query = journalClient.createQuery(
+                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+                .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+
+            const [entitieshy] = await journalClient.runQuery(query);
+            output.datasets = entitieshy.map((entity) => (entity.path as string).substr(dataset.path.length));
+            output.datasets = output.datasets.map(
+                (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
+                    (elem, index, self) => index === self.indexOf(elem) );
+        }
+
+        // Retrieve datasets
         let query = journalClient.createQuery(
             Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
             .filter('path', dataset.path);
@@ -139,7 +152,7 @@ export class DatasetDAO {
 
         const [entitiesds, info] = await journalClient.runQuery(query);
         if (entitiesds.length !== 0) {
-            output.datasets = entitiesds.map((item) => item.name);
+            output.datasets = output.datasets.concat(entitiesds.map((item) => item.name));
             if (pagination) {
                 output.nextPageCursor = info.endCursor;
             }
@@ -201,7 +214,7 @@ export class DatasetDAO {
             const [entitieshy] = await journalClient.runQuery(query);
             results.directories = entitieshy.map((entity) => (entity.path as string).substr(dataset.path.length));
             results.directories = results.directories.map(
-                (entity) => entity.substr(0, entity.indexOf('/'))).filter(
+                (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
                     (elem, index, self) => index === self.indexOf(elem) );
         }
 
