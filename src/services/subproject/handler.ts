@@ -140,10 +140,10 @@ export class SubProjectHandler {
                 if (error.error.code === 404 && error.error.status === 'NOT_FOUND') {
                     // provision new groups
                     await AuthGroups.createGroup(userToken, adminGroupName,
-                        'seismic store tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
+                        'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]);
                     await AuthGroups.createGroup(userToken, viewerGroupName,
-                        'seismic store tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
+                        'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
                 } else {
