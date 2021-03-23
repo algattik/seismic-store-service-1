@@ -38,6 +38,7 @@ export class AWSSSMhelper {
            // console.log(data.Parameter.Value);
             return data.Parameter.Value;
         } catch (err) {
+            // tslint:disable-next-line:no-console
             console.log(err.code + ': ' + err.message);
         }
     }

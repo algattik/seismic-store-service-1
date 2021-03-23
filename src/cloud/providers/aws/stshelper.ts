@@ -27,43 +27,45 @@ export class AWSSTShelper {
         this.sts = new STS({apiVersion: '2014-11-06'});
     }
 
-    public async getCredentials(bucketName: string, keypath: string, roleArn: string, flagUpload: boolean, exp: string): Promise<string> {
-        var policy;
+    public async getCredentials(bucketName: string, keypath: string,
+        roleArn: string, flagUpload: boolean, exp: string): Promise<string> {
+        let policy;
 
         if(flagUpload === true)
              policy = this.createUploadPolicy(bucketName,keypath);
         else
             policy = this.createDownloadPolicy(bucketName,keypath);
 
-        var expDuration: number = +exp;
+        const expDuration: number = +exp;
 
-        let stsParams = {
-            ExternalId: "OSDUAWS",
+        const stsParams = {
+            ExternalId: 'OSDUAWS',
             Policy: policy,
             RoleArn: roleArn,
-            RoleSessionName: "OSDUAWSAssumeRoleSession",
+            RoleSessionName: 'OSDUAWSAssumeRoleSession',
             DurationSeconds: expDuration
         };
         const roleCreds =  await this.sts.assumeRole(stsParams).promise();
-        const tempCreds= roleCreds.Credentials.AccessKeyId+':'+roleCreds.Credentials.SecretAccessKey+':'+roleCreds.Credentials.SessionToken;
+        const tempCreds= roleCreds.Credentials.AccessKeyId+':'+roleCreds.Credentials.SecretAccessKey
+        +':'+roleCreds.Credentials.SessionToken;
 
 
       return tempCreds;
     }
     public  createUploadPolicy(bucketName: string, keypath: string): string {
 
-        var UploadPolicy = {
-            Version: "2012-10-17",
+        const UploadPolicy = {
+            Version: '2012-10-17',
             Statement: [
                 {
-                    Sid: "One",     // Statement 1: Allow Listing files at the file location
-                    Effect: "Allow",
+                    Sid: 'One',     // Statement 1: Allow Listing files at the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:ListBucketVersions",
-                        "s3:ListBucket"
+                        's3:ListBucketVersions',
+                        's3:ListBucket'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName
+                        'arn:aws:s3:::'+bucketName
                     ],
                     Condition: {
                         StringEquals: {
@@ -72,13 +74,13 @@ export class AWSSTShelper {
                     }
                 },
                 {
-                    Sid: "Two", //Statement 2: Allow Listing files under the file location
-                    Effect: "Allow",
+                    Sid: 'Two', // Statement 2: Allow Listing files under the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:*"
+                        's3:*'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName
+                        'arn:aws:s3:::'+bucketName
                     ],
                     Condition: {
                         StringLike: {
@@ -88,37 +90,37 @@ export class AWSSTShelper {
 
                 },
                 {
-                    Sid: "Three",  //Statement 3: Allow Uploading files at the file location
-                    Effect: "Allow",
+                    Sid: 'Three',  // Statement 3: Allow Uploading files at the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:PutObject",
-                        "s3:DeleteObject",
-                        "s3:GetObject",
-                        "s3:HeadObject",
-                        "s3:ListObjects",
-                        "s3:ListBucketMultipartUploads",
-                        "s3:AbortMultipartUpload",
-                        "s3:ListMultipartUploadParts"
+                        's3:PutObject',
+                        's3:DeleteObject',
+                        's3:GetObject',
+                        's3:HeadObject',
+                        's3:ListObjects',
+                        's3:ListBucketMultipartUploads',
+                        's3:AbortMultipartUpload',
+                        's3:ListMultipartUploadParts'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName+"/"+keypath+"/"
+                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/'
                     ]
                 },
                 {
-                    Sid: "Four",   //Statement 4: Allow Uploading files under the file location
-                    Effect: "Allow",
+                    Sid: 'Four',   // Statement 4: Allow Uploading files under the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:PutObject",
-                        "s3:DeleteObject",
-                        "s3:GetObject",
-                        "s3:HeadObject",
-                        "s3:ListObjects",
-                        "s3:ListBucketMultipartUploads",
-                        "s3:AbortMultipartUpload",
-                        "s3:ListMultipartUploadParts"
+                        's3:PutObject',
+                        's3:DeleteObject',
+                        's3:GetObject',
+                        's3:HeadObject',
+                        's3:ListObjects',
+                        's3:ListBucketMultipartUploads',
+                        's3:AbortMultipartUpload',
+                        's3:ListMultipartUploadParts'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName+"/"+keypath+"/*"
+                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/*'
                     ]
                 }
             ]
@@ -131,18 +133,18 @@ export class AWSSTShelper {
 
     public  createDownloadPolicy(bucketName: string, keypath: string): string {
 
-        var DownloadPolicy = {
-            Version: "2012-10-17",
+        const downloadPolicy = {
+            Version: '2012-10-17',
             Statement: [
                 {
-                    Sid: "One",     // Statement 1: Allow Listing files at the file location
-                    Effect: "Allow",
+                    Sid: 'One',     // Statement 1: Allow Listing files at the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:ListBucketVersions",
-                        "s3:ListBucket"
+                        's3:ListBucketVersions',
+                        's3:ListBucket'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName
+                        'arn:aws:s3:::'+bucketName
                     ],
                     Condition: {
                         StringEquals: {
@@ -151,13 +153,13 @@ export class AWSSTShelper {
                     }
                 },
                 {
-                    Sid: "Two", //Statement 2: Allow Listing files under the file location
-                    Effect: "Allow",
+                    Sid: 'Two', // Statement 2: Allow Listing files under the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:*"
+                        's3:*'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName
+                        'arn:aws:s3:::'+bucketName
                     ],
                     Condition: {
                         StringLike: {
@@ -167,36 +169,36 @@ export class AWSSTShelper {
 
                 },
                 {
-                    Sid: "Three",  //Statement 3: Allow Downloading files at the file location
-                    Effect: "Allow",
+                    Sid: 'Three',  // Statement 3: Allow Downloading files at the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:GetObject",
-                        "s3:HeadObject",
-                        "s3:ListObjects",
-                        "s3:GetObjectVersion"
+                        's3:GetObject',
+                        's3:HeadObject',
+                        's3:ListObjects',
+                        's3:GetObjectVersion'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName+"/"+keypath+"/"
+                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/'
                     ]
                 },
                 {
-                    Sid: "Four",   //Statement 4: Allow Downloading files under the file location
-                    Effect: "Allow",
+                    Sid: 'Four',   // Statement 4: Allow Downloading files under the file location
+                    Effect: 'Allow',
                     Action: [
-                        "s3:GetObject",
-                        "s3:HeadObject",
-                        "s3:ListObjects",
-                        "s3:GetObjectVersion"
+                        's3:GetObject',
+                        's3:HeadObject',
+                        's3:ListObjects',
+                        's3:GetObjectVersion'
                     ],
                     Resource: [
-                        "arn:aws:s3:::"+bucketName+"/"+keypath+"/*"
+                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/*'
                     ]
                 }
             ]
         };
 
 
-        const policy = JSON.stringify(DownloadPolicy);
+        const policy = JSON.stringify(downloadPolicy);
         return policy;
     }
 
