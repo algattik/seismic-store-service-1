@@ -14,7 +14,7 @@
     "setup:dev": "(nohup redis-server > /tmp/redis.log 2>&1 &) && (npm i)",
     "test": "env UTEST=true mocha -r ts-node/register tests/utest/test.ts",
     "test-coverage": "env UTEST=true nyc mocha -r ts-node/register --reporter mocha-junit-reporter tests/utest/test.ts",
-    "test-automation": "npm run clean && npm install && npm run test-coverage",
+    "test-automation": "npm run clean && npm install && npm run build && npm run test-coverage",
     "test-e2e-parallel": "node ./tests/e2e/parallel/run_e2e_tests_parallel.js"
   },
   "nyc": {
