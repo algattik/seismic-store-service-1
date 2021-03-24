@@ -14,7 +14,11 @@
 // limitations under the License.
 // ============================================================================
 
+import { v4 as uuidv4 } from 'uuid';
+import { Config } from '../../cloud';
 import { TenantGroups } from '../tenant';
+
+
 
 export class SubprojectGroups {
 
@@ -22,39 +26,37 @@ export class SubprojectGroups {
         return TenantGroups.groupPrefix(tenantName) + '.' + subprojectName;
     }
 
-    public static adminGroupName(tenant: string, subproject: string): string {
+    public static serviceAdminGroupName(tenant: string, subproject: string): string {
         return this.groupPrefix(tenant, subproject) + '.admin';
     }
 
-    public static editorGroupName(tenant: string, subproject: string): string {
+    public static serviceEditorGroupName(tenant: string, subproject: string): string {
         return this.groupPrefix(tenant, subproject) + '.editor';
     }
 
-    public static viewerGroupName(tenant: string, subproject: string): string {
+    public static serviceViewerGroupName(tenant: string, subproject: string): string {
         return this.groupPrefix(tenant, subproject) + '.viewer';
     }
 
-    public static adminGroup(tenant: string, subproject: string, esd: string): string {
-        return this.adminGroupName(tenant, subproject) + '@' + esd;
+    public static serviceAdminGroup(tenant: string, subproject: string, esd: string): string {
+        return this.serviceAdminGroupName(tenant, subproject) + '@' + esd;
     }
 
-    public static editorGroup(tenant: string, subproject: string, esd: string): string {
-        return this.editorGroupName(tenant, subproject) + '@' + esd;
+    public static serviceEditorGroup(tenant: string, subproject: string, esd: string): string {
+        return this.serviceEditorGroupName(tenant, subproject) + '@' + esd;
     }
 
-    public static viewerGroup(tenant: string, subproject: string, esd: string): string {
-        return this.viewerGroupName(tenant, subproject) + '@' + esd;
+    public static serviceViewerGroup(tenant: string, subproject: string, esd: string): string {
+        return this.serviceViewerGroupName(tenant, subproject) + '@' + esd;
     }
 
-    public static getReadGroups(tenant: string, subproject: string): string[] {
-        return [this.viewerGroupName(tenant, subproject),
-        this.editorGroupName(tenant, subproject),
-        this.adminGroupName(tenant, subproject)];
+
+    public static dataAdminGroup(tenant: string, subproject: string, esd: string): string {
+        return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.admin' + '@' + esd;
     }
 
-    public static getWriteGroups(tenant: string, subproject: string): string[] {
-        return [this.editorGroupName(tenant, subproject),
-        this.adminGroupName(tenant, subproject)];
+    public static dataViewerGroup(tenant: string, subproject: string, esd: string): string {
+        return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.viewer' + '@' + esd;
     }
 
 }
