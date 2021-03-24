@@ -16,6 +16,7 @@
 
 import { Config } from '../cloud';
 
+
 export class Utils {
 
     public static getPropertyFromTokenPayload(base64jwtpayload: string, property: string): string {

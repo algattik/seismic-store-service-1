@@ -257,62 +257,6 @@ export class TestSubProjectSVC {
             done();
         });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'REGIONAL';
-            expReq.body.storage_location = 'US-CENTRAL1';
-            expReq.headers.ltag = 'ltag';
-            expReq.params.subprojectid = 's';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'XXX';
-            expReq.body.storage_location = 'US-CENTRAL1';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'REGIONAL';
-            expReq.body.storage_location = 'XXX';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'MULTI_REGIONAL';
-            expReq.body.storage_location = 'US-CENTRAL1';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'REGIONAL';
-            expReq.body.storage_location = 'EU';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
         Tx.testExp(async (done: any) => {
             process.env.GCLOUD_PROJECT = 'ON';
             this.journal.get.resolves([] as never);

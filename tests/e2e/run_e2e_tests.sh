@@ -24,11 +24,11 @@ usage() {
     printf "\n[ERROR] %s\n" "$1"
 }
 
-# script to execute from root directory
-if [ ! -f "tsconfig.json" ]; then
-    printf "\n%s\n" "[ERROR] The script must be called from the project root directory."
-    exit 1
-fi
+# script to execute from root directory #will not work in internal pipelines
+#if [ ! -f "tsconfig.json" ]; then
+#    printf "\n%s\n" "[ERROR] The script must be called from the project root directory."
+#    exit 1
+#fi
 
 # check required parameters
 # argument [seistore-svc-url] seismic store service url - required

@@ -45,7 +45,7 @@ export interface IDataEcosystemCore {
 
 export abstract class AbstractDataEcosystemCore implements IDataEcosystemCore {
     public abstract getDataPartitionIDRestHeaderName(): string;
-    public abstract async getAuthorizationHeader(userToken: string): Promise<string>;
+    public abstract getAuthorizationHeader(userToken: string): Promise<string>;
     public abstract getEntitlementBaseUrlPath(): string;
     public abstract getComplianceBaseUrlPath(): string;
     public abstract getStorageBaseUrlPath(): string;

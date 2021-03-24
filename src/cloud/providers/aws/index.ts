@@ -1,5 +1,4 @@
-// ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// ============================================================================
 
-export * as google from './google';
-export * as azure from './azure';
-export * as ibm from './ibm';
-export * as aws from './aws';
+export { AWSConfig } from './config';
+export { AWSStorage } from './storage';
+export { AWSCredentials } from './credentials';
+export { AWSDynamoDbDAO, AWSDynamoDbTransactionDAO, AWSDynamoDbQuery } from './dynamodb';
+export { AwsTrace } from './trace';
+export { AWSDataEcosystemServices } from './dataecosystem';
+export { AwsSeistore } from './seistore';
+export { AwsLogger } from './logger';

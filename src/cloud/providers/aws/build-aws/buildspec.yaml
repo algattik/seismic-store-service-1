@@ -1,0 +1,81 @@
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html
+
+# https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
+version: 0.2
+
+env:
+  secrets-manager:
+    DOCKER_USERNAME: /osdu/devops/docker_credentials:username
+    DOCKER_PASSWORD: /osdu/devops/docker_credentials:password
+
+phases:
+  install:
+    commands:
+      # fix error noted here: https://github.com/yarnpkg/yarn/issues/7866
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+      - apt-get update -y
+      - npm install
+
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION) # authenticate with ECR via the AWS CLI
+  build:
+    commands:
+      - export REPO_NAME=${PWD##*/}
+      - export OUTPUT_DIR="dist"
+      - export BRANCH_NAME=`echo ${CODEBUILD_SOURCE_VERSION} | awk '{gsub("refs/heads/","");gsub("\\.","-");gsub("[[:space:]]","-")}1' | sed 's/\//-/g' | awk '{print tolower($0)}'`
+      - export ECR_TAG_BUILDER=`echo build.builder.${BRANCH_NAME}.${CODEBUILD_BUILD_NUMBER}.${CODEBUILD_RESOLVED_SOURCE_VERSION} | cut -c 1-120`
+      - export ECR_TAG_PROD=`echo build.${BRANCH_NAME}.${CODEBUILD_BUILD_NUMBER}.${CODEBUILD_RESOLVED_SOURCE_VERSION} | cut -c 1-120`
+      - export ECR_IMAGE_BUILDER=${ECR_REGISTRY}:${ECR_TAG_BUILDER}
+      - export ECR_IMAGE_PROD=${ECR_REGISTRY}:${ECR_TAG_PROD}
+      - export ECR_IMAGE_BRANCH_LATEST=${ECR_REGISTRY}:${BRANCH_NAME}
+      - export INTEGRATION_TEST_OUTPUT=${OUTPUT_DIR}/testing/integration
+      - export INTEGRATION_TEST_OUTPUT_BIN=${INTEGRATION_TEST_OUTPUT}/bin
+      - mkdir -p ${OUTPUT_DIR}/bin
+      - mkdir -p ${OUTPUT_DIR}/testing && mkdir -p ${INTEGRATION_TEST_OUTPUT}  && mkdir -p ${INTEGRATION_TEST_OUTPUT}/bin
+      - echo "Placeholder" >> ${OUTPUT_DIR}/build-info.json # touched so that the output directory has some content incase the build fails so that testing reports are uploaded
+      - printenv
+      - node_modules/.bin/tslint -c tslint.json 'src/cloud/providers/aws/**/*.ts'
+      - echo "Building seismic-store-service"
+      - npm run build
+
+      - echo "Building integration testing assemblies and gathering artifacts..."
+      - ./tests/aws-test/build-aws/prepare-dist.sh
+
+      - echo "Logging into Docker Hub..."
+      - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+
+      - echo "Building docker image..."
+      #- docker build -f src/cloud/providers/aws/build-aws/Dockerfile -t ${ECR_IMAGE} .
+      - docker build -f src/cloud/providers/aws/build-aws/builder.Dockerfile -t ${ECR_IMAGE_BUILDER} .
+      - docker build -f src/cloud/providers/aws/build-aws/runtime.Dockerfile -t ${ECR_IMAGE_PROD} --build-arg docker_builder_image=${ECR_IMAGE_BUILDER} .
+      - docker tag  ${ECR_IMAGE_PROD} ${ECR_IMAGE_BRANCH_LATEST}
+      - echo "Pushing docker image..."
+      - docker push ${ECR_IMAGE_PROD}
+      - docker push ${ECR_IMAGE_BRANCH_LATEST}
+
+      - echo "Generate build-info.json"
+      - |
+        python src/cloud/providers/aws/build-aws/build-info.py --branch ${CODEBUILD_SOURCE_VERSION} --commit ${CODEBUILD_RESOLVED_SOURCE_VERSION} \
+          --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
+          --artifact ${ECR_IMAGE_PROD}
+artifacts:
+  files:
+    - "**/*"
+  base-directory: "dist"
+  name: ${REPO_NAME}_${BRANCH_NAME}_$(date +%F)_${CODEBUILD_BUILD_NUMBER}.zip
