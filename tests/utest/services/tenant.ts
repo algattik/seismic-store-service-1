@@ -16,18 +16,17 @@
 
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
+import sinon from 'sinon';
+import { Auth, AuthGroups } from '../../../src/auth';
+import { Config, google, JournalFactoryServiceClient } from '../../../src/cloud';
+import { SubProjectDAO } from '../../../src/services/subproject';
 import { TenantDAO, TenantGroups, TenantModel } from '../../../src/services/tenant';
 import { TenantHandler } from '../../../src/services/tenant/handler';
-import { Auth, AuthGroups } from '../../../src/auth';
-import { google, JournalFactoryServiceClient } from '../../../src/cloud';
-import { Config } from '../../../src/cloud';
-import { SubProjectDAO } from '../../../src/services/subproject';
 import { TenantOP } from '../../../src/services/tenant/optype';
 import { TenantParser } from '../../../src/services/tenant/parser';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
 
-import sinon from 'sinon';
 
 export class TestTenantSVC {
 
@@ -105,7 +104,7 @@ export class TestTenantSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.datapartition = 'datapartition';
-            this.sandbox.stub(TenantDAO, 'getAll').resolves([{name:'tenant01', default_acls:'x', esd:'datapartition.domain.com', gcpid:'any'}])
+            this.sandbox.stub(TenantDAO, 'getAll').resolves([{ name: 'tenant01', default_acls: 'x', esd: 'datapartition.domain.com', gcpid: 'any' }])
             this.sandbox.stub(Auth, 'isUserRegistered').resolves();
             Tx.checkTrue((await TenantHandler.getTenantSDPath(expReq)) === Config.SDPATHPREFIX + 'tenant01', done);
         });
@@ -233,13 +232,14 @@ export class TestTenantSVC {
 
         Tx.sectionInit('tenant parser');
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.query.datapartition = 'datapartition';
+        Tx.testExp((done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.query.datapartition = 'tenant-a';
             expReq.params.tenantid = 'tenant-a';
-            expReq.body.esd = 'esd';
+            expReq.body.esd = 'tenant-a.evt.group.com';
             expReq.body.gcpid = 'gcpid';
-            expReq.body.default_acls = 'userdatalakeadmin@group.com';
-            await TenantParser.create(expReq);
+            expReq.body.default_acls = 'userdatalakeadmin@tenant-a.evt.group.com';
+            Config.CLOUDPROVIDER = "google"
+            TenantParser.create(expReq);
             done();
         });
     }
@@ -251,21 +251,11 @@ export class TestTenantSVC {
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.datapartition = 'datapartition';
             this.tenant.default_acls = 'authgroup@dp.com';
-
             const result = TenantGroups.adminGroup(this.tenant);
             Tx.checkTrue(result === 'authgroup@dp.com', done);
 
         });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.query.datapartition = 'datapartition';
-            this.tenant.default_acls = undefined;
-
-            const result = TenantGroups.adminGroup(this.tenant);
-            const expectedString = 'service.seistore.' + Config.SERVICE_ENV + '.tenant-a.admin@esd';
-            Tx.checkTrue(result === expectedString, done);
-
-        });
     }
 
 }
