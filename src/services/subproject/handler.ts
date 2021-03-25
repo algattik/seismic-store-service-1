@@ -239,8 +239,6 @@ export class SubProjectHandler {
     // delete the subproject
     private static async delete(req: expRequest, tenant: TenantModel) {
 
-
-
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
@@ -270,14 +268,23 @@ export class SubProjectHandler {
             storage.deleteFiles(subproject.gcs_bucket),
         ]);
 
+        const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
+        const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex))
+
+        const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+        const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex))
+        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex))
+        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups)
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // clear by removing all MEMBER users the 3 subproject groups
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.serviceAdminGroup(tenant.name,
-                subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.serviceEditorGroup(tenant.name,
-                subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.serviceViewerGroup(tenant.name,
-                subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            for(const group of subprojectServiceGroups) {
+                await AuthGroups.clearGroup(
+                    req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
+            for(const group of subprojectDataGroups) {
+                await AuthGroups.clearGroup(
+                    req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
         }
 
         // delete the bucket resource (to perform after files deletions)

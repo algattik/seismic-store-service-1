@@ -62,9 +62,9 @@ export class AuthGroups {
 
         for (const member of members) {
             // DE allows to rm all so we may want to follow. For now exclude the requestor
-            if (member.email !== userEmail) {
-                await DESEntitlement.removeUserFromGroup(userToken, group, dataPartition, member.email,
-                    appkey);
+            if (member.email !== userEmail && !member.email.startsWith('users.data.root')) {
+                await DESEntitlement.removeUserFromGroup(
+                    userToken, group, dataPartition, member.email,appkey);
             }
         }
 
