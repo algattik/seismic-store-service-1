@@ -476,7 +476,7 @@ export class TestDataset {
 
 			this.journal.runQuery.resolves([[{}], { endCursor: 'NO_MORE_RESULTS' }]);
 
-			await DatasetDAO.paginatedListContent(this.journal, this.dataset, pagination);
+			await DatasetDAO.paginatedListContent(this.journal, this.dataset, Config.LS_MODE.ALL, pagination);
 
 			Tx.checkTrue(this.journal.runQuery.calledWith(query), done);
 		});
@@ -504,7 +504,7 @@ export class TestDataset {
 
 			this.journal.runQuery.resolves([[entityOne], { endCursor: 'MORE_RESULTS' }]);
 
-			await DatasetDAO.paginatedListContent(this.journal, this.dataset, pagination);
+			await DatasetDAO.paginatedListContent(this.journal, this.dataset, Config.LS_MODE.ALL, pagination);
 
 			Tx.checkTrue(this.journal.runQuery.calledWith(query), done);
 		});
