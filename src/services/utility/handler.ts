@@ -172,7 +172,7 @@ export class UtilityHandler {
 
         if (pagination) {
             // Retrieve paginated content list
-            return await DatasetDAO.paginatedListContent(journalClient, dataset, pagination);
+            return await DatasetDAO.paginatedListContent(journalClient, dataset, wmode, pagination);
         }
 
         // Retrieve complete content list

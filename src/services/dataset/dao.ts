@@ -121,12 +121,13 @@ export class DatasetDAO {
     }
 
     public static async paginatedListContent(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, pagination: PaginationModel):
+        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, wmode: string, pagination: PaginationModel):
         Promise<{ datasets: string[], nextPageCursor: string }> {
 
         const output = { datasets: [], nextPageCursor: null };
 
-        if (!pagination.cursor) {
+        if (wmode !== Config.LS_MODE.DATASETS && !pagination.cursor) {
+
             // Retrieve directories
             let query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
@@ -139,22 +140,25 @@ export class DatasetDAO {
                     (elem, index, self) => index === self.indexOf(elem) );
         }
 
-        // Retrieve datasets
-        let query = journalClient.createQuery(
-            Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-            .filter('path', dataset.path);
-        if (pagination.cursor) {
-            query = query.start(pagination.cursor);
-        }
-        if (pagination.limit) {
-            query = query.limit(pagination.limit);
-        }
+        if (wmode !== Config.LS_MODE.DIRS) {
 
-        const [entitiesds, info] = await journalClient.runQuery(query);
-        if (entitiesds.length !== 0) {
-            output.datasets = output.datasets.concat(entitiesds.map((item) => item.name));
-            if (pagination) {
-                output.nextPageCursor = info.endCursor;
+            // Retrieve datasets
+            let query = journalClient.createQuery(
+                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+                .filter('path', dataset.path);
+            if (pagination.cursor) {
+                query = query.start(pagination.cursor);
+            }
+            if (pagination.limit) {
+                query = query.limit(pagination.limit);
+            }
+
+            const [entitiesds, info] = await journalClient.runQuery(query);
+            if (entitiesds.length !== 0) {
+                output.datasets = output.datasets.concat(entitiesds.map((item) => item.name));
+                if (pagination) {
+                    output.nextPageCursor = info.endCursor;
+                }
             }
         }
         return output;
@@ -195,7 +199,7 @@ export class DatasetDAO {
         const results = { datasets: [], directories: [] };
 
         // Retrieve the content datasets
-        if (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DATASETS) {
+        if (wmode !== Config.LS_MODE.DIRS) {
             const query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .filter('path', dataset.path);
@@ -206,7 +210,7 @@ export class DatasetDAO {
         }
 
         // Extract all the directories structure and get the subdirectories for the required directory
-        if (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DIRS) {
+        if (wmode !== Config.LS_MODE.DATASETS) {
             const query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
