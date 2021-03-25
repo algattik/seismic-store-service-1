@@ -24,7 +24,6 @@ import { DatasetDAO } from '../../../src/services/dataset';
 import { SubProjectDAO, SubprojectGroups, SubProjectModel } from '../../../src/services/subproject';
 import { SubProjectHandler } from '../../../src/services/subproject/handler';
 import { SubProjectOP } from '../../../src/services/subproject/optype';
-import { SubProjectParser } from '../../../src/services/subproject/parser';
 import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
@@ -217,15 +216,21 @@ export class TestSubProjectSVC {
         });
 
         Tx.testExp(async (done: any) => {
-            // this.sandbox.stub(Datastore.prototype, 'createQuery').returns(this.query);
             this.journal.runQuery.resolves([[]] as never);
+            this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
+                "admins": ["admin@xyz.com"],
+                "viewers": ["viewer@xyz.com"]
+            })
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
         });
 
         Tx.testExp(async (done: any) => {
             const entityID = []; entityID[this.journal.KEY] = { name: 'name' };
-            // this.sandbox.stub(Datastore.prototype, 'createQuery').returns(this.query);
+            this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
+                "admins": ["admin@xyz.com"],
+                "viewers": ["viewer@xyz.com"]
+            })
             this.journal.runQuery.resolves([[entityID]] as never);
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
@@ -233,7 +238,10 @@ export class TestSubProjectSVC {
 
         Tx.testExp(async (done: any) => {
             const entityID = []; entityID[this.journal.KEY] = { name: 'name' };
-            // this.sandbox.stub(Datastore.prototype, 'createQuery').returns(this.query);
+            this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
+                "admins": ["admin@xyz.com"],
+                "viewers": ["viewer@xyz.com"]
+            })
             this.journal.runQuery.resolves([[{ name: 'name', tenant: 'tenant' }]] as never);
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
@@ -255,62 +263,6 @@ export class TestSubProjectSVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             await SubProjectHandler.handler(expReq, expRes, undefined);
             done();
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'REGIONAL';
-            expReq.body.storage_location = 'US-CENTRAL1';
-            expReq.headers.ltag = 'ltag';
-            expReq.params.subprojectid = 's';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'XXX';
-            expReq.body.storage_location = 'US-CENTRAL1';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'REGIONAL';
-            expReq.body.storage_location = 'XXX';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'MULTI_REGIONAL';
-            expReq.body.storage_location = 'US-CENTRAL1';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.admin = 'user@user.com';
-            expReq.body.storage_class = 'REGIONAL';
-            expReq.body.storage_location = 'EU';
-            expReq.headers.ltag = 'ltag';
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            try {
-                SubProjectParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
         });
 
         Tx.testExp(async (done: any) => {
@@ -354,9 +306,9 @@ export class TestSubProjectSVC {
                 randomBucketName() { return ''; }
             };
             this.sandbox.stub(StorageFactory, 'build').returns(storage);
-            this.sandbox.stub(SubprojectGroups, 'adminGroup').returns('admingroup');
-            this.sandbox.stub(SubprojectGroups, 'editorGroup').returns('editorgroup');
-            this.sandbox.stub(SubprojectGroups, 'viewerGroup').returns('viewergroup');
+            this.sandbox.stub(SubprojectGroups, 'serviceAdminGroup').returns('admingroup');
+            this.sandbox.stub(SubprojectGroups, 'serviceEditorGroup').returns('editorgroup');
+            this.sandbox.stub(SubprojectGroups, 'serviceViewerGroup').returns('viewergroup');
             this.sandbox.stub(AuthGroups, 'clearGroup').resolves();
 
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Delete);

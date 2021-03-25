@@ -16,7 +16,7 @@
 
 import sinon from 'sinon';
 import { AuthGroups } from '../../../src/auth';
-import { Config } from '../../../src/cloud';
+import { Config, google } from '../../../src/cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../../../src/cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../../../src/dataecosystem';
 import { Utils } from '../../../src/shared';
@@ -29,7 +29,10 @@ export class TestAuthGroups {
 
       describe(Tx.testInit('Groups authorization'), () => {
 
-         beforeEach(() => { this.spy = sinon.createSandbox(); });
+         beforeEach(() => {
+            this.spy = sinon.createSandbox();
+            Config.CLOUDPROVIDER = 'google'
+         });
          afterEach(() => { this.spy.restore(); });
 
          this.datalakeUserAdminGroupName();
@@ -101,7 +104,7 @@ export class TestAuthGroups {
          }];
          const nextCursor: string = 'nextCursor';
          listUsersInGroupStub.resolves({ members, nextCursor });
-         this.spy.stub(Utils, 'getEmailFromTokenPayload').returns('member-email-one');
+         this.spy.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('member-email-one');
          this.spy.stub(DESUtils, 'getDataPartitionID').returns('data-partition-a');
          const removeUserFromGroupStub = this.spy.stub(DESEntitlement, 'removeUserFromGroup');
          removeUserFromGroupStub.resolves();

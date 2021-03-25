@@ -271,7 +271,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(google.GCS.prototype, 'saveObject');
             this.sandbox.stub(Locker, 'acquireMutex').resolves('mutex');
             this.sandbox.stub(Locker, 'releaseMutex').resolves();
-            this.sandbox.stub(Utils, 'getEmailFromTokenPayload').returns('email')
+            this.sandbox.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('email')
             this.transaction.run.resolves();
             await UtilityHandler.handler(expReq, expRes, UtilityOP.CP);
             Tx.check200(expRes.statusCode, done);
@@ -297,7 +297,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(google.GCS.prototype, 'copy');
             this.sandbox.stub(google.GCS.prototype, 'saveObject');
             this.transaction.run.resolves();
-            this.sandbox.stub(Utils, 'getEmailFromTokenPayload').returns('email')
+            this.sandbox.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('email')
             await UtilityHandler.handler(expReq, expRes, UtilityOP.CP);
             Tx.check200(expRes.statusCode, done);
         });
