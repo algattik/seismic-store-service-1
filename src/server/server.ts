@@ -25,6 +25,9 @@ import { Feature, FeatureFlags } from '../shared';
 import fs from 'fs';
 import https from 'https';
 
+import swaggerUi from 'swagger-ui-express';
+import * as swaggerDocument from '../swagger/swagger.json';
+
 // -------------------------------------------------------------------
 // Seismic Store Service
 // -------------------------------------------------------------------
@@ -73,6 +76,7 @@ export class Server {
         this.app.disable('x-powered-by');
         this.app.use(cors(this.corsOptions));
         this.app.options('*', cors());
+        this.app.use('/seistore-svc/api/v3/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
         this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 
             // not required anymore - to verify
