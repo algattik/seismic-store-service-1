@@ -18,8 +18,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Config } from '../../cloud';
 import { TenantGroups } from '../tenant';
 
-
-
 export class SubprojectGroups {
 
     public static groupPrefix(tenantName: string, subprojectName: string): string {
@@ -57,6 +55,14 @@ export class SubprojectGroups {
 
     public static dataViewerGroup(tenant: string, subproject: string, esd: string): string {
         return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.viewer' + '@' + esd;
+    }
+
+    public static serviceGroupNameRegExp(tenant: string, subproject: string): RegExp {
+        return new RegExp(SubprojectGroups.groupPrefix(tenant, subproject));
+    }
+
+    public static dataGroupNameRegExp(tenant: string, subproject: string): RegExp {
+        return new RegExp(Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject);
     }
 
 }
