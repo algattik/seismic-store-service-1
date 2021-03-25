@@ -9251,7 +9251,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"email\": \"{{newuser}}\",\n\t\"path\": \"sd://{{tenant}}/{{subproject}}\",\n\t\"group\": \"editor\"\n}"
+							"raw": "{\n\t\"email\": \"{{newuser}}\",\n\t\"path\": \"sd://{{tenant}}/{{subproject}}\",\n\t\"group\": \"admin\"\n}"
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/user",
