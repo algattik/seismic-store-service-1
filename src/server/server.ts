@@ -26,7 +26,7 @@ import fs from 'fs';
 import https from 'https';
 
 import swaggerUi from 'swagger-ui-express';
-import * as swaggerDocument from '../swagger/swagger.json';
+import YAML from 'yamljs';
 
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -70,6 +70,8 @@ export class Server {
     }
 
     constructor() {
+        const swaggerDocument = YAML.load('./dist/swagger/swagger.yaml');
+
         this.app = express();
         this.app.use(bodyparser.urlencoded({ extended: false }));
         this.app.use(bodyparser.json());
