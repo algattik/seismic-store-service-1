@@ -18,7 +18,7 @@ import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth } from '../../auth';
 import { Config, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
 import { DESStorage, DESUtils } from '../../dataecosystem';
-import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
+import { Cache, Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
 import { SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
 import { DatasetDAO } from './dao';
@@ -26,18 +26,38 @@ import { Locker, IWriteLockSession } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
 import { v4 as uuidv4 } from 'uuid';
+import { DatasetModel } from '.';
 
 export class DatasetHandler {
 
+    private static _cache: Cache<DatasetModel>;
+
+
     // handler for the [ /dataset ] endpoints
     public static async handler(req: expRequest, res: expResponse, op: DatasetOP) {
+
+        if (!this._cache) {
+            this._cache = new Cache<DatasetModel>({
+                ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
+                PORT: Config.DES_REDIS_INSTANCE_PORT,
+                KEY: Config.DES_REDIS_INSTANCE_KEY,
+                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
+            }, 'dset')
+        }
+
         try {
 
             if (op === DatasetOP.CheckCTag) {
                 Response.writeOK(res, await this.checkCTag(req));
             } else {
 
-                const tenant = await TenantDAO.get(req.params.tenantid);
+                // const tenant = await TenantDAO.get(req.params.tenantid);
+                const tenant: any = {
+                    'esd': 'slb.p4d.cloud.slb-ds.com',
+                    'default_acls': 'users.datalake.admins@slb.p4d.cloud.slb-ds.com',
+                    'gcpid': 'evd-c4n-us-ssdp-firestore-01',
+                    'name': 'k8s'
+                }
 
                 if (op === DatasetOP.Register) {
                     Response.writeOK(res, await this.register(req, tenant));
@@ -101,136 +121,175 @@ export class DatasetHandler {
         // parse the user input and create the dataset metadata model
         const userInput = await DatasetParser.register(req);
         const dataset = userInput[0];
-        const seismicmeta = userInput[1];
-        let writeLockSession: IWriteLockSession;
+        // const seismicmeta = userInput[1];
+        // let writeLockSession: IWriteLockSession;
 
-        const journalClient = JournalFactoryTenantClient.get(tenant);
-        const transaction = journalClient.getTransaction();
+        // const journalClient = JournalFactoryTenantClient.get(tenant);
+        // const transaction = journalClient.getTransaction();
 
-        try {
+        // try {
 
-            await transaction.run();
+            // await transaction.run();
 
             // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
             // a mutex is applied on the resource on the shared cahce (removed at the end of the method)
-            writeLockSession = await Locker.createWriteLock(
-                dataset, req.headers['x-seismic-dms-lockid'] as string);
+            // writeLockSession = await Locker.createWriteLock(
+                // dataset, req.headers['x-seismic-dms-lockid'] as string);
 
             // if the call is idempotent return the dataset value
-            if(writeLockSession.idempotent) {
-                const alreadyRegisteredDataset =  (await DatasetDAO.get(journalClient, dataset))[0];
-                await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
-                return alreadyRegisteredDataset;
-            }
+            // if(writeLockSession.idempotent) {
+                // const alreadyRegisteredDataset =  (await DatasetDAO.get(journalClient, dataset))[0];
+                // await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
+                // return alreadyRegisteredDataset;
+            // }
 
-            const spkey = journalClient.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-                path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
-            });
+            // const spkey = journalClient.createKey({
+                // namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+                // path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
+            // });
 
             // get the subproject info
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+            // const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+
+            const subproject: any = {
+                'acls': {
+                    'admins': [
+                        'service.seistore.evd.k8s.blade.admin@slb.p4d.cloud.slb-ds.com',
+                        'service.seistore.evd.k8s.blade.editor@slb.p4d.cloud.slb-ds.com'
+                    ],
+                    'viewers': [
+                        'service.seistore.evd.k8s.blade.viewer@slb.p4d.cloud.slb-ds.com'
+                    ]
+                },
+                'admin': 'alichnewsky@slb.com',
+                'storage_class': 'REGIONAL',
+                'name': 'blade',
+                'ltag': 'slb-public-usa-seistore-1',
+                'gcs_bucket': 'ss-evd-33caqt4hhnejej3d',
+                'storage_location': 'US-CENTRAL1',
+                'tenant': 'k8s'
+            }
+
 
             // set gcs URL and LegaTag with the subproject information
             dataset.gcsurl = subproject.gcs_bucket + '/' + uuidv4()
             dataset.ltag = dataset.ltag || subproject.ltag;
 
-            // ensure that a legal tag exist
-            if (!dataset.ltag) {
-                throw Error.make(Error.Status.NOT_FOUND,
-                    'No legal-tag has been found for the subproject resource ' +
-                    Config.SDPATHPREFIX + dataset.tenant + '/' + dataset.subproject +
-                    ' the storage metdatada cannot be updated without a valida legal-tag');
-            }
+            // // ensure that a legal tag exist
+            // if (!dataset.ltag) {
+            //     throw Error.make(Error.Status.NOT_FOUND,
+            //         'No legal-tag has been found for the subproject resource ' +
+            //         Config.SDPATHPREFIX + dataset.tenant + '/' + dataset.subproject +
+            //         ' the storage metdatada cannot be updated without a valida legal-tag');
+            // }
 
-            // check if has read access, if legal tag is valid, and if the dataset does not already exist
-            await Promise.all([
-                FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
-                    Auth.isWriteAuthorized(req.headers.authorization,
-                        subproject.acls.admins,
-                        dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
-                FeatureFlags.isEnabled(Feature.LEGALTAG) ?
-                    dataset.ltag ? Auth.isLegalTagValid(
-                        req.headers.authorization, dataset.ltag,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined,
-            ]);
+            // // check if has read access, if legal tag is valid, and if the dataset does not already exist
+            // await Promise.all([
+            //     FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
+            //         Auth.isWriteAuthorized(req.headers.authorization,
+            //             subproject.acls.admins,
+            //             dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
+            //     FeatureFlags.isEnabled(Feature.LEGALTAG) ?
+            //         dataset.ltag ? Auth.isLegalTagValid(
+            //             req.headers.authorization, dataset.ltag,
+            //             tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined,
+            // ]);
 
-            // check if dataset already exist
-            if ((await DatasetDAO.get(journalClient, dataset))[0]) {
+            // // check if dataset already exist
+            // if ((await DatasetDAO.get(journalClient, dataset))[0]) {
+            //     throw (Error.make(Error.Status.ALREADY_EXISTS,
+            //         'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
+            //         dataset.subproject + dataset.path + dataset.name +
+            //         ' already exists'));
+            // }
+
+            const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + dataset.tenant + ':' +
+                dataset.subproject + ':' + dataset.path + ':' + dataset.name
+            const res = await this._cache.get(key);
+            if(res) {
                 throw (Error.make(Error.Status.ALREADY_EXISTS,
-                    'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
-                    dataset.subproject + dataset.path + dataset.name +
-                    ' already exists'));
+                'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
+                dataset.subproject + dataset.path + dataset.name + ' already exists'));
             }
 
-            // Populate the storage record with other mandatory field if not supplied.
-            if (seismicmeta) {
+//     DatastoreDAO._cache.set(
+//         datasetEntity.key.namespace + ':' + datasetEntity.key.path + ':' +
+//         (datasetEntity.data as DatasetModel).path + (datasetEntity.data as DatasetModel).name,
+//         (datasetEntity.data as DatasetModel))
+//     this.projectID = tenant ? tenant.gcpid : ConfigGoogle.SERVICE_CLOUD_PROJECT;
 
-                // if id is given, take it. otherwise generate
-                if (!seismicmeta.id) {
-                    dataset.seismicmeta_guid = DESUtils.getDataPartitionID(tenant.esd) + seismicmeta.recordType
-                        + Utils.makeID(16);
-                    seismicmeta.id = dataset.seismicmeta_guid;
-                } else {
-                    dataset.seismicmeta_guid = seismicmeta.id;
-                }
+            // // Populate the storage record with other mandatory field if not supplied.
+            // if (seismicmeta) {
 
-                // remove the recordType attribute as guid is now computed
-                delete seismicmeta.recordType;
+            //     // if id is given, take it. otherwise generate
+            //     if (!seismicmeta.id) {
+            //         dataset.seismicmeta_guid = DESUtils.getDataPartitionID(tenant.esd) + seismicmeta.recordType
+            //             + Utils.makeID(16);
+            //         seismicmeta.id = dataset.seismicmeta_guid;
+            //     } else {
+            //         dataset.seismicmeta_guid = seismicmeta.id;
+            //     }
 
-                // if acl is given, take it. otherwise generate
-                if (!seismicmeta.acl) {
-                    seismicmeta.acl = {
-                        owners: ['data.default.owners@' + tenant.esd],
-                        viewers: ['data.default.viewers@' + tenant.esd],
-                    };
-                }
+            //     // remove the recordType attribute as guid is now computed
+            //     delete seismicmeta.recordType;
 
-                // [TO REVIEW]
-                // wrt legaltags, there is a field 'otherRelevantDataCountries' that will have to considered
-                // for now force it to US, if does not exist. To review before complete PR
+            //     // if acl is given, take it. otherwise generate
+            //     if (!seismicmeta.acl) {
+            //         seismicmeta.acl = {
+            //             owners: ['data.default.owners@' + tenant.esd],
+            //             viewers: ['data.default.viewers@' + tenant.esd],
+            //         };
+            //     }
 
-                // this could be included as default in the request
-                if (!seismicmeta.legal) {
-                    seismicmeta.legal = {
-                        legaltags: [dataset.ltag],
-                        otherRelevantDataCountries: ['US'],
-                    };
-                }
+            //     // [TO REVIEW]
+            //     // wrt legaltags, there is a field 'otherRelevantDataCountries' that will have to considered
+            //     // for now force it to US, if does not exist. To review before complete PR
 
-            }
+            //     // this could be included as default in the request
+            //     if (!seismicmeta.legal) {
+            //         seismicmeta.legal = {
+            //             legaltags: [dataset.ltag],
+            //             otherRelevantDataCountries: ['US'],
+            //         };
+            //     }
+
+            // }
 
 
             // prepare the keys
-            const dskey = journalClient.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
-                path: [Config.DATASETS_KIND],
-            });
+            // const dskey = journalClient.createKey({
+            //     namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
+            //     path: [Config.DATASETS_KIND],
+            // });
 
-            // save the dataset entity
-            await Promise.all([
-                DatasetDAO.register(transaction, { key: dskey, data: dataset }),
-                (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
-                    DESStorage.insertRecord(req.headers.authorization,
-                        [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
-            ]);
+            // // save the dataset entity
+            // await Promise.all([
+            //     DatasetDAO.register(transaction, { key: dskey, data: dataset }),
+            //     (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
+            //         DESStorage.insertRecord(req.headers.authorization,
+            //             [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
+            // ]);
+
+            await this._cache.set(key, dataset);
 
             // attach the gcpid for fast check
-            dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+            // dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             // release the mutex and keep the lock session
-            await Locker.removeWriteLock(writeLockSession, true);
-            await transaction.commit();
+            // await Locker.removeWriteLock(writeLockSession, true);
+            // await transaction.commit();
+            dataset.sbit = 'W123123412341234';
+            dataset.sbit_count = 1;
             return dataset;
 
-        } catch (err) {
+        // } catch (err) {
 
             // release the mutex and unlock the resource
-            await Locker.removeWriteLock(writeLockSession);
-            await transaction.rollback();
-            throw (err);
+            // await Locker.removeWriteLock(writeLockSession);
+            // await transaction.rollback();
+            // throw (err);
 
-        }
+        // }
 
     }
 
@@ -336,72 +395,78 @@ export class DatasetHandler {
         // Retrieve the dataset path information
         const datasetIn = DatasetParser.delete(req);
 
-        // ensure is not write locked
-        if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
-            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIn))) {
-                throw (Error.make(Error.Status.LOCKED,
-                    'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
-                    datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
-            }
-        }
+        // // ensure is not write locked
+        // if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
+        //     if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIn))) {
+        //         throw (Error.make(Error.Status.LOCKED,
+        //             'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
+        //             datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
+        //     }
+        // }
 
         // init datastore client
-        const journalClient = JournalFactoryTenantClient.get(tenant);
+        // const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        // retrieve subproject meta info
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-            path: [Config.SUBPROJECTS_KIND, datasetIn.subproject],
-        });
-        const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIn.subproject, spkey);
+        // // retrieve subproject meta info
+        // const spkey = journalClient.createKey({
+        //     namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+        //     path: [Config.SUBPROJECTS_KIND, datasetIn.subproject],
+        // });
+        // const subproject = await SubProjectDAO.get(journalClient, tenant.name, datasetIn.subproject, spkey);
 
-        try {
+        // try {
 
-            // check authorization (write)
-            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                // Check authorizations
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    subproject.acls.admins,
-                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            }
+            // // check authorization (write)
+            // if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            //     // Check authorizations
+            //     await Auth.isWriteAuthorized(req.headers.authorization,
+            //         subproject.acls.admins,
+            //         tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            // }
 
             // Retrieve the dataset metadata
-            const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
+            // const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
+
+            const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIn.tenant + ':' +
+                datasetIn.subproject + ':' + datasetIn.path + ':' + datasetIn.name
+            const dataset = await this._cache.get(key);
 
             // if the dataset does not exist return ok
             if (!dataset) { return; }
 
-            // check if valid url
-            if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
-                throw (Error.make(Error.Status.UNKNOWN,
-                    'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
-                    datasetIn.subproject + datasetIn.path + datasetIn.name +
-                    ' cannot be deleted as it does not have a valid gcs url in the metadata catalogue.'));
-            }
+            // // check if valid url
+            // if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
+            //     throw (Error.make(Error.Status.UNKNOWN,
+            //         'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
+            //         datasetIn.subproject + datasetIn.path + datasetIn.name +
+            //         ' cannot be deleted as it does not have a valid gcs url in the metadata catalogue.'));
+            // }
 
             // Delete the dataset metadata (both firestore and DEStorage)
-            await Promise.all([
-                // delete the dataset entity
-                DatasetDAO.delete(journalClient, dataset),
-                // delete des storage record
-                (dataset.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
-                    DESStorage.deleteRecord(req.headers.authorization,
-                        dataset.seismicmeta_guid, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
-            ]);
+            // await Promise.all([
+            //     // delete the dataset entity
+            //     DatasetDAO.delete(journalClient, dataset),
+            //     // delete des storage record
+            //     (dataset.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
+            //         DESStorage.deleteRecord(req.headers.authorization,
+            //             dataset.seismicmeta_guid, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
+            // ]);
+
+            await this._cache.del(key);
 
             // Delete all phisical objects (not wait for full objects deletion)
-            const bucketName = dataset.gcsurl.split('/')[0];
-            const gcsprefix = dataset.gcsurl.split('/')[1];
-            const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-            await storage.deleteObjects(bucketName, gcsprefix);
+            // const bucketName = dataset.gcsurl.split('/')[0];
+            // const gcsprefix = dataset.gcsurl.split('/')[1];
+            // const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
+            // await storage.deleteObjects(bucketName, gcsprefix);
 
             // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
-            await Locker.unlock(journalClient, dataset)
+            // await Locker.unlock(journalClient, dataset)
 
-        } catch (err) {
-            throw (err);
+        // } catch (err) {
+            // throw (err);
 
-        }
+        // }
     }
 
     // patch the dataset metadata
@@ -412,13 +477,17 @@ export class DatasetHandler {
 
         // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const transaction = journalClient.getTransaction();
+        // const transaction = journalClient.getTransaction();
 
         // return immediately if it is a simple close wiht empty body (no patch to apply)
         if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
 
             // Retrieve the dataset metadata
-            const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
+            // const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
+
+            const keyx = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
+                datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
+            const dataset = await this._cache.get(keyx);
 
             // check if the dataset does not exist
             if (!dataset) {
@@ -427,42 +496,45 @@ export class DatasetHandler {
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
             }
 
-            // unlock the detaset
-            const unlockRes = await Locker.unlock(journalClient, datasetIN, wid)
-            dataset.sbit = unlockRes.id;
-            dataset.sbit_count = unlockRes.cnt;
+            // // unlock the detaset
+            // const unlockRes = await Locker.unlock(journalClient, datasetIN, wid)
+            // dataset.sbit = unlockRes.id;
+            // dataset.sbit_count = unlockRes.cnt;
 
             return dataset;
         }
 
         // unlock the detaset for close opeartion (and patch)
-        const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
+        // const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
 
-        // ensure nobody got the lock between the close and the mutext acquistion
-        if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
-            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
-                throw (Error.make(Error.Status.LOCKED,
-                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
-            }
-        }
+        // // ensure nobody got the lock between the close and the mutext acquistion
+        // if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
+        //     if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
+        //         throw (Error.make(Error.Status.LOCKED,
+        //             'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+        //             datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
+        //     }
+        // }
 
-        try {
+        // try {
 
-            await transaction.run();
+            // await transaction.run();
 
-            const spkey = journalClient.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-                path: [Config.SUBPROJECTS_KIND, datasetIN.subproject]
-            });
+            // const spkey = journalClient.createKey({
+            //     namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
+            //     path: [Config.SUBPROJECTS_KIND, datasetIN.subproject]
+            // });
 
             // Retrieve subproject information
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+            // const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
 
             // Retrieve the dataset metadata
-            const results = await DatasetDAO.get(journalClient, datasetIN);
-            const datasetOUT = results[0];
-            const datasetOUTKey = results[1];
+            // const results = await DatasetDAO.get(journalClient, datasetIN);
+            const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
+                datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
+            const datasetOUT = await this._cache.get(key);
+            // const datasetOUT = results[0];
+            // const datasetOUTKey = results[1];
 
             // check if the dataset does not exist
             if (!datasetOUT) {
@@ -471,154 +543,156 @@ export class DatasetHandler {
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
             }
 
-            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                // Check authorizations
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    subproject.acls.admins,
-                    datasetIN.tenant, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            }
+            // if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            //     // Check authorizations
+            //     await Auth.isWriteAuthorized(req.headers.authorization,
+            //         subproject.acls.admins,
+            //         datasetIN.tenant, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            // }
 
             // patch datasetOUT with datasetIN
-            if (datasetIN.metadata) { datasetOUT.metadata = datasetIN.metadata; }
+            // if (datasetIN.metadata) { datasetOUT.metadata = datasetIN.metadata; }
             if (datasetIN.filemetadata) { datasetOUT.filemetadata = datasetIN.filemetadata; }
             if (datasetIN.last_modified_date) { datasetOUT.last_modified_date = datasetIN.last_modified_date; }
-            if (datasetIN.readonly !== undefined) { datasetOUT.readonly = datasetIN.readonly; }
-            if (datasetIN.gtags !== undefined && datasetIN.gtags.length > 0) { datasetOUT.gtags = datasetIN.gtags; }
-            if (datasetIN.ltag) {
-                if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
-                    await Auth.isLegalTagValid(
-                        req.headers.authorization, datasetIN.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                }
-                datasetOUT.ltag = datasetIN.ltag;
-            }
+            // if (datasetIN.readonly !== undefined) { datasetOUT.readonly = datasetIN.readonly; }
+            // if (datasetIN.gtags !== undefined && datasetIN.gtags.length > 0) { datasetOUT.gtags = datasetIN.gtags; }
+            // if (datasetIN.ltag) {
+            //     if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
+            //         await Auth.isLegalTagValid(
+            //             req.headers.authorization, datasetIN.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            //     }
+            //     datasetOUT.ltag = datasetIN.ltag;
+            // }
 
-            if (newName) {
-                if (newName === datasetIN.name) {
-                    throw (Error.make(Error.Status.ALREADY_EXISTS,
-                        'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                        datasetIN.subproject + datasetIN.path + newName + ' already exists'));
-                }
+            // if (newName) {
+            //     if (newName === datasetIN.name) {
+            //         throw (Error.make(Error.Status.ALREADY_EXISTS,
+            //             'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+            //             datasetIN.subproject + datasetIN.path + newName + ' already exists'));
+            //     }
 
-                datasetIN.name = newName;
+            //     datasetIN.name = newName;
 
-                const renameResults = await DatasetDAO.get(journalClient, datasetIN);
-                if (renameResults[1] !== undefined) {
-                    throw (Error.make(Error.Status.ALREADY_EXISTS,
-                        'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                        datasetIN.subproject + datasetIN.path + newName + ' already exists'));
+            //     const renameResults = await DatasetDAO.get(journalClient, datasetIN);
+            //     if (renameResults[1] !== undefined) {
+            //         throw (Error.make(Error.Status.ALREADY_EXISTS,
+            //             'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+            //             datasetIN.subproject + datasetIN.path + newName + ' already exists'));
 
-                }
+            //     }
 
-                datasetOUT.name = newName;
-            }
+            //     datasetOUT.name = newName;
+            // }
 
-            // Populate the storage record with other mandatory field if not supplied.
-            let seismicmetaDE: any;
-            if (seismicmeta) {
+            // // Populate the storage record with other mandatory field if not supplied.
+            // let seismicmetaDE: any;
+            // if (seismicmeta) {
 
-                // return the seismicmetadata (if exists)
-                if (datasetOUT.seismicmeta_guid) {
+            //     // return the seismicmetadata (if exists)
+            //     if (datasetOUT.seismicmeta_guid) {
 
-                    // seismicmeta is already there, need to patch
-                    seismicmetaDE = await DESStorage.getRecord(req.headers.authorization, datasetOUT.seismicmeta_guid,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            //         // seismicmeta is already there, need to patch
+            //         seismicmetaDE = await DESStorage.getRecord(
+            //             req.headers.authorization, datasetOUT.seismicmeta_guid,
+            //             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
-                    for (const key of Object.keys(seismicmeta)) {
-                        seismicmetaDE[key] = seismicmeta[key];
-                    }
+            //         for (const key of Object.keys(seismicmeta)) {
+            //             seismicmetaDE[key] = seismicmeta[key];
+            //         }
 
-                    datasetOUT.seismicmeta_guid = seismicmeta.id;
+            //         datasetOUT.seismicmeta_guid = seismicmeta.id;
 
-                } else {
+            //     } else {
 
-                    // mandatory field required if a new seismic metadata record is ingested (kind/data required)
-                    Params.checkString(seismicmeta.kind, 'kind');
-                    Params.checkObject(seismicmeta.data, 'data');
+            //         // mandatory field required if a new seismic metadata record is ingested (kind/data required)
+            //         Params.checkString(seismicmeta.kind, 'kind');
+            //         Params.checkObject(seismicmeta.data, 'data');
 
-                    // {data-parititon(delfi)|auhtority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
-                    if((seismicmeta.kind as string).split(':').length !== 4) {
-                        throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
-                    }
+            //         // {data-parititon(delfi)|auhtority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
+            //         if((seismicmeta.kind as string).split(':').length !== 4) {
+            //             throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
+            //         }
 
-                    // (recortdType == entityType)
-                    seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
+            //         // (recortdType == entityType)
+            //         seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
 
-                    // if id is given, take it. otherwise generate
-                    if (!seismicmeta.id) {
-                        datasetOUT.seismicmeta_guid = DESUtils.getDataPartitionID(tenant.esd) + seismicmeta.recordType
-                            + Utils.makeID(16);
-                        seismicmeta.id = datasetOUT.seismicmeta_guid;
-                    } else {
-                        datasetOUT.seismicmeta_guid = seismicmeta.id;
-                    }
+            //         // if id is given, take it. otherwise generate
+            //         if (!seismicmeta.id) {
+            //             datasetOUT.seismicmeta_guid = DESUtils.getDataPartitionID(tenant.esd)
+            //                 + seismicmeta.recordType + Utils.makeID(16);
+            //             seismicmeta.id = datasetOUT.seismicmeta_guid;
+            //         } else {
+            //             datasetOUT.seismicmeta_guid = seismicmeta.id;
+            //         }
 
-                    // remove the recordType attribute as guid is now computed
-                    delete seismicmeta.recordType;
+            //         // remove the recordType attribute as guid is now computed
+            //         delete seismicmeta.recordType;
 
-                    // if acl is given, take it. otherwise generate
-                    if (!seismicmeta.acl) {
-                        seismicmeta.acl = {
-                            owners: ['data.default.owners@' + tenant.esd],
-                            viewers: ['data.default.viewers@' + tenant.esd],
-                        };
-                    }
+            //         // if acl is given, take it. otherwise generate
+            //         if (!seismicmeta.acl) {
+            //             seismicmeta.acl = {
+            //                 owners: ['data.default.owners@' + tenant.esd],
+            //                 viewers: ['data.default.viewers@' + tenant.esd],
+            //             };
+            //         }
 
-                    // [TO REVIEW]
-                    // wrt legaltags, there is a field 'otherRelevantDataCountries' that will have to considered
-                    // for now force it to US, if does not exist. To review before complete PR
+            //         // [TO REVIEW]
+            //         // wrt legaltags, there is a field 'otherRelevantDataCountries' that will have to considered
+            //         // for now force it to US, if does not exist. To review before complete PR
 
-                    // this could be included as default in the request
-                    if (!seismicmeta.legal) {
+            //         // this could be included as default in the request
+            //         if (!seismicmeta.legal) {
 
-                        // ensure that a legal tag exist
-                        if (!datasetOUT.ltag) {
+            //             // ensure that a legal tag exist
+            //             if (!datasetOUT.ltag) {
 
-                            throw (!subproject.ltag ?
-                                Error.make(Error.Status.NOT_FOUND,
-                                    'No legal-tag has been found for the subproject resource ' +
-                                    Config.SDPATHPREFIX + datasetIN.tenant + '/' + datasetIN.subproject +
-                                    ' the storage metdatada cannot be updated without a valida legal-tag') :
-                                Error.make(Error.Status.NOT_FOUND,
-                                    'No legal-tag has been found on the dataset resource ' +
-                                    Config.SDPATHPREFIX + datasetIN.tenant + '/' + datasetIN.subproject +
-                                    datasetIN.path + datasetIN.name +
-                                    ' the storage metdatada cannot be updated without a valida legal-tag'));
-                        }
+            //                 throw (!subproject.ltag ?
+            //                     Error.make(Error.Status.NOT_FOUND,
+            //                         'No legal-tag has been found for the subproject resource ' +
+            //                         Config.SDPATHPREFIX + datasetIN.tenant + '/' + datasetIN.subproject +
+            //                         ' the storage metdatada cannot be updated without a valida legal-tag') :
+            //                     Error.make(Error.Status.NOT_FOUND,
+            //                         'No legal-tag has been found on the dataset resource ' +
+            //                         Config.SDPATHPREFIX + datasetIN.tenant + '/' + datasetIN.subproject +
+            //                         datasetIN.path + datasetIN.name +
+            //                         ' the storage metdatada cannot be updated without a valida legal-tag'));
+            //             }
 
-                        // insert legal tag
-                        seismicmeta.legal = {
-                            legaltags: [datasetOUT.ltag],
-                            otherRelevantDataCountries: ['US'],
-                        };
-                    }
+            //             // insert legal tag
+            //             seismicmeta.legal = {
+            //                 legaltags: [datasetOUT.ltag],
+            //                 otherRelevantDataCountries: ['US'],
+            //             };
+            //         }
 
-                    seismicmetaDE = seismicmeta;
-                }
-            }
+            //         seismicmetaDE = seismicmeta;
+            //     }
+            // }
 
-            await Promise.all([
-                DatasetDAO.update(transaction, datasetOUT, datasetOUTKey),
-                (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
-                    ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
+            // await Promise.all([
+            //     DatasetDAO.update(transaction, datasetOUT, datasetOUTKey),
+            //     (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
+            //         ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
+            //             tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
 
-
+            // await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey)
+            await this._cache.set(key, datasetOUT);
             // attach lock information
-            if (wid) {
-                datasetOUT.sbit = lockres.id;
-                datasetOUT.sbit_count = lockres.cnt;
-            }
-            await transaction.commit();
+            // if (wid) {
+                // datasetOUT.sbit = lockres.id;
+                // datasetOUT.sbit_count = lockres.cnt;
+            // }
+            // await transaction.commit();
 
             // attach the gcpid for fast check
-            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+            // datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             return datasetOUT;
 
-        } catch (err) {
-            await transaction.rollback();
-            throw (err);
-        }
+        // } catch (err) {
+        //     await transaction.rollback();
+        //     throw (err);
+        // }
     }
 
     // lock the dataset metadata for opening
