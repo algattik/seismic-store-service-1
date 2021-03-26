@@ -26,7 +26,7 @@ import { AuthGroups } from './groups';
 export class Auth {
 
     private static _cache: Cache<boolean>;
-    private static _cacheItemTTL = 60; // cache item expire after
+    private static _cacheItemTTL = 3600; // cache item expire after
 
     public static async isUserRegistered(userToken: string, esd: string, appkey: string) {
         await AuthGroups.getUserGroups(userToken, esd, appkey);
