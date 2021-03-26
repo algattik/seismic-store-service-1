@@ -273,7 +273,7 @@ export class DatasetHandler {
             await this._cache.set(key, dataset);
 
             // attach the gcpid for fast check
-            // dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+            dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             // release the mutex and keep the lock session
             // await Locker.removeWriteLock(writeLockSession, true);
@@ -685,7 +685,7 @@ export class DatasetHandler {
             // await transaction.commit();
 
             // attach the gcpid for fast check
-            // datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+            datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
             return datasetOUT;
 
