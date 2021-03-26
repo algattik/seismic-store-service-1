@@ -19,6 +19,7 @@ import { Request as expRequest, Response as expResponse } from 'express';
 import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, StorageFactory } from '../../../src/cloud';
+import { ISeistore, SeistoreFactory } from '../../../src/cloud/seistore';
 import { IStorage } from '../../../src/cloud/storage';
 import { DatasetDAO } from '../../../src/services/dataset';
 import { SubProjectDAO, SubprojectGroups, SubProjectModel } from '../../../src/services/subproject';
@@ -27,7 +28,6 @@ import { SubProjectOP } from '../../../src/services/subproject/optype';
 import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
-
 
 export class TestSubProjectSVC {
 
@@ -42,7 +42,19 @@ export class TestSubProjectSVC {
                 viewers: ['vieweres-b@domain.com']
             },
             ltag: 'legalTag'
-        } as SubProjectModel
+        } as SubProjectModel;
+
+        this.mockSeistore = {
+            checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void {
+                return;
+            },
+            async getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string> {
+                return;
+            },
+            async pushSubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
+                return 'messageID';
+            }
+        };
 
         TestSubProjectSVC.testDb = new Datastore({ projectId: 'GPRJ' });
         // this.query = this.journal.createQuery('namespace', 'kind');
@@ -76,7 +88,8 @@ export class TestSubProjectSVC {
 
     private static journal: any;
     private static testDb: Datastore;
-    private static testSubProject: SubProjectModel
+    private static testSubProject: SubProjectModel;
+    private static mockSeistore: ISeistore;
     // private static query: any;
 
     private static create() {
@@ -84,6 +97,7 @@ export class TestSubProjectSVC {
         Tx.sectionInit('create');
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+
             expReq.body.admin = 'user@user.com';
             expReq.body.storage_class = 'REGIONAL';
             expReq.body.storage_location = 'US-CENTRAL1';
@@ -99,6 +113,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(AuthGroups, 'addUserToGroup').resolves();
             this.sandbox.stub(google.GCS.prototype, 'bucketExists').resolves(false);
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
+            this.sandbox.stub(SeistoreFactory, 'build').returns(this.mockSeistore);
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Create);
             Tx.check200(expRes.statusCode, done);
         });
@@ -113,6 +128,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(Auth, 'isLegalTagValid');
             this.sandbox.stub(SubProjectDAO, 'exist').resolves({} as any);
             this.sandbox.stub(Response, 'writeError');
+            this.sandbox.stub(SeistoreFactory, 'build').returns(this.mockSeistore);
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Create);
             done();
         });
@@ -138,7 +154,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isUserAuthorized');
             this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
-            this.sandbox.stub(Auth, 'isLegalTagValid')
+            this.sandbox.stub(Auth, 'isLegalTagValid');
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Get);
             Tx.check200(expRes.statusCode, done);
@@ -147,7 +163,7 @@ export class TestSubProjectSVC {
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isUserAuthorized');
-            this.sandbox.stub(Auth, 'isLegalTagValid')
+            this.sandbox.stub(Auth, 'isLegalTagValid');
             this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Get);
@@ -220,7 +236,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
                 "admins": ["admin@xyz.com"],
                 "viewers": ["viewer@xyz.com"]
-            })
+            });
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
         });
@@ -230,7 +246,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
                 "admins": ["admin@xyz.com"],
                 "viewers": ["viewer@xyz.com"]
-            })
+            });
             this.journal.runQuery.resolves([[entityID]] as never);
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
@@ -241,7 +257,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
                 "admins": ["admin@xyz.com"],
                 "viewers": ["viewer@xyz.com"]
-            })
+            });
             this.journal.runQuery.resolves([[{ name: 'name', tenant: 'tenant' }]] as never);
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
@@ -254,7 +270,8 @@ export class TestSubProjectSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(true);
-            this.sandbox.stub(Auth, 'isLegalTagValid')
+            this.sandbox.stub(Auth, 'isLegalTagValid');
+            this.sandbox.stub(SeistoreFactory, 'build').returns(this.mockSeistore);
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Create);
             Tx.check403(expRes.statusCode, done);
         });
