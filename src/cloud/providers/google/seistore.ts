@@ -115,7 +115,7 @@ export class GoogleSeistore extends AbstractSeistore {
         return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
     }
 
-    public async pushSubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
+    public async notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
 
         const data = JSON.stringify({
             subproject,

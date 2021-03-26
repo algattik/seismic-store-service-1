@@ -30,8 +30,8 @@ export class AzureSeistore extends AbstractSeistore {
         const email = payload.email === Config.IMP_SERVICE_ACCOUNT_SIGNER ? payload.obo : payload.email;
         return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
     }
-    public async pushSubprojectCreationStatus(
+    public async notifySubprojectCreationStatus(
         subproject: SubProjectModel, status: string): Promise<string> {
-        return 'true';
+        return 'Not Implemented';
     }
 }

@@ -199,7 +199,7 @@ export class SubProjectHandler {
             }
         }
 
-        const status = await SeistoreFactory.build(Config.CLOUDPROVIDER).pushSubprojectCreationStatus(subproject, 'created');
+        const status = await SeistoreFactory.build(Config.CLOUDPROVIDER).notifySubprojectCreationStatus(subproject, 'created');
 
         if (!status) {
             LoggerFactory.build(Config.CLOUDPROVIDER)

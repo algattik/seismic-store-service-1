@@ -51,7 +51,7 @@ export class TestSubProjectSVC {
             async getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string> {
                 return;
             },
-            async pushSubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
+            async notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
                 return 'messageID';
             }
         };

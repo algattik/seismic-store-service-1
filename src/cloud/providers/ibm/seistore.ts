@@ -18,9 +18,9 @@ export class IbmSeistore extends AbstractSeistore {
         return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
     }
 
-    public async pushSubprojectCreationStatus(
+    public async notifySubprojectCreationStatus(
         subproject: SubProjectModel, status: string): Promise<string> {
-        return 'true';
+        return 'Not Implemented';
     }
 
 }
