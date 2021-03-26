@@ -14,8 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
-import { Config, ConfigFactory } from '../../config';
 import fs from 'fs';
+import { Config, ConfigFactory } from '../../config';
 
 @ConfigFactory.register('google')
 export class ConfigGoogle extends Config {
@@ -51,6 +51,9 @@ export class ConfigGoogle extends Config {
     // max len for a group name in DE
     public static DES_GROUP_CHAR_LIMIT = 128;
 
+    // pubsub topic
+    public static PUBSUBTOPIC: string;
+
     public async init(): Promise<void> {
 
         // load des target audiance for service to service communication
@@ -69,6 +72,8 @@ export class ConfigGoogle extends Config {
             ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY = data.private_key;
             ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY_ID = data.private_key_id;
         }
+
+        ConfigGoogle.PUBSUBTOPIC = process.env.PUBSUBTOPIC !== undefined ? process.env.PUBSUBTOPIC : 'subproject-operations';
 
         await Config.initServiceConfiguration({
             SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
@@ -107,7 +112,7 @@ export class ConfigGoogle extends Config {
             FEATURE_FLAG_LOGGING: process.env.FEATURE_FLAG_LOGGING !== undefined ?
                 process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
             FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
-                process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true
+                process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
         });
 
     }

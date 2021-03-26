@@ -17,7 +17,7 @@
 import { Request as expRequest, Response as expResponse } from 'express';
 import { SubProjectModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
-import { Config, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
+import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
@@ -119,13 +119,13 @@ export class SubProjectHandler {
                 ' already exists in the tenant project ' + subproject.tenant));
         }
 
-        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd)
-        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd)
+        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd);
+        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd);
 
-        const adminGroupName = adminGroup.split('@')[0]
-        const viewerGroupName = viewerGroup.split('@')[0]
+        const adminGroupName = adminGroup.split('@')[0];
+        const viewerGroupName = viewerGroup.split('@')[0];
 
-        SubProjectHandler.validateGroupNamesLength(adminGroupName, viewerGroupName, subproject)
+        SubProjectHandler.validateGroupNamesLength(adminGroupName, viewerGroupName, subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if groups exist
@@ -167,9 +167,9 @@ export class SubProjectHandler {
         subproject.gcs_bucket = await this.getBucketName(tenant);
 
         subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins.concat([adminGroup])
-            .filter((group, index, self) => self.indexOf(group) === index) : [adminGroup]
+            .filter((group, index, self) => self.indexOf(group) === index) : [adminGroup];
         subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers.concat([viewerGroup])
-            .filter((group, index, self) => self.indexOf(group) === index) : [viewerGroup]
+            .filter((group, index, self) => self.indexOf(group) === index) : [viewerGroup];
 
         // Create the GCS bucket resource
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
@@ -197,6 +197,13 @@ export class SubProjectHandler {
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
 
             }
+        }
+
+        const status = await SeistoreFactory.build(Config.CLOUDPROVIDER).notifySubprojectCreationStatus(subproject, 'created');
+
+        if (!status) {
+            LoggerFactory.build(Config.CLOUDPROVIDER)
+                .error('Unable to publish creation status for subproject ' + subproject.name);
         }
 
         return subproject;
@@ -269,19 +276,19 @@ export class SubProjectHandler {
         ]);
 
         const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
-        const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex))
+        const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex));
 
         const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
-        const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex))
-        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex))
-        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups)
+        const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
+        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            for(const group of subprojectServiceGroups) {
+            for (const group of subprojectServiceGroups) {
                 await AuthGroups.clearGroup(
                     req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
-            for(const group of subprojectDataGroups) {
+            for (const group of subprojectDataGroups) {
                 await AuthGroups.clearGroup(
                     req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
@@ -321,18 +328,18 @@ export class SubProjectHandler {
         }
 
         if (parsedUserInput.acls) {
-            subproject.acls = parsedUserInput.acls
+            subproject.acls = parsedUserInput.acls;
         }
 
 
         const adminGroups = [SubprojectGroups.serviceAdminGroup(tenant.name, subproject.name, tenant.esd),
-        SubprojectGroups.serviceEditorGroup(tenant.name, subproject.name, tenant.esd)]
-        const viewerGroups = [SubprojectGroups.serviceViewerGroup(tenant.name, subproject.name, tenant.esd)]
+        SubprojectGroups.serviceEditorGroup(tenant.name, subproject.name, tenant.esd)];
+        const viewerGroups = [SubprojectGroups.serviceViewerGroup(tenant.name, subproject.name, tenant.esd)];
 
         subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins
-            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups
+            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups;
         subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers
-            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups
+            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups;
 
 
         // update the legal tag (check if the new one is valid)
@@ -355,7 +362,7 @@ export class SubProjectHandler {
                         const output = await DatasetDAO.listDatasets(
                             journalClient, subproject.tenant, subproject.name, pagination);
                         const datasets = output.datasets.filter(dataset => {
-                            return dataset.data.ltag === orignalSubprojectLtag
+                            return dataset.data.ltag === orignalSubprojectLtag;
                         });
                         for (const dataset of datasets) {
                             dataset.data.ltag = parsedUserInput.ltag;
@@ -375,7 +382,7 @@ export class SubProjectHandler {
             await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
         }
 
-        return subproject
+        return subproject;
 
     }
 
@@ -444,7 +451,7 @@ export class SubProjectHandler {
                 '. The subproject name must not more than ' + Math.abs(allowedSubprojLen) + ' characters'));
         }
 
-        return true
+        return true;
 
     }
 
