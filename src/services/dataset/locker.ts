@@ -19,7 +19,7 @@ import { DatasetModel } from '.';
 import { IJournal, IJournalTransaction } from '../../cloud';
 import { Config } from '../../cloud';
 import { Error, Utils } from '../../shared';
-import { DatasetDAO } from './dao';
+// import { DatasetDAO } from './dao';
 
 // lock interface (this is the cache entry)
 interface ILock { id: string; cnt: number; }
@@ -237,19 +237,19 @@ export class Locker {
         if (!lockValue) {
 
             // check if the dataset is invalid
-            const datasetOut = await DatasetDAO.get(journalClient, dataset);
-            if (datasetOut[0].sbit) { // write-locked (invalid file)
-                await this.releaseMutex(cachelock, datasetPath);
-                throw (Error.make(Error.Status.BAD_REQUEST,
-                    'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-            }
+            // const datasetOut = await DatasetDAO.get(journalClient, dataset);
+            // if (datasetOut[0].sbit) { // write-locked (invalid file)
+                // await this.releaseMutex(cachelock, datasetPath);
+                // throw (Error.make(Error.Status.BAD_REQUEST,
+                    // 'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
+            // }
 
             // create a new write lock and save in cache and journalClient
             const lockID = idempotentWriteLock || this.generateWriteLockID();
             await Locker.set(datasetPath, lockID, this.EXP_WRITELOCK);
-            datasetOut[0].sbit = lockID;
-            datasetOut[0].sbit_count = 1;
-            await DatasetDAO.update(journalClient, datasetOut[0], datasetOut[1]);
+            // datasetOut[0].sbit = lockID;
+            // datasetOut[0].sbit_count = 1;
+            // await DatasetDAO.update(journalClient, datasetOut[0], datasetOut[1]);
 
             await this.releaseMutex(cachelock, datasetPath);
             return { id: lockID, cnt: 1 };
@@ -341,12 +341,12 @@ export class Locker {
         if (!lockValue) {
 
             // check if the dataset is invalid
-            const datasetOut = (await DatasetDAO.get(journalClient, dataset))[0];
-            if (datasetOut.sbit) { // write-locked (invalid file)
-                await this.releaseMutex(cachelock, datasetPath);
-                throw (Error.make(Error.Status.BAD_REQUEST,
-                    'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-            }
+            // const datasetOut = (await DatasetDAO.get(journalClient, dataset))[0];
+            // if (datasetOut.sbit) { // write-locked (invalid file)
+                // await this.releaseMutex(cachelock, datasetPath);
+                // throw (Error.make(Error.Status.BAD_REQUEST,
+                    // 'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
+            // }
 
             // create a new read lock session and a new main read lock
             const lockID = idempotentReadLock || this.generateReadLockID();
@@ -402,12 +402,12 @@ export class Locker {
                 }
 
                 // unlock in datastore
-                const datasetUpdate = (await DatasetDAO.get(journalClient, dataset));
-                if (datasetUpdate[0]) {
-                    datasetUpdate[0].sbit = null;
-                    datasetUpdate[0].sbit_count = 0;
-                    await DatasetDAO.update(journalClient, datasetUpdate[0], datasetUpdate[1]);
-                }
+                // const datasetUpdate = (await DatasetDAO.get(journalClient, dataset));
+                // if (datasetUpdate[0]) {
+                //     datasetUpdate[0].sbit = null;
+                //     datasetUpdate[0].sbit_count = 0;
+                //     await DatasetDAO.update(journalClient, datasetUpdate[0], datasetUpdate[1]);
+                // }
 
                 // unlock in cache
                 await Locker.del(datasetPath);
@@ -426,13 +426,13 @@ export class Locker {
             if (lockValue) {
 
                 // if write locked remove lock from journalClient
-                if (this.isWriteLock(lockValue)) {
-                    const datasetTmp1 = (await DatasetDAO.get(journalClient, dataset));
-                    if (datasetTmp1[0]) {
-                        datasetTmp1[0].sbit = null;
-                        await DatasetDAO.update(journalClient, datasetTmp1[0], datasetTmp1[1]);
-                    }
-                }
+                // if (this.isWriteLock(lockValue)) {
+                //     const datasetTmp1 = (await DatasetDAO.get(journalClient, dataset));
+                //     if (datasetTmp1[0]) {
+                //         datasetTmp1[0].sbit = null;
+                //         await DatasetDAO.update(journalClient, datasetTmp1[0], datasetTmp1[1]);
+                //     }
+                // }
 
                 // if read locked remove all session read locks
                 if (!this.isWriteLock(lockValue)) {
@@ -449,14 +449,14 @@ export class Locker {
             }
 
             // check if invalid
-            if (!skipInvalid) {
-                const datasetTmp2 = (await DatasetDAO.get(journalClient, dataset))[0];
-                if (datasetTmp2 && datasetTmp2.sbit) {
-                    await this.releaseMutex(cachelock, datasetPath);
-                    throw (Error.make(Error.Status.NOT_FOUND,
-                        'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-                }
-            }
+            // if (!skipInvalid) {
+            //     const datasetTmp2 = (await DatasetDAO.get(journalClient, dataset))[0];
+            //     if (datasetTmp2 && datasetTmp2.sbit) {
+            //         await this.releaseMutex(cachelock, datasetPath);
+            //         throw (Error.make(Error.Status.NOT_FOUND,
+            //             'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
+            //     }
+            // }
 
             // dataset already unlocked
             await this.releaseMutex(cachelock, datasetPath);
@@ -500,16 +500,16 @@ export class Locker {
         // ------------------------------------------------
 
         // if dataset not lock in cache
-        const datasetOut = (await DatasetDAO.get(journalClient, dataset))[0];
+        // const datasetOut = (await DatasetDAO.get(journalClient, dataset))[0];
 
         // case 1: invalid dataset
-        if (!skipInvalid) {
-            if (datasetOut.sbit) {
-                await this.releaseMutex(cachelock, datasetPath);
-                throw (Error.make(Error.Status.NOT_FOUND,
-                    'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-            }
-        }
+        // if (!skipInvalid) {
+            // if (datasetOut.sbit) {
+                // await this.releaseMutex(cachelock, datasetPath);
+                // throw (Error.make(Error.Status.NOT_FOUND,
+                    // 'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
+            // }
+        // }
 
         // case 2: dataset already unlocked
         await this.releaseMutex(cachelock, datasetPath);
