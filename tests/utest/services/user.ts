@@ -250,7 +250,7 @@ export class TestUserSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx/spx';
-            const prefix = SubprojectGroups.groupPrefix('tnx', 'spx');
+            const prefix = SubprojectGroups.serviceGroupPrefix('tnx', 'spx');
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves([{ name: prefix + '.abc' }] as any);
             this.spy.stub(SubProjectDAO, 'list').resolves([{ name: 'spx' } as SubProjectModel] as any)
@@ -260,7 +260,7 @@ export class TestUserSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx/spx';
-            const prefix = SubprojectGroups.groupPrefix('tnx', 'spx');
+            const prefix = SubprojectGroups.serviceGroupPrefix('tnx', 'spx');
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves([{ name: prefix + '.abc.abc' }] as any);
             this.spy.stub(SubProjectDAO, 'list').resolves([{ name: 'spx' } as SubProjectModel] as any)

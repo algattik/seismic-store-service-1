@@ -36,8 +36,6 @@ export class TestAuthGroups {
          afterEach(() => { this.spy.restore(); });
 
          this.datalakeUserAdminGroupName();
-         this.seistoreServicePrefix();
-         this.systemAdminGroupName();
          this.createGroup();
          this.clearGroup();
          this.addUserToGroup();
@@ -61,22 +59,6 @@ export class TestAuthGroups {
 
       });
 
-   }
-
-   private static seistoreServicePrefix() {
-
-      Tx.sectionInit('get seistore service prefix ');
-      Tx.test((done: any) => {
-         Tx.checkTrue(AuthGroups.seistoreServicePrefix() === 'service.seistore.' + Config.SERVICE_ENV, done);
-      });
-   }
-
-   private static systemAdminGroupName() {
-
-      Tx.sectionInit('get system admin group name');
-      Tx.test((done: any) => {
-         Tx.checkTrue(AuthGroups.systemAdminGroupName() === 'service.seistore.' + Config.SERVICE_ENV + '.admin', done);
-      });
    }
 
    private static createGroup() {

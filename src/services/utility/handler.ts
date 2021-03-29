@@ -96,28 +96,28 @@ export class UtilityHandler {
         // list accessible tenants for sdpaths <sd://>
         if (!sdPath.tenant) {
             const tenants = await TenantDAO.getAll();
-
-            const uniqueTenants = tenants
+            const parititons = tenants
                 .map((t) => DESUtils.getDataPartitionID(t.esd))
                 .filter((val, index, self) => self.indexOf(val) === index);
 
             // Fetch all entitlements for each unique tenant that the user has access to
-            const entitlements = [];
-            for (const item of uniqueTenants) {
+            const entitlementCalls = [];
+            for (const partition of parititons) {
                 try {
-                    entitlements.push(await DESEntitlement.getUserGroups(
-                        req.headers.authorization, item, req[Config.DE_FORWARD_APPKEY]));
+                    entitlementCalls.push(await DESEntitlement.getUserGroups(
+                        req.headers.authorization, partition, req[Config.DE_FORWARD_APPKEY]));
                 } catch (error) { continue; }
             }
 
             // Filter tenants which the user does not belong
-            return entitlements
-                .map((entitlementList) => entitlementList
-                    .filter((el) => this.validateEntitlements(el) &&
-                        el.name.startsWith(AuthGroups.seistoreServicePrefix()))
-                    .map((el) => el.name.split('.')[3])
-                    .filter((item, pos, self) => self.indexOf(item) === pos))
-                .reduce((carry, entitlementList) => carry.concat(entitlementList), []);
+            let groups = entitlementCalls.reduce(
+                (carry, groupList) => carry.concat(groupList), []) as IDESEntitlementGroupModel[];
+            groups = groups.filter(group => this.validateEntitlements(group)); // only valid seismic-dsm group
+            const listTenants: string[] = groups.map((group) => {
+                return group.name.startsWith(Config.SERVICEGROUPS_PREFIX) ?
+                    group.name.split('.')[3] : group.name.split('.')[2]}); // tenant name
+            return listTenants.filter((item, pos, self) => self.indexOf(item) === pos); // make unique
+
         }
 
         // list the tenant subprojects for sdpaths <sd://tenant>
@@ -129,25 +129,28 @@ export class UtilityHandler {
         if (!sdPath.subproject) {
 
             const entitlementTenant = DESUtils.getDataPartitionID(tenant.esd);
-            const groups = await DESEntitlement.getUserGroups(
+            let groups = await DESEntitlement.getUserGroups(
                 req.headers.authorization, entitlementTenant, req[Config.DE_FORWARD_APPKEY]);
 
-            // List of all the subprojects including the ones which were previously deleted
-            const allSubProjects = groups.filter((el) => this.validateEntitlements(el) &&
-                el.name.startsWith(TenantGroups.groupPrefix(sdPath.tenant)))
-                .map((el) => el.name.split('.')[4])
-                .filter((item, pos, self) => self.indexOf(item) === pos);
+            // Filter tenants which the user does not belong
+            groups = groups.filter(group => this.validateEntitlements(group)); // only valid seismic-dsm group
+            groups = groups.filter(group => group.name.startsWith( // get both data and service groups
+                TenantGroups.serviceGroupPrefix(sdPath.tenant))).concat(
+                        groups.filter(group => group.name.startsWith(
+                            TenantGroups.dataGroupPrefix(sdPath.tenant))));
+            let listSubprojects: string[] = groups.map((group) => { // retrieve the subproject name
+                return group.name.startsWith(Config.SERVICEGROUPS_PREFIX) ?
+                    group.name.split('.')[4] : group.name.split('.')[3]})
+            listSubprojects = listSubprojects.filter((item, pos, self) => self.indexOf(item) === pos);
 
             // Registered subprojects in the journal
-            const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant))
-                .map(sp => sp.name)
+            const listRegisteredSubprojects = (
+                await SubProjectDAO.list(journalClient, sdPath.tenant)).map(item => item.name)
 
             // Intersection of two lists above
-            return allSubProjects.filter((sp) => registeredSubprojects.includes(sp))
+            return listSubprojects.filter((sp) => listRegisteredSubprojects.includes(sp))
 
         }
-
-
 
         // list the folder content for sdpaths <sd://tenant/subproject>
         const dataset = {} as DatasetModel;
@@ -185,12 +188,9 @@ export class UtilityHandler {
     }
 
     private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
-        return (el.name.match(/\./g) || []).length === 5 &&
-            (el.name.endsWith(AuthRoles.admin) ||
-                el.name.endsWith(AuthRoles.editor) ||
-                el.name.endsWith(AuthRoles.viewer));
+        return (( el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
+        (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor) || el.name.endsWith(AuthRoles.viewer)))
     }
-
     // copy datasets (same tenancy required)
     private static async cp(req: expRequest) {
 
