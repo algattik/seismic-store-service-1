@@ -15,7 +15,6 @@
 // ============================================================================
 
 import { v4 as uuidv4 } from 'uuid';
-import { Config } from '../../cloud';
 import { TenantGroups } from '../tenant';
 
 export class SubprojectGroups {
