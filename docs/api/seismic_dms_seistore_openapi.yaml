@@ -28,12 +28,6 @@ info:
     name: "Apache 2.0"
     url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 
-securityDefinitions:
-  authentication:
-    type: "apiKey"
-    name: "Authorization"
-    in: "header"
-
 consumes:
   - application/json
 produces:
