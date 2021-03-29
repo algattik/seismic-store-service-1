@@ -70,7 +70,7 @@ export class Server {
     }
 
     constructor() {
-        const swaggerDocument = YAML.load('./dist/swagger/swagger.yaml');
+        const swaggerDocument = YAML.load('./dist/docs/api/seismic_dms_seistore_openapi.yaml');
 
         this.app = express();
         this.app.use(bodyparser.urlencoded({ extended: false }));

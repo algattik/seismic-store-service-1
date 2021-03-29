@@ -24,9 +24,15 @@ info:
   title: "Seismic Store Service"
   version: "2.0.0"
   description: "Seismic Domain Data Management APIs to store and manage seismic datasets ."
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 
-host: "api.evq.csp.slb.com"
-basePath: "/seistore-svc/api/v3"
+securityDefinitions:
+  authentication:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
 
 consumes:
   - application/json
