@@ -30,14 +30,6 @@ export class AuthGroups {
         return 'users.datalake.admins';
     }
 
-    public static seistoreServicePrefix(): string {
-        return 'service.seistore.' + Config.SERVICE_ENV;
-    }
-
-    public static systemAdminGroupName(): string {
-        return this.seistoreServicePrefix() + '.admin';
-    }
-
     public static async createGroup(
         userToken: string, groupName: string, groupDescription: string, esd: string, appkey: string) {
         await DESEntitlement.createGroup(userToken, groupName,

@@ -142,7 +142,7 @@ export class TestUtilitySVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx';
-            const prefix = TenantGroups.groupPrefix('tnx');
+            const prefix = TenantGroups.serviceGroupPrefix('tnx');
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.admin' }] as never);
@@ -154,7 +154,7 @@ export class TestUtilitySVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx';
-            const prefix = TenantGroups.groupPrefix('tnx');
+            const prefix = TenantGroups.serviceGroupPrefix('tnx');
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.editor' }] as never);
@@ -166,7 +166,7 @@ export class TestUtilitySVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx';
-            const prefix = TenantGroups.groupPrefix('tnx');
+            const prefix = TenantGroups.serviceGroupPrefix('tnx');
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.viewer' }] as never);
@@ -178,7 +178,7 @@ export class TestUtilitySVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx';
-            const prefix = TenantGroups.groupPrefix('tnx');
+            const prefix = TenantGroups.serviceGroupPrefix('tnx');
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: '' }] as never);
@@ -222,19 +222,19 @@ export class TestUtilitySVC {
 
             const userGroupsStub = this.sandbox.stub(DESEntitlement, 'getUserGroups');
             userGroupsStub.onCall(0).resolves([{
-                'name': `service.seistore.${Config.SERVICE_ENV}.tenant-a.subproj01.admin`,
-                'email': `service.seistore.${Config.SERVICE_ENV}.tenant-a.subproj01.admin@dp.p4d.domain.com`
+                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.subproj01.admin`,
+                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.subproj01.admin@dp.p4d.domain.com`
             }, {
-                'name': `service.seistore.${Config.SERVICE_ENV}.tenant-a.admin`,
-                'email': `service.seistore.${Config.SERVICE_ENV}.tenant-a.admin@dp.p4d.domain.com`
+                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.admin`,
+                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.admin@dp.p4d.domain.com`
             }] as IDESEntitlementGroupModel[]);
 
             userGroupsStub.onCall(1).resolves([{
-                'name': `service.seistore.${Config.SERVICE_ENV}.tenant-c.subproj2.admin`,
-                'email': `service.seistore.${Config.SERVICE_ENV}.tenant-c.subproj2.admin@dp02.p4d.domain.com`
+                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.subproj2.admin`,
+                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.subproj2.admin@dp02.p4d.domain.com`
             }, {
-                'name': `service.seistore.${Config.SERVICE_ENV}.tenant-c.admin`,
-                'email': `service.seistore.${Config.SERVICE_ENV}.tenant-c.admin@dp02.p4d.domain.com`
+                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.admin`,
+                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.admin@dp02.p4d.domain.com`
             }] as IDESEntitlementGroupModel[]);
 
             const responseStub = this.sandbox.stub(Response, 'writeOK');

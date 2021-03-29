@@ -15,12 +15,16 @@
 // ============================================================================
 
 import { TenantModel } from '.';
-import { AuthGroups } from '../../auth';
+import { Config } from '../../cloud';
 
 export class TenantGroups {
 
-    public static groupPrefix(tenantName: string): string {
-        return AuthGroups.seistoreServicePrefix() + '.' + tenantName;
+    public static serviceGroupPrefix(tenantName: string): string {
+        return Config.SERVICEGROUPS_PREFIX + '.' + Config.SERVICE_ENV + '.' + tenantName;
+    }
+
+    public static dataGroupPrefix(tenantName: string): string {
+        return Config.DATAGROUPS_PREFIX + '.' + tenantName;
     }
 
     public static adminGroupName(tenant: TenantModel): string {
