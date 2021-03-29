@@ -30,20 +30,20 @@ import { DatasetModel } from '.';
 
 export class DatasetHandler {
 
-    private static _cache: Cache<DatasetModel>;
+    // private static _cache: Cache<DatasetModel>;
 
 
     // handler for the [ /dataset ] endpoints
     public static async handler(req: expRequest, res: expResponse, op: DatasetOP) {
 
-        if (!this._cache) {
-            this._cache = new Cache<DatasetModel>({
-                ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
-                PORT: Config.DES_REDIS_INSTANCE_PORT,
-                KEY: Config.DES_REDIS_INSTANCE_KEY,
-                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
-            }, 'dset')
-        }
+        // if (!this._cache) {
+        //     this._cache = new Cache<DatasetModel>({
+        //         ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
+        //         PORT: Config.DES_REDIS_INSTANCE_PORT,
+        //         KEY: Config.DES_REDIS_INSTANCE_KEY,
+        //         DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
+        //     }, 'dset')
+        // }
 
         try {
 
@@ -124,7 +124,7 @@ export class DatasetHandler {
         const seismicmeta = userInput[1];
         let writeLockSession: IWriteLockSession;
 
-        // const journalClient = JournalFactoryTenantClient.get(tenant);
+        const journalClient = JournalFactoryTenantClient.get(tenant);
         // const transaction = journalClient.getTransaction();
 
         try {
@@ -138,11 +138,11 @@ export class DatasetHandler {
 
             // if the call is idempotent return the dataset value
             if(writeLockSession.idempotent) {
-                // const alreadyRegisteredDataset =  (await DatasetDAO.get(journalClient, dataset))[0];
-                const alreadyRegisteredDataset = await this._cache.get(
-                    Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + dataset.tenant + ':' +
-                    dataset.subproject + ':' + dataset.path + ':' + dataset.name);
-                await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
+                const alreadyRegisteredDataset =  (await DatasetDAO.get(journalClient, dataset))[0];
+                // const alreadyRegisteredDataset = await this._cache.get(
+                    // Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + dataset.tenant + ':' +
+                    // dataset.subproject + ':' + dataset.path + ':' + dataset.name);
+                // await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
                 return alreadyRegisteredDataset;
             }
 
@@ -198,21 +198,21 @@ export class DatasetHandler {
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined,
             ]);
 
-            // // check if dataset already exist
-            // if ((await DatasetDAO.get(journalClient, dataset))[0]) {
-            //     throw (Error.make(Error.Status.ALREADY_EXISTS,
-            //         'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
-            //         dataset.subproject + dataset.path + dataset.name +
-            //         ' already exists'));
-            // }
-
-            const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + dataset.tenant + ':' +
-                dataset.subproject + ':' + dataset.path + ':' + dataset.name
-            if(await this._cache.get(key)) {
+            // check if dataset already exist
+            if ((await DatasetDAO.get(journalClient, dataset))[0]) {
                 throw (Error.make(Error.Status.ALREADY_EXISTS,
-                'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
-                dataset.subproject + dataset.path + dataset.name + ' already exists'));
+                    'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
+                    dataset.subproject + dataset.path + dataset.name +
+                    ' already exists'));
             }
+
+            // const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + dataset.tenant + ':' +
+            //     dataset.subproject + ':' + dataset.path + ':' + dataset.name
+            // if(await this._cache.get(key)) {
+            //     throw (Error.make(Error.Status.ALREADY_EXISTS,
+            //     'The dataset ' + Config.SDPATHPREFIX + dataset.tenant + '/' +
+            //     dataset.subproject + dataset.path + dataset.name + ' already exists'));
+            // }
 
             // Populate the storage record with other mandatory field if not supplied.
             if (seismicmeta) {
@@ -253,15 +253,15 @@ export class DatasetHandler {
 
 
             // prepare the keys
-            // const dskey = journalClient.createKey({
-            //     namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
-            //     path: [Config.DATASETS_KIND],
-            // });
+            const dskey = journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
+                path: [Config.DATASETS_KIND],
+            });
 
             // save the dataset entity
             await Promise.all([
-                // DatasetDAO.register(transaction, { key: dskey, data: dataset }),
-                await this._cache.set(key, dataset),
+                DatasetDAO.register(journalClient, { key: dskey, data: dataset }),
+                // await this._cache.set(key, dataset),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
                         [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
@@ -399,7 +399,7 @@ export class DatasetHandler {
         }
 
         // init datastore client
-        // const journalClient = JournalFactoryTenantClient.get(tenant);
+        const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // // retrieve subproject meta info
         // const spkey = journalClient.createKey({
@@ -438,11 +438,11 @@ export class DatasetHandler {
             }
 
             // Retrieve the dataset metadata
-            // const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
+            const dataset = (await DatasetDAO.get(journalClient, datasetIn))[0];
 
-            const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIn.tenant + ':' +
-                datasetIn.subproject + ':' + datasetIn.path + ':' + datasetIn.name
-            const dataset = await this._cache.get(key);
+            // const key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIn.tenant + ':' +
+            //     datasetIn.subproject + ':' + datasetIn.path + ':' + datasetIn.name
+            // const dataset = await this._cache.get(key);
 
             // if the dataset does not exist return ok
             if (!dataset) { return; }
@@ -458,8 +458,8 @@ export class DatasetHandler {
             // Delete the dataset metadata (both firestore and DEStorage)
             await Promise.all([
                 // delete the dataset entity
-                // DatasetDAO.delete(journalClient, dataset),
-                await this._cache.del(key),
+                DatasetDAO.delete(journalClient, dataset),
+                // await this._cache.del(key),
                 // delete des storage record
                 (dataset.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.deleteRecord(req.headers.authorization,
@@ -489,17 +489,17 @@ export class DatasetHandler {
         const [datasetIN, seismicmeta, newName, wid] = DatasetParser.patch(req);
 
         // retrieve datastore client
-        // const journalClient = JournalFactoryTenantClient.get(tenant);
+        const journalClient = JournalFactoryTenantClient.get(tenant);
         // const transaction = journalClient.getTransaction();
 
         // return immediately if it is a simple close wiht empty body (no patch to apply)
         if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
 
             // Retrieve the dataset metadata
-            // const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
-            const datasetKey = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
-                datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
-            const dataset = await this._cache.get(datasetKey);
+            const dataset = (await DatasetDAO.get(journalClient, datasetIN))[0];
+            // const datasetKey = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
+                // datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
+            // const dataset = await this._cache.get(datasetKey);
 
             // check if the dataset does not exist
             if (!dataset) {
@@ -562,12 +562,12 @@ export class DatasetHandler {
             }
 
             // Retrieve the dataset metadata
-            // const results = await DatasetDAO.get(journalClient, datasetIN);
-            let key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
-                datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
-            const datasetOUT = await this._cache.get(key);
-            // const datasetOUT = results[0];
-            // const datasetOUTKey = results[1];
+            const results = await DatasetDAO.get(journalClient, datasetIN);
+            // let key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
+                // datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
+            // const datasetOUT = await this._cache.get(key);
+            const datasetOUT = results[0];
+            const datasetOUTKey = results[1];
 
             // check if the dataset does not exist
             if (!datasetOUT) {
@@ -606,26 +606,26 @@ export class DatasetHandler {
 
                 datasetIN.name = newName;
 
-                // const renameResults = await DatasetDAO.get(journalClient, datasetIN);
+                const renameResults = await DatasetDAO.get(journalClient, datasetIN);
 
-                // if (renameResults[1] !== undefined) {
-                //     throw (Error.make(Error.Status.ALREADY_EXISTS,
-                //         'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                //         datasetIN.subproject + datasetIN.path + newName + ' already exists'));
-
-                // }
-
-                key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
-                    datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
-
-                const renameResults = await this._cache.get(key);
-
-                if (renameResults) {
+                if (renameResults[1] !== undefined) {
                     throw (Error.make(Error.Status.ALREADY_EXISTS,
                         'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                         datasetIN.subproject + datasetIN.path + newName + ' already exists'));
 
                 }
+
+                // key = Config.SEISMIC_STORE_NS + ':' + Config.DATASETS_KIND + ':' + datasetIN.tenant + ':' +
+                //     datasetIN.subproject + ':' + datasetIN.path + ':' + datasetIN.name
+
+                // const renameResults = await this._cache.get(key);
+
+                // if (renameResults) {
+                //     throw (Error.make(Error.Status.ALREADY_EXISTS,
+                //         'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                //         datasetIN.subproject + datasetIN.path + newName + ' already exists'));
+
+                // }
 
                 datasetOUT.name = newName;
             }
@@ -716,8 +716,8 @@ export class DatasetHandler {
             }
 
             await Promise.all([
-                // DatasetDAO.update(transaction, datasetOUT, datasetOUTKey),
-                await this._cache.set(key, datasetOUT),
+                DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey),
+                // await this._cache.set(key, datasetOUT),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
                     ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
