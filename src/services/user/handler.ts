@@ -74,11 +74,6 @@ export class UserHandler {
 
         if (sdPath.subproject) {
 
-            const serviceGroupRegex = new RegExp('service.seistore.' + Config.SERVICE_ENV
-                + '.' + sdPath.tenant + '.' + sdPath.subproject)
-            const dataGroupRegex = new RegExp(Config.DATAGROUPS_PREFIX + '.' + sdPath.tenant + '.' + sdPath.subproject)
-
-
             const journalClient = JournalFactoryTenantClient.get(tenant);
             const spkey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
@@ -87,57 +82,53 @@ export class UserHandler {
 
             const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
 
+            const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
             const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex))
 
-
+            const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
             const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex))
             const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex))
-
             const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups)
 
             if (subprojectServiceGroups.length > 0) {
 
                 if (userGroupRole === AuthRoles.admin) {
 
-                    // First rm the user from the groups since the user can be exclus Owner or Member
-                    await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceAdminGroup(
-                            tenant.name, sdPath.subproject, tenant.esd), userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-                    await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceEditorGroup(
-                            tenant.name, sdPath.subproject, tenant.esd), userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-                    await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, SubprojectGroups.serviceViewerGroup(
-                            tenant.name, sdPath.subproject, tenant.esd), userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+                    // rm the user from the groups since the user can be OWNER or Member
+                    for(const group of subprojectServiceGroups) {
+                        await this.doNotThrowIfNotMember(
+                            AuthGroups.removeUserFromGroup(
+                                req.headers.authorization, group, userEmail,
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+                    }
 
-                    await AuthGroups.addUserToGroup(req.headers.authorization,
-                        SubprojectGroups.serviceAdminGroup(tenant.name,
-                            sdPath.subproject, tenant.esd), userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
-
-                    await AuthGroups.addUserToGroup(req.headers.authorization,
-                        SubprojectGroups.serviceEditorGroup(tenant.name,
-                            sdPath.subproject, tenant.esd), userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
-
-                    await AuthGroups.addUserToGroup(req.headers.authorization,
-                        SubprojectGroups.serviceViewerGroup(tenant.name,
-                            sdPath.subproject, tenant.esd), userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                    // add the user as OWNER for all service groups
+                    for(const group of subprojectServiceGroups) {
+                        await AuthGroups.addUserToGroup(
+                            req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                    }
 
                 } else if (userGroupRole === AuthRoles.editor) {
 
-                    await AuthGroups.addUserToGroup(
-                        req.headers.authorization,
-                        SubprojectGroups.serviceEditorGroup(tenant.name, sdPath.subproject, tenant.esd),
-                        userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    // add the user as member for all editor service groups
+                    for(const group of subprojectServiceGroups) {
+                        if(group.indexOf('.editor@') !== -1) {
+                            await AuthGroups.addUserToGroup(
+                                req.headers.authorization, group,
+                                userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        }
+                    }
 
                 } else if (userGroupRole === AuthRoles.viewer) {
 
-                    await AuthGroups.addUserToGroup(
-                        req.headers.authorization,
-                        SubprojectGroups.serviceViewerGroup(tenant.name, sdPath.subproject, tenant.esd),
-                        userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    // add the user as member for all viewer service groups
+                    for(const group of subprojectServiceGroups) {
+                        if(group.indexOf('.viewer@') !== -1) {
+                            await AuthGroups.addUserToGroup(
+                                req.headers.authorization, group,
+                                userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        }
+                    }
 
                 } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
 
@@ -145,18 +136,56 @@ export class UserHandler {
 
             if (subprojectDataGroups.length > 0) {
 
-                for (const datagroup of subprojectDataGroups) {
-                    await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(req.headers.authorization, datagroup, userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+                if (userGroupRole !== AuthRoles.viewer) {
 
-                    if (userGroupRole === AuthRoles.admin || userGroupRole === AuthRoles.editor) {
+                    // rm the user from the groups since the user can be OWNER or Member
+                    for(const datagroup of subprojectDataGroups) {
+                        await this.doNotThrowIfNotMember(
+                            AuthGroups.removeUserFromGroup(
+                                req.headers.authorization, datagroup, userEmail,
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+                    }
+
+                    // add the user as OWNER for all service groups
+                    for(const datagroup of subprojectDataGroups) {
+                        await AuthGroups.addUserToGroup(
+                            req.headers.authorization, datagroup, userEmail,
+                            tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                    }
+
+                } else {
+
+                    // add user to viewer group
+                    for(const datagroup of subprojectDataGroups) {
+                        if(datagroup.indexOf('.viewer@') !== -1) {
+                            await AuthGroups.addUserToGroup(
+                                req.headers.authorization, datagroup, userEmail,
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        }
+                    }
+
+            }
+
+
+                for (const datagroup of subprojectDataGroups) {
+
+                    if (userGroupRole !== AuthRoles.viewer) {
+
+                        // First rm the user from the groups since the user can be exclus Owner or Member
+                        await this.doNotThrowIfNotMember(
+                            AuthGroups.removeUserFromGroup(
+                                req.headers.authorization, datagroup, userEmail,
+                                tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+
+                        // add user as owner of the
                         await AuthGroups.addUserToGroup(req.headers.authorization,
                             datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
 
                     } else {
-                        await AuthGroups.addUserToGroup(req.headers.authorization,
+                        if(datagroup.indexOf('.viewer@') !== -1) {
+                            await AuthGroups.addUserToGroup(req.headers.authorization,
                             datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        }
 
                     }
 
@@ -289,8 +318,8 @@ export class UserHandler {
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         const prefix = sdPath.subproject ?
-            SubprojectGroups.groupPrefix(sdPath.tenant, sdPath.subproject) :
-            TenantGroups.groupPrefix(sdPath.tenant);
+            SubprojectGroups.serviceGroupPrefix(sdPath.tenant, sdPath.subproject) :
+            TenantGroups.serviceGroupPrefix(sdPath.tenant);
 
 
         const journalClient = JournalFactoryTenantClient.get(tenant);

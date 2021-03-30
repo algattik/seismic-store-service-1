@@ -14,42 +14,53 @@
 // limitations under the License.
 // ============================================================================
 
+import { PubSub } from '@google-cloud/pubsub';
 import { SubProjectModel } from '../../../services/subproject';
 import { Error, Params, Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
+import { ConfigGoogle } from './config';
 
 // reference time zone and clss locations
 const KSTORAGE_CLASS = ['MULTI_REGIONAL', 'REGIONAL', 'NEARLINE', 'COLDLINE'];
 const KSTORAGE_LOCATION_MR = ['ASIA', 'EU', 'US'];
 const KSTORAGE_LOCATION_RG = [
-        'NORTHAMERICA-NORTHEAST1',
-        'US-CENTRAL1',
-        'US-EAST1',
-        'US-EAST4',
-        'US-WEST1',
-        'US-WEST2',
-        'US-WEST3',
-        'US-WEST4',
-        'SOUTHAMERICA-EAST1',
-        'EUROPE-NORTH1',
-        'EUROPE-WEST1',
-        'EUROPE-WEST2',
-        'EUROPE-WEST3',
-        'EUROPE-WEST4',
-        'EUROPE-WEST6',
-        'ASIA-EAST1',
-        'ASIA-EAST2',
-        'ASIA-NORTHEAST1',
-        'ASIA-NORTHEAST2',
-        'ASIA-NORTHEAST3',
-        'ASIA-SOUTH1',
-        'ASIA-SOUTHEAST1',
-        'ASIA-SOUTHEAST2',
-        'AUSTRALIA-SOUTHEAST1'];
+    'NORTHAMERICA-NORTHEAST1',
+    'US-CENTRAL1',
+    'US-EAST1',
+    'US-EAST4',
+    'US-WEST1',
+    'US-WEST2',
+    'US-WEST3',
+    'US-WEST4',
+    'SOUTHAMERICA-EAST1',
+    'EUROPE-NORTH1',
+    'EUROPE-WEST1',
+    'EUROPE-WEST2',
+    'EUROPE-WEST3',
+    'EUROPE-WEST4',
+    'EUROPE-WEST6',
+    'ASIA-EAST1',
+    'ASIA-EAST2',
+    'ASIA-NORTHEAST1',
+    'ASIA-NORTHEAST2',
+    'ASIA-NORTHEAST3',
+    'ASIA-SOUTH1',
+    'ASIA-SOUTHEAST1',
+    'ASIA-SOUTHEAST2',
+    'AUSTRALIA-SOUTHEAST1'];
 
 @SeistoreFactory.register('google')
 export class GoogleSeistore extends AbstractSeistore {
+
+    private pubSubClient: PubSub;
+
+    constructor() {
+        super();
+        this.pubSubClient = new PubSub();
+
+    }
+
     public checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel) {
 
         subproject.storage_class = requestBody.storage_class;
@@ -102,5 +113,26 @@ export class GoogleSeistore extends AbstractSeistore {
         const payload = Utils.getPayloadFromStringToken(userCredentials);
         const email = payload.email === Config.IMP_SERVICE_ACCOUNT_SIGNER ? payload.obo : payload.email;
         return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
+    }
+
+    public async notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
+
+        const data = JSON.stringify({
+            subproject,
+            type: 'subproject',
+            status
+        });
+
+        const pubSubTopic = 'projects/' + ConfigGoogle.SERVICE_CLOUD_PROJECT + '/topics/' + ConfigGoogle.PUBSUBTOPIC;
+        const dataBuffer = Buffer.from(data);
+
+        try {
+            const messageID = await this.pubSubClient
+                .topic(pubSubTopic)
+                .publish(dataBuffer);
+            return messageID;
+        } catch (error) {
+            return null;
+        }
     }
 }

@@ -30,14 +30,6 @@ export class AuthGroups {
         return 'users.datalake.admins';
     }
 
-    public static seistoreServicePrefix(): string {
-        return 'service.seistore.' + Config.SERVICE_ENV;
-    }
-
-    public static systemAdminGroupName(): string {
-        return this.seistoreServicePrefix() + '.admin';
-    }
-
     public static async createGroup(
         userToken: string, groupName: string, groupDescription: string, esd: string, appkey: string) {
         await DESEntitlement.createGroup(userToken, groupName,
@@ -62,9 +54,9 @@ export class AuthGroups {
 
         for (const member of members) {
             // DE allows to rm all so we may want to follow. For now exclude the requestor
-            if (member.email !== userEmail) {
-                await DESEntitlement.removeUserFromGroup(userToken, group, dataPartition, member.email,
-                    appkey);
+            if (member.email !== userEmail && !member.email.startsWith('users.data.root')) {
+                await DESEntitlement.removeUserFromGroup(
+                    userToken, group, dataPartition, member.email,appkey);
             }
         }
 
