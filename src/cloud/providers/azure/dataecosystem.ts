@@ -47,7 +47,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     }
 
     public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string } | string[] {
-        return [userEmail];
+        return { email: userEmail, role }
     }
 
     public tenantNameAndDataPartitionIDShouldMatch() {
