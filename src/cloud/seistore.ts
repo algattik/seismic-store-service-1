@@ -20,11 +20,15 @@ import { CloudFactory } from './cloud';
 export interface ISeistore {
     checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
     getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string>;
+    notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string>;
+
 }
 
 export abstract class AbstractSeistore implements ISeistore {
     public abstract checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
     public abstract getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string>;
+    public abstract notifySubprojectCreationStatus
+        (subproject: SubProjectModel, status: string): Promise<string>;
 }
 
 export class SeistoreFactory extends CloudFactory {

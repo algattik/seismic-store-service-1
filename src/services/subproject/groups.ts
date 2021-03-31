@@ -15,25 +15,24 @@
 // ============================================================================
 
 import { v4 as uuidv4 } from 'uuid';
-import { Config } from '../../cloud';
 import { TenantGroups } from '../tenant';
 
 export class SubprojectGroups {
 
-    public static groupPrefix(tenantName: string, subprojectName: string): string {
-        return TenantGroups.groupPrefix(tenantName) + '.' + subprojectName;
+    public static serviceGroupPrefix(tenantName: string, subprojectName: string): string {
+        return TenantGroups.serviceGroupPrefix(tenantName) + '.' + subprojectName;
     }
 
     public static serviceAdminGroupName(tenant: string, subproject: string): string {
-        return this.groupPrefix(tenant, subproject) + '.admin';
+        return this.serviceGroupPrefix(tenant, subproject) + '.admin';
     }
 
     public static serviceEditorGroupName(tenant: string, subproject: string): string {
-        return this.groupPrefix(tenant, subproject) + '.editor';
+        return this.serviceGroupPrefix(tenant, subproject) + '.editor';
     }
 
     public static serviceViewerGroupName(tenant: string, subproject: string): string {
-        return this.groupPrefix(tenant, subproject) + '.viewer';
+        return this.serviceGroupPrefix(tenant, subproject) + '.viewer';
     }
 
     public static serviceAdminGroup(tenant: string, subproject: string, esd: string): string {
@@ -48,21 +47,26 @@ export class SubprojectGroups {
         return this.serviceViewerGroupName(tenant, subproject) + '@' + esd;
     }
 
+    public static serviceGroupNameRegExp(tenant: string, subproject: string): RegExp {
+        return new RegExp(this.serviceGroupPrefix(tenant, subproject));
+    }
+
+    // ====================================================================================================
+
+    public static dataGroupPrefix(tenant: string, subproject: string): string {
+        return TenantGroups.dataGroupPrefix(tenant) + '.' + subproject;
+    }
 
     public static dataAdminGroup(tenant: string, subproject: string, esd: string): string {
-        return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.admin' + '@' + esd;
+        return this.dataGroupPrefix(tenant, subproject) + '.' + uuidv4() + '.admin' + '@' + esd;
     }
 
     public static dataViewerGroup(tenant: string, subproject: string, esd: string): string {
-        return Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject + '.' + uuidv4() + '.viewer' + '@' + esd;
-    }
-
-    public static serviceGroupNameRegExp(tenant: string, subproject: string): RegExp {
-        return new RegExp(SubprojectGroups.groupPrefix(tenant, subproject));
+        return this.dataGroupPrefix(tenant, subproject) + '.' + uuidv4() + '.viewer' + '@' + esd;
     }
 
     public static dataGroupNameRegExp(tenant: string, subproject: string): RegExp {
-        return new RegExp(Config.DATAGROUPS_PREFIX + '.' + tenant + '.' + subproject);
+        return new RegExp(this.dataGroupPrefix(tenant, subproject));
     }
 
 }

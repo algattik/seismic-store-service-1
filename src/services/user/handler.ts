@@ -318,8 +318,8 @@ export class UserHandler {
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         const prefix = sdPath.subproject ?
-            SubprojectGroups.groupPrefix(sdPath.tenant, sdPath.subproject) :
-            TenantGroups.groupPrefix(sdPath.tenant);
+            SubprojectGroups.serviceGroupPrefix(sdPath.tenant, sdPath.subproject) :
+            TenantGroups.serviceGroupPrefix(sdPath.tenant);
 
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
