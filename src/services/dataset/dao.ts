@@ -25,7 +25,7 @@ export class DatasetDAO {
     public static async register(
         journalClient: IJournal | IJournalTransaction, datasetEntity: {key: object, data: DatasetModel}) {
         datasetEntity.data.ctag = Utils.makeID(16);
-        journalClient.save(datasetEntity);
+        await journalClient.save(datasetEntity);
     }
 
     public static async get(
