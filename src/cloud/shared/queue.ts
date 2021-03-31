@@ -10,7 +10,7 @@ export class StorageJobManager {
 
    public static copyJobsQueue: Bull.Queue
 
-   public static async setup(cacheParams: {ADDRESS: string, PORT: number, KEY?: string, DISABLE_TLS?: boolean}) {
+   public static setup(cacheParams: {ADDRESS: string, PORT: number, KEY?: string, DISABLE_TLS?: boolean}) {
 
       const redisx = {
          host: cacheParams.ADDRESS,
@@ -33,7 +33,8 @@ export class StorageJobManager {
       })
 
       // setup job processing callback
-      await StorageJobManager.copyJobsQueue.process(50, (input) => {
+      // tslint:disable-next-line: no-floating-promises
+      StorageJobManager.copyJobsQueue.process(50, (input) => {
          return StorageJobManager.copy(input)
       })
 

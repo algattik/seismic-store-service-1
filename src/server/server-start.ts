@@ -37,7 +37,7 @@ async function ServerStart() {
 
         // tslint:disable-next-line
         console.log('- Initializing storage transfer deamon')
-        await StorageJobManager.setup({
+        StorageJobManager.setup({
             ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
             PORT: Config.DES_REDIS_INSTANCE_PORT,
             KEY: Config.DES_REDIS_INSTANCE_KEY,
