@@ -177,7 +177,7 @@ export class UserHandler {
                                 req.headers.authorization, datagroup, userEmail,
                                 tenant.esd, req[Config.DE_FORWARD_APPKEY]));
 
-                        // add user as owner of the 
+                        // add user as owner
                         await AuthGroups.addUserToGroup(req.headers.authorization,
                             datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
 

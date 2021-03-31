@@ -288,6 +288,7 @@ export class SubProjectHandler {
         }
 
         // delete the bucket resource (to perform after files deletions)
+        // tslint:disable-next-line: no-floating-promises (we want it async)
         storage.deleteBucket(subproject.gcs_bucket);
     }
 

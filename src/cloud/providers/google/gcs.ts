@@ -96,6 +96,7 @@ export class GCS extends AbstractStorage {
         if (async) {
             await this.getStorageclient().bucket(bucketName).deleteFiles({ prefix, force: true });
         } else {
+            // tslint:disable-next-line: no-floating-promises
             this.getStorageclient().bucket(bucketName).deleteFiles({ prefix, force: true });
         }
     }

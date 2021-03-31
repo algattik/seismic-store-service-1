@@ -79,9 +79,9 @@ export class Locker {
             }
 
             // This will automaticcally remove the wid entries from the main read lock
-            this.redisSubscriptionClient.on('message', (channel, key) => {
+            this.redisSubscriptionClient.on('message', async (channel, key) => {
                 if (channel === '__keyevent@0__:expired') {
-                    Locker.unlockReadLockSession(
+                    await Locker.unlockReadLockSession(
                         key.substr(0, key.lastIndexOf('/')),
                         key.substr(key.lastIndexOf('/') + 1)
                     );
@@ -177,7 +177,7 @@ export class Locker {
         if (!lockValue) {
             dataset.sbit = idempotentWriteLock || this.generateWriteLockID();
             dataset.sbit_count = 1;
-            this.set(datasetPath, dataset.sbit, this.EXP_WRITELOCK);
+            await this.set(datasetPath, dataset.sbit, this.EXP_WRITELOCK);
             return {idempotent: false, wid: dataset.sbit, mutex: cachelock, key: datasetPath};
         }
 

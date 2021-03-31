@@ -10,7 +10,7 @@ export class StorageJobManager {
 
    public static copyJobsQueue: Bull.Queue
 
-   public static setup(cacheParams: {ADDRESS: string, PORT: number, KEY?: string, DISABLE_TLS?: boolean}) {
+   public static async setup(cacheParams: {ADDRESS: string, PORT: number, KEY?: string, DISABLE_TLS?: boolean}) {
 
       const redisx = {
          host: cacheParams.ADDRESS,
@@ -33,7 +33,7 @@ export class StorageJobManager {
       })
 
       // setup job processing callback
-      StorageJobManager.copyJobsQueue.process(50, (input) => {
+      await StorageJobManager.copyJobsQueue.process(50, (input) => {
          return StorageJobManager.copy(input)
       })
 
@@ -110,7 +110,7 @@ export class StorageJobManager {
 
          registeredDataset.transfer_status = TransferStatus.Completed
 
-         DatasetDAO.update(journalClient, registeredDataset, registeredDatasetKey)
+         await DatasetDAO.update(journalClient, registeredDataset, registeredDatasetKey)
 
          await Locker.releaseMutex(cacheMutex, datasetToPath)
          await Locker.unlock(journalClient, input.data.datasetTo, input.data.datasetTo.sbit);
@@ -131,7 +131,7 @@ export class StorageJobManager {
          // try to update the status to aborted if possible
          if (registeredDataset) {
             registeredDataset.transfer_status = TransferStatus.Aborted
-            DatasetDAO.update(journalClient, registeredDataset, registeredDatasetKey)
+            await DatasetDAO.update(journalClient, registeredDataset, registeredDatasetKey)
          }
 
          throw err

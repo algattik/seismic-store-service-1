@@ -43,7 +43,7 @@ npm run code-coverage
     --run-parallel
 
 # run the linter on sources
-tslint -c tslint.json 'src/**/*.ts'
+tslint -c tslint.json -p tsconfig.json 'src/**/*.ts'
 ```
 
 ## Environment configuration

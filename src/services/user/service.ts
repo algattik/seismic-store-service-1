@@ -21,23 +21,23 @@ import { UserOP } from './optype';
 const router = Router();
 
 // Add a registered user to a resource
-router.put('/', (req: expRequest, res: expResponse) => {
-    UserHandler.handler(req, res, UserOP.Add);
+router.put('/', async (req: expRequest, res: expResponse) => {
+    await UserHandler.handler(req, res, UserOP.Add);
 });
 
 // Retrieve user roles
-router.get('/', (req: expRequest, res: expResponse) => {
-    UserHandler.handler(req, res, UserOP.List);
+router.get('/', async (req: expRequest, res: expResponse) => {
+    await UserHandler.handler(req, res, UserOP.List);
 });
 
 // Retrieve user roles
-router.delete('/', (req: expRequest, res: expResponse) => {
-    UserHandler.handler(req, res, UserOP.Remove);
+router.delete('/', async (req: expRequest, res: expResponse) => {
+    await UserHandler.handler(req, res, UserOP.Remove);
 });
 
 // retrieve the roles of the user
-router.get('/roles', (req: expRequest, res: expResponse) => {
-    UserHandler.handler(req, res, UserOP.Roles);
+router.get('/roles', async (req: expRequest, res: expResponse) => {
+    await UserHandler.handler(req, res, UserOP.Roles);
 });
 
 export { router as UserRouter };

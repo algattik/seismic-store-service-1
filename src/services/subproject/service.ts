@@ -21,28 +21,28 @@ import { SubProjectOP } from './optype';
 const router = Router();
 
 // register a new subproject
-router.post('/tenant/:tenantid/subproject/:subprojectid', (req: expRequest, res: expResponse) => {
-    SubProjectHandler.handler(req, res, SubProjectOP.Create);
+router.post('/tenant/:tenantid/subproject/:subprojectid', async (req: expRequest, res: expResponse) => {
+    await SubProjectHandler.handler(req, res, SubProjectOP.Create);
 });
 
 // get a subproject
-router.get('/tenant/:tenantid/subproject/:subprojectid', (req: expRequest, res: expResponse) => {
-    SubProjectHandler.handler(req, res, SubProjectOP.Get);
+router.get('/tenant/:tenantid/subproject/:subprojectid', async (req: expRequest, res: expResponse) => {
+    await SubProjectHandler.handler(req, res, SubProjectOP.Get);
 });
 
 // delete a subproject
-router.delete('/tenant/:tenantid/subproject/:subprojectid', (req: expRequest, res: expResponse) => {
-    SubProjectHandler.handler(req, res, SubProjectOP.Delete);
+router.delete('/tenant/:tenantid/subproject/:subprojectid', async (req: expRequest, res: expResponse) => {
+    await SubProjectHandler.handler(req, res, SubProjectOP.Delete);
 });
 
 // patch a subproject
-router.patch('/tenant/:tenantid/subproject/:subprojectid', (req: expRequest, res: expResponse) => {
-    SubProjectHandler.handler(req, res, SubProjectOP.Patch);
+router.patch('/tenant/:tenantid/subproject/:subprojectid', async (req: expRequest, res: expResponse) => {
+    await SubProjectHandler.handler(req, res, SubProjectOP.Patch);
 });
 
 // list all subprojects in a tenant
-router.get('/tenant/:tenantid/', (req: expRequest, res: expResponse) => {
-    SubProjectHandler.handler(req, res, SubProjectOP.List);
+router.get('/tenant/:tenantid/', async (req: expRequest, res: expResponse) => {
+    await SubProjectHandler.handler(req, res, SubProjectOP.List);
 });
 
 export { router as SubprojectRouter };

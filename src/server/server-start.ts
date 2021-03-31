@@ -37,7 +37,7 @@ async function ServerStart() {
 
         // tslint:disable-next-line
         console.log('- Initializing storage transfer deamon')
-        StorageJobManager.setup({
+        await StorageJobManager.setup({
             ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
             PORT: Config.DES_REDIS_INSTANCE_PORT,
             KEY: Config.DES_REDIS_INSTANCE_KEY,
@@ -50,7 +50,7 @@ async function ServerStart() {
             TraceFactory.build(Config.CLOUDPROVIDER).start();
         }
 
-        new (await import('./server')).Server().start();
+        await new (await import('./server')).Server().start();
 
     } catch (error) {
         // tslint:disable-next-line
@@ -60,4 +60,5 @@ async function ServerStart() {
 
 }
 
+// tslint:disable-next-line: no-floating-promises
 ServerStart();
