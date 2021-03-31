@@ -470,6 +470,7 @@ export class DatasetHandler {
             const bucketName = dataset.gcsurl.split('/')[0];
             const gcsprefix = dataset.gcsurl.split('/')[1];
             const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
+            // tslint:disable-next-line: no-floating-promises
             storage.deleteObjects(bucketName, gcsprefix);
 
             // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
