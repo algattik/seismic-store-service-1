@@ -21,9 +21,9 @@
 swagger: "2.0"
 
 info:
-  title: "Seismic Store Service (#{app.environment.identifier}#)"
+  title: "Seismic DMS Service (#{app.environment.identifier}#)"
   version: "3.0.0"
-  description: "Seismic Domain Data Management APIs to store and manage seismic datasets ."
+  description: "Seismic Data Management APIs to store and manage seismic datasets ."
 
 host: "#{gcp.endpoints.service.name}#"
 basePath: "/"

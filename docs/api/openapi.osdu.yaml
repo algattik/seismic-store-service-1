@@ -21,9 +21,9 @@
 swagger: "2.0.0"
 
 info:
-  title: "Seismic Store Service"
+  title: "Seismic DMS Service"
   version: "3.0.0"
-  description: "Seismic Domain Data Management APIs to store and manage seismic datasets ."
+  description: "Seismic Data Management APIs to store and manage seismic datasets ."
   license:
     name: "Apache 2.0"
     url: "https://www.apache.org/licenses/LICENSE-2.0.html"
@@ -1876,14 +1876,9 @@ definitions:
 
 security:
   - bearer: []
-    appkey: []
 
 securityDefinitions:
   bearer:
     type: apiKey
     name: Authorization
-    in: header
-  appkey:
-    type: apiKey
-    name: appkey
     in: header
