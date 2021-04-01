@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "rm -rf dist coverage test-results.xml .nyc_output",
     "clean:npm": "npx rimraf ./node_modules",
-    "build": "tsc",
+    "build": "set INLINE_RUNTIME_CHUNK=false && tsc",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "start": "node -r dotenv/config ./dist/server/server-start.js",
     "start:redis": "nohup redis-server > /tmp/redis.log 2>&1 &",
