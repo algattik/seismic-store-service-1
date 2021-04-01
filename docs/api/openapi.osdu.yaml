@@ -39,6 +39,8 @@ schemes:
 # Endpoints Paths Section
 # ===========================================================================
 
+basePath: /seistore-svc/api/v3
+
 paths:
   /svcstatus:
     get:
