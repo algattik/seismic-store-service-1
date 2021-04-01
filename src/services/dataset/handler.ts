@@ -133,8 +133,9 @@ export class DatasetHandler {
 
             // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
             // a mutex is applied on the resource on the shared cahce (removed at the end of the method)
+            const datasetLockKey = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
             writeLockSession = await Locker.createWriteLock(
-                dataset, req.headers['x-seismic-dms-lockid'] as string);
+                datasetLockKey, req.headers['x-seismic-dms-lockid'] as string);
 
             // if the call is idempotent return the dataset value
             if(writeLockSession.idempotent) {
@@ -388,10 +389,11 @@ export class DatasetHandler {
 
         // Retrieve the dataset path information
         const datasetIn = DatasetParser.delete(req);
+        const lockKey = datasetIn.tenant + '/' + datasetIn.subproject + datasetIn.path + datasetIn.name;
 
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
-            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIn))) {
+            if (Locker.isWriteLock(await Locker.getLock(lockKey))) {
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
                     datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
@@ -474,8 +476,8 @@ export class DatasetHandler {
             storage.deleteObjects(bucketName, gcsprefix);
 
             // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
-            // await Locker.unlock(journalClient, dataset)
-            await Locker.unlock(undefined, dataset)
+            const datasetLockKey = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
+            await Locker.unlock(datasetLockKey)
 
         // } catch (err) {
             // throw (err);
@@ -488,6 +490,7 @@ export class DatasetHandler {
 
         // Retrieve the dataset path information
         const [datasetIN, seismicmeta, newName, wid] = DatasetParser.patch(req);
+        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
 
         // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -509,9 +512,8 @@ export class DatasetHandler {
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
             }
 
-            // // unlock the detaset
-            // const unlockRes = await Locker.unlock(journalClient, datasetIN, wid)
-            const unlockRes = await Locker.unlock(undefined, datasetIN, wid)
+            // unlock the detaset
+            const unlockRes = await Locker.unlock(lockKey, wid)
             dataset.sbit = unlockRes.id;
             dataset.sbit_count = unlockRes.cnt;
 
@@ -519,12 +521,11 @@ export class DatasetHandler {
         }
 
         // unlock the detaset for close opeartion (and patch)
-        // const lockres = wid ? await Locker.unlock(journalClient, datasetIN, wid) : { id: null, cnt: 0 };
-        const lockres = wid ? await Locker.unlock(undefined, datasetIN, wid) : { id: null, cnt: 0 };
+        const lockres = wid ? await Locker.unlock(lockKey, wid) : { id: null, cnt: 0 };
 
         // ensure nobody got the lock between the close and the mutext acquistion
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
-            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
+            if (Locker.isWriteLock(await Locker.getLock(lockKey))) {
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
@@ -804,11 +805,10 @@ export class DatasetHandler {
         }
 
         // lock in cache
+        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
         const lockres = open4write ?
-            await Locker.acquireWriteLock(
-                journalClient, datasetIN, req.headers['x-seismic-dms-lockid'] as string, wid) :
-            await Locker.acquireReadLock(
-                journalClient, datasetIN, req.headers['x-seismic-dms-lockid'] as string, wid);
+            await Locker.acquireWriteLock(lockKey, req.headers['x-seismic-dms-lockid'] as string, wid) :
+            await Locker.acquireReadLock(lockKey, req.headers['x-seismic-dms-lockid'] as string, wid);
 
         // attach lock information
         datasetOUT.sbit = lockres.id;
@@ -854,7 +854,8 @@ export class DatasetHandler {
             tenant.name, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // unlock
-        await Locker.unlock(journalClient, dataset);
+        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
+        await Locker.unlock(lockKey);
 
     }
 
@@ -969,7 +970,8 @@ export class DatasetHandler {
 
         // ensure is not write locked
         if(!Config.SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS) {
-            if (Locker.isWriteLock(await Locker.getLockFromModel(datasetIN))) {
+            const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
+            if (Locker.isWriteLock(await Locker.getLock(lockKey))) {
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));

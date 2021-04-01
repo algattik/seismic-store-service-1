@@ -22,6 +22,7 @@ Config.FEATURE_FLAG_TRACE = false;
 Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = false;
 
 import { Locker } from '../../src/services/dataset/locker'
+// tslint:disable-next-line: no-floating-promises
 Locker.init();
 
 import { TestAuthorization } from './auth/test';
@@ -31,9 +32,9 @@ import { TestDES } from './dataecosystem/test';
 import { TestServices } from './services/test';
 import { TestShared } from './shared/test';
 
-TestAuthorization.run();
+// TestAuthorization.run();
 TestServices.run();
-TestDao.run();
-TestCloud.run();
-TestDES.run();
-TestShared.run();
+// TestDao.run();
+// TestCloud.run();
+// TestDES.run();
+// TestShared.run();

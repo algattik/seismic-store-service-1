@@ -114,8 +114,14 @@ export class StorageJobManager {
          await DatasetDAO.update(journalClient, registeredDataset, registeredDatasetKey)
 
          await Locker.releaseMutex(cacheMutex, datasetToPath)
-         await Locker.unlock(journalClient, input.data.datasetTo, input.data.datasetTo.sbit);
-         await Locker.unlock(journalClient, input.data.datasetFrom, input.data.readlockId);
+
+         const lockKeyFrom = input.data.datasetFrom.tenant + '/' + input.data.datasetFrom.subproject +
+            input.data.datasetFrom.path + input.data.datasetFrom.name;
+         await Locker.unlock(lockKeyFrom, input.data.readlockId);
+
+         const lockKeyTo = input.data.datasetTo.tenant + '/' + input.data.datasetTo.subproject +
+            input.data.datasetTo.path + input.data.datasetTo.name;
+         await Locker.unlock(lockKeyTo, input.data.datasetTo.sbit);
 
          LoggerFactory.build(Config.CLOUDPROVIDER).info(
             '[copy-transfer] completed copy operations to ' + datasetToPath)
