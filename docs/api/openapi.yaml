@@ -1,5 +1,5 @@
 #  ***************************************************************************
-#  Copyright 2017 - 2020, Schlumberger
+#  Copyright 2017 - 2021, Schlumberger
 #
 #  Licensed under the Apache License, Version 2.0(the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ swagger: "2.0"
 
 info:
   title: "Seismic Store Service (#{app.environment.identifier}#)"
-  version: "2.0.0"
+  version: "3.0.0"
   description: "Seismic Domain Data Management APIs to store and manage seismic datasets ."
 
 host: "#{gcp.endpoints.service.name}#"
@@ -92,6 +92,7 @@ paths:
           name: ltag
           type: string
           required: false
+          default: "Slb-Private-USA-EHC"
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -151,22 +152,26 @@ paths:
           in: path
           name: tenantid
           required: true
+          default: common
           type: string
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: "a/b/c"
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: "slb-dataset"
         - description: "Include the seismic storage metadata record if it exists"
           in: query
           name: seismicmeta
@@ -198,21 +203,25 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: "a/b/c"
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: "slb-dataset"
       responses:
         200:
           description: "The resource was deleted successfully."
@@ -237,21 +246,25 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: slb-dataset
         - description: "Request body"
           in: body
           name: request body
@@ -293,21 +306,25 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: slb-dataset
         - description: "Type of the lock which can be set to 'read' (default) or 'write'"
           in: query
           name: openmode
@@ -347,21 +364,25 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path for the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: slb-dataset
       responses:
         200:
           description: "Removed the lock value associated with dataset id"
@@ -389,21 +410,25 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path for the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: slb-dataset
       responses:
         200:
           description: "User access permission on the dataset."
@@ -431,26 +456,31 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: slb-dataset
         - description: "Ctag to be validated"
           in: query
           name: ctag
           required: true
           type: string
+          default: slb-dataset-ctag
       responses:
         200:
           description: "Return true if the ctag is valid or false if it is invalid"
@@ -479,21 +509,25 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
+          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
+          default: slb-dataset
         - description: "Gtags array list"
           in: query
           name: gtag
@@ -501,11 +535,8 @@ paths:
           type: array
           items:
             type: string
-            enum:
-              - "tag1"
-              - "tag2"
-              - "tag3"
             default: "tag1"
+          collectionFormat: multi
       responses:
         200:
           description: "Gtags were upserted to the dataset metadata."
@@ -561,17 +592,20 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Gtags associated with dataset metadata"
           in: query
           name: gtag
           type: array
           items:
             type: string
+          collectionFormat: multi
 
       responses:
         200:
@@ -602,11 +636,13 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Request body"
           in: body
           name: request body
@@ -643,11 +679,13 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Request body"
           in: body
           name: request body
@@ -730,11 +768,13 @@ paths:
           name: sdpath_from
           required: true
           type: string
+          default: sd://common/carbon/a/b/c/slb-dataset
         - description: "Seismic store destination dataset path"
           in: query
           name: sdpath_to
           required: true
           type: string
+          default: sd://common/carbon/a/b/c/slb-dataset-copy
         - description: "Lock source and destination while copying"
           in: query
           name: lock
@@ -771,6 +811,7 @@ paths:
           name: sdpath
           type: string
           required: true
+          default: sd://common/carbon
         - description: "Readonly access, true(default) or false"
           in: query
           name: readonly
@@ -885,16 +926,19 @@ paths:
           in: header
           name: ltag
           type: string
+          default: "Slb-Private-USA-EHC"
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           type: string
           required: true
+          default: carbon
         - description: "Name of the tenant"
           in: path
           name: tenantid
           type: string
           required: true
+          default: common
         - description: "Request body"
           in: body
           name: request body
@@ -928,11 +972,13 @@ paths:
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
+          default: common
       responses:
         200:
           description: "Retrieved subproject metadata successfully"
@@ -959,11 +1005,13 @@ paths:
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
+          default: common
       responses:
         200:
           description: "Deletion of the subproject completed"
@@ -988,22 +1036,24 @@ paths:
           name: ltag
           type: string
           required: true
+          default: "Slb-Private-USA-EHC"
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
+          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
+          default: carbon
         - description: "True if the legal tags of all datasets in a subproject needs to be updated"
           in: query
           name: recursive
           required: false
           type: boolean
-
       responses:
         200:
           description: "Updated subproject metadata successfully"
@@ -1031,6 +1081,7 @@ paths:
           name: tenantid
           required: true
           type: string
+          default: common
       responses:
         200:
           description: "Retrieved the list of subprojects in the tenant successfully."
@@ -1049,8 +1100,8 @@ paths:
 
   /api/v3/tenant/{tenantid}:
     post:
-      summary: "Create a new tenant"
-      description: "<ul><li>Create a new tenant resource in seismic store.</li><li>Required roles: seistore.system.admin</li></ul>"
+      summary: "Register a seismic-dms tenant"
+      description: "<ul><li>Register a seismic-dms tenant in a data partition.</li><li>Required roles: seistore.system.admin</li></ul>"
       operationId: tenant-create
       tags:
         - Tenant
@@ -1174,6 +1225,7 @@ paths:
           name: sdpath
           required: true
           type: string
+          default: sd://common/carbon
       responses:
         200:
           description: "Retrieved sub-project users in admin, viewer, editor groups successfully"
@@ -1286,6 +1338,7 @@ paths:
           in: query
           name: sdpath
           required: true
+          default: sd://common
           type: string
       responses:
         200:
@@ -1316,12 +1369,14 @@ paths:
           in: query
           name: email
           required: true
+          default: tester-carbon.slbservice.com@slb.com
           type: string
         - description: "Seismic store tenant path, sd://tenant"
           in: query
           name: sdpath
           required: true
           type: string
+          default: sd://common
       responses:
         200:
           description: "Marking the application as a trusted application was successful."
@@ -1333,7 +1388,6 @@ paths:
           description: "Forbidden"
         404:
           description: "Not found"
-
     get:
       summary: "List the trusted applications in a seismic store tenant"
       description: "<ul><li>Return the list of the trusted application in seismic store tenant.</li><li>Required roles: users.datalake.admin/li></ul>"
@@ -1346,6 +1400,7 @@ paths:
           name: sdpath
           required: true
           type: string
+          default: sd://common
       responses:
         200:
           description: "Retrieved the list of all the trusted applications in the tenant"
@@ -1401,10 +1456,9 @@ definitions:
       seismicmeta:
         {
           "kind": "slb:seistore:seismic2d:1.0.0",
-          "legal": { "legaltags": ["legal-tag"], "otherRelevantDataCountries": ["US"] },
-          "data": { "msg": "hello world, from Data Ecosystem" },
+          "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
+          "data": { "msg": "sample data" },
         }
-
   # OK
   Dataset:
     required:
@@ -1476,21 +1530,20 @@ definitions:
             type: string
           data:
             type: object
-
     example:
       name: "dsx01"
       tenant: "geosolution"
       subproject: "spx01"
       path: "/a/b/c"
       created_by: "user@gtest.com"
-      created_date: "01/08/2017 10:30:19"
-      last_modified_date: "02/08/2017 12:44:22"
+      created_date: "Thu Jul 16 2020 04:30:41 GMT+0000 (Coordinated Universal Time)"
+      last_modified_date: "Thu Jul 16 2020 04:37:41 GMT+0000 (Coordinated Universal Time)"
       metadata: { "k1": "v1", "k2": "v2", "k3": { "k4": "v4" } }
       gcsurl: "gs://sd_geosolution_spx01/12341234"
       type: "segy"
       readonly: false
       filemetadata: { "size": 10737418240, "type": "GENERIC", "nobjects": 160 }
-      ltag: "legal-tag"
+      ltag: "Slb-Private-USA-EHC"
       ctag: "1234567890abcdefg"
       seismicmeta_guid: "slb:seismic:1234abcd5678efgh"
       sbit: "Wx53vrogk0gr4ao"
@@ -1548,7 +1601,7 @@ definitions:
       seismicmeta:
         {
           "kind": "slb:seistore:seismic2d:1.0.0",
-          "legal": { "legaltags": ["legal-tag"], "otherRelevantDataCountries": ["US"] },
+          "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
         }
 
@@ -1691,7 +1744,7 @@ definitions:
         description: Impersonation token
     example:
       token: "eyJhbxGccCI6IkpX.fgdgsdngfwe_cec.xc2Vpc21pYy1ddzZXJ2aWNl"
-
+  # OK
   SubProjectCreateBody:
     required: ["admin", "storage_class", "storage_location"]
     properties:
@@ -1727,6 +1780,7 @@ definitions:
         viewers:
           - service.seistore.p4d.tenant01.subproject01.viewer@slb.p4d.cloud.slb-ds.com
 
+  # OK
   SubProject:
     required: ["name", "tenant", "storage_class", "storage_location", "admin", "ltag", "gcs_bucket"]
     properties:
