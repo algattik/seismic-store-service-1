@@ -75,8 +75,9 @@ export class TestResponseSHD {
          const result = spy.calledWith({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Content-Security-Policy': 'script-src \'self\' \'' +
-               'sha256-/jDKvbQ8cdux+c5epDIqkjHbXDaIY8RucT1PmAe8FG4=\' \'' +
-               'sha256-Zs5IcTe3sZcSKyWwfnpj4Arf2O14pmf4PcoigyHlHK8=\' \'' +
+                'sha256-/jDKvbQ8cdux+c5epDIqkjHbXDaIY8RucT1PmAe8FG4=\' \'' +
+                'sha256-Zs5IcTe3sZcSKyWwfnpj4Arf2O14pmf4PcoigyHlHK8=\'' +
+                'default-src \'self\' \'' + 
                 'sha256-BeXIQk2DxxoDrgnnoH683KOnlwQvO0HH1fT4VFQTi8g=\'',
             'Expires': '0',
             'Service-Provider': Config.CLOUDPROVIDER,
