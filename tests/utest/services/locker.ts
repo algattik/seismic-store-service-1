@@ -124,8 +124,6 @@ export class TestLocker {
 			await Locker.createWriteLock(this.datasetKey, 'Wx123');
 
 			this.redisClient.get(this.datasetKey, (err, response) => {
-				console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-				console.log(response.toString());
 				Tx.checkTrue('Wx123' === response.toString(), done);
 			});
 		});
