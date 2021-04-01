@@ -28,14 +28,14 @@ export class TestServices {
 	public static run() {
 		describe(Tx.title('utest seismic store [services]'), () => {
 
-			// TestGeneralSVC.run();
-			// TestDatasetSVC.run();
-			// TestImpTokenSVC.run();
-			// TestSubProjectSVC.run();
-			// TestTenantSVC.run();
-			// TestAppSVC.run();
-			// TestUserSVC.run();
-			// TestUtilitySVC.run();
+			TestGeneralSVC.run();
+			TestDatasetSVC.run();
+			TestImpTokenSVC.run();
+			TestSubProjectSVC.run();
+			TestTenantSVC.run();
+			TestAppSVC.run();
+			TestUserSVC.run();
+			TestUtilitySVC.run();
 			TestLocker.run();
 		});
 	}

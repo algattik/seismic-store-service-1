@@ -32,9 +32,9 @@ import { TestDES } from './dataecosystem/test';
 import { TestServices } from './services/test';
 import { TestShared } from './shared/test';
 
-// TestAuthorization.run();
+TestAuthorization.run();
 TestServices.run();
-// TestDao.run();
-// TestCloud.run();
-// TestDES.run();
-// TestShared.run();
+TestDao.run();
+TestCloud.run();
+TestDES.run();
+TestShared.run();
