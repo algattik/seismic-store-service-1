@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ export class UtilityParser {
 
     public static ls(req: expRequest): { sdPath: SDPathModel, wmode: string, pagination: PaginationModel } {
 
-        Params.checkString(req.query.sdpath, 'sdapth');
+        Params.checkString(req.query.sdpath, 'sdpath');
         Params.checkString(req.query.wmode, 'wmode', false);
         Params.checkString(req.query.limit, 'limit', false);
         Params.checkString(req.query.cursor, 'cursor', false);
@@ -98,7 +98,7 @@ export class UtilityParser {
 
     public static gcsToken(req: expRequest): { sdPath: SDPathModel, readOnly: boolean } {
 
-        Params.checkString(req.query.sdpath, 'sdapth');
+        Params.checkString(req.query.sdpath, 'sdpath');
 
         // extract the subproject path and ensure that is at least a subproject path
         const sdPath = SDPath.getFromString(req.query.sdpath);
