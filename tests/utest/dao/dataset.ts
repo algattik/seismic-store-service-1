@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021 Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -588,7 +588,7 @@ export class TestDataset {
 
 			Tx.checkTrue(
 				JSON.stringify(result.datasets) === JSON.stringify(
-					['dataset01']) && JSON.stringify(result.directories) === JSON.stringify(['a', 'd']), done);
+					['dataset01']) && JSON.stringify(result.directories) === JSON.stringify(['a/', 'd/']), done);
 
 		});
 	}

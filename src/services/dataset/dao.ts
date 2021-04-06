@@ -130,15 +130,15 @@ export class DatasetDAO {
         if (wmode !== Config.LS_MODE.DATASETS && !pagination.cursor) {
 
             // Retrieve directories
-            let query = journalClient.createQuery(
+            const query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
             const [entitieshy] = await journalClient.runQuery(query);
-            output.datasets = entitieshy.map((entity) => (entity.path as string).substr(dataset.path.length));
+            output.datasets = entitieshy.map((entity) => ((entity.path || '') as string).substr(dataset.path.length));
             output.datasets = output.datasets.map(
                 (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
-                    (elem, index, self) => index === self.indexOf(elem) );
+                    (elem, index, self) => index === self.indexOf(elem));
         }
 
         if (wmode !== Config.LS_MODE.DIRS) {
