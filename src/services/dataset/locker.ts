@@ -15,11 +15,9 @@
 // ============================================================================
 
 import Redlock from 'redlock-async';
-import { DatasetModel } from '.';
-import { IJournal, IJournalTransaction } from '../../cloud';
+
 import { Config } from '../../cloud';
 import { Error, Utils } from '../../shared';
-import { DatasetDAO } from './dao';
 
 // lock interface (this is the cache entry)
 interface ILock { id: string; cnt: number; }
@@ -79,9 +77,9 @@ export class Locker {
             }
 
             // This will automaticcally remove the wid entries from the main read lock
-            this.redisSubscriptionClient.on('message', (channel, key) => {
+            this.redisSubscriptionClient.on('message', async (channel, key) => {
                 if (channel === '__keyevent@0__:expired') {
-                    Locker.unlockReadLockSession(
+                    await Locker.unlockReadLockSession(
                         key.substr(0, key.lastIndexOf('/')),
                         key.substr(key.lastIndexOf('/') + 1)
                     );
@@ -118,11 +116,7 @@ export class Locker {
         return typeof (lock) === 'string';
     }
 
-    public static async getLockFromModel(dataset: DatasetModel): Promise<string[] | string> {
-        return await this.getLock(dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name);
-    }
-
-    private static async getLock(key: string): Promise<string[] | string> {
+    public static async getLock(key: string): Promise<string[] | string> {
         const entity = await this.get(key);
         return entity ? entity.startsWith('rms') ? entity.substr(4).split(':') : entity : undefined;
     }
@@ -159,12 +153,11 @@ export class Locker {
 
     // create a write lock for new resources. This is a locking operation!
     // it place the mutex on the required resource!!! (the caller shold remove the mutex)
-    public static async createWriteLock(
-        dataset: DatasetModel, idempotentWriteLock?: string): Promise<IWriteLockSession> {
+    public static async createWriteLock(lockKey: string, idempotentWriteLock?: string): Promise<IWriteLockSession> {
 
-        const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
-        const cachelock = await this.acquireMutex(datasetPath);
-        const lockValue = (await Locker.getLock(datasetPath));
+        // const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
+        const cachelock = await this.acquireMutex(lockKey);
+        const lockValue = (await Locker.getLock(lockKey));
 
         // idempotency requirement
         if(idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
@@ -175,20 +168,18 @@ export class Locker {
         // if the lockValue is not present in the rediscache,
         // create the [KEY,VALUE] = [datasetPath, wid(sbit)] pair in the redis cache
         if (!lockValue) {
-            dataset.sbit = idempotentWriteLock || this.generateWriteLockID();
-            dataset.sbit_count = 1;
-            this.set(datasetPath, dataset.sbit, this.EXP_WRITELOCK);
-            return {idempotent: false, wid: dataset.sbit, mutex: cachelock, key: datasetPath};
+            const lockValueNew = idempotentWriteLock || this.generateWriteLockID();
+            await this.set(lockKey, lockValueNew, this.EXP_WRITELOCK);
+            return {idempotent: false, wid: lockValueNew, mutex: cachelock, key: lockKey};
         }
 
         // check if writelock already exist and match the input one (idempotent call)
         if(idempotentWriteLock && lockValue === idempotentWriteLock) {
-            return {idempotent: true, wid: idempotentWriteLock, mutex: cachelock, key: datasetPath};
+            return {idempotent: true, wid: idempotentWriteLock, mutex: cachelock, key: lockKey};
         }
 
         throw (Error.make(Error.Status.LOCKED,
-            'The dataset ' + datasetPath + ' is ' +
-            (this.isWriteLock(lockValue) ? 'write' : 'read') + ' locked'));
+            lockKey + ' is ' + (this.isWriteLock(lockValue) ? 'write' : 'read') + ' locked'));
     }
 
     // remove both lock and mutex
@@ -204,9 +195,7 @@ export class Locker {
     }
 
     // acquire write lock on the resource and update the status on the metadata
-    public static async acquireWriteLock(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
-        idempotentWriteLock: string, wid?: string): Promise<ILock> {
+    public static async acquireWriteLock(lockKey: string, idempotentWriteLock: string, wid?: string): Promise<ILock> {
 
         // idempotency requirement
         if(idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
@@ -214,20 +203,19 @@ export class Locker {
                 'The provided idempotency key, for a write-lock operation, must start with the \'W\' letter'));
         }
 
-        const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
-        const cachelock = await this.acquireMutex(datasetPath);
-        const lockValue = (await Locker.getLock(datasetPath));
+        const cachelock = await this.acquireMutex(lockKey);
+        const lockValue = (await Locker.getLock(lockKey));
 
         // Already write locked but the idempotentWriteLock match the once in cache (idempotent call)
         if(lockValue && idempotentWriteLock && lockValue === idempotentWriteLock) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             return {id: idempotentWriteLock, cnt: 0};
         }
 
         if (lockValue && wid && wid !== lockValue && this.isWriteLock(lockValue)) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                'The dataset ' + datasetPath + ' is locked for write with different id'));
+                lockKey + ' is locked for write with different id'));
         }
 
         // ------------------------------------------------
@@ -236,22 +224,10 @@ export class Locker {
 
         if (!lockValue) {
 
-            // check if the dataset is invalid
-            const datasetOut = await DatasetDAO.get(journalClient, dataset);
-            if (datasetOut[0].sbit) { // write-locked (invalid file)
-                await this.releaseMutex(cachelock, datasetPath);
-                throw (Error.make(Error.Status.BAD_REQUEST,
-                    'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-            }
-
-            // create a new write lock and save in cache and journalClient
+            // create a new write lock and save in cache
             const lockID = idempotentWriteLock || this.generateWriteLockID();
-            await Locker.set(datasetPath, lockID, this.EXP_WRITELOCK);
-            datasetOut[0].sbit = lockID;
-            datasetOut[0].sbit_count = 1;
-            await DatasetDAO.update(journalClient, datasetOut[0], datasetOut[1]);
-
-            await this.releaseMutex(cachelock, datasetPath);
+            await Locker.set(lockKey, lockID, this.EXP_WRITELOCK);
+            await this.releaseMutex(cachelock, lockKey);
             return { id: lockID, cnt: 1 };
         }
 
@@ -261,34 +237,32 @@ export class Locker {
 
         // wid not specified - impossible lock
         if (!wid) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                'The dataset ' + datasetPath + ' is locked for ' + (this.isWriteLock(lockValue) ? 'write' : 'read')));
+                lockKey + ' is locked for ' + (this.isWriteLock(lockValue) ? 'write' : 'read')));
         }
 
         // write locked and different wid
         if (this.isWriteLock(lockValue) && wid !== lockValue) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                'The dataset ' + datasetPath + ' is locked for write with different id'));
+                lockKey + ' is locked for write with different id'));
         }
 
         if (!this.isWriteLock(lockValue) && lockValue.indexOf(wid) === -1) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                'The dataset ' + datasetPath + ' is locked for read widh different ids'));
+                lockKey + ' is locked for read widh different ids'));
         }
 
         // Trusted Open
-        await this.releaseMutex(cachelock, datasetPath);
+        await this.releaseMutex(cachelock, lockKey);
         return { id: wid, cnt: this.isWriteLock(lockValue) ? 1 : (lockValue as string[]).length };
 
     }
 
     // create lock existing resource
-    public static async acquireReadLock(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
-        idempotentReadLock?: string, wid?: string): Promise<ILock> {
+    public static async acquireReadLock(lockKey: string, idempotentReadLock?: string, wid?: string): Promise<ILock> {
 
         // idempotency requirement
         if(idempotentReadLock && !idempotentReadLock.startsWith('R')) {
@@ -296,13 +270,13 @@ export class Locker {
                 'The provided idempotency key, for a read-lock operation, must start with the \'R\' letter'));
         }
 
-        const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
-        const cachelock = await this.acquireMutex(datasetPath);
-        const lockValue = (await Locker.getLock(datasetPath));
+        // const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
+        const cachelock = await this.acquireMutex(lockKey);
+        const lockValue = (await Locker.getLock(lockKey));
 
         if(lockValue && idempotentReadLock && !this.isWriteLock(lockValue) &&
             (lockValue as string[]).indexOf(idempotentReadLock) > -1) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             return { id: idempotentReadLock, cnt: (lockValue as string[]).length };
         }
 
@@ -310,28 +284,27 @@ export class Locker {
 
             // wid not specified -> error locked for write
             if (!wid) {
-                await this.releaseMutex(cachelock, datasetPath);
+                await this.releaseMutex(cachelock, lockKey);
                 throw (Error.make(Error.Status.LOCKED,
-                    'The dataset ' + datasetPath + ' is locked for write'));
+                    lockKey + ' is locked for write'));
             }
 
             // wid different -> error different wid
             if (wid !== lockValue) {
-                await this.releaseMutex(cachelock, datasetPath);
+                await this.releaseMutex(cachelock, lockKey);
                 throw (Error.make(Error.Status.LOCKED,
-                    'The dataset ' + datasetPath + ' is locked for write with different wid'));
+                    lockKey + ' is locked for write with different wid'));
             }
 
             // wid match -> TRUSTED OPEN
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             return { id: lockValue, cnt: 1 };
         }
 
         if (lockValue && wid && lockValue.indexOf(wid) === -1) {
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                'The dataset ' + datasetPath + ' is locked for read with different ids'));
-
+                lockKey + ' is locked for read with different ids'));
         }
 
         // ------------------------------------------------
@@ -340,22 +313,14 @@ export class Locker {
 
         if (!lockValue) {
 
-            // check if the dataset is invalid
-            const datasetOut = (await DatasetDAO.get(journalClient, dataset))[0];
-            if (datasetOut.sbit) { // write-locked (invalid file)
-                await this.releaseMutex(cachelock, datasetPath);
-                throw (Error.make(Error.Status.BAD_REQUEST,
-                    'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-            }
-
             // create a new read lock session and a new main read lock
             const lockID = idempotentReadLock || this.generateReadLockID();
-            await Locker.setLock(datasetPath + '/' + lockID, lockID, this.EXP_READLOCK);
-            await Locker.setLock(datasetPath, [lockID], this.EXP_READLOCK + this.TIME_5MIN);
+            await Locker.setLock(lockKey + '/' + lockID, lockID, this.EXP_READLOCK);
+            await Locker.setLock(lockKey, [lockID], this.EXP_READLOCK + this.TIME_5MIN);
             // when the session key expired i have to remove the wid/lockid from the main read lock
-            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', datasetPath + '/' + lockID);
+            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID);
 
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             return { id: lockID, cnt: 1 };
         }
 
@@ -367,51 +332,39 @@ export class Locker {
         if (!wid) {
             const lockID = idempotentReadLock || this.generateReadLockID();
             (lockValue as string[]).push(lockID);
-            await Locker.setLock(datasetPath + '/' + lockID, lockID, this.EXP_READLOCK);
-            await Locker.setLock(datasetPath, lockValue, this.EXP_READLOCK + this.TIME_5MIN);
-            await this.releaseMutex(cachelock, datasetPath);
+            await Locker.setLock(lockKey + '/' + lockID, lockID, this.EXP_READLOCK);
+            await Locker.setLock(lockKey, lockValue, this.EXP_READLOCK + this.TIME_5MIN);
+            await this.releaseMutex(cachelock, lockKey);
             // when the session key expired i have to remove the wid/lockid from the main read lock
-            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', datasetPath + '/' + lockID);
+            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID);
             return { id: lockID, cnt: (lockValue as string[]).length };
         }
 
         // wid present and found in read lock ids -> TRUSTED OPEN
-        await this.releaseMutex(cachelock, datasetPath);
+        await this.releaseMutex(cachelock, lockKey);
         return { id: wid, cnt: (lockValue as string[]).length };
 
     }
 
-    public static async unlock(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
-        wid?: string, skipInvalid?: boolean): Promise<ILock> {
+    public static async unlock(lockKey: string, wid?: string): Promise<ILock> {
 
-        const datasetPath = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
+        const cachelock = await this.acquireMutex(lockKey);
 
-        const cachelock = await this.acquireMutex(datasetPath);
-
-        const lockValue = (await Locker.getLock(datasetPath));
+        const lockValue = (await Locker.getLock(lockKey));
 
         if (wid && lockValue) {
 
             if (this.isWriteLock(lockValue)) {
                 // wrong close id
                 if (lockValue !== wid) {
-                    await this.releaseMutex(cachelock, datasetPath);
+                    await this.releaseMutex(cachelock, lockKey);
                     throw (Error.make(Error.Status.NOT_FOUND,
-                        'The dataset ' + datasetPath + ' has been locked with different ID'));
-                }
-
-                // unlock in datastore
-                const datasetUpdate = (await DatasetDAO.get(journalClient, dataset));
-                if (datasetUpdate[0]) {
-                    datasetUpdate[0].sbit = null;
-                    datasetUpdate[0].sbit_count = 0;
-                    await DatasetDAO.update(journalClient, datasetUpdate[0], datasetUpdate[1]);
+                        lockKey + ' has been locked with different ID'));
                 }
 
                 // unlock in cache
-                await Locker.del(datasetPath);
-                await this.releaseMutex(cachelock, datasetPath);
+                await Locker.del(lockKey);
+                await this.releaseMutex(cachelock, lockKey);
                 return { id: null, cnt: 0 };
             }
         }
@@ -425,41 +378,22 @@ export class Locker {
             // if dataset is locked
             if (lockValue) {
 
-                // if write locked remove lock from journalClient
-                if (this.isWriteLock(lockValue)) {
-                    const datasetTmp1 = (await DatasetDAO.get(journalClient, dataset));
-                    if (datasetTmp1[0]) {
-                        datasetTmp1[0].sbit = null;
-                        await DatasetDAO.update(journalClient, datasetTmp1[0], datasetTmp1[1]);
-                    }
-                }
-
                 // if read locked remove all session read locks
                 if (!this.isWriteLock(lockValue)) {
                     for (const item of lockValue) {
-                        await Locker.del(datasetPath + '/' + item);
+                        await Locker.del(lockKey + '/' + item);
                     }
                 }
 
                 // remove main lock from cache
-                await Locker.del(datasetPath);
-                await this.releaseMutex(cachelock, datasetPath);
+                await Locker.del(lockKey);
+                await this.releaseMutex(cachelock, lockKey);
                 return { id: null, cnt: 0 };
 
             }
 
-            // check if invalid
-            if (!skipInvalid) {
-                const datasetTmp2 = (await DatasetDAO.get(journalClient, dataset))[0];
-                if (datasetTmp2 && datasetTmp2.sbit) {
-                    await this.releaseMutex(cachelock, datasetPath);
-                    throw (Error.make(Error.Status.NOT_FOUND,
-                        'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-                }
-            }
-
             // dataset already unlocked
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             return { id: null, cnt: 0 };
         }
 
@@ -474,21 +408,21 @@ export class Locker {
 
             // wrong close id
             if (lockindex === -1) {
-                await this.releaseMutex(cachelock, datasetPath);
+                await this.releaseMutex(cachelock, lockKey);
                 throw (Error.make(Error.Status.NOT_FOUND,
-                    'The dataset ' + datasetPath + ' has been locked with different IDs'));
+                    lockKey + ' has been locked with different IDs'));
             }
 
             // remove the session read lock and update the main read lock
-            await Locker.del(datasetPath + '/' + wid);
+            await Locker.del(lockKey + '/' + wid);
             const lockValueNew = (lockValue as string[]).filter((el) => el !== wid);
             if (lockValueNew.length > 0) {
-                const ttl = await Locker.getTTL(datasetPath);
-                await Locker.setLock(datasetPath, lockValueNew, ttl);
+                const ttl = await Locker.getTTL(lockKey);
+                await Locker.setLock(lockKey, lockValueNew, ttl);
             } else {
-                await Locker.del(datasetPath);
+                await Locker.del(lockKey);
             }
-            await this.releaseMutex(cachelock, datasetPath);
+            await this.releaseMutex(cachelock, lockKey);
             return {
                 cnt: lockValueNew.length > 0 ? lockValueNew.length : 0,
                 id: lockValueNew.length > 0 ? lockValueNew.join(',') : null,
@@ -499,20 +433,8 @@ export class Locker {
         // [03] - unlocked
         // ------------------------------------------------
 
-        // if dataset not lock in cache
-        const datasetOut = (await DatasetDAO.get(journalClient, dataset))[0];
-
-        // case 1: invalid dataset
-        if (!skipInvalid) {
-            if (datasetOut.sbit) {
-                await this.releaseMutex(cachelock, datasetPath);
-                throw (Error.make(Error.Status.NOT_FOUND,
-                    'The dataset ' + datasetPath + ' is invalid and can only be deleted'));
-            }
-        }
-
         // case 2: dataset already unlocked
-        await this.releaseMutex(cachelock, datasetPath);
+        await this.releaseMutex(cachelock, lockKey);
         return { id: null, cnt: 0 };
     }
 

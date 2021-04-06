@@ -289,7 +289,8 @@ export class UtilityHandler {
         try {
 
             // check if a copy is already in progress from a previous request
-            const toDatasetLock = await Locker.getLockFromModel(datasetTo)
+            const lockKeyTo = datasetTo.tenant + '/' + datasetTo.subproject + datasetTo.path + datasetTo.name;
+            const toDatasetLock = await Locker.getLock(lockKeyTo)
 
             const results = await DatasetDAO.get(journalClient, datasetTo)
             preRegisteredDataset = results[0] as DatasetModel
@@ -326,10 +327,11 @@ export class UtilityHandler {
                     ' already exists'));
             }
 
-            writeLockSession = await Locker.createWriteLock(datasetTo);
+            writeLockSession = await Locker.createWriteLock(lockKeyTo);
 
             // check if the source can be opened for read (no copy on writelock dataset)
-            const fromDatasetLock = await Locker.getLockFromModel(datasetFrom);
+            const lockKeyFrom = datasetFrom.tenant + '/' + datasetFrom.subproject + datasetFrom.path + datasetFrom.name;
+            const fromDatasetLock = await Locker.getLock(lockKeyFrom);
 
             if (fromDatasetLock && Locker.isWriteLock(fromDatasetLock)) {
                 throw (Error.make(Error.Status.BAD_REQUEST,
@@ -341,7 +343,7 @@ export class UtilityHandler {
             let readlock: { id: string, cnt: number; };
 
             if (userInputs.lock) {
-                readlock = await Locker.acquireReadLock(journalClient, datasetFrom);
+                readlock = await Locker.acquireReadLock(lockKeyFrom);
             }
 
             if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {

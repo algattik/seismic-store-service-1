@@ -100,7 +100,7 @@ export class TestLocker {
 
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(Locker, 'get' as any).resolves(this.writeLockValueInCache);
-			const result = await Locker.getLockFromModel(this.dataset);
+			const result = await Locker.getLock(this.datasetKey);
 			Tx.checkTrue(result === this.writeLockValueInCache, done);
 		});
 	}
@@ -121,10 +121,10 @@ export class TestLocker {
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(Redlock.prototype, 'lock').resolves();
 
-			await Locker.createWriteLock(this.dataset);
+			await Locker.createWriteLock(this.datasetKey, 'Wx123');
 
 			this.redisClient.get(this.datasetKey, (err, response) => {
-				Tx.checkTrue(this.dataset.sbit === response.toString(), done);
+				Tx.checkTrue('Wx123' === response.toString(), done);
 			});
 		});
 
@@ -133,7 +133,7 @@ export class TestLocker {
 
 			this.sandbox.stub(Locker, 'acquireMutex').rejects();
 			try {
-				await Locker.createWriteLock(this.dataset);
+				await Locker.createWriteLock(this.datasetKey);
 			} catch (e) {
 				done();
 			}
@@ -150,24 +150,9 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'getLock' as any).resolves(this.writeLockValueInCache);
 
 			try {
-				await Locker.acquireWriteLock(this.journal, this.dataset, 'WAxBxCx');
+				await Locker.acquireWriteLock(this.datasetKey, 'WAxBxCx');
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
-			}
-		});
-
-		// unlocked dataset
-		Tx.test(async (done: any) => {
-			this.sandbox.stub(Locker, 'acquireMutex').resolves();
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(undefined);
-			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			this.dataset.sbit = 'WAxBxCx';
-			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, '']);
-
-			try {
-				await Locker.acquireWriteLock(this.journal, this.dataset, undefined);
-			} catch (e) {
-				Tx.checkTrue(e.error.code === 400, done);
 			}
 		});
 
@@ -179,7 +164,7 @@ export class TestLocker {
 			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
 			this.sandbox.stub(DatasetDAO, 'update').resolves();
 
-			const result = await Locker.acquireWriteLock(this.journal, this.dataset, undefined);
+			const result = await Locker.acquireWriteLock(this.datasetKey, undefined);
 
 			Tx.checkTrue(result.id != null && result.cnt === 1, done);
 
@@ -193,7 +178,7 @@ export class TestLocker {
 
 			// no wid from userinput
 			try {
-				await Locker.acquireWriteLock(this.journal, this.dataset, undefined);
+				await Locker.acquireWriteLock(this.datasetKey, undefined);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
 			}
@@ -208,7 +193,7 @@ export class TestLocker {
 
 			// lock value in the cache and the user supplied wid mismatch
 			try {
-				await Locker.acquireWriteLock(this.journal, this.dataset, undefined);
+				await Locker.acquireWriteLock(this.datasetKey, undefined);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
 			}
@@ -227,7 +212,7 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
 
 			// the wid is a session readlock value;
-			const result = await Locker.acquireWriteLock(this.journal, this.dataset, undefined, sessionReadLockValue);
+			const result = await Locker.acquireWriteLock(this.datasetKey, undefined, sessionReadLockValue);
 			Tx.checkTrue(result.id === sessionReadLockValue && result.cnt === mutliSessionReadLockArray.length, done);
 
 		});
@@ -244,7 +229,7 @@ export class TestLocker {
 
 			// the wid value is not present in the multi session read locks string;
 			try {
-				await Locker.acquireWriteLock(this.journal, this.dataset, undefined, 'RRandomReadLockValue');
+				await Locker.acquireWriteLock(this.datasetKey, undefined, 'RRandomReadLockValue');
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
 			}
@@ -263,7 +248,7 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'getLock' as any).resolves(this.writeLockValueInCache);
 
 			try {
-				await Locker.acquireReadLock(this.journal, this.dataset);
+				await Locker.acquireReadLock(this.datasetKey);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
 			}
@@ -278,7 +263,7 @@ export class TestLocker {
 			const wid = this.writeLockValueInCache + '-mismatch-value';
 
 			try {
-				await Locker.acquireReadLock(this.journal, this.dataset, undefined, wid);
+				await Locker.acquireReadLock(this.datasetKey, undefined, wid);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
 			}
@@ -291,7 +276,7 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'getLock' as any).resolves(this.writeLockValueInCache);
 
 			const wid = this.writeLockValueInCache;
-			const result = await Locker.acquireReadLock(this.journal, this.dataset, undefined, wid);
+			const result = await Locker.acquireReadLock(this.datasetKey, undefined, wid);
 
 			Tx.checkTrue(result.id === wid && result.cnt === 1, done);
 		});
@@ -307,27 +292,11 @@ export class TestLocker {
 
 			const wid = 'read-lock-not-in-mutlisession-readlock';
 			try {
-				const result = await Locker.acquireReadLock(this.journal, this.dataset, undefined, wid);
+				const result = await Locker.acquireReadLock(this.datasetKey, undefined, wid);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 423, done);
 			}
 		});
-
-		// unlocked dataset with no value in cache but sbit in datastore is not null
-		Tx.test(async (done: any) => {
-			this.sandbox.stub(Locker, 'acquireMutex').resolves();
-			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(undefined);
-			this.dataset.sbit = 'sbit';
-			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
-
-			try {
-				const result = await Locker.acquireReadLock(this.journal, this.dataset);
-			} catch (e) {
-				Tx.checkTrue(e.error.code === 400, done);
-			}
-		});
-
 
 		// unlocked dataset with no value in cache
 		Tx.test(async (done: any) => {
@@ -339,7 +308,7 @@ export class TestLocker {
 			const readlockID = 'RAxBxCx';
 			this.sandbox.stub(Locker, 'generateReadLockID' as any).returns(readlockID);
 
-			const result = await Locker.acquireReadLock(this.journal, this.dataset);
+			const result = await Locker.acquireReadLock(this.datasetKey);
 
 			Tx.checkTrue(result.id === readlockID && result.cnt === 1, done);
 		});
@@ -358,7 +327,7 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
 			this.sandbox.stub(Locker, 'generateReadLockID' as any).returns(readlockID);
 
-			const result = await Locker.acquireReadLock(this.journal, this.dataset);
+			const result = await Locker.acquireReadLock(this.datasetKey);
 
 			Tx.checkTrue(result.id === readlockID && result.cnt === 3, done);
 
@@ -367,6 +336,7 @@ export class TestLocker {
 	}
 
 	private static testUnlock() {
+
 		Tx.sectionInit('unlock');
 
 		// write lock cache value differs from the wid
@@ -377,7 +347,7 @@ export class TestLocker {
 
 			const wid = 'WRandomValue';
 			try {
-				await Locker.unlock(this.journal, this.dataset, wid);
+				await Locker.unlock(this.datasetKey, wid);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 404, done);
 			}
@@ -394,7 +364,7 @@ export class TestLocker {
 			lockerDelStub.resolves();
 			const wid = this.writeLockValueInCache;
 
-			const result = await Locker.unlock(this.journal, this.dataset, wid);
+			const result = await Locker.unlock(this.datasetKey, wid);
 
 			Tx.checkTrue(lockerDelStub.calledWith(this.datasetKey) && result.id === null && result.cnt === 0, done);
 
@@ -411,7 +381,7 @@ export class TestLocker {
 			const lockerDelStub = this.sandbox.stub(Locker, 'del');
 			lockerDelStub.resolves();
 
-			const result = await Locker.unlock(this.journal, this.dataset);
+			const result = await Locker.unlock(this.datasetKey);
 
 			Tx.checkTrue(lockerDelStub.calledWith(this.datasetKey) && result.id === null && result.cnt === 0, done);
 
@@ -430,7 +400,7 @@ export class TestLocker {
 			const lockerDelStub = this.sandbox.stub(Locker, 'del');
 			lockerDelStub.resolves();
 
-			const result = await Locker.unlock(this.journal, this.dataset);
+			const result = await Locker.unlock(this.datasetKey);
 
 			const validationResult = lockerDelStub.getCall(0).calledWith(this.datasetKey + '/' + mutliSessionReadLockArray[0]) &&
 				lockerDelStub.getCall(1).calledWith(this.datasetKey + '/' + mutliSessionReadLockArray[1]) &&
@@ -462,7 +432,7 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'getTTL' as any).resolves(3600);
 
 
-			const result = await Locker.unlock(this.journal, this.dataset, wid);
+			const result = await Locker.unlock(this.datasetKey, wid);
 
 			// during unlock, wid should be removed from the mutli session read lock array
 			// and the new array value must be reset in cache
@@ -490,28 +460,7 @@ export class TestLocker {
 			const wid = 'WSomeRandom';
 
 			try {
-				await Locker.unlock(this.journal, this.dataset, wid);
-			} catch (e) {
-				Tx.checkTrue(e.error.code === 404, done);
-			}
-
-		});
-
-
-		// cache was no lock value for the dataset but the user supplies wid
-		Tx.test(async (done: any) => {
-
-			const wid = 'WSomeRandom';
-			this.dataset.sbit = 'WSomeRandom';
-
-			this.sandbox.stub(Locker, 'acquireMutex').resolves();
-			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(undefined);
-			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
-			this.sandbox.stub(DatasetDAO, 'update').resolves();
-
-			try {
-				await Locker.unlock(this.journal, this.dataset, wid, false);
+				await Locker.unlock(this.datasetKey, wid);
 			} catch (e) {
 				Tx.checkTrue(e.error.code === 404, done);
 			}
@@ -530,7 +479,7 @@ export class TestLocker {
 			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
 			this.sandbox.stub(DatasetDAO, 'update').resolves();
 
-			const result = await Locker.unlock(this.journal, this.dataset, wid, true);
+			const result = await Locker.unlock(this.datasetKey, wid);
 
 			Tx.checkTrue(result.id === null && result.cnt === 0, done);
 

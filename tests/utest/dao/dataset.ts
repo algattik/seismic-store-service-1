@@ -513,25 +513,25 @@ export class TestDataset {
 	private static testFixOldModel() {
 		Tx.sectionInit('fix oldmodel');
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves('WriteLockValue');
+			this.sandbox.stub(Locker, 'getLock').resolves('WriteLockValue');
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');
 			Tx.checkTrue(result.sbit === 'WriteLockValue' && result.sbit_count === 1, done);
 		});
 
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves(['RAxBxCx', 'RDxExFx']);
+			this.sandbox.stub(Locker, 'getLock').resolves(['RAxBxCx', 'RDxExFx']);
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');
 			Tx.checkTrue(result.sbit === 'RAxBxCx,RDxExFx' && result.sbit_count === 2, done);
 		});
 
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves(undefined);
+			this.sandbox.stub(Locker, 'getLock').resolves(undefined);
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');
 			Tx.checkTrue(result.sbit === null && result.sbit_count === 0, done);
 		});
 
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves(undefined);
+			this.sandbox.stub(Locker, 'getLock').resolves(undefined);
 			const dataset = { name: 'dataset-a' } as DatasetModel;
 			const result = await DatasetDAO.fixOldModel(dataset, 'tenant-a', 'subproject-a');
 

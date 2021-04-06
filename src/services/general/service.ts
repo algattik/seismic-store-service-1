@@ -21,13 +21,13 @@ import { GeneralOP } from './optype';
 const router = Router();
 
 // get the service status response [jwt not required by esp]
-router.get('/', (req: expRequest, res: expResponse) => {
-    GeneralHandler.handler(req, res, GeneralOP.Status);
+router.get('/', async (req: expRequest, res: expResponse) => {
+    await GeneralHandler.handler(req, res, GeneralOP.Status);
 });
 
 // get the service status response [jwt required by esp]
-router.get('/access', (req: expRequest, res: expResponse) => {
-    GeneralHandler.handler(req, res, GeneralOP.Access);
+router.get('/access', async (req: expRequest, res: expResponse) => {
+    await GeneralHandler.handler(req, res, GeneralOP.Access);
 });
 
 export { router as GeneralRouter };

@@ -50,7 +50,7 @@ async function ServerStart() {
             TraceFactory.build(Config.CLOUDPROVIDER).start();
         }
 
-        new (await import('./server')).Server().start();
+        await new (await import('./server')).Server().start();
 
     } catch (error) {
         // tslint:disable-next-line
@@ -60,4 +60,5 @@ async function ServerStart() {
 
 }
 
+// tslint:disable-next-line: no-floating-promises
 ServerStart();
