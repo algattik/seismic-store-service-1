@@ -607,12 +607,14 @@ export class DatasetHandler {
             const datasetOUTLockKey = datasetOUT.tenant + '/' + datasetOUT.subproject
                 + datasetOUT.path + datasetOUT.name;
             const datasetOUTLockRes = await Locker.getLock(datasetOUTLockKey);
-            if(Locker.isWriteLock(datasetOUTLockRes)) {
-                datasetOUT.sbit = datasetOUTLockRes as string;
-                datasetOUT.sbit_count = 1;
-            } else {
-                datasetOUT.sbit = (datasetOUTLockRes as string[]).join(':');
-                datasetOUT.sbit_count = datasetOUTLockRes.length;
+            if(datasetOUTLockRes) {
+                if(Locker.isWriteLock(datasetOUTLockRes)) {
+                    datasetOUT.sbit = datasetOUTLockRes as string;
+                    datasetOUT.sbit_count = 1;
+                } else {
+                    datasetOUT.sbit = (datasetOUTLockRes as string[]).join(':');
+                    datasetOUT.sbit_count = datasetOUTLockRes.length;
+                }
             }
         }
 
