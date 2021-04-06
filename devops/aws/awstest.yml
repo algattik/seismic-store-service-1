@@ -1,0 +1,25 @@
+aws-test-newman:
+  extends:
+    - .aws
+    - .aws_base_variables
+    - .aws_variables
+  stage: integration
+  image: node
+  needs: ['aws-update-ecs']
+  script:
+    - apt-get update
+    - apt-get install -y python
+    - apt-get install -y python-pip
+    - pip install -r devops/aws/requirements.txt
+    - svctoken=$(python devops/scripts/aws_jwt_client.py)   
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url=${SEISMICSTORE_SVC_URL} --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user-idtoken="$svctoken" --tenant=opendes --subproject=awsdemosubproject --admin-email="${AWS_COGNITO_AUTH_PARAMS_USER}" --datapartition=opendes --legaltag01=opendes-sdmstestlegaltag --legaltag02=opendes-sdmstestlegaltag --subproject-long-name=subprojectlonggggggggggggggggggggggname --VCS-Provider="${ISGITLAB}"
+  only:
+    variables:
+      -  $AWS == 'true'
+  artifacts:
+    when: always
+    paths:
+      - $INTEGRATION_TEST_DIR
+    expire_in: 14 days

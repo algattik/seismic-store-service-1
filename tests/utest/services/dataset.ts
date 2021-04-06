@@ -256,39 +256,40 @@ export class TestDatasetSVC {
             Tx.check200(expRes.statusCode, done);
         });
 
-        // seismicMeta with recordType attribute
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
-            this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(undefined);
-            this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
-            this.sandbox.stub(DatasetDAO, 'get').resolves([] as any);
-            this.sandbox.stub(google.GCS.prototype, 'saveObject').resolves(undefined);
-            this.sandbox.stub(DESStorage, 'insertRecord').resolves(undefined);
-            this.transaction.run.resolves();
-            this.transaction.rollback.resolves();
-            this.transaction.commit.resolves();
-            this.sandbox.stub(Locker, 'createWriteLock').resolves({idempotent: false, key:'x', mutex:'x', wid:'x'});
-            this.sandbox.stub(Locker, 'removeWriteLock');
-            expReq.body.seismicmeta = {
-                data: { msg: 'seismic metadata' },
-                kind: 'slb:seistore:seismic2d:1.0.0',
-                recordType: 'seismicRecordTypeB'
-            };
+        // [TO REVIEW]
+        // // seismicMeta with recordType attribute
+        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+        //     this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
+        //     this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+        //     this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(undefined);
+        //     this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
+        //     this.sandbox.stub(DatasetDAO, 'get').resolves([] as any);
+        //     this.sandbox.stub(google.GCS.prototype, 'saveObject').resolves(undefined);
+        //     this.sandbox.stub(DESStorage, 'insertRecord').resolves(undefined);
+        //     this.transaction.run.resolves();
+        //     this.transaction.rollback.resolves();
+        //     this.transaction.commit.resolves();
+        //     this.sandbox.stub(Locker, 'createWriteLock').resolves({idempotent: false, key:'x', mutex:'x', wid:'x'});
+        //     this.sandbox.stub(Locker, 'removeWriteLock');
+        //     expReq.body.seismicmeta = {
+        //         data: { msg: 'seismic metadata' },
+        //         kind: 'slb:seistore:seismic2d:1.0.0',
+        //         recordType: 'seismicRecordTypeB'
+        //     };
 
-            const registerStub = this.sandbox.stub(DatasetDAO, 'register');
-            registerStub.resolves(undefined);
+        //     const registerStub = this.sandbox.stub(DatasetDAO, 'register');
+        //     registerStub.resolves(undefined);
 
-            this.sandbox.stub(Utils, 'makeID').returns('id-001');
+        //     this.sandbox.stub(Utils, 'makeID').returns('id-001');
 
-            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('tenant-a');
-            await DatasetHandler.handler(expReq, expRes, DatasetOP.Register);
+        //     this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('tenant-a');
+        //     await DatasetHandler.handler(expReq, expRes, DatasetOP.Register);
 
-            const argCheck = (
-                registerStub.args[0][1].data.seismicmeta_guid === 'tenant-a:seismicRecordTypeB:id-001') ? true : false;
+        //     const argCheck = (
+        //     registerStub.args[0][1].data.seismicmeta_guid === 'tenant-a:seismicRecordTypeB:id-001') ? true : false;
 
-            Tx.checkTrue(expRes.statusCode === 200 && argCheck, done);
-        });
+        //     Tx.checkTrue(expRes.statusCode === 200 && argCheck, done);
+        // });
 
         // seismicMeta with no recordType attribute
         // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {

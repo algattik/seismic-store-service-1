@@ -17,6 +17,9 @@
 import { Request as expRequest, Response as expResponse } from 'express';
 import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
+import { JournalFactoryTenantClient } from '../../../src/cloud';
+import { Config } from '../../../src/cloud/config';
+import { google } from '../../../src/cloud/providers';
 import { SubProjectDAO, SubprojectGroups, SubProjectModel } from '../../../src/services/subproject';
 import { TenantDAO } from '../../../src/services/tenant';
 import { UserHandler } from '../../../src/services/user/handler';
@@ -36,6 +39,17 @@ export class TestUserSVC {
             beforeEach(() => {
                 this.spy = sinon.createSandbox();
                 this.spy.stub(Response, 'writeMetric').returns();
+                this.subproject = {
+                    name: 'subproject-test',
+                    admin: 'admin@xyz.com',
+                    acls: {
+                        admins: [],
+                        viewers: []
+                    }
+                } as SubProjectModel
+
+                this.journal = this.spy.createStubInstance(google.DatastoreDAO);
+                Config.CLOUDPROVIDER = 'google';
             });
             afterEach(() => { this.spy.restore(); });
 
@@ -50,6 +64,8 @@ export class TestUserSVC {
     }
 
     private static spy: sinon.SinonSandbox;
+    private static subproject: SubProjectModel;
+    private static journal: any;
 
     private static add() {
 
@@ -62,6 +78,8 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'addUserToGroup');
             this.spy.stub(UserHandler, 'doNotThrowIfNotMember' as never).resolves();
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check200(expRes.statusCode, done);
         });
@@ -73,6 +91,8 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'addUserToGroup');
             this.spy.stub(UserHandler, 'doNotThrowIfNotMember' as never).resolves();
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check200(expRes.statusCode, done);
         });
@@ -84,7 +104,9 @@ export class TestUserSVC {
             this.spy.stub(AuthGroups, 'removeUserFromGroup').resolves();
             this.spy.stub(AuthGroups, 'addUserToGroup');
             this.spy.stub(UserHandler, 'doNotThrowIfNotMember' as never).resolves();
-            this.spy.stub(TenantDAO, 'get').resolves({name: 'tenant-a', esd: 'esd', gcpid: 'gcpid'} as any);
+            this.spy.stub(TenantDAO, 'get').resolves({ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid' } as any);
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check200(expRes.statusCode, done);
         });
@@ -93,6 +115,8 @@ export class TestUserSVC {
             expReq.body.email = 'user@user.com';
             expReq.body.path = 'sd://tnx';
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check400(expRes.statusCode, done);
         });
@@ -102,6 +126,8 @@ export class TestUserSVC {
                 { email: '', sdPath: { tenant: 'tnx01', subproject: 'spx' } as SDPathModel, groupRole: 'none' });
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(Response, 'writeError');
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             done();
         });
@@ -141,7 +167,11 @@ export class TestUserSVC {
             expReq.body.email = 'user2@user.com';
             expReq.body.path = 'sd://tnx/spx';
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
             this.spy.stub(AuthGroups, 'removeUserFromGroup');
+            this.subproject.acls.admins = ["group1", "group2"]
+            this.subproject.acls.viewers = ["vgroup1", "vgroup2"]
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             Tx.check200(expRes.statusCode, done);
         });
@@ -150,6 +180,8 @@ export class TestUserSVC {
             expReq.body.email = 'user2@user.com';
             expReq.body.path = 'sd://tnx';
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             Tx.check400(expRes.statusCode, done);
         });
@@ -158,6 +190,8 @@ export class TestUserSVC {
             expReq.body.email = 'user@user.com';
             expReq.body.path = 'sd://tnx/spx';
             this.spy.stub(Response, 'writeError');
+            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal)
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             done();
         });
@@ -189,6 +223,7 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(Auth, 'isUserAuthorized');
             this.spy.stub(AuthGroups, 'listUsersInGroup').resolves([{ email: 'userx' }] as never);
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject)
             await UserHandler.handler(expReq, expRes, UserOP.List);
             Tx.check200(expRes.statusCode, done);
         });
@@ -215,20 +250,20 @@ export class TestUserSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx/spx';
-            const prefix = SubprojectGroups.groupPrefix('tnx', 'spx');
+            const prefix = SubprojectGroups.serviceGroupPrefix('tnx', 'spx');
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves([{ name: prefix + '.abc' }] as any);
-            this.spy.stub(SubProjectDAO, 'list').resolves([{name: 'spx'} as SubProjectModel ] as any)
+            this.spy.stub(SubProjectDAO, 'list').resolves([{ name: 'spx' } as SubProjectModel] as any)
             await UserHandler.handler(expReq, expRes, UserOP.Roles);
             Tx.check200(expRes.statusCode, done);
         });
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx/spx';
-            const prefix = SubprojectGroups.groupPrefix('tnx', 'spx');
+            const prefix = SubprojectGroups.serviceGroupPrefix('tnx', 'spx');
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves([{ name: prefix + '.abc.abc' }] as any);
-            this.spy.stub(SubProjectDAO, 'list').resolves([{name: 'spx'} as SubProjectModel ] as any)
+            this.spy.stub(SubProjectDAO, 'list').resolves([{ name: 'spx' } as SubProjectModel] as any)
             await UserHandler.handler(expReq, expRes, UserOP.Roles);
             Tx.check200(expRes.statusCode, done);
         });
@@ -237,7 +272,7 @@ export class TestUserSVC {
             expReq.query.sdpath = 'sd://tnx';
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves([] as any);
-            this.spy.stub(SubProjectDAO, 'list').resolves([{name: 'spx'} as SubProjectModel ] as any)
+            this.spy.stub(SubProjectDAO, 'list').resolves([{ name: 'spx' } as SubProjectModel] as any)
             await UserHandler.handler(expReq, expRes, UserOP.Roles);
             Tx.check200(expRes.statusCode, done);
         });

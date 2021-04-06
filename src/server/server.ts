@@ -22,7 +22,8 @@ import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
 import { Feature, FeatureFlags } from '../shared';
 
-
+import fs from 'fs';
+import https from 'https';
 
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -31,7 +32,9 @@ export class Server {
 
     private app: express.Express;
     private port: number;
-    private server: import('http').Server;
+
+    private httpServer: import('http').Server;
+    private httpsServer: import('https').Server;
 
     private corsOptions = {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -118,17 +121,35 @@ export class Server {
         // prevent premature connection closures from the service
         // Additionally, the headerstimeout needs to be greater than keepalivetimeout
         // https://github.com/nodejs/node/issues/27363
-        this.server = this.app.listen(this.port, () => {
-            // tslint:disable-next-line
-            console.log(`- Server is listening on port ${this.port}...`);
-        });
-        this.server.keepAliveTimeout = 65 * 1000;
-        this.server.headersTimeout = 66 * 1000;
+
+
+        // SSL
+        if (Config.SSL_ENABLED){
+            const privateKey  = fs.readFileSync(Config.SSL_KEY_PATH, 'utf8');
+            const certificate = fs.readFileSync(Config.SSL_CERT_PATH, 'utf8');
+            const credentials = {key: privateKey, cert: certificate};
+            this.httpsServer = https.createServer(credentials, this.app).listen(this.port, () => {
+                // tslint:disable-next-line
+                console.log(`- Server is listening on port ${this.port}...`);
+            });
+            this.httpsServer.keepAliveTimeout = 65 * 1000;
+            this.httpsServer.headersTimeout = 66 * 1000;
+        } else {
+            this.httpServer = this.app.listen(this.port, () => {
+                // tslint:disable-next-line
+                console.log(`- Server is listening on port ${this.port}...`);
+            });
+            this.httpServer.keepAliveTimeout = 65 * 1000;
+            this.httpServer.headersTimeout = 66 * 1000;
+        }
     }
 
     public stop() {
-        if (this.server) {
-            this.server.close();
+        if (this.httpServer) {
+            this.httpServer.close();
+        }
+        if (this.httpsServer) {
+            this.httpsServer.close();
         }
     }
 }

@@ -16,7 +16,7 @@
 
 import sinon from 'sinon';
 import { AuthGroups } from '../../../src/auth';
-import { Config } from '../../../src/cloud';
+import { Config, google } from '../../../src/cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../../../src/cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../../../src/dataecosystem';
 import { Utils } from '../../../src/shared';
@@ -29,12 +29,13 @@ export class TestAuthGroups {
 
       describe(Tx.testInit('Groups authorization'), () => {
 
-         beforeEach(() => { this.spy = sinon.createSandbox(); });
+         beforeEach(() => {
+            this.spy = sinon.createSandbox();
+            Config.CLOUDPROVIDER = 'google'
+         });
          afterEach(() => { this.spy.restore(); });
 
          this.datalakeUserAdminGroupName();
-         this.seistoreServicePrefix();
-         this.systemAdminGroupName();
          this.createGroup();
          this.clearGroup();
          this.addUserToGroup();
@@ -58,22 +59,6 @@ export class TestAuthGroups {
 
       });
 
-   }
-
-   private static seistoreServicePrefix() {
-
-      Tx.sectionInit('get seistore service prefix ');
-      Tx.test((done: any) => {
-         Tx.checkTrue(AuthGroups.seistoreServicePrefix() === 'service.seistore.' + Config.SERVICE_ENV, done);
-      });
-   }
-
-   private static systemAdminGroupName() {
-
-      Tx.sectionInit('get system admin group name');
-      Tx.test((done: any) => {
-         Tx.checkTrue(AuthGroups.systemAdminGroupName() === 'service.seistore.' + Config.SERVICE_ENV + '.admin', done);
-      });
    }
 
    private static createGroup() {
@@ -101,7 +86,7 @@ export class TestAuthGroups {
          }];
          const nextCursor: string = 'nextCursor';
          listUsersInGroupStub.resolves({ members, nextCursor });
-         this.spy.stub(Utils, 'getEmailFromTokenPayload').returns('member-email-one');
+         this.spy.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('member-email-one');
          this.spy.stub(DESUtils, 'getDataPartitionID').returns('data-partition-a');
          const removeUserFromGroupStub = this.spy.stub(DESEntitlement, 'removeUserFromGroup');
          removeUserFromGroupStub.resolves();

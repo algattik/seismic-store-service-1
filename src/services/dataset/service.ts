@@ -22,80 +22,80 @@ const router = Router();
 
 // register a new dataset
 router.post('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Register);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Register);
     });
 
 // get a dataset
 router.get('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Get);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Get);
     });
 
 // list all datasets in a subporject
 router.get('/tenant/:tenantid/subproject/:subprojectid',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.List);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.List);
     });
 
 // delete a dataset
 router.delete('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Delete);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Delete);
     });
 
 // patch a Dataset
 router.patch('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Patch);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Patch);
     });
 
 // Lock a Dataset for opening
 router.put('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/lock',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Lock);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Lock);
     });
 
 // UnLock a Dataset
 router.put('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/unlock',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.UnLock);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.UnLock);
     });
 
 // check if a list of datasets exist in a subproject
 router.post('/tenant/:tenantid/subproject/:subprojectid/exist',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Exists);
+    async (req: expRequest, res: expResponse) => {
+       await DatasetHandler.handler(req, res, DatasetOP.Exists);
     });
 
 // retrieve the dataset size for a list of datasets
 router.post('/tenant/:tenantid/subproject/:subprojectid/sizes',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Sizes);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Sizes);
     });
 
 // check the permissions of a user on a dataset
 router.get('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/permission',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.Permission);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.Permission);
     });
 
 // check the dataset ctag
 router.get('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/ctagcheck',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.CheckCTag);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.CheckCTag);
     });
 
 // list a path content
 router.get('/tenant/:tenantid/subproject/:subprojectid/readdsdirfulllist',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.ListContent);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.ListContent);
     });
 
 // insert tags for a existing dataset
 router.put('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/gtags',
-    (req: expRequest, res: expResponse) => {
-        DatasetHandler.handler(req, res, DatasetOP.PutTags);
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.PutTags);
     });
 
 export { router as DatasetRouter };

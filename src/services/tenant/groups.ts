@@ -15,20 +15,24 @@
 // ============================================================================
 
 import { TenantModel } from '.';
-import { AuthGroups } from '../../auth';
+import { Config } from '../../cloud';
 
 export class TenantGroups {
 
-    public static groupPrefix(tenantName: string): string {
-        return AuthGroups.seistoreServicePrefix() + '.' + tenantName;
+    public static serviceGroupPrefix(tenantName: string): string {
+        return Config.SERVICEGROUPS_PREFIX + '.' + Config.SERVICE_ENV + '.' + tenantName;
+    }
+
+    public static dataGroupPrefix(tenantName: string): string {
+        return Config.DATAGROUPS_PREFIX + '.' + tenantName;
     }
 
     public static adminGroupName(tenant: TenantModel): string {
-        return tenant.default_acls ? tenant.default_acls.split('@')[0] : this.groupPrefix(tenant.name) + '.admin';
+        return tenant.default_acls.split('@')[0];
     }
 
     public static adminGroup(tenant: TenantModel): string {
-        return tenant.default_acls || (this.adminGroupName(tenant) + '@' + tenant.esd);
+        return tenant.default_acls;
     }
 
 }

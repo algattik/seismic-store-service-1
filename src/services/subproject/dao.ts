@@ -46,19 +46,7 @@ export class SubProjectDAO {
 
         // Fix entities with no acls
         if (!entity.acls) {
-
-            const tenant = await TenantDAO.get(tenantName)
-
-            const acls = {
-                'admins': [],
-                'viewers': []
-            }
-
-            acls.admins.push(SubprojectGroups.adminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            acls.admins.push(SubprojectGroups.editorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-            acls.viewers.push(SubprojectGroups.viewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-
-            entity.acls = acls
+            entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
         }
 
         return entity;
@@ -100,6 +88,11 @@ export class SubProjectDAO {
             for (const entity of entities) {
                 if (!entity.name) { entity.name = entity[journalClient.KEY].name; }
                 if (!entity.tenant) { entity.tenant = tenantName; }
+
+                if (!entity.acls) {
+                    entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
+                }
+
             }
         }
         return entities;
@@ -111,6 +104,23 @@ export class SubProjectDAO {
         const [entity] = await journalClient.get(key);
 
         return entity !== undefined;
+    }
+
+    public static async constructServiceGroupACLs(entity, tenantName: string) {
+
+        const tenant = await TenantDAO.get(tenantName)
+
+        const acls = {
+            'admins': [],
+            'viewers': []
+        }
+
+        acls.admins.push(SubprojectGroups.serviceAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.admins.push(SubprojectGroups.serviceEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.viewers.push(SubprojectGroups.serviceViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+
+        return acls
+
     }
 
 }

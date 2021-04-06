@@ -17,9 +17,9 @@
 import { Request as expRequest, Response as expResponse } from 'express';
 import { SubProjectModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
-import { Config, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
+import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
-import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
+import { Error, Feature, FeatureFlags, Response } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
 import { TenantGroups, TenantModel } from '../tenant';
 import { TenantDAO } from '../tenant/dao';
@@ -27,6 +27,7 @@ import { SubProjectDAO } from './dao';
 import { SubprojectGroups } from './groups';
 import { SubProjectOP } from './optype';
 import { SubProjectParser } from './parser';
+
 
 export class SubProjectHandler {
 
@@ -118,35 +119,33 @@ export class SubProjectHandler {
                 ' already exists in the tenant project ' + subproject.tenant));
         }
 
+        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd);
+        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd);
+
+        const adminGroupName = adminGroup.split('@')[0];
+        const viewerGroupName = viewerGroup.split('@')[0];
+
+        SubProjectHandler.validateGroupNamesLength(adminGroupName, viewerGroupName, subproject);
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if groups exist
             let results: any[];
             try {
+
                 results = await Promise.all([
-                    AuthGroups.listUsersInGroup(userToken,
-                        SubprojectGroups.adminGroup(
-                            tenant.name, subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]),
-                    AuthGroups.listUsersInGroup(userToken,
-                        SubprojectGroups.editorGroup(
-                            tenant.name, subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]),
-                    AuthGroups.listUsersInGroup(userToken,
-                        SubprojectGroups.viewerGroup(
-                            tenant.name, subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY])]);
+                    AuthGroups.listUsersInGroup(userToken, adminGroup, tenant.esd, req[Config.DE_FORWARD_APPKEY]),
+                    AuthGroups.listUsersInGroup(userToken, viewerGroup, tenant.esd, req[Config.DE_FORWARD_APPKEY])]);
+
             } catch (error) {
                 if (error.error.code === 404 && error.error.status === 'NOT_FOUND') {
                     // provision new groups
-                    await AuthGroups.createGroup(userToken,
-                        SubprojectGroups.adminGroupName(tenant.name, subproject.name),
-                        'seismic store tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
+                    await AuthGroups.createGroup(userToken, adminGroupName,
+                        'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    await AuthGroups.createGroup(userToken,
-                        SubprojectGroups.editorGroupName(tenant.name, subproject.name),
-                        'seismic store tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
+                    await AuthGroups.createGroup(userToken, viewerGroupName,
+                        'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    await AuthGroups.createGroup(userToken,
-                        SubprojectGroups.viewerGroupName(tenant.name, subproject.name),
-                        'seismic store tenant ' + tenant.name + ' subproject ' + subproject.name + ' viewer group',
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
                 } else {
                     throw (error);
                 }
@@ -167,14 +166,10 @@ export class SubProjectHandler {
 
         subproject.gcs_bucket = await this.getBucketName(tenant);
 
-        const adminGroups = [SubprojectGroups.adminGroup(tenant.name, subproject.name, tenant.esd),
-        SubprojectGroups.editorGroup(tenant.name, subproject.name, tenant.esd)]
-        const viewerGroups = [SubprojectGroups.viewerGroup(tenant.name, subproject.name, tenant.esd)]
-
-        subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins.concat(adminGroups)
-            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups
-        subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers.concat(viewerGroups)
-            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups
+        subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins.concat([adminGroup])
+            .filter((group, index, self) => self.indexOf(group) === index) : [adminGroup];
+        subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers.concat([viewerGroup])
+            .filter((group, index, self) => self.indexOf(group) === index) : [viewerGroup];
 
         // Create the GCS bucket resource
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
@@ -194,16 +189,21 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // if admin is not the requestor, assign the admin and rm the requestor, has to be a sequential op
             if (subproject.admin !== userEmail) {
-                await AuthGroups.addUserToGroup(userToken, SubprojectGroups.adminGroup(tenant.name,
-                    subproject.name, tenant.esd), subproject.admin,
+
+                await AuthGroups.addUserToGroup(userToken, adminGroup, subproject.admin,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
-                await AuthGroups.addUserToGroup(userToken, SubprojectGroups.editorGroup(tenant.name,
-                    subproject.name, tenant.esd), subproject.admin,
+
+                await AuthGroups.addUserToGroup(userToken, viewerGroup, subproject.admin,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
-                await AuthGroups.addUserToGroup(userToken, SubprojectGroups.viewerGroup(tenant.name,
-                    subproject.name, tenant.esd), subproject.admin,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
+
             }
+        }
+
+        const status = await SeistoreFactory.build(Config.CLOUDPROVIDER).notifySubprojectCreationStatus(subproject, 'created');
+
+        if (!status) {
+            LoggerFactory.build(Config.CLOUDPROVIDER)
+                .error('Unable to publish creation status for subproject ' + subproject.name);
         }
 
         return subproject;
@@ -246,8 +246,6 @@ export class SubProjectHandler {
     // delete the subproject
     private static async delete(req: expRequest, tenant: TenantModel) {
 
-
-
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
@@ -277,17 +275,27 @@ export class SubProjectHandler {
             storage.deleteFiles(subproject.gcs_bucket),
         ]);
 
+        const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
+        const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex));
+
+        const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+        const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
+        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // clear by removing all MEMBER users the 3 subproject groups
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.adminGroup(tenant.name,
-                subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.editorGroup(tenant.name,
-                subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.clearGroup(req.headers.authorization, SubprojectGroups.viewerGroup(tenant.name,
-                subproject.name, tenant.esd), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            for (const group of subprojectServiceGroups) {
+                await AuthGroups.clearGroup(
+                    req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
+            for (const group of subprojectDataGroups) {
+                await AuthGroups.clearGroup(
+                    req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
         }
 
         // delete the bucket resource (to perform after files deletions)
+        // tslint:disable-next-line: no-floating-promises (we want it async)
         storage.deleteBucket(subproject.gcs_bucket);
     }
 
@@ -321,18 +329,18 @@ export class SubProjectHandler {
         }
 
         if (parsedUserInput.acls) {
-            subproject.acls = parsedUserInput.acls
+            subproject.acls = parsedUserInput.acls;
         }
 
 
-        const adminGroups = [SubprojectGroups.adminGroup(tenant.name, subproject.name, tenant.esd),
-        SubprojectGroups.editorGroup(tenant.name, subproject.name, tenant.esd)]
-        const viewerGroups = [SubprojectGroups.viewerGroup(tenant.name, subproject.name, tenant.esd)]
+        const adminGroups = [SubprojectGroups.serviceAdminGroup(tenant.name, subproject.name, tenant.esd),
+        SubprojectGroups.serviceEditorGroup(tenant.name, subproject.name, tenant.esd)];
+        const viewerGroups = [SubprojectGroups.serviceViewerGroup(tenant.name, subproject.name, tenant.esd)];
 
         subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins
-            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups
+            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups;
         subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers
-            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups
+            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups;
 
 
         // update the legal tag (check if the new one is valid)
@@ -355,7 +363,7 @@ export class SubProjectHandler {
                         const output = await DatasetDAO.listDatasets(
                             journalClient, subproject.tenant, subproject.name, pagination);
                         const datasets = output.datasets.filter(dataset => {
-                            return dataset.data.ltag === orignalSubprojectLtag
+                            return dataset.data.ltag === orignalSubprojectLtag;
                         });
                         for (const dataset of datasets) {
                             dataset.data.ltag = parsedUserInput.ltag;
@@ -375,7 +383,7 @@ export class SubProjectHandler {
             await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
         }
 
-        return subproject
+        return subproject;
 
     }
 
@@ -429,4 +437,24 @@ export class SubProjectHandler {
         }
         throw (Error.make(Error.Status.UNKNOWN, 'Unable to generate a bucket name'));
     }
+
+
+    private static validateGroupNamesLength(adminGroupName: string, viewerGroupName: string,
+        subproject: SubProjectModel): boolean {
+
+        const allowedSubprojLen = Config.DES_GROUP_CHAR_LIMIT - Math.max(
+            adminGroupName.length, viewerGroupName.length
+        );
+
+        if (allowedSubprojLen < 0) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                subproject.name + ' subproject name is too long, for tenant ' + subproject.tenant +
+                '. The subproject name must not more than ' + Math.abs(allowedSubprojLen) + ' characters'));
+        }
+
+        return true;
+
+    }
+
+
 }

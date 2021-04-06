@@ -95,7 +95,7 @@ export class TenantDAO {
                 default_acls: tenantName,
                 gcpid: tenantName} : undefined);
 
-        serviceClient.delete(serviceClient.createKey({
+        await serviceClient.delete(serviceClient.createKey({
             namespace: Config.ORGANIZATION_NS,
             path: [Config.TENANTS_KIND, tenantName],
         }));

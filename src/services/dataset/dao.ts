@@ -22,9 +22,10 @@ import { Locker } from './locker';
 
 export class DatasetDAO {
 
-    public static async register(journalClient: IJournal | IJournalTransaction, datasetEntity: {key: object, data: DatasetModel}) {
+    public static async register(
+        journalClient: IJournal | IJournalTransaction, datasetEntity: {key: object, data: DatasetModel}) {
         datasetEntity.data.ctag = Utils.makeID(16);
-        journalClient.save(datasetEntity);
+        await journalClient.save(datasetEntity);
     }
 
     public static async get(
@@ -218,7 +219,8 @@ export class DatasetDAO {
         entity.tenant = entity.tenant || tenantName;
         entity.ctag = entity.ctag || '0000000000000000';
         entity.readonly = entity.readonly || false;
-        const lockres = await Locker.getLockFromModel(entity);
+        const lockKey = entity.tenant + '/' + entity.subproject + entity.path + entity.name;
+        const lockres = await Locker.getLock(lockKey);
         if (!lockres) { // unlocked
             entity.sbit = null;
             entity.sbit_count = 0;

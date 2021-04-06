@@ -31,7 +31,6 @@ export class TestUtils {
          this.testGetPropertyFromTokenPayload();
          this.testGetIssFromPayload();
          this.testExpTimeFromPayload();
-         this.testGetEmailFromTokenPayload();
          this.testMakeID();
 
       });
@@ -77,16 +76,7 @@ export class TestUtils {
       });
    }
 
-   private static testGetEmailFromTokenPayload() {
 
-      Tx.sectionInit('get email from payload');
-
-      Tx.test((done: any) => {
-         const email = Utils.getEmailFromTokenPayload(this.jwtToken);
-         Tx.checkTrue(email === 'user@email', done);
-      });
-
-   }
    private static testMakeID() {
 
       Tx.sectionInit('test make id');

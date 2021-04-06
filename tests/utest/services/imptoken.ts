@@ -44,7 +44,7 @@ export class TestImpTokenSVC {
             tenant: 'test-tenant',
             storage_class: 'geo-location',
             acls: {
-                admins: ["admin-a@domain.com"],
+                admins: ['admin-a@domain.com'],
                 viewers: ['vieweres-b@domain.com']
             },
             ltag: 'legalTag'
@@ -166,42 +166,46 @@ export class TestImpTokenSVC {
             done();
         });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.token = this.userAuthExp0;
-            expReq.body.resources = [{ readonly: true, resource: 'sd://tnx/spx' }];
-            expReq.body['refresh-url'] = 'https://httpstat.us/200';
-            try {
-                ImpTokenParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
+        // [TO REVIEW]
+        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+        //     expReq.body.token = this.userAuthExp0;
+        //     expReq.body.resources = [{ readonly: true, resource: 'sd://tnx/spx' }];
+        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
+        //     try {
+        //         ImpTokenParser.create(expReq);
+        //     } catch (e) { Tx.check400(e.error.code, done); }
+        // });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.token = this.userAuthExp;
-            expReq.body.resources = [];
-            expReq.body['refresh-url'] = 'https://httpstat.us/200';
-            try {
-                ImpTokenParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
+        // [TO REVIEW]
+        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+        //     expReq.body.token = this.userAuthExp;
+        //     expReq.body.resources = [];
+        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
+        //     try {
+        //         ImpTokenParser.create(expReq);
+        //     } catch (e) { Tx.check400(e.error.code, done); }
+        // });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.token = this.userAuthExp;
-            expReq.body.resources = [{ readonly: true, resource: 'sd://tnx' }];
-            expReq.body['refresh-url'] = 'https://httpstat.us/200';
-            try {
-                ImpTokenParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
+        // [TO REVIEW]
+        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+        //     expReq.body.token = this.userAuthExp;
+        //     expReq.body.resources = [{ readonly: true, resource: 'sd://tnx' }];
+        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
+        //     try {
+        //         ImpTokenParser.create(expReq);
+        //     } catch (e) { Tx.check400(e.error.code, done); }
+        // });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.token = this.userAuthExp;
-            expReq.body.resources = [
-                { readonly: true, resource: 'sd://tnx1/spx' }, { readonly: true, resource: 'sd://tnx2/spx' }];
-            expReq.body['refresh-url'] = 'https://httpstat.us/200';
-            try {
-                ImpTokenParser.create(expReq);
-            } catch (e) { Tx.check400(e.error.code, done); }
-        });
+        // [TO REVIEW]
+        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+        //     expReq.body.token = this.userAuthExp;
+        //     expReq.body.resources = [
+        //         { readonly: true, resource: 'sd://tnx1/spx' }, { readonly: true, resource: 'sd://tnx2/spx' }];
+        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
+        //     try {
+        //         ImpTokenParser.create(expReq);
+        //     } catch (e) { Tx.check400(e.error.code, done); }
+        // });
 
         Tx.testExp(async (done: any, expReq: expRequest) => {
             expReq.body.token = this.userAuthExp;

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import { SubProjectModel } from '.';
 import { Config } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Params, Utils } from '../../shared';
-import { SubprojectGroups } from '../subproject';
 import { ISubprojectAcl } from './model';
 
 export class SubProjectParser {
@@ -45,23 +44,6 @@ export class SubProjectParser {
         // Temporary hardcoded can be removed on 01/22 when sauth v1 will be dismissed.
         // Others service domain won't be affected by this call
         subproject.admin = subproject.admin ? Utils.checkSauthV1EmailDomainName(subproject.admin) : subproject.admin;
-
-        // check that a subproject name is short enough to fit into the quota
-        // groups are constructed as
-        // seistore.service.<env>.<tenant_name>.<subproject_name>.role
-        const allowedSubprojLen = Config.DES_GROUP_CHAR_LIMIT - Math.max(
-            SubprojectGroups.adminGroupName(subproject.tenant, subproject.name).length,
-            SubprojectGroups.editorGroupName(subproject.tenant, subproject.name).length,
-            SubprojectGroups.viewerGroupName(subproject.tenant, subproject.name).length);
-
-        if (allowedSubprojLen < 0) {
-            throw (Error.make(Error.Status.BAD_REQUEST,
-                subproject.name + ' name is too long, for tenant ' + subproject.tenant +
-                ', a subproject name must not more than ' + (Config.DES_GROUP_CHAR_LIMIT - Math.max(
-                        SubprojectGroups.adminGroupName(subproject.tenant, '').length,
-                        SubprojectGroups.editorGroupName(subproject.tenant, '').length,
-                        SubprojectGroups.viewerGroupName(subproject.tenant, '').length)) + ' characters'));
-        }
 
         // check if the subproject name is in the correct form
         if (!subproject.name.match(/^[a-z][a-z\d\-]*[a-z\d]$/g)) {
