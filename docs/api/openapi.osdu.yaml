@@ -1,5 +1,5 @@
 #  ***************************************************************************
-#  Copyright 2017 - 2020, Schlumberger
+#  Copyright 2017 - 2021, Schlumberger
 #
 #  Licensed under the Apache License, Version 2.0(the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@
 # Endpoints Description
 # ===========================================================================
 
-swagger: "2.0"
+swagger: "2.0.0"
 
 info:
-  title: "Seismic Store Service"
-  version: "2.0.0"
-  description: "Seismic Domain Data Management APIs to store and manage seismic datasets ."
-
-host: "api.evq.csp.slb.com"
-basePath: "/seistore-svc/api/v3"
+  title: "Seismic DMS Service"
+  version: "3.0.0"
+  description: "Seismic Data Management APIs to store and manage seismic datasets ."
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 
 consumes:
   - application/json
@@ -39,39 +39,41 @@ schemes:
 # Endpoints Paths Section
 # ===========================================================================
 
-paths:
-  # /api/v3/svcstatus:
-  #   get:
-  #     summary: "Seismic store service status (fast check)"
-  #     description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
-  #     security:
-  #       - api-key: []
-  #     operationId: service-status
-  #     tags:
-  #       - General
-  #     responses:
-  #       200:
-  #         description: "service status"
-  #         schema:
-  #           type: string
-  #           example: "service OK"
+basePath: /seistore-svc/api/v3
 
-  # /svcstatus/access:
-  #   get:
-  #     summary: "Seismic store service status"
-  #     description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
-  #     operationId: service-status-check
-  #     tags:
-  #       - General
-  #     responses:
-  #       200:
-  #         description: "Seismic store service status"
-  #         schema:
-  #           $ref: '#/definitions/Status'
-  #       401:
-  #           description: "Unauthorized"
-  #       403:
-  #           description: "Forbidden"
+paths:
+  /svcstatus:
+    get:
+      summary: "Seismic store service status (fast check)"
+      description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
+      security:
+        - api-key: []
+      operationId: service-status
+      tags:
+        - General
+      responses:
+        200:
+          description: "service status"
+          schema:
+            type: string
+            example: "service OK"
+
+  /svcstatus/access:
+    get:
+      summary: "Seismic store service status"
+      description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
+      operationId: service-status-check
+      tags:
+        - General
+      responses:
+        200:
+          description: "seismic store service status"
+          schema:
+            $ref: "#/definitions/Status"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}:
     post:
@@ -86,31 +88,26 @@ paths:
           name: ltag
           type: string
           required: false
-          default: "Slb-Private-USA-EHC"
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
-          default: "common"
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: "carbon"
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: "a/b/c"
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: "slb-dataset"
         - description: "Request body"
           in: body
           name: request body
@@ -146,26 +143,22 @@ paths:
           in: path
           name: tenantid
           required: true
-          default: common
           type: string
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: "a/b/c"
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: "slb-dataset"
         - description: "Include the seismic storage metadata record if it exists"
           in: query
           name: seismicmeta
@@ -196,26 +189,22 @@ paths:
           in: path
           name: tenantid
           required: true
-          default: common
           type: string
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: "a/b/c"
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: "slb-dataset"
       responses:
         200:
           description: "The resource was deleted successfully."
@@ -240,25 +229,21 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: slb-dataset
         - description: "Request body"
           in: body
           name: request body
@@ -300,25 +285,21 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: slb-dataset
         - description: "Type of the lock which can be set to 'read' (default) or 'write'"
           in: query
           name: openmode
@@ -358,25 +339,21 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path for the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: slb-dataset
       responses:
         200:
           description: "Removed the lock value associated with dataset id"
@@ -404,25 +381,21 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path for the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: slb-dataset
       responses:
         200:
           description: "User access permission on the dataset."
@@ -450,31 +423,26 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: slb-dataset
         - description: "Ctag to be validated"
           in: query
           name: ctag
           required: true
           type: string
-          default: slb-dataset-ctag
       responses:
         200:
           description: "Return true if the ctag is valid or false if it is invalid"
@@ -503,25 +471,21 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Hierarchical path of the dataset"
           in: query
           name: path
           required: true
           type: string
-          default: a/b/c
         - description: "Name of the dataset"
           in: path
           name: datasetid
           required: true
           type: string
-          default: slb-dataset
         - description: "Gtags array list"
           in: query
           name: gtag
@@ -544,34 +508,34 @@ paths:
           description: "Not found"
 
   # To deprecate in favor of /utility/ls
-  # /dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
-  #   get:
-  #     summary: "content list"
-  #     description: "<ul><li>List datasets and sub-directories for a directory path.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
-  #     operationId: dataset-read-directory
-  #     tags:
-  #       - Dataset
-  #     parameters:
-  #       - description: "The tenant project name"
-  #         in: path
-  #         name: tenantid
-  #         required: true
-  #         type: string
-  #       - description: "The sub-project name"
-  #         in: path
-  #         name: subprojectid
-  #         required: true
-  #         type: string
-  #       - description: "The hierarchy path"
-  #         in: query
-  #         name: path
-  #         required: true
-  #         type: string
-  #     responses:
-  #       200:
-  #         description: "The list of datasets and directories in the requested directory path."
-  #         schema:
-  #           $ref: "#/definitions/DatasetAndDirectories"
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
+    get:
+      summary: "content list"
+      description: "<ul><li>List datasets and sub-directories for a directory path.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      operationId: dataset-read-directory
+      tags:
+        - Dataset
+      parameters:
+        - description: "The tenant project name"
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: "The sub-project name"
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: "The hierarchy path"
+          in: query
+          name: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: "The list of datasets and directories in the requested directory path."
+          schema:
+            $ref: "#/definitions/DatasetAndDirectories"
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}:
     get:
@@ -586,13 +550,11 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Gtags associated with dataset metadata"
           in: query
           name: gtag
@@ -630,13 +592,11 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Request body"
           in: body
           name: request body
@@ -673,13 +633,11 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Request body"
           in: body
           name: request body
@@ -763,13 +721,11 @@ paths:
           name: sdpath_from
           required: true
           type: string
-          default: sd://common/carbon/a/b/c/slb-dataset
         - description: "Seismic store destination dataset path"
           in: query
           name: sdpath_to
           required: true
           type: string
-          default: sd://common/carbon/a/b/c/slb-dataset-copy
         - description: "Lock source and destination while copying"
           in: query
           name: lock
@@ -825,89 +781,89 @@ paths:
         404:
           description: "Not found"
 
-  # /imptoken:
-  #   post:
-  #     summary: "generate impersonation credentials token"
-  #     description: "<ul><li>Generate an impersonation credential token of a user for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"
-  #     operationId: imp-token
-  #     tags:
-  #       - Impersonation Token
-  #     parameters:
-  #       - description: "The request body"
-  #         in: body
-  #         name: request body
-  #         required: true
-  #         schema:
-  #           $ref: '#/definitions/ImpTokenRequest'
-  #     responses:
-  #       200:
-  #         description: "The impersonation credentials token"
-  #         schema:
-  #           $ref: '#/definitions/ImpToken'
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
+  /imptoken:
+    post:
+      summary: "Generate impersonation credentials token"
+      description: "<ul><li>Generate an impersonation credential token of a user for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"
+      operationId: imp-token
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: "#/definitions/ImpTokenRequest"
+      responses:
+        200:
+          description: "Generated a impersonation credentials token successfully"
+          schema:
+            $ref: "#/definitions/ImpToken"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
 
-  #   put:
-  #     summary: "refresh an impersonation credentials token"
-  #     description: "<ul><li>Refresh an impersonation credential token.</li><li>Required roles: none</li></ul>"
-  #     security:
-  #       - api-key: []
-  #     operationId: imp-token-refresh
-  #     tags:
-  #       - Impersonation Token
-  #     parameters:
-  #       - description: "The request body"
-  #         in: body
-  #         name: request body
-  #         required: true
-  #         schema:
-  #           $ref: '#/definitions/RefreshTokenRequest'
-  #     responses:
-  #       200:
-  #         description: "The impersonation credentials token refreshed"
-  #         schema:
-  #           $ref: '#/definitions/ImpToken'
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
+    put:
+      summary: "Refresh an impersonation credential token"
+      description: "<ul><li>Refresh an impersonation credential token.</li><li>Required roles: none</li></ul>"
+      security:
+        - api-key: []
+      operationId: imp-token-refresh
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: "#/definitions/RefreshTokenRequest"
+      responses:
+        200:
+          description: "Refreshed impersonation credential token successfully"
+          schema:
+            $ref: "#/definitions/ImpToken"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
 
-  #   patch:
-  #     summary: "patch an impersonation credentials token"
-  #     description: "<ul><li>Patch an impersonation credential token by updating the refresh-url.</li><li>Required roles: none</li></ul>"
-  #     operationId: imp-token-patch
-  #     tags:
-  #       - Impersonation Token
-  #     parameters:
-  #       - description: "The request body"
-  #         in: body
-  #         name: request body
-  #         required: true
-  #         schema:
-  #           $ref: '#/definitions/ImpTokenPatchRequest'
-  #     responses:
-  #       200:
-  #         description: "The generated impersonation token"
-  #         schema:
-  #           $ref: '#/definitions/ImpToken'
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
+    patch:
+      summary: "Patch an impersonation credential token's refresh url and generate a new impersonation token"
+      description: "<ul><li>Patch an impersonation credential token's refresh url and generate a new impersonation token.</li><li>Required roles: none</li></ul>"
+      operationId: imp-token-patch
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: "#/definitions/ImpTokenPatchRequest"
+      responses:
+        200:
+          description: "Generated impersonation token successfully and its refresh url is updated"
+          schema:
+            $ref: "#/definitions/ImpToken"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
 
   /subproject/tenant/{tenantid}/subproject/{subprojectid}:
     post:
@@ -921,19 +877,16 @@ paths:
           in: header
           name: ltag
           type: string
-          default: "Slb-Private-USA-EHC"
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           type: string
           required: true
-          default: carbon
         - description: "Name of the tenant"
           in: path
           name: tenantid
           type: string
           required: true
-          default: common
         - description: "Request body"
           in: body
           name: request body
@@ -955,7 +908,6 @@ paths:
           description: "Not found"
         409:
           description: "Conflict"
-
     get:
       summary: "Retrieve the subproject metadata"
       description: "<ul><li>Return the metadata for a requested sub-project.</li><li>Required roles: subproject.admin</li></ul>"
@@ -968,13 +920,11 @@ paths:
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
-          default: common
       responses:
         200:
           description: "Retrieved subproject metadata successfully"
@@ -1001,13 +951,11 @@ paths:
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
-          default: common
       responses:
         200:
           description: "Deletion of the subproject completed"
@@ -1032,25 +980,21 @@ paths:
           name: ltag
           type: string
           required: true
-          default: "Slb-Private-USA-EHC"
         - description: "Name of the tenant"
           in: path
           name: tenantid
           required: true
           type: string
-          default: common
         - description: "Name of the subproject"
           in: path
           name: subprojectid
           required: true
           type: string
-          default: carbon
         - description: "True if the legal tags of all datasets in a subproject needs to be updated"
           in: query
           name: recursive
           required: false
           type: boolean
-
       responses:
         200:
           description: "Updated subproject metadata successfully"
@@ -1078,7 +1022,6 @@ paths:
           name: tenantid
           required: true
           type: string
-          default: common
       responses:
         200:
           description: "Retrieved the list of subprojects in the tenant successfully."
@@ -1095,94 +1038,94 @@ paths:
         404:
           description: "Not found"
 
-  # /tenant/{tenantid}:
-  #   post:
-  #     summary: "create a new tenant"
-  #     description: "<ul><li>Create a new tenant resource in seismic store.</li><li>Required roles: seistore.system.admin</li></ul>"
-  #     operationId: tenant-create
-  #     tags:
-  #       - Tenant
-  #     parameters:
-  #     - description: "The tenant project name"
-  #       in: path
-  #       name: tenantid
-  #       type: string
-  #       required: true
-  #     - description: "The request body"
-  #       in: body
-  #       name: request body
-  #       required: true
-  #       schema:
-  #         $ref: '#/definitions/TenantCreateBody'
-  #     responses:
-  #       200:
-  #         description: "the created tenant project metadata"
-  #         schema:
-  #           $ref: "#/definitions/Tenant"
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
-  #       409:
-  #         description: "Conflict"
+  /tenant/{tenantid}:
+    post:
+      summary: "Register a seismic-dms tenant"
+      description: "<ul><li>Register a seismic-dms tenant in a data partition.</li><li>Required roles: seistore.system.admin</li></ul>"
+      operationId: tenant-create
+      tags:
+        - Tenant
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          type: string
+          required: true
+        - description: "Request body"
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: "#/definitions/TenantCreateBody"
+      responses:
+        200:
+          description: "Creation of the tenant was successful."
+          schema:
+            $ref: "#/definitions/Tenant"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+        409:
+          description: "Conflict"
 
-  #   get:
-  #     summary: "retrieve the tenant metadata"
-  #     description: "<ul><li>Return the tenant metadata.</li><li>Required roles: seistore.system.admin</li></ul>"
-  #     operationId: tenant-get
-  #     tags:
-  #       - Tenant
-  #     parameters:
-  #     - description: "The tenant project name"
-  #       in: path
-  #       name: tenantid
-  #       type: string
-  #       required: true
-  #     responses:
-  #       200:
-  #         description: "the requested tenant project metadata"
-  #         schema:
-  #           $ref: "#/definitions/Tenant"
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
+    get:
+      summary: "Retrieve the tenant metadata"
+      description: "<ul><li>Return the tenant metadata.</li><li>Required roles: seistore.system.admin</li></ul>"
+      operationId: tenant-get
+      tags:
+        - Tenant
+      parameters:
+        - description: "Name of the tenant"
+          in: path
+          name: tenantid
+          type: string
+          required: true
+      responses:
+        200:
+          description: "Retrieved subproject metadata successfully"
+          schema:
+            $ref: "#/definitions/Tenant"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
 
-  # /tenant/sdpath:
-  #   get:
-  #     summary: "retrieve the tenant sdpath using the data partition"
-  #     description: "<ul><li>Return the seistore tenant uri associated to the data partition.</li><li>Required roles: none</li></ul>"
-  #     operationId: tenant-sdpath
-  #     tags:
-  #       - Tenant
-  #     parameters:
-  #     - description: "The data partition of the tenant"
-  #       in: query
-  #       name: datapartition
-  #       type: string
-  #       required: true
-  #     responses:
-  #       200:
-  #         description: "tenant sdpath"
-  #         schema:
-  #           type: string
-  #           example: "sd://tenant01"
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
+  /tenant/sdpath:
+    get:
+      summary: "Retrieve the tenant seismic store path"
+      description: "<ul><li>Return the seistore path to a tenant associated with the data partition.</li><li>Required roles: none</li></ul>"
+      operationId: tenant-sdpath
+      tags:
+        - Tenant
+      parameters:
+        - description: "Datapartition of the tenant"
+          in: query
+          name: datapartition
+          type: string
+          required: true
+      responses:
+        200:
+          description: "Seismic store path to the tenant retrieved successfully"
+          schema:
+            type: string
+            example: "sd://tenant01"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
 
   /user:
     put:
@@ -1222,7 +1165,6 @@ paths:
           name: sdpath
           required: true
           type: string
-          default: sd://common/carbon
       responses:
         200:
           description: "Retrieved sub-project users in admin, viewer, editor groups successfully"
@@ -1267,32 +1209,32 @@ paths:
         404:
           description: "Not found"
 
-  # /user/roles:
-  #   get:
-  #     summary: "user roles"
-  #     description: "<ul><li>Return the list of user roles.</li><li>Required roles: none/li></ul>"
-  #     operationId: user-roles
-  #     tags:
-  #       - Users
-  #     parameters:
-  #     - description: "seismic store tenant path, sd://tenant"
-  #       in: query
-  #       name: sdpath
-  #       required: true
-  #       type: string
-  #     responses:
-  #       200:
-  #         description: "The user's roles list"
-  #         schema:
-  #           $ref: '#/definitions/UserRoles'
-  #       400:
-  #         description: "Bad request"
-  #       401:
-  #         description: "Unauthorized"
-  #       403:
-  #         description: "Forbidden"
-  #       404:
-  #         description: "Not found"
+  /user/roles:
+    get:
+      summary: "Retrieve user role in all subprojects of the tenant"
+      description: "<ul><li>Retrieve user role in all subprojects of the tenant.</li><li>Required roles: none/li></ul>"
+      operationId: user-roles
+      tags:
+        - Users
+      parameters:
+        - description: "Seismic store tenant path, sd://tenant"
+          in: query
+          name: sdpath
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Retrieved user roles in all subprojects of the tenant."
+          schema:
+            $ref: "#/definitions/UserRoles"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
 
   /app:
     post:
@@ -1302,18 +1244,16 @@ paths:
       tags:
         - Apps
       parameters:
-        - description: "Service account email of the application."
+        - description: "Service account email of the application"
           in: query
           name: email
           required: true
           type: string
-          default: tester-carbon.slbservice.com@slb.com
-        - description: "seismic store tenant path, sd://tenant"
+        - description: "Seismic store tenant path, sd://tenant"
           in: query
           name: sdpath
           required: true
           type: string
-          default: sd://common
       responses:
         200:
           description: "Registration of the application was successful."
@@ -1328,7 +1268,7 @@ paths:
 
     get:
       summary: "Retrieve the list of registered applications"
-      description: "<ul><li>Return the list of the registered application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Retrieve the list of the registered application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
       operationId: app-list
       tags:
         - Apps
@@ -1359,7 +1299,7 @@ paths:
   /app/trusted:
     post:
       summary: "Set a registered application as a trusted application"
-      description: "<ul><li>Set a registered application as trusted application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Set a registered application as a trusted application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
       operationId: trustedapp-register
       tags:
         - Apps
@@ -1368,14 +1308,12 @@ paths:
           in: query
           name: email
           required: true
-          default: tester-carbon.slbservice.com@slb.com
           type: string
         - description: "Seismic store tenant path, sd://tenant"
           in: query
           name: sdpath
           required: true
           type: string
-          default: sd://common
       responses:
         200:
           description: "Marking the application as a trusted application was successful."
@@ -1387,7 +1325,6 @@ paths:
           description: "Forbidden"
         404:
           description: "Not found"
-
     get:
       summary: "List the trusted applications in a seismic store tenant"
       description: "<ul><li>Return the list of the trusted application in seismic store tenant.</li><li>Required roles: users.datalake.admin/li></ul>"
@@ -1400,7 +1337,6 @@ paths:
           name: sdpath
           required: true
           type: string
-          default: sd://common
       responses:
         200:
           description: "Retrieved the list of all the trusted applications in the tenant"
@@ -1439,9 +1375,9 @@ definitions:
         type: string
       gtags:
         type: array
-        description: Array of global tags associated with the dataset metadata. Once assigned, they can be used to filter datasets
         items:
           type: string
+        description: Array of global tags associated with the dataset metadata. Once assigned, they can be used to filter datasets
       seismicmeta:
         type: object
         description: Seismic metadata to be stored as dataecosystem storage record
@@ -1455,11 +1391,10 @@ definitions:
       gtags: ["tagA", "tagB", "tagC"]
       seismicmeta:
         {
-          "kind": "slb:seistore:seismic2d:1.0.0",
-          "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
+          "kind": "osdu:sdms:seismic3d:1.0.0",
+          "legal": { "legaltags": ["legal-tag"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
         }
-
   # OK
   Dataset:
     required:
@@ -1544,7 +1479,7 @@ definitions:
       type: "segy"
       readonly: false
       filemetadata: { "size": 10737418240, "type": "GENERIC", "nobjects": 160 }
-      ltag: "Slb-Private-USA-EHC"
+      ltag: "legal-tag"
       ctag: "1234567890abcdefg"
       seismicmeta_guid: "slb:seismic:1234abcd5678efgh"
       sbit: "Wx53vrogk0gr4ao"
@@ -1552,7 +1487,7 @@ definitions:
       seismicmeta:
         {
           "kind": "slb:seistore:seismic2d:1.0.0",
-          "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
+          "legal": { "legaltags": ["legal-tag"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
         }
 
@@ -1745,7 +1680,6 @@ definitions:
         description: Impersonation token
     example:
       token: "eyJhbxGccCI6IkpX.fgdgsdngfwe_cec.xc2Vpc21pYy1ddzZXJ2aWNl"
-
   # OK
   SubProjectCreateBody:
     required: ["admin", "storage_class", "storage_location"]
@@ -1835,36 +1769,37 @@ definitions:
           - service.seistore.p4d.tenant01.subproject01.viewer@slb.p4d.cloud.slb-ds.com
 
   # OK
-  # TenantCreateBody:
-  #   required: ["gcpid", "des", "default_acl"]
-  #   properties:
-  #     gcpid:
-  #       type: string
-  #       description: Google cloud project id associated with the tenant
-  #     des:
-  #       type: string
-  #       description: Entitlements group sub domain. For instance, if the entitlements group is group-a.slb.env.cloud.com, the esd value is slb.env.cloud.com
-  #     default_acl:
-  #       type: string
-  #   example:
-  #     gcpid: "google_project_id"
-  #     esd: "slb.p4d.cloud.slb-ds.com"
-  #     default_acl: "authgroup@data_partition.com"
+  TenantCreateBody:
+    required: ["gcpid", "des", "default_acl"]
+    properties:
+      gcpid:
+        type: string
+        description: Google cloud project id associated with the tenant
+      des:
+        type: string
+        description: Entitlements group sub domain. For instance, if the entitlements group is group-a.slb.env.cloud.com, the esd value is slb.env.cloud.com
+      default_acl:
+        type: string
+        description: Entitlements authorization group to manage tenant administrators
+    example:
+      gcpid: "google_project_id"
+      esd: "slb.p4d.cloud.slb-ds.com"
+      default_acl: "authgroup@data_partition.com"
 
-  # # OK
-  # Tenant:
-  #   required: ["name", "esd", "gcpid"]
-  #   properties:
-  #     name:
-  #       type: string
-  #     esd:
-  #       type: string
-  #     gcpid:
-  #       type: string
-  #   example:
-  #     name: "tnx01"
-  #     esd: "slb.p4d.cloud.slb-ds.com"
-  #     gcpid: "google_project_id"
+  # OK
+  Tenant:
+    required: ["name", "esd", "gcpid"]
+    properties:
+      name:
+        type: string
+      esd:
+        type: string
+      gcpid:
+        type: string
+    example:
+      name: "tnx01"
+      esd: "slb.p4d.cloud.slb-ds.com"
+      gcpid: "google_project_id"
 
   # OK
   UserAddRequest:
@@ -1941,14 +1876,9 @@ definitions:
 
 security:
   - bearer: []
-    appkey: []
 
 securityDefinitions:
   bearer:
     type: apiKey
     name: Authorization
-    in: header
-  appkey:
-    type: apiKey
-    name: appkey
     in: header

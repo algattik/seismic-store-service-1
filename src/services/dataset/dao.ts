@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -122,27 +122,44 @@ export class DatasetDAO {
     }
 
     public static async paginatedListContent(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, pagination: PaginationModel):
+        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, wmode: string, pagination: PaginationModel):
         Promise<{ datasets: string[], nextPageCursor: string }> {
 
         const output = { datasets: [], nextPageCursor: null };
 
-        // Retrieve the content datasets
-        let query = journalClient.createQuery(
-            Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-            .filter('path', dataset.path);
-        if (pagination.cursor) {
-            query = query.start(pagination.cursor);
-        }
-        if (pagination.limit) {
-            query = query.limit(pagination.limit);
+        if (wmode !== Config.LS_MODE.DATASETS && !pagination.cursor) {
+
+            // Retrieve directories
+            const query = journalClient.createQuery(
+                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+                .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+
+            const [entitieshy] = await journalClient.runQuery(query);
+            output.datasets = entitieshy.map((entity) => ((entity.path || '') as string).substr(dataset.path.length));
+            output.datasets = output.datasets.map(
+                (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
+                    (elem, index, self) => index === self.indexOf(elem));
         }
 
-        const [entitiesds, info] = await journalClient.runQuery(query);
-        if (entitiesds.length !== 0) {
-            output.datasets = entitiesds.map((item) => item.name);
-            if (pagination) {
-                output.nextPageCursor = info.endCursor;
+        if (wmode !== Config.LS_MODE.DIRS) {
+
+            // Retrieve datasets
+            let query = journalClient.createQuery(
+                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+                .filter('path', dataset.path);
+            if (pagination.cursor) {
+                query = query.start(pagination.cursor);
+            }
+            if (pagination.limit) {
+                query = query.limit(pagination.limit);
+            }
+
+            const [entitiesds, info] = await journalClient.runQuery(query);
+            if (entitiesds.length !== 0) {
+                output.datasets = output.datasets.concat(entitiesds.map((item) => item.name));
+                if (pagination) {
+                    output.nextPageCursor = info.endCursor;
+                }
             }
         }
         return output;
@@ -183,7 +200,7 @@ export class DatasetDAO {
         const results = { datasets: [], directories: [] };
 
         // Retrieve the content datasets
-        if (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DATASETS) {
+        if (wmode !== Config.LS_MODE.DIRS) {
             const query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .filter('path', dataset.path);
@@ -194,7 +211,7 @@ export class DatasetDAO {
         }
 
         // Extract all the directories structure and get the subdirectories for the required directory
-        if (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DIRS) {
+        if (wmode !== Config.LS_MODE.DATASETS) {
             const query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
@@ -202,7 +219,7 @@ export class DatasetDAO {
             const [entitieshy] = await journalClient.runQuery(query);
             results.directories = entitieshy.map((entity) => (entity.path as string).substr(dataset.path.length));
             results.directories = results.directories.map(
-                (entity) => entity.substr(0, entity.indexOf('/'))).filter(
+                (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
                     (elem, index, self) => index === self.indexOf(elem) );
         }
 

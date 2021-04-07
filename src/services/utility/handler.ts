@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -175,14 +175,14 @@ export class UtilityHandler {
 
         if (pagination) {
             // Retrieve paginated content list
-            return await DatasetDAO.paginatedListContent(journalClient, dataset, pagination);
+            return await DatasetDAO.paginatedListContent(journalClient, dataset, wmode, pagination);
         }
 
         // Retrieve complete content list
         const results = await DatasetDAO.listContent(journalClient, dataset, wmode);
         return (
             (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DIRS) ?
-                results.directories.map((el) => el.endsWith('/') ? el : el + '/') : []).concat(
+                results.directories : []).concat(
                     (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DATASETS) ?
                         results.datasets : []);
     }
