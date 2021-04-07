@@ -257,7 +257,7 @@ export class TestUtilitySVC {
             expReq.query.sdpath_from = 'sd://tnx/spx1/a1/dsx01';
             expReq.query.sdpath_to = 'sd://tnx/spx1/a2/dsx01';
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            this.sandbox.stub(Locker, 'getLockFromModel');
+            this.sandbox.stub(Locker, 'getLock');
             this.sandbox.stub(Locker, 'createWriteLock');
             this.sandbox.stub(Locker, 'unlock');
             this.sandbox.stub(Auth, 'isWriteAuthorized');
@@ -283,7 +283,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isWriteAuthorized');
             this.sandbox.stub(Auth, 'isReadAuthorized');
-            this.sandbox.stub(Locker, 'getLockFromModel');
+            this.sandbox.stub(Locker, 'getLock');
             this.sandbox.stub(Locker, 'createWriteLock').resolves(
                 {idempotent: undefined, wid: undefined, mutex: undefined, key: undefined});
             this.sandbox.stub(Locker, 'acquireMutex').resolves();
@@ -324,7 +324,7 @@ export class TestUtilitySVC {
             expReq.query.sdpath_from = 'sd://tnx/spx1/a1/dsx01';
             expReq.query.sdpath_to = 'sd://tnx/spx1/a2/dsx01';
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            this.sandbox.stub(Locker, 'getLockFromModel');
+            this.sandbox.stub(Locker, 'getLock');
             this.sandbox.stub(Locker, 'createWriteLock').resolves();
             this.sandbox.stub(Locker, 'unlock').resolves();
             this.sandbox.stub(Auth, 'isWriteAuthorized');

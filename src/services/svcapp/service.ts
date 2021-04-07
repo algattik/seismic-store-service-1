@@ -21,23 +21,23 @@ import { AppOp } from './optype';
 const router = Router();
 
 // register a new application
-router.post('/', (req: expRequest, res: expResponse) => {
-    AppHandler.handler(req, res, AppOp.Register);
+router.post('/', async (req: expRequest, res: expResponse) => {
+    await AppHandler.handler(req, res, AppOp.Register);
 });
 
 // list the registered applications
-router.get('/', (req: expRequest, res: expResponse) => {
-    AppHandler.handler(req, res, AppOp.List);
+router.get('/', async (req: expRequest, res: expResponse) => {
+    await AppHandler.handler(req, res, AppOp.List);
 });
 
 // register a trusted application
-router.post('/trusted', (req: expRequest, res: expResponse) => {
-    AppHandler.handler(req, res, AppOp.RegisterTrusted);
+router.post('/trusted', async (req: expRequest, res: expResponse) => {
+    await AppHandler.handler(req, res, AppOp.RegisterTrusted);
 });
 
 // list the truested applications
-router.get('/trusted', (req: expRequest, res: expResponse) => {
-    AppHandler.handler(req, res, AppOp.ListTrusted);
+router.get('/trusted', async (req: expRequest, res: expResponse) => {
+    await AppHandler.handler(req, res, AppOp.ListTrusted);
 });
 
 export { router as SvcAppRouter };

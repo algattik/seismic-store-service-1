@@ -41,7 +41,7 @@ export class AWSConfig extends Config {
         // Logger
         AWSConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';
 
-        Config.initServiceConfiguration({
+        await Config.initServiceConfiguration({
             SERVICE_ENV: process.env.SERVICE_ENV,
             SERVICE_PORT: +process.env.PORT || 5000,
             API_BASE_PATH: process.env.API_BASE_PATH,

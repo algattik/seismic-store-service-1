@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -175,14 +175,14 @@ export class UtilityHandler {
 
         if (pagination) {
             // Retrieve paginated content list
-            return await DatasetDAO.paginatedListContent(journalClient, dataset, pagination);
+            return await DatasetDAO.paginatedListContent(journalClient, dataset, wmode, pagination);
         }
 
         // Retrieve complete content list
         const results = await DatasetDAO.listContent(journalClient, dataset, wmode);
         return (
             (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DIRS) ?
-                results.directories.map((el) => el.endsWith('/') ? el : el + '/') : []).concat(
+                results.directories : []).concat(
                     (wmode === Config.LS_MODE.ALL || wmode === Config.LS_MODE.DATASETS) ?
                         results.datasets : []);
     }
@@ -289,7 +289,8 @@ export class UtilityHandler {
         try {
 
             // check if a copy is already in progress from a previous request
-            const toDatasetLock = await Locker.getLockFromModel(datasetTo)
+            const lockKeyTo = datasetTo.tenant + '/' + datasetTo.subproject + datasetTo.path + datasetTo.name;
+            const toDatasetLock = await Locker.getLock(lockKeyTo)
 
             const results = await DatasetDAO.get(journalClient, datasetTo)
             preRegisteredDataset = results[0] as DatasetModel
@@ -326,10 +327,11 @@ export class UtilityHandler {
                     ' already exists'));
             }
 
-            writeLockSession = await Locker.createWriteLock(datasetTo);
+            writeLockSession = await Locker.createWriteLock(lockKeyTo);
 
             // check if the source can be opened for read (no copy on writelock dataset)
-            const fromDatasetLock = await Locker.getLockFromModel(datasetFrom);
+            const lockKeyFrom = datasetFrom.tenant + '/' + datasetFrom.subproject + datasetFrom.path + datasetFrom.name;
+            const fromDatasetLock = await Locker.getLock(lockKeyFrom);
 
             if (fromDatasetLock && Locker.isWriteLock(fromDatasetLock)) {
                 throw (Error.make(Error.Status.BAD_REQUEST,
@@ -341,7 +343,7 @@ export class UtilityHandler {
             let readlock: { id: string, cnt: number; };
 
             if (userInputs.lock) {
-                readlock = await Locker.acquireReadLock(journalClient, datasetFrom);
+                readlock = await Locker.acquireReadLock(lockKeyFrom);
             }
 
             if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
