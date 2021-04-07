@@ -25,6 +25,9 @@ import { Feature, FeatureFlags } from '../shared';
 import fs from 'fs';
 import https from 'https';
 
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+
 // -------------------------------------------------------------------
 // Seismic Store Service
 // -------------------------------------------------------------------
@@ -67,12 +70,17 @@ export class Server {
     }
 
     constructor() {
+        const swaggerDocument = YAML.load('./dist/docs/api/openapi.osdu.yaml');
+
         this.app = express();
         this.app.use(bodyparser.urlencoded({ extended: false }));
         this.app.use(bodyparser.json());
         this.app.disable('x-powered-by');
         this.app.use(cors(this.corsOptions));
         this.app.options('*', cors());
+        this.app.use('/seistore-svc/api/v3/swagger-ui.html',swaggerUi.serve, swaggerUi.setup(swaggerDocument,{
+            customCss: '.swagger-ui .topbar { display: none }'
+          }));
         this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 
             // not required anymore - to verify
