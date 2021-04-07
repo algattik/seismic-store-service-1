@@ -7,7 +7,6 @@ variables:
   UTEST_RUNTIME_IMAGE: seistore-svc-runtime
 
   #aws variables
-  AWS_ECR_REGION: us-east-1
   AWS_SERVICE: seismic-store
   AWS_BUILD_SUBDIR: src/cloud/providers/aws/build-aws
   AWS_TEST_SUBDIR: tests
@@ -60,7 +59,6 @@ include:
     #ibm  
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm-seismic-store-service.yml"
-
 
     #gcp
   - project: "osdu/platform/ci-cd-pipelines"
