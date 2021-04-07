@@ -43,7 +43,6 @@ include:
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
     file: "containerize/seismic-store-service.yml"
-    ref: slb/dperez50/aws-seismic-store-service
     
   # aws
   - project: "osdu/platform/ci-cd-pipelines"
