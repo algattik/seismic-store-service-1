@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021 Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -476,7 +476,7 @@ export class TestDataset {
 
 			this.journal.runQuery.resolves([[{}], { endCursor: 'NO_MORE_RESULTS' }]);
 
-			await DatasetDAO.paginatedListContent(this.journal, this.dataset, pagination);
+			await DatasetDAO.paginatedListContent(this.journal, this.dataset, Config.LS_MODE.ALL, pagination);
 
 			Tx.checkTrue(this.journal.runQuery.calledWith(query), done);
 		});
@@ -504,7 +504,7 @@ export class TestDataset {
 
 			this.journal.runQuery.resolves([[entityOne], { endCursor: 'MORE_RESULTS' }]);
 
-			await DatasetDAO.paginatedListContent(this.journal, this.dataset, pagination);
+			await DatasetDAO.paginatedListContent(this.journal, this.dataset, Config.LS_MODE.ALL, pagination);
 
 			Tx.checkTrue(this.journal.runQuery.calledWith(query), done);
 		});
@@ -513,25 +513,25 @@ export class TestDataset {
 	private static testFixOldModel() {
 		Tx.sectionInit('fix oldmodel');
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves('WriteLockValue');
+			this.sandbox.stub(Locker, 'getLock').resolves('WriteLockValue');
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');
 			Tx.checkTrue(result.sbit === 'WriteLockValue' && result.sbit_count === 1, done);
 		});
 
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves(['RAxBxCx', 'RDxExFx']);
+			this.sandbox.stub(Locker, 'getLock').resolves(['RAxBxCx', 'RDxExFx']);
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');
 			Tx.checkTrue(result.sbit === 'RAxBxCx,RDxExFx' && result.sbit_count === 2, done);
 		});
 
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves(undefined);
+			this.sandbox.stub(Locker, 'getLock').resolves(undefined);
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');
 			Tx.checkTrue(result.sbit === null && result.sbit_count === 0, done);
 		});
 
 		Tx.testExp(async (done: any) => {
-			this.sandbox.stub(Locker, 'getLockFromModel').resolves(undefined);
+			this.sandbox.stub(Locker, 'getLock').resolves(undefined);
 			const dataset = { name: 'dataset-a' } as DatasetModel;
 			const result = await DatasetDAO.fixOldModel(dataset, 'tenant-a', 'subproject-a');
 
@@ -588,7 +588,7 @@ export class TestDataset {
 
 			Tx.checkTrue(
 				JSON.stringify(result.datasets) === JSON.stringify(
-					['dataset01']) && JSON.stringify(result.directories) === JSON.stringify(['a', 'd']), done);
+					['dataset01']) && JSON.stringify(result.directories) === JSON.stringify(['a/', 'd/']), done);
 
 		});
 	}

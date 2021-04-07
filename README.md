@@ -43,12 +43,12 @@ npm run code-coverage
     --run-parallel
 
 # run the linter on sources
-tslint -c tslint.json 'src/**/*.ts'
+tslint -c tslint.json -p tsconfig.json 'src/**/*.ts'
 ```
 
 ## Environment configuration
 
 Environment variables can be provided with a `.env` file in the root of the project to be consumed
 by [dotenv](https://github.com/motdotla/dotenv). Environment variables are [preloaded](https://github.com/motdotla/dotenv#preload)
-by the `npm start` command with the argument `-r dotenv/config`. A template `.env` file can be found 
+by the `npm start` command with the argument `-r dotenv/config`. A template `.env` file can be found
 in `/docs/templates/.env-sample`.

@@ -56,6 +56,11 @@ export class Cache<T=string> {
                     })
     }
 
+
+    public async del(key: string): Promise<void> {
+        return await this._del(key);
+    }
+
     public async get(key: string): Promise<T> {
         return await this._get(key);
     }
@@ -66,6 +71,14 @@ export class Cache<T=string> {
 
     private buildKey(key: string): string {
         return this._keyTag ? (this._keyTag + ':' +  key) : key;
+    }
+
+    private async _del(key: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this._redisClient.del(
+                this.buildKey(key), (err) => {
+                    err ? reject(err) : resolve(); });
+        });
     }
 
     private async _get(key: string): Promise<T> {

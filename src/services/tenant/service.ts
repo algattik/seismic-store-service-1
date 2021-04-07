@@ -20,23 +20,23 @@ import { TenantOP } from './optype';
 
 const router = Router();
 
-router.get('/sdpath', (req: expRequest, res: expResponse) => {
-    TenantHandler.handler(req, res, TenantOP.GETSDPATH);
+router.get('/sdpath', async (req: expRequest, res: expResponse) => {
+    await TenantHandler.handler(req, res, TenantOP.GETSDPATH);
 });
 
 // create a tenant project
-router.post('/:tenantid', (req: expRequest, res: expResponse) => {
-    TenantHandler.handler(req, res, TenantOP.CREATE);
+router.post('/:tenantid', async (req: expRequest, res: expResponse) => {
+    await TenantHandler.handler(req, res, TenantOP.CREATE);
 });
 
 // get a tenant project
-router.get('/:tenantid', (req: expRequest, res: expResponse) => {
-    TenantHandler.handler(req, res, TenantOP.GET);
+router.get('/:tenantid', async (req: expRequest, res: expResponse) => {
+    await TenantHandler.handler(req, res, TenantOP.GET);
 });
 
 // delete a tenant project
-router.delete('/:tenantid', (req: expRequest, res: expResponse) => {
-    TenantHandler.handler(req, res, TenantOP.DELETE);
+router.delete('/:tenantid', async (req: expRequest, res: expResponse) => {
+    await TenantHandler.handler(req, res, TenantOP.DELETE);
 });
 
 export { router as TenantRouter };

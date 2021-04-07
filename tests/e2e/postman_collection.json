@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "90280e38-eb09-4bec-aac1-9f1a4f3bce6f",
+		"_postman_id": "c988bdf3-af9f-48b4-8afd-87ab4650e6d3",
 		"name": "seismic-store-e2e",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -9168,10 +9168,11 @@
 									"});",
 									"",
 									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
-									"    postman.setNextRequest(\"USER ROLES\");",
+									"    postman.setNextRequest(\"APP REGISTER\");",
 									"} else {",
 									"    postman.setNextRequest(\"USER ADD\");",
-									"};"
+									"};",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -9338,12 +9339,6 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"",
-									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
-									"    postman.setNextRequest(\"APP REGISTER\");",
-									"} else {",
-									"    postman.setNextRequest(\"USER REMOVE\");",
-									"};",
 									"",
 									"// can be re-enabled after 01/22 when sauth v1 will be dismissed",
 									"// pm.test(\"Find test account in user list\", function () {",

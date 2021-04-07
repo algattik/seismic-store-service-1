@@ -21,18 +21,18 @@ import { ImpTokenOP } from './optype';
 const router = Router();
 
 // generate an impersonation token
-router.post('/', (req: expRequest, res: expResponse) => {
-    ImpTokenHandler.handler(req, res, ImpTokenOP.Generate);
+router.post('/', async (req: expRequest, res: expResponse) => {
+    await ImpTokenHandler.handler(req, res, ImpTokenOP.Generate);
 });
 
 // refresh an impersonation token
-router.put('/', (req: expRequest, res: expResponse) => {
-    ImpTokenHandler.handler(req, res, ImpTokenOP.Refresh);
+router.put('/', async (req: expRequest, res: expResponse) => {
+    await ImpTokenHandler.handler(req, res, ImpTokenOP.Refresh);
 });
 
 // patch an impersonation token
-router.patch('/', (req: expRequest, res: expResponse) => {
-    ImpTokenHandler.handler(req, res, ImpTokenOP.Patch);
+router.patch('/', async (req: expRequest, res: expResponse) => {
+    await ImpTokenHandler.handler(req, res, ImpTokenOP.Patch);
 });
 
 export { router as ImpTokenRouter };

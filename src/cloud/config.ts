@@ -130,6 +130,7 @@ export abstract class Config implements IConfig {
 
     // DataGroups prefix
     public static DATAGROUPS_PREFIX = 'data.sdms'
+    public static SERVICEGROUPS_PREFIX = 'service.seistore'
 
     // Server SSL
     public static SSL_ENABLED = false;

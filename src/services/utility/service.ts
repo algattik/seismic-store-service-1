@@ -21,18 +21,18 @@ import { UtilityOP } from './optype';
 const router = Router();
 
 // list a path content
-router.get('/ls', (req: expRequest, res: expResponse) => {
-    UtilityHandler.handler(req, res, UtilityOP.LS);
+router.get('/ls', async (req: expRequest, res: expResponse) => {
+    await UtilityHandler.handler(req, res, UtilityOP.LS);
 });
 
 // copy a dataset
-router.post('/cp', (req: expRequest, res: expResponse) => {
-    UtilityHandler.handler(req, res, UtilityOP.CP);
+router.post('/cp', async (req: expRequest, res: expResponse) => {
+    await UtilityHandler.handler(req, res, UtilityOP.CP);
 });
 
 // get the gcs access token
-router.get('/gcs-access-token', (req: expRequest, res: expResponse) => {
-    UtilityHandler.handler(req, res, UtilityOP.GCSTOKEN);
+router.get('/gcs-access-token', async (req: expRequest, res: expResponse) => {
+    await UtilityHandler.handler(req, res, UtilityOP.GCSTOKEN);
 });
 
 export { router as UtilityRouter };
