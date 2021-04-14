@@ -27,7 +27,7 @@ import https from 'https';
 
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-import replaceInFile from 'replace-in-file'
+import replaceInFile from 'replace-in-file';
 
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -73,25 +73,13 @@ export class Server {
     private options_div_clear = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.swagger-ui .topbar{display:none;visibility:hidden',
-        to: '.swagger-ui .topbar{',
+        to: '.swagger-ui .topbar{'
     }
 
     private options_div_hide = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.swagger-ui .topbar{',
-        to: '.swagger-ui .topbar{display:none;visibility:hidden;',
-    }
-
-    private options_svg_clear = {
-        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
-        from: '.svg-assets{display:none;visibility:hidden;',
-        to: '.svg-assets{',
-    }
-
-    private options_svg_hide = {
-        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
-        from: '.svg-assets{',
-        to: '.svg-assets{display:none;visibility:hidden;',
+        to: '.swagger-ui .topbar{display:none;visibility:hidden;'
     }
 
     constructor() {
@@ -99,8 +87,6 @@ export class Server {
         try {
             replaceInFile.sync(this.options_div_clear);
             replaceInFile.sync(this.options_div_hide);
-            replaceInFile.sync(this.options_svg_clear);
-            replaceInFile.sync(this.options_svg_hide);
         }
         catch (error) {
             console.error('Error occurred:', error);
