@@ -27,6 +27,7 @@ import https from 'https';
 
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
+import replaceInFile from 'replace-in-file'
 
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -69,8 +70,27 @@ export class Server {
         ]
     }
 
+    private options_clear = {
+        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
+        from: '.swagger-ui .topbar{display:\'none\';visibility:\'hidden\'',
+        to: '.swagger-ui .topbar{',
+    }
+
+    private options_add_display = {
+        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
+        from: '.swagger-ui .topbar{',
+        to: '.swagger-ui .topbar{display:none;visibility:hidden;',
+    }
+
     constructor() {
         const swaggerDocument = YAML.load('./dist/docs/api/openapi.osdu.yaml');
+        try {
+            replaceInFile.sync(this.options_clear);
+            replaceInFile.sync(this.options_add_display);
+        }
+        catch (error) {
+            console.error('Error occurred:', error);
+        }
 
         this.app = express();
         this.app.use(bodyparser.urlencoded({ extended: false }));
