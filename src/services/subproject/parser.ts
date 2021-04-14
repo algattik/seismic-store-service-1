@@ -36,7 +36,7 @@ export class SubProjectParser {
 
         subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] }
         // check user input params
-        Params.checkEmail(subproject.admin, 'admin', false);
+        Params.checkString(subproject.admin, 'admin', false);
         Params.checkString(subproject.ltag, 'ltag', false);
 
         // This method is temporary required by slb during the migration of sauth from v1 to v2
