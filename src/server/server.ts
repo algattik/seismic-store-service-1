@@ -72,7 +72,7 @@ export class Server {
 
     private options_clear = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
-        from: '.swagger-ui .topbar{display:\'none\';visibility:\'hidden\'',
+        from: '.swagger-ui .topbar{display:none;visibility:hidden',
         to: '.swagger-ui .topbar{',
     }
 
