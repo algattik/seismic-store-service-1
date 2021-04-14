@@ -70,23 +70,37 @@ export class Server {
         ]
     }
 
-    private options_clear = {
+    private options_div_clear = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.swagger-ui .topbar{display:none;visibility:hidden',
         to: '.swagger-ui .topbar{',
     }
 
-    private options_add_display = {
+    private options_div_hide = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.swagger-ui .topbar{',
         to: '.swagger-ui .topbar{display:none;visibility:hidden;',
     }
 
+    private options_svg_clear = {
+        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
+        from: '.svg-assets{display:none;visitibility:hidden;',
+        to: '.svg-assets{',
+    }
+
+    private options_svg_hide = {
+        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
+        from: '.svg-assets{',
+        to: '.svg-assets{display:none;visitibility:hidden;',
+    }
+
     constructor() {
         const swaggerDocument = YAML.load('./dist/docs/api/openapi.osdu.yaml');
         try {
-            replaceInFile.sync(this.options_clear);
-            replaceInFile.sync(this.options_add_display);
+            replaceInFile.sync(this.options_div_clear);
+            replaceInFile.sync(this.options_div_hide);
+            replaceInFile.sync(this.options_svg_clear);
+            replaceInFile.sync(this.options_svg_hide);
         }
         catch (error) {
             console.error('Error occurred:', error);
