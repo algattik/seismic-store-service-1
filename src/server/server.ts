@@ -84,14 +84,14 @@ export class Server {
 
     private options_svg_clear = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
-        from: '.svg-assets{display:none;visitibility:hidden;',
+        from: '.svg-assets{display:none;visibility:hidden;',
         to: '.svg-assets{',
     }
 
     private options_svg_hide = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.svg-assets{',
-        to: '.svg-assets{display:none;visitibility:hidden;',
+        to: '.svg-assets{display:none;visibility:hidden;',
     }
 
     constructor() {
