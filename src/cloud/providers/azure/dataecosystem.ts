@@ -34,7 +34,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     private static _cosmosConfigs: Cache<string>
 
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
-    public getEntitlementBaseUrlPath(): string { return '/entitlements/v1'; };
+    public getEntitlementBaseUrlPath(): string { return '/api/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
 
@@ -42,46 +42,12 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;
     }
 
-    public fixGroupMembersResponse(groupMembers: any[]): IDESEntitlementGroupMembersModel {
-
-        // temporary fix for DE azure
-        if (groupMembers && groupMembers.length === 0) {
-            throw {
-                error: {
-                    message: 'NOT_FOUND'
-                },
-                statusCode: 404,
-                name: 'StatusCodeError'
-            }
-        }
-
-        // temporary fix as roles support is currently not implemented in DE azure
-        // if the group has only 1 member it must be the OWNER
-        if (groupMembers && groupMembers.length === 1) {
-            return {
-                members: [{
-                    email: groupMembers[0],
-                    role: 'OWNER'
-                }],
-                cursor: undefined
-            } as IDESEntitlementGroupMembersModel;
-        }
-
-        const members = [];
-        for (const member of groupMembers as any[]) {
-            members.push({
-                email: member,
-                role: 'MEMBER'
-            });
-        }
-        return {
-            members,
-            cursor: undefined
-        } as IDESEntitlementGroupMembersModel;
+    public fixGroupMembersResponse(groupMembers: any): IDESEntitlementGroupMembersModel {
+        return groupMembers as IDESEntitlementGroupMembersModel;
     }
 
     public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string } | string[] {
-        return [userEmail];
+        return { email: userEmail, role }
     }
 
     public tenantNameAndDataPartitionIDShouldMatch() {
