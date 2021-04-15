@@ -23,7 +23,7 @@ export class UserParser {
     public static removeUser(req: expRequest): { email: string, sdPath: SDPathModel } {
 
         Params.checkBody(req.body);
-        Params.checkEmail(req.body.email, 'email');
+        Params.checkString(req.body.email, 'email');
         Params.checkString(req.body.path, 'path');
 
         const email = req.body.email;
@@ -46,7 +46,7 @@ export class UserParser {
     public static addUser(req: expRequest): { email: string, sdPath: SDPathModel, groupRole: string } {
 
         Params.checkBody(req.body);
-        Params.checkEmail(req.body.email, 'email');
+        Params.checkString(req.body.email, 'email');
         Params.checkString(req.body.path, 'path');
 
         const email = req.body.email;
