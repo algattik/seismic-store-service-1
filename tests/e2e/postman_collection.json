@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "c988bdf3-af9f-48b4-8afd-87ab4650e6d3",
-		"name": "seismic-store-e2e",
+		"_postman_id": "260476ac-bbd1-4440-b4d8-c6984dc7e1da",
+		"name": "SDMS-E2E",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -1477,7 +1477,12 @@
 									"pm.test(\"Check gtag\", function () {",
 									"    pm.expect(jsonData.gtags.length).to.eql(1);",
 									"    pm.expect(jsonData.gtags[0]).to.eql(\"tagA\");",
-									"});"
+									"});",
+									"",
+									"pm.test(\"ctag\", function () {",
+									"    postman.setEnvironmentVariable(\"ctag\", jsonData.ctag);",
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -1662,6 +1667,73 @@
 					"response": []
 				},
 				{
+					"name": "DATASET DSX01 CHECK CTAG TRUE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Validate ctag\", function () {",
+									"    pm.expect(pm.response.json()).eql(true);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}/ctagcheck?path={{testPathEncoded}}&ctag={{ctag}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}",
+								"ctagcheck"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								},
+								{
+									"key": "ctag",
+									"value": "{{ctag}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "DATASET PATCH",
 					"event": [
 						{
@@ -1738,6 +1810,73 @@
 								{
 									"key": "close",
 									"value": "{{sbit}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET DSX01 CHECK CTAG FALSE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Validate ctag\", function () {",
+									"    pm.expect(pm.response.json()).eql(false);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}/ctagcheck?path={{testPathEncoded}}&ctag={{ctag}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}",
+								"ctagcheck"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								},
+								{
+									"key": "ctag",
+									"value": "{{ctag}}"
 								}
 							]
 						}
