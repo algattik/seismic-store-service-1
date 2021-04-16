@@ -122,7 +122,8 @@ export class DatasetDAO {
     }
 
     public static async paginatedListContent(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, wmode: string, pagination: PaginationModel):
+        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
+        wmode: string, pagination: PaginationModel):
         Promise<{ datasets: string[], nextPageCursor: string }> {
 
         const output = { datasets: [], nextPageCursor: null };
