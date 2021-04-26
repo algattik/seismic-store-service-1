@@ -20,7 +20,7 @@ export class IbmConfig extends Config {
 	public static COS_ENDPOINT: string;
 	public static COS_S3_FORCEPATHSTYLE: boolean;
 	public static COS_SIGNATUREVERSION: string;
-	
+
 	// IBM Keycloak
     public static KEYCLOAK_BASEURL: string;
     public static KEYCLOAK_URL_TOKEN: string;
@@ -31,7 +31,7 @@ export class IbmConfig extends Config {
     public static KEYCLOAK_CLIENTID: string;
     public static KEYCLOAK_CLIENTSECRET: string;
 
-    //IBM Document DB
+    // IBM Document DB
     public static DOC_DB_URL: string;
     public static DOC_DB_COLLECTION: string;
     public static DOC_DB_QUERY_RESULT_LIMIT: string;
@@ -43,7 +43,7 @@ export class IbmConfig extends Config {
     public static LEGAL_HOST;
     public static STORAGE_HOST;
 
-    //Logger
+    // Logger
     public static LOGGER_LEVEL;
 
     public async init(): Promise<void> {
@@ -54,17 +54,18 @@ export class IbmConfig extends Config {
         IbmConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST_STORAGE;
         IbmConfig.IMP_SERVICE_ACCOUNT_SIGNER = process.env.IMP_SERVICE_ACCOUNT_SIGNER;
 
-        IbmConfig.ENTITLEMENT_HOST = process.env.ENTITLEMENT_HOST;//DES_SERVICE_HOST replaced by new variable ENTITLEMENT_HOST
-        IbmConfig.LEGAL_HOST = process.env.LEGAL_HOST;//DES_SERVICE_HOST replaced by new variable LEGAL_HOST
-        IbmConfig.STORAGE_HOST = process.env.STORAGE_HOST;//DES_SERVICE_HOST replaced by new variable LEGAL_HOST
-        
+        // DES_SERVICE_HOST replaced by new variable ENTITLEMENT_HOST
+        IbmConfig.ENTITLEMENT_HOST = process.env.ENTITLEMENT_HOST;
+        IbmConfig.LEGAL_HOST = process.env.LEGAL_HOST;// DES_SERVICE_HOST replaced by new variable LEGAL_HOST
+        IbmConfig.STORAGE_HOST = process.env.STORAGE_HOST;// DES_SERVICE_HOST replaced by new variable LEGAL_HOST
+
         // IBM COS
 		IbmConfig.COS_ACCESS_KEY_ID = process.env.COS_ACCESS_KEY_ID;
 		IbmConfig.COS_SECRET_ACCESS_KEY = process.env.COS_SECRET_ACCESS_KEY;
 		IbmConfig.COS_ENDPOINT = process.env.COS_ENDPOINT;
-		IbmConfig.COS_S3_FORCEPATHSTYLE = process.env.COS_S3_FORCEPATHSTYLE === 'true';//string to boolean
+		IbmConfig.COS_S3_FORCEPATHSTYLE = process.env.COS_S3_FORCEPATHSTYLE === 'true';// string to boolean
 		IbmConfig.COS_SIGNATUREVERSION = process.env.COS_SIGNATUREVERSION;
-		
+
 		// IBM Keycloak
 		IbmConfig.KEYCLOAK_BASEURL = process.env.KEYCLOAK_BASEURL;
 		IbmConfig.KEYCLOAK_URL_TOKEN = process.env.KEYCLOAK_URL_TOKEN;
@@ -74,8 +75,8 @@ export class IbmConfig extends Config {
 		IbmConfig.KEYCLOAK_CLIENTID = process.env.KEYCLOAK_CLIENTID;
 		IbmConfig.KEYCLOAK_CLIENTSECRET = process.env.KEYCLOAK_CLIENTSECRET;
         IbmConfig.KEYCLOAK_REALM = process.env.KEYCLOAK_REALM;
-        
-        //IBM Document DB
+
+        // IBM Document DB
         IbmConfig.DOC_DB_URL = process.env.DB_URL;
         IbmConfig.DOC_DB_COLLECTION = process.env.DOC_DB_COLLECTION;
         IbmConfig.DOC_DB_QUERY_SELECT_FIELDS = process.env.DOC_DB_QUERY_SELECT_FIELDS;
@@ -99,7 +100,7 @@ export class IbmConfig extends Config {
         IbmConfig.DES_REDIS_INSTANCE_KEY = process.env.DES_REDIS_INSTANCE_KEY
         IbmConfig.DES_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false
 
-        //Logger
+        // Logger
         IbmConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'debug';
 
         Config.checkRequiredConfig(IbmConfig.LOCKSMAP_REDIS_INSTANCE_PORT, 'REDIS_INSTANCE_PORT');

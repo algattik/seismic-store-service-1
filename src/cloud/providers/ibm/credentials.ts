@@ -1,10 +1,9 @@
 /* Licensed Materials - Property of IBM              */
 /* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
- 
-import { Config } from '../../config';
+
 import { Utils } from '../../../shared';
 import KcAdminClient from 'keycloak-admin';
-import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from "../../credentials";
+import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
 import { IbmConfig } from './config';
 import { logger } from './logger';
 
@@ -49,23 +48,23 @@ export class Credentials extends AbstractCredentials {
             logger.error('Authentication failure.');
             throw new Error(error);
         }
-        
+
         logger.info('Getting token by calling getAccessToken.');
         const token = adminClient.getAccessToken();
 
         logger.info('Extracting token type and epiry value from token.');
-        const token_type = Utils.getPropertyFromTokenPayload(token,'typ');
-        const token_expiry:number = +Utils.getPropertyFromTokenPayload(token,'exp');//conversted string to number
-        
-        
+        const tokenType = Utils.getPropertyFromTokenPayload(token,'typ');
+        const tokenExpiry:number = +Utils.getPropertyFromTokenPayload(token,'exp');// converted string to number
+
+
         logger.info('Returning from Credentials.getStorageCredentials.');
         return {
             access_token : token,
-            expires_in : token_expiry,
-            token_type : token_type,
+            expires_in : tokenExpiry,
+            token_type : tokenType,
         };
     }
-    
+
     public async getServiceCredentials(): Promise<string> {
         logger.info('In Credentials.getServiceCredentials.');
         const adminClient = new KcAdminClient();
@@ -96,7 +95,7 @@ export class Credentials extends AbstractCredentials {
             logger.error('Authentication failure.');
             throw new Error(error);
         }
-        
+
         logger.info('Getting token by calling getAccessToken.');
         const token = adminClient.getAccessToken();
         logger.debug('Token - '+token);
@@ -105,7 +104,7 @@ export class Credentials extends AbstractCredentials {
     }
 
     public async getServiceAccountAccessToken(): Promise<IAccessTokenModel> {
-        //throw new Error("getServiceAccountAccessToken. Method not implemented.");
+        // throw new Error("getServiceAccountAccessToken. Method not implemented.");
         /*
         const now = Math.floor(Date.now() / 1000);
         if (this.serviceAccountAccessToken && this.serviceAccountAccessTokenExpiresIn > now) {
@@ -147,29 +146,29 @@ export class Credentials extends AbstractCredentials {
             throw new Error(error);
             //throw (Error.makeForHTTPRequest(error));
         }*/
-        throw new Error("Checking if user is sysadmin. Work in progress.");
+        throw new Error('Checking if user is sysadmin. Work in progress.');
     }
 
     public getServiceAccountEmail(): Promise<string> {
         logger.info('In Credentials.getServiceAccountEmail. Method not implemented.');
-        throw new Error("getServiceAccountEmail. Method not implemented.");
+        throw new Error('getServiceAccountEmail. Method not implemented.');
     }
 
     public getIAMResourceUrl(serviceSigner: string): string {
-        ///not implemented
+        /// not implemented
         logger.info('In Credentials.getIAMResourceUrl. Method not implemented.');
-        return "";
+        return '';
     }
 
     public getAudienceForImpCredentials(): string {
         logger.info('In Credentials.getAudienceForImpCredentials.');
         return IbmConfig.KEYCLOAK_BASEURL + IbmConfig.KEYCLOAK_URL_TOKEN;
-        ///throw new Error("getAudienceForImpCredentials. Method not implemented.");
+        /// throw new Error("getAudienceForImpCredentials. Method not implemented.");
     }
 
     public getPublicKeyCertificatesUrl(): string {
         logger.info('In Credentials.getPublicKeyCertificatesUrl. Method not implemented.');
-        throw new Error("getPublicKeyCertificatesUrl. Method not implemented.");
+        throw new Error('getPublicKeyCertificatesUrl. Method not implemented.');
     }
 
 }

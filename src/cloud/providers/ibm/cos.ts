@@ -13,7 +13,7 @@ let cosStorage;
 export class Cos extends AbstractStorage {
 
 	private COS_SUBPROJECT_BUCKET_PREFIX = 'ss-' + Config.SERVICE_ENV;
-	
+
     public constructor() {
         super();
         logger.info('In Cos.constructor. Instantiating cos client.');
@@ -26,9 +26,7 @@ export class Cos extends AbstractStorage {
         });
     }
 
-    
-
-    //generate a random bucket name
+    // generate a random bucket name
     public randomBucketName(): string {
         logger.info('In Cos.randomBucketName.');
         let suffix = Math.random().toString(36).substring(2, 16);
@@ -40,13 +38,13 @@ export class Cos extends AbstractStorage {
 		return this.COS_SUBPROJECT_BUCKET_PREFIX + '-' + suffix;
     }
 
-    //Create a new bucket
+    // Create a new bucket
     public async createBucket(
         bucketName: string,
         location: string, storageClass: string): Promise<void> {
         logger.info('In Cos.createBucket.');
         logger.debug(bucketName);
-        ///not sure how to use ACLs
+        /// not sure how to use ACLs
         const bucketParams = {
             Bucket: bucketName,
             CreateBucketConfiguration: {
@@ -55,7 +53,7 @@ export class Cos extends AbstractStorage {
             }
         };
 
-        cosStorage.createBucket(bucketParams, function(err, data) {
+        cosStorage.createBucket(bucketParams, (err, data) => {
             if (err) {
                 logger.error('Error while creating bucket. Error stack - ');
                 logger.error(err.stack);
@@ -70,12 +68,12 @@ export class Cos extends AbstractStorage {
         logger.info('Returning from Cos.createBucket.');
     }
 
-    //Cos bucket deletion
+    // Cos bucket deletion
     public async deleteBucket(bucketName: string, force = false): Promise<void> {
         logger.info('In Cos.deleteBucket.');
         logger.debug(bucketName);
-        var params = {Bucket: bucketName};
-        cosStorage.deleteBucket(params, function(err) {
+        const params = {Bucket: bucketName};
+        cosStorage.deleteBucket(params, (err) => {
             if (err) {
                 logger.error('Unable to delete bucket. Error stack');
                 logger.error(err.stack);
@@ -86,24 +84,24 @@ export class Cos extends AbstractStorage {
         logger.info('Returning from Cos.deleteBucket.');
     }
 
-    //Deletion of files in Cos bucket 
+    // Deletion of files in Cos bucket
     public async deleteFiles(bucketName: string): Promise<void> {
         logger.info('In Cos.deleteFiles.');
         logger.debug(bucketName);
-        var self = this;
-        cosStorage.listObjects({Bucket: bucketName}, function (err, data) {
+        const self = this;
+        cosStorage.listObjects({Bucket: bucketName}, (err, data) => {
             if (err) {
-                logger.error("error listing bucket objects ");
+                logger.error('error listing bucket objects ');
                 logger.error(err.stack);
                 throw err;
             }
-            var items = data.Contents;
+            const items = data.Contents;
 
             if(!items || items.length<=0)
                 logger.info('No items to delete.');
             else
-                for (var i = 0; i < items.length; i += 1) {
-                    var objectKey = items[i].Key;
+                for (const i of items) {
+                    const objectKey = items[i].Key;
                     logger.info('Object to be deleted. objectKey-');
                     logger.debug(objectKey);
                     self.deleteObject(bucketName, objectKey);
@@ -112,15 +110,15 @@ export class Cos extends AbstractStorage {
         logger.info('Returning from Cos.deleteFiles.');
     }
 
-    //Saving file in Cos bucket
+    // Saving file in Cos bucket
     public async saveObject(bucketName: string, objectName: string, data: string): Promise<void> {
         logger.info('In Cos.saveObject.');
         logger.debug(bucketName);
         logger.debug(objectName);
         logger.debug(data);
-        let params = {Bucket: bucketName, Key: objectName, Body: data};
+        const params = {Bucket: bucketName, Key: objectName, Body: data};
 
-        cosStorage.putObject(params, function(err, data) {
+        cosStorage.putObject(params, (err, result) => {
             if (err) {
                 logger.error('Object not saved.');
                 logger.error(err.stack);
@@ -128,19 +126,19 @@ export class Cos extends AbstractStorage {
             }
             else
             {
-                logger.info("Object saved.");
-                logger.debug(data);
+                logger.info('Object saved.');
+                logger.debug(result);
             }
         });
         logger.info('Returning from Cos.saveObject.');
     }
 
-    //delete an object from a bucket
+    // delete an object from a bucket
     public async deleteObject(bucketName: string, objectName: string): Promise<void> {
-        ///used to delete CDO file
+        /// used to delete CDO file
         logger.info('In Cos.deleteObject.');
-        let params = {Bucket: bucketName, Key: objectName};
-        cosStorage.deleteObject(params, function(err) {
+        const params = {Bucket: bucketName, Key: objectName};
+        cosStorage.deleteObject(params, (err) => {
             if (err) {
                 logger.error('Unable to remove object');
                 logger.error(err.stack);
@@ -151,7 +149,7 @@ export class Cos extends AbstractStorage {
         logger.info('Returning from Cos.deleteObject.');
     }
 
-    //delete multiple objects
+    // delete multiple objects
     public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
         logger.info('This function deletes bulk data uploaded by SDAPI/SDUTIL. Not implemented yet.');
         logger.debug(bucketName);
@@ -160,9 +158,10 @@ export class Cos extends AbstractStorage {
         await Promise.resolve();
     }
 
-    //copy multiple objects (skip the dummy file)
-    ///implemention aws sdk copyObject to copy dataset
-    public async copy(bucketIn: string, prefixIn: string, bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void> {
+    // copy multiple objects (skip the dummy file)
+    /// implemention aws sdk copyObject to copy dataset
+    public async copy(bucketIn: string, prefixIn: string,
+         bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void> {
         logger.info('In Cos.copy.');
         logger.info('Arguments passed:bucketIn,prefixIn...');
         logger.debug(bucketIn);
@@ -171,24 +170,24 @@ export class Cos extends AbstractStorage {
         logger.debug(prefixOut);
         logger.debug(ownerEmail);
 
-        var self = this;
-        cosStorage.listObjects({Bucket: bucketIn}, function (err, data) {
+        cosStorage.listObjects({Bucket: bucketIn}, (err, data) => {
             if (err) {
-                logger.error("Error in listing objects.");
+                logger.error('Error in listing objects.');
                 logger.error(err.stack);
                 throw err;
             }
 
-            logger.info("Fetched objects.");
+            logger.info('Fetched objects.');
             logger.debug(data);
-            var items = data.Contents;
+            const items = data.Contents;
 
             if(!items || items.length<=0)
                 logger.info('No items to copy.');
             else
-                for (var i = 0; i < items.length; i += 1) {
-                    var objectKey = items[i].Key;
-                    var prefix = items[i].Key.split('/')[0];
+                // for (var i = 0; i < items.length; i += 1) {
+                for (const i of items) {
+                    const objectKey = items[i].Key;
+                    // let prefix = items[i].Key.split('/')[0];
                     logger.info('Object to be copied.');
                     logger.debug(objectKey);
                 }
@@ -196,9 +195,9 @@ export class Cos extends AbstractStorage {
         logger.info('Returning from Cos.deleteObject.');
     }
 
-    //check bucket exists or not
+    // check bucket exists or not
     public async bucketExists(bucketName: string): Promise<boolean> {
-        //const result = await cosStorage.bucket(bucketName).exists();
+        // const result = await cosStorage.bucket(bucketName).exists();
         logger.info('In Cos.bucketExists.');
         const bucketParams = {
             Bucket: bucketName

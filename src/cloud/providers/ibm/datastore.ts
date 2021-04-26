@@ -2,6 +2,7 @@
 /* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
 
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
+import { TenantModel } from '../../../services/tenant';
 import cloudant from '@cloudant/cloudant';
 import { Config } from '../../config';
 import { Utils } from '../../../shared/utils'
@@ -12,23 +13,42 @@ let docDb;
 @JournalFactory.register('ibm')
 export class DatastoreDAO extends AbstractJournal {
     public KEY = Symbol('id');
+    private dataPartition: string;
 
-    public constructor({ projectId, keyFilename }) {
+    public constructor(tenant: TenantModel) {
         super();
         logger.info('In datastore.constructor.');
+        this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
+        this.initDb(this.dataPartition);
+    }
+
+    public async initDb(dataPartition: string)
+    {
+        logger.info('In datastore.initDb.');
         const dbUrl = IbmConfig.DOC_DB_URL;
         logger.debug(dbUrl);
         const cloudantOb = cloudant(dbUrl);
-        logger.info('DB object created. cloudantOb-');
+        logger.info('DB connection created. cloudantOb-');
         logger.debug(cloudantOb);
+
+
         try {
             logger.debug('before connection');
-            docDb = cloudantOb.db.use(IbmConfig.DOC_DB_COLLECTION);
+            docDb = await cloudantOb.db.get(IbmConfig.DOC_DB_COLLECTION + '-' + dataPartition);
             logger.debug('after connection');
         } catch (err) {
-            logger.debug('catch of db connection code');
+            if(err.statusCode === 404)
+            {
+                logger.debug('Database does not exist. Creating database.');
+                await cloudantOb.db.create(IbmConfig.DOC_DB_COLLECTION + '-' + dataPartition)
+                logger.debug('Database created.');
+            }
             logger.debug('db connection error - ', err);
+            return;
         }
+
+        docDb = cloudantOb.db.use(IbmConfig.DOC_DB_COLLECTION + '-' + dataPartition);
+
     }
 
     public async get(key: any): Promise<[any | any[]]> {
