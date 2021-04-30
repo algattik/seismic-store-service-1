@@ -47,9 +47,6 @@ export class Response {
     public static write(res: expResponse, code: number, data: any = {}) {
         res.set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Content-Security-Policy': 'script-src \'self\' \'' +
-               'sha256-/jDKvbQ8cdux+c5epDIqkjHbXDaIY8RucT1PmAe8FG4=\' \'' +
-               'sha256-Zs5IcTe3sZcSKyWwfnpj4Arf2O14pmf4PcoigyHlHK8=\'',
             'Expires': '0',
             'Service-Provider': Config.CLOUDPROVIDER,
             'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
