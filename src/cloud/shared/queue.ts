@@ -129,6 +129,9 @@ export class StorageJobManager {
       }
       catch (err) {
 
+         LoggerFactory.build(Config.CLOUDPROVIDER).error(
+            '[copy-transfer] Copy operations from ' + datasetFromPath + 'to ' + datasetToPath + 'failed due to'
+            + JSON.stringify(err));
          if (cacheMutex) {
             await Locker.del(datasetToPath);
             await Locker.del(datasetFromPath);
