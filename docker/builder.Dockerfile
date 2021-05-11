@@ -16,10 +16,23 @@
 
 # [seistore builder image]
 
-ARG docker_node_image_version=14-alpine
+# use ubuntu as base image
+FROM ubuntu:bionic
 
-FROM node:${docker_node_image_version} as runtime-builder
+# nodejs version
+ARG nodesecure_version=10
 
-RUN apk --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-headers make python \
-    && npm install --quiet node-gyp -g \
-    && apk del native-deps
+# update package list and install required packages
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install -y gnupg
+RUN apt-get install -y git
+
+# setup node from secure package
+RUN curl -sL https://deb.nodesource.com/setup_${nodesecure_version}.x -o tmp/nodesource_setup.sh
+RUN bash tmp/nodesource_setup.sh
+RUN rm -f tmp/nodesource_setup.sh
+
+# install nodejs and typescript globally
+RUN apt-get update && apt-get install -y nodejs
+RUN npm install -g typescript

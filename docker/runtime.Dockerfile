@@ -15,20 +15,21 @@
 # ============================================================================
 
 ARG docker_node_image_version=14-alpine
-ARG docker_builder_image
 
 # -------------------------------
 # Compilation stage
 # -------------------------------
-FROM ${docker_builder_image} as runtime-builder
+FROM node:${docker_node_image_version} as runtime-builder
 
 ADD ./ /service
 WORKDIR /service
-RUN pm run clean \
+RUN apk --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-headers make python \
+    && npm install --quiet node-gyp -g \
     && npm install --quiet \
     && npm run build \
     && mkdir artifact \
-    && cp -r package.json npm-shrinkwrap.json dist artifact 
+    && cp -r package.json npm-shrinkwrap.json dist artifact \
+    && apk del native-deps
 
 # -------------------------------
 # Package stage
