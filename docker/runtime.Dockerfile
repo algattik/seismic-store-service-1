@@ -22,7 +22,7 @@ ARG docker_builder_image
 # -------------------------------
 FROM ${docker_builder_image} as runtime-builder
 
-ADD seistore-osdu /service
+ADD ./ /service
 WORKDIR /service
 RUN pm run clean \
     && npm install --quiet \
