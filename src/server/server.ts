@@ -157,21 +157,21 @@ export class Server {
             const privateKey  = fs.readFileSync(Config.SSL_KEY_PATH, 'utf8');
             const certificate = fs.readFileSync(Config.SSL_CERT_PATH, 'utf8');
             const credentials = {key: privateKey, cert: certificate};
-            this.httpServer.setTimeout(610000);
-            this.httpsServer.keepAliveTimeout = 610 * 1000;
-            this.httpsServer.headersTimeout = 611 * 1000;
             this.httpsServer = https.createServer(credentials, this.app).listen(this.port, () => {
                 // tslint:disable-next-line
                 console.log(`- Server is listening on port ${this.port}...`);
             });
-        } else {
             this.httpServer.setTimeout(610000);
             this.httpsServer.keepAliveTimeout = 610 * 1000;
             this.httpsServer.headersTimeout = 611 * 1000;
+        } else {
             this.httpServer = this.app.listen(this.port, () => {
                 // tslint:disable-next-line
                 console.log(`- Server is listening on port ${this.port}...`);
             });
+            this.httpServer.setTimeout(610000);
+            this.httpsServer.keepAliveTimeout = 610 * 1000;
+            this.httpsServer.headersTimeout = 611 * 1000;
         }
     }
 
