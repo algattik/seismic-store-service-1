@@ -161,7 +161,7 @@ export class Server {
                 // tslint:disable-next-line
                 console.log(`- Server is listening on port ${this.port}...`);
             });
-            this.httpServer.setTimeout(610000);
+            this.httpsServer.setTimeout(610000);
             this.httpsServer.keepAliveTimeout = 610 * 1000;
             this.httpsServer.headersTimeout = 611 * 1000;
         } else {
@@ -170,8 +170,8 @@ export class Server {
                 console.log(`- Server is listening on port ${this.port}...`);
             });
             this.httpServer.setTimeout(610000);
-            this.httpsServer.keepAliveTimeout = 610 * 1000;
-            this.httpsServer.headersTimeout = 611 * 1000;
+            this.httpServer.keepAliveTimeout = 610 * 1000;
+            this.httpServer.headersTimeout = 611 * 1000;
         }
     }
 
