@@ -14,12 +14,20 @@ export class IbmConfig extends Config {
     // max len for a group name in DE
     public static DES_GROUP_CHAR_LIMIT = 256;
 
+    // env
+
+    public static IBM_ENVIRONMENT: string;
+    public static IBM_REGION: string;
+
     // IBM COS
 	public static COS_ACCESS_KEY_ID: string;
 	public static COS_SECRET_ACCESS_KEY: string;
 	public static COS_ENDPOINT: string;
 	public static COS_S3_FORCEPATHSTYLE: boolean;
 	public static COS_SIGNATUREVERSION: string;
+    public static COS_SUBUSER_ACCESS_KEY_ID: string;
+	public static COS_SUBUSER_SECRET_ACCESS_KEY: string;
+    public static COS_TEMP_CRED_EXPITY: string;
 
 	// IBM Keycloak
     public static KEYCLOAK_BASEURL: string;
@@ -65,6 +73,9 @@ export class IbmConfig extends Config {
 		IbmConfig.COS_ENDPOINT = process.env.COS_ENDPOINT;
 		IbmConfig.COS_S3_FORCEPATHSTYLE = process.env.COS_S3_FORCEPATHSTYLE === 'true';// string to boolean
 		IbmConfig.COS_SIGNATUREVERSION = process.env.COS_SIGNATUREVERSION;
+        IbmConfig.COS_SUBUSER_ACCESS_KEY_ID = process.env.COS_SUBUSER_ACCESS_KEY_ID;
+        IbmConfig.COS_SUBUSER_SECRET_ACCESS_KEY = process.env.COS_SUBUSER_SECRET_ACCESS_KEY;
+        IbmConfig.COS_TEMP_CRED_EXPITY = process.env.COS_TEMP_CRED_EXPITY;
 
 		// IBM Keycloak
 		IbmConfig.KEYCLOAK_BASEURL = process.env.KEYCLOAK_BASEURL;
