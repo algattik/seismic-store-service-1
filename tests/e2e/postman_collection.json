@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "260476ac-bbd1-4440-b4d8-c6984dc7e1da",
+		"_postman_id": "51125585-9586-484a-af75-7e913caf0ec7",
 		"name": "SDMS-E2E",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -19,6 +19,11 @@
 									"    pm.response.to.have.status(200);",
 									"    pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));",
 									"});",
+									"",
+									"pm.environment.set('appAdminEmail', pm.environment.get('adminEmail'));",
+									"if(pm.environment.get('serviceCloudProvider') !== 'google' && pm.environment.get('serviceCloudProvider') !== 'ibm') {",
+									"    pm.environment.set('adminEmail', pm.environment.get('adminEmail').split('@')[0]);",
+									"};",
 									"",
 									"pm.test(\"Body matches string\", function () {",
 									"    pm.expect(pm.response.text()).to.include(\"service OK\");",
@@ -9693,7 +9698,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{SVC_URL}}/app/?email={{adminEmail}}&sdpath=sd://{{tenant}}",
+							"raw": "{{SVC_URL}}/app/?email={{appAdminEmail}}&sdpath=sd://{{tenant}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -9704,7 +9709,7 @@
 							"query": [
 								{
 									"key": "email",
-									"value": "{{adminEmail}}"
+									"value": "{{appAdminEmail}}"
 								},
 								{
 									"key": "sdpath",
@@ -9813,7 +9818,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{SVC_URL}}/app/trusted?email={{adminEmail}}&sdpath=sd://{{tenant}}",
+							"raw": "{{SVC_URL}}/app/trusted?email={{appAdminEmail}}&sdpath=sd://{{tenant}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -9824,7 +9829,7 @@
 							"query": [
 								{
 									"key": "email",
-									"value": "{{adminEmail}}"
+									"value": "{{appAdminEmail}}"
 								},
 								{
 									"key": "sdpath",
@@ -9868,7 +9873,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{SVC_URL}}/app/trusted?email=fake-{{adminEmail}}&sdpath=sd://{{tenant}}",
+							"raw": "{{SVC_URL}}/app/trusted?email=fake-{{appAdminEmail}}&sdpath=sd://{{tenant}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -9879,7 +9884,7 @@
 							"query": [
 								{
 									"key": "email",
-									"value": "fake-{{adminEmail}}"
+									"value": "fake-{{appAdminEmail}}"
 								},
 								{
 									"key": "sdpath",
@@ -12822,7 +12827,7 @@
 									"",
 									"pm.environment.unset('serviceCloudProvider');",
 									"pm.environment.unset('subproject');",
-									""
+									"pm.environment.unset('appAdminEmail');"
 								],
 								"type": "text/javascript"
 							}
