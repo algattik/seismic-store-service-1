@@ -37,6 +37,10 @@ export class Locker {
     private static redisSubscriptionClient;
     private static redlock;
 
+    public static getWriteLockTTL(): number { return this.EXP_WRITELOCK };
+    public static getReadLockTTL(): number { return this.EXP_READLOCK };
+    public static getMutexTTL(): number { return this.TTL };
+
     public static async init() {
 
         if (Config.UTEST) {
@@ -179,7 +183,9 @@ export class Locker {
         }
 
         throw (Error.make(Error.Status.LOCKED,
-            lockKey + ' is ' + (this.isWriteLock(lockValue) ? 'write' : 'read') + ' locked'));
+            lockKey + ' is ' + (this.isWriteLock(lockValue) ?
+                ('write locked ') + Error.get423WriteLockReason():
+                ('read locked ' + + Error.get423ReadLockReason()))));
     }
 
     // remove both lock and mutex
@@ -215,7 +221,7 @@ export class Locker {
         if (lockValue && wid && wid !== lockValue && this.isWriteLock(lockValue)) {
             await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                lockKey + ' is locked for write with different id'));
+                lockKey + ' is locked for write with different id ' + Error.get423WriteLockReason()));
         }
 
         // ------------------------------------------------
@@ -239,20 +245,22 @@ export class Locker {
         if (!wid) {
             await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                lockKey + ' is locked for ' + (this.isWriteLock(lockValue) ? 'write' : 'read')));
+                lockKey + ' is locked for ' + (this.isWriteLock(lockValue) ?
+                    'write ' + Error.get423WriteLockReason() :
+                    'read ' + + Error.get423ReadLockReason())));
         }
 
         // write locked and different wid
         if (this.isWriteLock(lockValue) && wid !== lockValue) {
             await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                lockKey + ' is locked for write with different id'));
+                lockKey + ' is locked for write with different id ' + Error.get423WriteLockReason()));
         }
 
         if (!this.isWriteLock(lockValue) && lockValue.indexOf(wid) === -1) {
             await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                lockKey + ' is locked for read widh different ids'));
+                lockKey + ' is locked for read with different ids ' + + Error.get423ReadLockReason()));
         }
 
         // Trusted Open
@@ -286,14 +294,14 @@ export class Locker {
             if (!wid) {
                 await this.releaseMutex(cachelock, lockKey);
                 throw (Error.make(Error.Status.LOCKED,
-                    lockKey + ' is locked for write'));
+                    lockKey + ' is locked for write ' + Error.get423WriteLockReason()));
             }
 
             // wid different -> error different wid
             if (wid !== lockValue) {
                 await this.releaseMutex(cachelock, lockKey);
                 throw (Error.make(Error.Status.LOCKED,
-                    lockKey + ' is locked for write with different wid'));
+                    lockKey + ' is locked for write with different wid ' + Error.get423WriteLockReason()));
             }
 
             // wid match -> TRUSTED OPEN
@@ -304,7 +312,7 @@ export class Locker {
         if (lockValue && wid && lockValue.indexOf(wid) === -1) {
             await this.releaseMutex(cachelock, lockKey);
             throw (Error.make(Error.Status.LOCKED,
-                lockKey + ' is locked for read with different ids'));
+                lockKey + ' is locked for read with different ids ' + Error.get423ReadLockReason()));
         }
 
         // ------------------------------------------------
@@ -466,7 +474,9 @@ export class Locker {
             const cachelock = await this.redlock.lock('locks:' + key, this.TTL);
             return cachelock;
         } catch (error) {
-            throw Error.make(Error.Status.LOCKED, key + ' cannot be locked at the moment. Please try again shortly.');
+            throw Error.make(Error.Status.LOCKED, key +
+                ' cannot be locked at the moment. Please try again shortly. ' +
+                Error.get423CannotLockReason());
         }
 
     }
@@ -476,7 +486,9 @@ export class Locker {
         try {
             await this.redlock.unlock(cachelock);
         } catch (error) {
-            throw Error.make(Error.Status.LOCKED, key + ' cannot be unlocked at the moment.');
+            throw Error.make(Error.Status.LOCKED, key +
+                ' cannot be unlocked at the moment. ' +
+                Error.get423CannotUnlockReason());
         }
     }
 

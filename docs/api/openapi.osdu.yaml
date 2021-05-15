@@ -130,8 +130,7 @@ paths:
         409:
           description: "Conflict"
         423:
-          description: "Locked"
-
+          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul><li>WL(Write Locked)</li><li>RL(Read Locked)</li><li>CL(Cannot be Locked)</li><li>UL(Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600sec"
     get:
       summary: "Retrieve a dataset"
       description: "<ul><li>Return the dataset metadata from seismic store.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
@@ -270,7 +269,7 @@ paths:
         409:
           description: "Conflict"
         423:
-          description: "Locked"
+          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul><li>WL(Write Locked)</li><li>RL(Read Locked)</li><li>CL(Cannot be Locked)</li><li>UL(Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600sec"
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/lock:
     put:
@@ -324,7 +323,7 @@ paths:
         404:
           description: "Not found"
         423:
-          description: "Locked"
+          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul><li>WL(Write Locked)</li><li>RL(Read Locked)</li><li>CL(Cannot be Locked)</li><li>UL(Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600sec"
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/unlock:
     put:
@@ -366,7 +365,7 @@ paths:
         404:
           description: "Not found"
         423:
-          description: "Locked"
+          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul><li>WL(Write Locked)</li><li>RL(Read Locked)</li><li>CL(Cannot be Locked)</li><li>UL(Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600sec"
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/permission:
     get:
@@ -747,7 +746,7 @@ paths:
         409:
           description: "Conflict"
         423:
-          description: "Locked"
+          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul><li>WL(Write Locked)</li><li>RL(Read Locked)</li><li>CL(Cannot be Locked)</li><li>UL(Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600sec"
 
   /utility/gcs-access-token:
     get:

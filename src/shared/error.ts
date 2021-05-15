@@ -14,6 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
+import { Locker } from '../services/dataset/locker';
+
 export class ErrorModel {
     public error: {
         code: number,
@@ -34,6 +36,7 @@ export class Error {
         UNKNOWN: 500,
         NOT_IMPLEMENTED: 501
     };
+
 
     public static make(errorCode: number, message: string, mexprefix: string = '[seismic-store-service]'): ErrorModel {
         return {
@@ -58,6 +61,37 @@ export class Error {
 
     private static getKeyByValue(value: number) {
         return Object.keys(this.Status).find((key) => this.Status[key] === value);
+    }
+
+    // ---------------------------------------
+    // Error code 423 Reason
+    // ---------------------------------------
+
+    private static Reason423 = {
+        WRITE_LOCK: 'WL',
+        READ_LOCK: 'RL',
+        CANNOT_LOCK: 'CL',
+        CANNOT_UNLOCK: 'CU'
+    }
+
+    private static create423Reason(stringCode: string, ttl: number): string {
+        return '[RCODE: ' + stringCode + ':' + ttl + ']';
+    }
+
+    public static get423WriteLockReason(): string {
+        return this.create423Reason(this.Reason423.WRITE_LOCK, Locker.getWriteLockTTL());
+    }
+
+    public static get423ReadLockReason(): string {
+        return this.create423Reason(this.Reason423.READ_LOCK, Locker.getReadLockTTL());
+    }
+
+    public static get423CannotLockReason(): string {
+        return this.create423Reason(this.Reason423.CANNOT_LOCK, Locker.getMutexTTL());
+    }
+
+    public static get423CannotUnlockReason(): string {
+        return this.create423Reason(this.Reason423.CANNOT_UNLOCK, Locker.getMutexTTL())
     }
 
 }

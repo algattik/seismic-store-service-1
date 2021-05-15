@@ -343,7 +343,8 @@ export class DatasetHandler {
             if (Locker.isWriteLock(await Locker.getLock(lockKey))) {
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
-                    datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked'));
+                    datasetIn.subproject + datasetIn.path + datasetIn.name + ' is write locked ' +
+                    Error.get423WriteLockReason()));
             }
         }
 
@@ -441,7 +442,8 @@ export class DatasetHandler {
             if (Locker.isWriteLock(await Locker.getLock(lockKey))) {
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked ' +
+                    Error.get423WriteLockReason()));
             }
         }
 
@@ -857,7 +859,8 @@ export class DatasetHandler {
             if (Locker.isWriteLock(await Locker.getLock(lockKey))) {
                 throw (Error.make(Error.Status.LOCKED,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked'));
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' is write locked ' +
+                    Error.get423WriteLockReason()));
             }
         }
 
