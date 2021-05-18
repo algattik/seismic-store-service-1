@@ -1,11 +1,17 @@
 /* Licensed Materials - Property of IBM              */
 /* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
 
-import { Utils } from '../../../shared';
+
 import KcAdminClient from 'keycloak-admin';
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
+import { Config } from '../../config';
 import { IbmConfig } from './config';
 import { logger } from './logger';
+import { IBMSTShelper } from './stshelper';
+import { DatastoreDAO } from './datastore';
+
+
+
 
 @CredentialsFactory.register('ibm')
 export class Credentials extends AbstractCredentials {
@@ -14,56 +20,70 @@ export class Credentials extends AbstractCredentials {
     private serviceAccountAccessToken: IAccessTokenModel;
     private serviceAccountAccessTokenExpiresIn = 0;
 
+
+    private ibmSTSHelper = new IBMSTShelper();
+
+    async getBucketFolder(tenant: string, subproject: string): Promise<string> {
+
+
+        const ibmDatastoreHelper = new DatastoreDAO(Config.TENANT_JOURNAL_ON_DATA_PARTITION ? {
+            name: tenant,
+            esd: tenant + '.domain.com',
+            default_acls: tenant,
+            gcpid: tenant
+        } : undefined);
+
+        const spkey = ibmDatastoreHelper.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenant,
+            path: [Config.SUBPROJECTS_KIND, subproject],
+        });
+
+        logger.debug('Printing Key', spkey)
+        const [spentity] = await ibmDatastoreHelper.get(spkey);
+        logger.debug('Printing Key', spentity.gcs_bucket)
+        const bucket = spentity.gcs_bucket;
+        return bucket;
+
+
+    }
+
     public async getStorageCredentials(
+
         tenant: string, subproject: string,
-        bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel> {
-        logger.info('In Credentials.getStorageCredentials.');
-        const adminClient = new KcAdminClient();
-        adminClient.setConfig(
-            {
-                baseUrl: IbmConfig.KEYCLOAK_BASEURL,
-                realmName: IbmConfig.KEYCLOAK_REALM,
-                requestConfig: {
-                    // `url` is the server URL that will be used for the request
-                    url: IbmConfig.KEYCLOAK_URL_TOKEN,
-                    // `method` is the request method to be used when making the request
-                    method: 'post', // default
-                },
-            }
-        );
+        bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
 
-        logger.debug(adminClient.getRequestConfig());
-        const crdntls = {
-            username: IbmConfig.KEYCLOAK_USERNAME,
-            password: IbmConfig.KEYCLOAK_PASSWORD,
-            grantType: IbmConfig.KEYCLOAK_GRANTTYPE,
-            clientId: IbmConfig.KEYCLOAK_CLIENTID,
-            clientSecret: IbmConfig.KEYCLOAK_CLIENTSECRET,
-        };
+        const expDuration = IbmConfig.COS_TEMP_CRED_EXPITY;
+        let roleArn = '';
+        let credentials = '';
 
-        logger.info('Authenticating.');
-        try {
-            await adminClient.auth(crdntls);
-        } catch (error) {
-            logger.error('Authentication failure.');
-            throw new Error(error);
+        let flagUpload = true;
+        const keypath = await this.getBucketFolder(tenant, subproject);
+        // this is temporary. Once dataset is being passed to get gcs token,
+        // this can start getting folder from gcs url along with bucket
+        const s3bucket = keypath;
+
+
+        if (readonly) { // readOnly True
+
+            roleArn = 'arn:123:456:789:1234';
+            flagUpload = false;
+        } else   // readOnly False
+        {
+            roleArn = 'arn:123:456:789:1234';
+            flagUpload = true;
         }
 
-        logger.info('Getting token by calling getAccessToken.');
-        const token = adminClient.getAccessToken();
-
-        logger.info('Extracting token type and epiry value from token.');
-        const tokenType = Utils.getPropertyFromTokenPayload(token,'typ');
-        const tokenExpiry:number = +Utils.getPropertyFromTokenPayload(token,'exp');// converted string to number
-
-
-        logger.info('Returning from Credentials.getStorageCredentials.');
-        return {
-            access_token : token,
-            expires_in : tokenExpiry,
-            token_type : tokenType,
+        credentials = await this.ibmSTSHelper.getCredentials(s3bucket, keypath, roleArn, flagUpload, expDuration);
+        const result = {
+            access_token: credentials,
+            expires_in: 7200,
+            token_type: 'Bearer',
         };
+        return result;
+
+
     }
+
 
     public async getServiceCredentials(): Promise<string> {
         logger.info('In Credentials.getServiceCredentials.');
@@ -98,7 +118,7 @@ export class Credentials extends AbstractCredentials {
 
         logger.info('Getting token by calling getAccessToken.');
         const token = adminClient.getAccessToken();
-        logger.debug('Token - '+token);
+        logger.debug('Token - ' + token);
         logger.info('Returning from Credentials.getStorageCredentials.');
         return token;
     }
