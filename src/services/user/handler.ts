@@ -83,19 +83,19 @@ export class UserHandler {
             const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
 
             const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
-            const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex))
+            const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex));
 
             const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
-            const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex))
-            const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex))
-            const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups)
+            const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
+            const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+            const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
 
             if (subprojectServiceGroups.length > 0) {
 
                 if (userGroupRole === AuthRoles.admin) {
 
                     // rm the user from the groups since the user can be OWNER or Member
-                    for(const group of subprojectServiceGroups) {
+                    for (const group of subprojectServiceGroups) {
                         await this.doNotThrowIfNotMember(
                             AuthGroups.removeUserFromGroup(
                                 req.headers.authorization, group, userEmail,
@@ -103,7 +103,7 @@ export class UserHandler {
                     }
 
                     // add the user as OWNER for all service groups
-                    for(const group of subprojectServiceGroups) {
+                    for (const group of subprojectServiceGroups) {
                         await AuthGroups.addUserToGroup(
                             req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
                     }
@@ -111,8 +111,8 @@ export class UserHandler {
                 } else if (userGroupRole === AuthRoles.editor) {
 
                     // add the user as member for all editor service groups
-                    for(const group of subprojectServiceGroups) {
-                        if(group.indexOf('.editor@') !== -1) {
+                    for (const group of subprojectServiceGroups) {
+                        if (group.indexOf('.editor@') !== -1) {
                             await AuthGroups.addUserToGroup(
                                 req.headers.authorization, group,
                                 userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
@@ -122,8 +122,8 @@ export class UserHandler {
                 } else if (userGroupRole === AuthRoles.viewer) {
 
                     // add the user as member for all viewer service groups
-                    for(const group of subprojectServiceGroups) {
-                        if(group.indexOf('.viewer@') !== -1) {
+                    for (const group of subprojectServiceGroups) {
+                        if (group.indexOf('.viewer@') !== -1) {
                             await AuthGroups.addUserToGroup(
                                 req.headers.authorization, group,
                                 userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
@@ -139,7 +139,7 @@ export class UserHandler {
                 if (userGroupRole !== AuthRoles.viewer) {
 
                     // rm the user from the groups since the user can be OWNER or Member
-                    for(const datagroup of subprojectDataGroups) {
+                    for (const datagroup of subprojectDataGroups) {
                         await this.doNotThrowIfNotMember(
                             AuthGroups.removeUserFromGroup(
                                 req.headers.authorization, datagroup, userEmail,
@@ -147,7 +147,7 @@ export class UserHandler {
                     }
 
                     // add the user as OWNER for all service groups
-                    for(const datagroup of subprojectDataGroups) {
+                    for (const datagroup of subprojectDataGroups) {
                         await AuthGroups.addUserToGroup(
                             req.headers.authorization, datagroup, userEmail,
                             tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
@@ -156,15 +156,15 @@ export class UserHandler {
                 } else {
 
                     // add user to viewer group
-                    for(const datagroup of subprojectDataGroups) {
-                        if(datagroup.indexOf('.viewer@') !== -1) {
+                    for (const datagroup of subprojectDataGroups) {
+                        if (datagroup.indexOf('.viewer@') !== -1) {
                             await AuthGroups.addUserToGroup(
                                 req.headers.authorization, datagroup, userEmail,
                                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
                         }
                     }
 
-            }
+                }
 
 
                 for (const datagroup of subprojectDataGroups) {
@@ -182,9 +182,9 @@ export class UserHandler {
                             datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
 
                     } else {
-                        if(datagroup.indexOf('.viewer@') !== -1) {
+                        if (datagroup.indexOf('.viewer@') !== -1) {
                             await AuthGroups.addUserToGroup(req.headers.authorization,
-                            datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                                datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
                         }
 
                     }
@@ -237,8 +237,8 @@ export class UserHandler {
 
             const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
 
-            const adminGroups = subproject.acls.admins
-            const viewerGroups = subproject.acls.viewers
+            const adminGroups = subproject.acls.admins;
+            const viewerGroups = subproject.acls.viewers;
 
             for (const group of adminGroups) {
                 await this.doNotThrowIfNotMember(
@@ -279,14 +279,14 @@ export class UserHandler {
 
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
 
-        let users = []
+        let users = [];
 
         if (subproject.acls.admins.length > 0) {
 
             for (const adminGroup of subproject.acls.admins) {
                 const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, adminGroup, tenant.esd,
-                    req[Config.DE_FORWARD_APPKEY]))
-                users = users.concat(result.map((el) => [el.email, 'admin']))
+                    req[Config.DE_FORWARD_APPKEY]));
+                users = users.concat(result.map((el) => [el.email, 'admin']));
             }
         }
 
@@ -294,12 +294,12 @@ export class UserHandler {
 
             for (const viewerGroup of subproject.acls.viewers) {
                 const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, viewerGroup, tenant.esd,
-                    req[Config.DE_FORWARD_APPKEY]))
-                users = users.concat(result.map((el) => [el.email, 'viewer']))
+                    req[Config.DE_FORWARD_APPKEY]));
+                users = users.concat(result.map((el) => [el.email, 'viewer']));
             }
         }
 
-        return users
+        return users;
     }
 
     // retrieve the roles of a user
@@ -317,6 +317,9 @@ export class UserHandler {
         const groups = await AuthGroups.getUserGroups(req.headers.authorization,
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
+        // List of all group emails in which the user is member or a owner
+        const groupEmailsOfUser = groups.map(group => group.email);
+
         const prefix = sdPath.subproject ?
             SubprojectGroups.serviceGroupPrefix(sdPath.tenant, sdPath.subproject) :
             TenantGroups.serviceGroupPrefix(sdPath.tenant);
@@ -324,29 +327,53 @@ export class UserHandler {
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant))
-            .map(subproject => subproject.name)
+        const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant));
 
-        // build and return the user roles
-        const basePath = Config.SDPATHPREFIX + sdPath.tenant + (sdPath.subproject ? ('/') + sdPath.subproject : '');
+        // Concatenate all valid subproject admin groups
+        const registeredSubprojectAdminGrps = registeredSubprojects.map(subproject => subproject.acls.admins).flat(1);
+        const registeredSubprojectViewerGrps = registeredSubprojects.map(subproject => subproject.acls.viewers).flat(1);
+
+        // Find intersection of admin groups of all registered subprojects and the usergroup emails
+        const validAdminGroupsForUser = registeredSubprojectAdminGrps.filter(grp => groupEmailsOfUser.includes(grp));
+        const validViewerGroupsForUser = registeredSubprojectViewerGrps.filter(grp => groupEmailsOfUser.includes(grp));
+
+        let roles = [];
+        for (const validAdminGroup of validAdminGroupsForUser) {
+            if (validAdminGroup.startsWith('service')) {
+                roles.push(['/' + validAdminGroup.split('.')[4], 'admin']);
+                roles.push(['/' + validAdminGroup.split('.')[4], 'editor']);
+            }
+            else if (validAdminGroup.startsWith('data')) {
+                roles.push(['/' + validAdminGroup.split('.')[3], 'admin']);
+                roles.push(['/' + validAdminGroup.split('.')[3], 'editor']);
+            }
+        }
+
+        for (const validViewerGroup of validViewerGroupsForUser) {
+            if (validViewerGroup.startsWith('service')) {
+                roles.push(['/' + validViewerGroup.split('.')[4], 'viewer']);
+            }
+            else if (validViewerGroup.startsWith('data')) {
+                roles.push(['/' + validViewerGroup.split('.')[3], 'viewer']);
+            }
+        }
+
+        // Remove duplicates from roles array where each element is array byitself
+        const stringRolesArray = roles.map(role => JSON.stringify(role));
+        const uniqueRolesStringArray = new Set(stringRolesArray);
+        roles = Array.from(uniqueRolesStringArray, (ele) => JSON.parse(ele));
+
+        if (sdPath.subproject) {
+            const subprojectRoles = roles.filter((role) => role[0] === '/' + sdPath.subproject);
+            return {
+                'roles': subprojectRoles
+            };
+        }
 
         return {
-            roles: groups.filter((el) => el.name.startsWith(prefix))
-                .map((el) => el.name.substr(prefix.length + 1))
-                .filter((el) => {
-                    const subproject = el.split('.')[0]
-                    if (registeredSubprojects.includes(subproject)) {
-                        return true
-                    }
-                    return false
-                })
-                .map((el) => {
-                    const tokens = el.split('.'); return [
-                        basePath + (tokens.length > 1) ? '/' + tokens[0] : '',
-                        tokens[tokens.length - 1]];
-                }),
-
+            'roles': roles
         };
+
     }
 
     // do not throw if a user is not a member (fast remove users if not exist than check if exist and than remove it)
