@@ -139,8 +139,7 @@ export class IBMSTShelper{
                     Sid: 'Three',  // Statement 3: Allow Downloading files at the file location
                     Effect: 'Allow',
                     Action: [
-                        's3:GetObject',
-                        's3:GetObjectVersion'
+                        's3:GetObject'
                     ],
                     Resource: [
                         'arn:aws:s3:::'+bucketName
@@ -150,8 +149,7 @@ export class IBMSTShelper{
                     Sid: 'Four',   // Statement 4: Allow Downloading files under the file location
                     Effect: 'Allow',
                     Action: [
-                        's3:GetObject',
-                        's3:GetObjectVersion'
+                        's3:GetObject'
                     ],
                     Resource: [
                         'arn:aws:s3:::'+bucketName+'/*'
