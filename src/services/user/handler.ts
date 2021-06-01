@@ -310,8 +310,11 @@ export class UserHandler {
         // parse user request
         const sdPath = UserParser.rolesUser(req);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
+
+        // Check if user has read access
+        await Auth.isUserRegistered(req.headers.authorization, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // get the groups of the user
         const groups = await AuthGroups.getUserGroups(req.headers.authorization,
@@ -330,12 +333,14 @@ export class UserHandler {
         const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant));
 
         // Concatenate all valid subproject admin groups
-        const registeredSubprojectAdminGrps = registeredSubprojects.map(subproject => subproject.acls.admins).flat(1);
-        const registeredSubprojectViewerGrps = registeredSubprojects.map(subproject => subproject.acls.viewers).flat(1);
+        const registeredSubprojectAdminGroups = registeredSubprojects.map(subproject => subproject.acls.admins).flat(1);
+        const registeredSubprojectViewerGroups = registeredSubprojects.map(
+            subproject => subproject.acls.viewers).flat(1);
 
-        // Find intersection of admin groups of all registered subprojects and the usergroup emails
-        const validAdminGroupsForUser = registeredSubprojectAdminGrps.filter(grp => groupEmailsOfUser.includes(grp));
-        const validViewerGroupsForUser = registeredSubprojectViewerGrps.filter(grp => groupEmailsOfUser.includes(grp));
+        // Find intersection of admin groups of all registered subprojects and the user group emails
+        const validAdminGroupsForUser = registeredSubprojectAdminGroups.filter(grp => groupEmailsOfUser.includes(grp));
+        const validViewerGroupsForUser = registeredSubprojectViewerGroups.filter(
+            grp => groupEmailsOfUser.includes(grp));
 
         let roles = [];
         for (const validAdminGroup of validAdminGroupsForUser) {
@@ -358,7 +363,7 @@ export class UserHandler {
             }
         }
 
-        // Remove duplicates from roles array where each element is array byitself
+        // Remove duplicates from roles array where each element is array by itself
         const stringRolesArray = roles.map(role => JSON.stringify(role));
         const uniqueRolesStringArray = new Set(stringRolesArray);
         roles = Array.from(uniqueRolesStringArray, (ele) => JSON.parse(ele));
