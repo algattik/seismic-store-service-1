@@ -8,7 +8,7 @@ Seismic Store is a cloud-based solution composed by restful micro-services, clie
 
 Seismic Store manages data authorization at service level by protecting access to storage bucket resources. Only service authorized users are enabled to directly access a storage resource. The service implements a mechanism that generates an “impersonation token” by authorizing long running/background production jobs to access data without requiring further user interactions.
 
-![service architecture diagram](docs/seistore-service-architecture.png "Service Architecture Diagram")
+![service architecture diagram](docs/sdms-architecture-diagram-plain.png "Service Architecture Diagram")
 
 ```python
 # build the service
