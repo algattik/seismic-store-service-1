@@ -83,7 +83,11 @@ export class UserHandler {
             const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
 
             const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
-            const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex));
+            const subprojectAdminServiceGroups = subproject.acls.admins
+                .filter((group) => group.match(serviceGroupRegex));
+            const subprojectViewerServiceGroups = subproject.acls.viewers
+                .filter((group) => group.match(serviceGroupRegex));
+            const subprojectServiceGroups = subprojectAdminServiceGroups.concat(subprojectViewerServiceGroups);
 
             const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
             const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
