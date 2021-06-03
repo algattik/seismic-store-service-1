@@ -15,13 +15,13 @@
 // ============================================================================
 
 import { Config } from '../cloud';
-import { SeistoreFactory } from '../cloud/seistore';
 import { DESCompliance, DESUtils } from '../dataecosystem';
 import { ImpTokenDAO } from '../services/imptoken';
 import { AppsDAO } from '../services/svcapp/dao';
 import { TenantModel } from '../services/tenant';
 import { Cache, Error, Utils } from '../shared';
 import { AuthGroups } from './groups';
+import { createHash } from 'crypto';
 
 export class Auth {
 
@@ -45,9 +45,8 @@ export class Auth {
             }, 'auth')
         }
 
-        const cacheKey = (await SeistoreFactory.build(
-            Config.CLOUDPROVIDER).getEmailFromTokenPayload(authToken, true)) + ','
-            + Utils.getAudienceFromPayload(authToken) + ',' + authGroupEmails.sort().join(',');
+        const cacheKey = (
+            createHash('sha1').update(authToken).digest('base64') + ',' + authGroupEmails.sort().join(','));
 
         let isAuthorized = await this._cache.get(cacheKey);
         if (isAuthorized === undefined) { // key not exist in cache -> canll entitlement
