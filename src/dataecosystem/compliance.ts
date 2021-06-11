@@ -28,12 +28,7 @@ export class DESCompliance {
         userToken: string, ltag: string, dataPartitionID: string, appkey: string): Promise<boolean> {
 
         if (!this._cache) {
-            this._cache = new Cache<boolean>({
-                ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
-                PORT: Config.DES_REDIS_INSTANCE_PORT,
-                KEY: Config.DES_REDIS_INSTANCE_KEY,
-                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
-            }, 'ltag')
+            this._cache = new Cache<boolean>('ltag')
         }
 
         const res = await this._cache.get(ltag);

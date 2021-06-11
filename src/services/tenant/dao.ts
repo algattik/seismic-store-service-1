@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,12 +17,17 @@
 import { TenantModel } from '.';
 import { JournalFactoryServiceClient } from '../../cloud';
 import { Config } from '../../cloud';
-import { Error } from '../../shared';
+import { Cache, Error } from '../../shared';
 
 export class TenantDAO {
 
+    private static _cache = new Cache<TenantModel>('tenant');
+
     // get tenant metadata (throw if not exist)
     public static async get(tenantName: string): Promise<TenantModel> {
+
+        const res = await this._cache.get(tenantName);
+        if (res !== undefined && res) { return res };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? {
@@ -46,6 +51,8 @@ export class TenantDAO {
         entity = entity as TenantModel;
         if (!entity.name) { entity.name = tenantName; }
 
+        await this._cache.set(entity.name, entity);
+
         return entity;
 
     }
@@ -55,7 +62,7 @@ export class TenantDAO {
 
         if(Config.TENANT_JOURNAL_ON_DATA_PARTITION) {
             throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'The invoked method is not implemented for ' +
-            'solutions having tenant\' journal deployed on clietn resources'));
+            'solutions having tenant\' journal deployed on client resources'));
         }
 
         const serviceClient = JournalFactoryServiceClient.get();
@@ -83,6 +90,9 @@ export class TenantDAO {
         });
 
         await serviceClient.save({ data: tenant, key: entityKey });
+
+        await this._cache.set(tenant.name, tenant);
+
     }
 
     // delete subproject metadata
@@ -99,11 +109,14 @@ export class TenantDAO {
             namespace: Config.ORGANIZATION_NS,
             path: [Config.TENANTS_KIND, tenantName],
         }));
-
+        await this._cache.del(tenantName);
     }
 
     // check if a tenant exist
     public static async exist(tenant: TenantModel): Promise<boolean> {
+
+        const res = await this._cache.get(tenant.name);
+        if (res !== undefined && res) { return true };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? tenant : undefined);
@@ -112,6 +125,10 @@ export class TenantDAO {
             namespace: Config.ORGANIZATION_NS,
             path: [Config.TENANTS_KIND, tenant.name],
         }));
+
+        if(entity) {
+            await this._cache.set(entity.name, entity);
+        }
 
         return entity !== undefined;
     }

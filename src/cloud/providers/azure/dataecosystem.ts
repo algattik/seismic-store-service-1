@@ -75,12 +75,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     public static async getStorageAccountName(dataPartitionID: string): Promise<string> {
 
         if (!this._storageConfigs) {
-            this._storageConfigs = new Cache<string>({
-                ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
-                PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
-                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
-                DISABLE_TLS: AzureConfig.DES_REDIS_INSTANCE_TLS_DISABLE,
-            }, 'storage')
+            this._storageConfigs = new Cache<string>('storage')
         }
 
         const res = await this._storageConfigs.get(dataPartitionID);
@@ -101,12 +96,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         dataPartitionID: string): Promise<{ endpoint: string, key: string }> {
 
         if (!this._cosmosConfigs) {
-            this._cosmosConfigs = new Cache<string>({
-                ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
-                PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,
-                KEY: AzureConfig.DES_REDIS_INSTANCE_KEY,
-                DISABLE_TLS: AzureConfig.DES_REDIS_INSTANCE_TLS_DISABLE,
-            }, 'cosmos')
+            this._cosmosConfigs = new Cache<string>('cosmos')
         }
 
         const res = await this._cosmosConfigs.get(dataPartitionID);

@@ -42,7 +42,7 @@ export class TestSvcApp {
 		} as DatasetModel;
 
 		this.testDb = new Datastore({
-			projectId: 'GPRJ',
+			projectId: 'GoogleCloudProject',
 		});
 
 		describe(Tx.testInit('seismic store svcapp dao test'), () => {
@@ -77,7 +77,7 @@ export class TestSvcApp {
 
 	private static testRegister() {
 		Tx.sectionInit('register app');
-		const tenant = { name: 'tenant', esd: 'esd', gcpid: 'gprj' } as TenantModel;
+		const tenant = { name: 'tenant', esd: 'esd', gcpid: 'google_project' } as TenantModel;
 		const application = { email: 'email', trusted: true } as IAppModel;
 
 		Tx.test(async (done: any) => {
@@ -90,7 +90,7 @@ export class TestSvcApp {
 
 	private static testGet() {
 		Tx.sectionInit('get');
-		const tenant = { name: 'tenant', esd: 'esd', gcpid: 'gprj' } as TenantModel;
+		const tenant = { name: 'tenant', esd: 'esd', gcpid: 'google_project' } as TenantModel;
 
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
@@ -102,7 +102,7 @@ export class TestSvcApp {
 
 	private static testList() {
 		Tx.sectionInit('list');
-		const tenant = { name: 'tenant', esd: 'esd', gcpid: 'gprj' } as TenantModel;
+		const tenant = { name: 'tenant', esd: 'esd', gcpid: 'google_project' } as TenantModel;
 
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(JournalFactoryTenantClient, 'get').returns(this.journal);

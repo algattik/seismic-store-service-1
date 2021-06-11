@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          this.sandbox.stub(jsonwebtoken, 'verify').returns(
             {
                iss: Config.IMP_SERVICE_ACCOUNT_SIGNER,
@@ -151,7 +151,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').throws();
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          try {
             await ImpTokenDAO.validate('token');
          } catch (e) {
@@ -162,7 +162,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          this.sandbox.stub(jsonwebtoken, 'verify').throws();
          try {
             await ImpTokenDAO.validate('token');
@@ -174,7 +174,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'pubkey' }));
+         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          this.sandbox.stub(jsonwebtoken, 'verify').returns(
             {
                iss: Config.IMP_SERVICE_ACCOUNT_SIGNER,

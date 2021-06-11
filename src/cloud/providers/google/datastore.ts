@@ -68,6 +68,9 @@ export class DatastoreDAO extends AbstractJournal {
     }
 
     public createKey(specs: any): object {
+        if(specs.enforcedKey) {
+            specs.path.push(specs.enforcedKey)
+        }
         return this.getDataStoreClient().key(specs);
     }
 

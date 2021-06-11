@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 // ============================================================================
 
-import { Tx } from '../utils';
 import { TestAppSVC } from './app';
 import { TestDatasetSVC } from './dataset';
 import { TestGeneralSVC } from './general';
@@ -24,6 +23,8 @@ import { TestSubProjectSVC } from './subproject';
 import { TestTenantSVC } from './tenant';
 import { TestUserSVC } from './user';
 import { TestUtilitySVC } from './utility';
+import { Tx } from '../utils';
+
 export class TestServices {
 	public static run() {
 		describe(Tx.title('utest seismic store [services]'), () => {

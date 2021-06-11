@@ -17,6 +17,7 @@
 import { Storage } from '@google-cloud/storage';
 import { TenantModel } from '../../../services/tenant';
 import { Config } from '../../config';
+import { LoggerFactory } from '../../logger';
 import { AbstractStorage, StorageFactory } from '../../storage';
 import { ConfigGoogle } from './config';
 
@@ -34,7 +35,7 @@ export class GCS extends AbstractStorage {
         this.projectID = tenant.gcpid
     }
 
-    private getStorageclient(): Storage {
+    private getStorageClient(): Storage {
         if (GCS.clientsCache[this.projectID]) {
             return GCS.clientsCache[this.projectID];
         } else {
@@ -57,7 +58,7 @@ export class GCS extends AbstractStorage {
     // Create a new bucket
     public async createBucket(
         bucketName: string, location: string, storageClass: string): Promise<void> {
-        const bucket = this.getStorageclient().bucket(bucketName);
+        const bucket = this.getStorageClient().bucket(bucketName);
 
             await bucket.create({ location, storageClass });
             await bucket.setMetadata({
@@ -71,33 +72,36 @@ export class GCS extends AbstractStorage {
 
     // Delete a bucket
     public async deleteBucket(bucketName: string, force = false): Promise<void> {
-        await this.getStorageclient().bucket(bucketName).delete();
+        await this.getStorageClient().bucket(bucketName).delete();
     }
 
     // Delete all files in a bucket
     public async deleteFiles(bucketName: string): Promise<void> {
-        await this.getStorageclient().bucket(bucketName).deleteFiles();
+        await this.getStorageClient().bucket(bucketName).deleteFiles();
     }
 
     // save an object/file to a bucket
     public async saveObject(bucketName: string, objectName: string, data: string): Promise<void> {
         // Create and save the file
-        await this.getStorageclient().bucket(bucketName).file(objectName).save(data);
+        await this.getStorageClient().bucket(bucketName).file(objectName).save(data);
     }
 
     // delete an object from a bucket
     public async deleteObject(bucketName: string, objectName: string): Promise<void> {
-        await this.getStorageclient().bucket(bucketName).file(objectName).delete();
+        await this.getStorageClient().bucket(bucketName).file(objectName).delete();
     }
 
     // delete multiple objects
     public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
         prefix = prefix ? (prefix + '/').replace('//', '/') : prefix;
         if (async) {
-            await this.getStorageclient().bucket(bucketName).deleteFiles({ prefix, force: true });
+            await this.getStorageClient().bucket(bucketName).deleteFiles({ prefix, force: true });
         } else {
             // tslint:disable-next-line: no-floating-promises
-            this.getStorageclient().bucket(bucketName).deleteFiles({ prefix, force: true });
+            this.getStorageClient().bucket(bucketName).deleteFiles(
+                { prefix, force: true }).catch(
+                // tslint:disable-next-line: no-console
+                (error)=>{ LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
         }
     }
 
@@ -119,8 +123,8 @@ export class GCS extends AbstractStorage {
 
         const rmPrefixIn = prefixIn ? prefixIn !== '/' : false;
 
-        const bucketFrom = this.getStorageclient().bucket(bucketIn);
-        const bucketTo = bucketIn === bucketOut ? undefined : this.getStorageclient().bucket(bucketOut);
+        const bucketFrom = this.getStorageClient().bucket(bucketIn);
+        const bucketTo = bucketIn === bucketOut ? undefined : this.getStorageClient().bucket(bucketOut);
 
         const copyCalls = [];
         let nextPageToken = '';
@@ -141,7 +145,7 @@ export class GCS extends AbstractStorage {
 
     // check if a bucket exist
     public async bucketExists(bucketName: string): Promise<boolean> {
-        const result = await this.getStorageclient().bucket(bucketName).exists();
+        const result = await this.getStorageClient().bucket(bucketName).exists();
         return result[0];
     }
 

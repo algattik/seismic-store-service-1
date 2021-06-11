@@ -1,22 +1,23 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
+// distributed under the License is distributed on an 'AS IS' BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ============================================================================
 
+import sinon from 'sinon';
+
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
-import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, StorageFactory } from '../../../src/cloud';
 import { ISeistore, SeistoreFactory } from '../../../src/cloud/seistore';
@@ -56,8 +57,7 @@ export class TestSubProjectSVC {
             }
         };
 
-        TestSubProjectSVC.testDb = new Datastore({ projectId: 'GPRJ' });
-        // this.query = this.journal.createQuery('namespace', 'kind');
+        TestSubProjectSVC.testDb = new Datastore({ projectId: 'GoogleProjectID' });
 
         describe(Tx.testInit('subproject'), () => {
 
@@ -90,7 +90,6 @@ export class TestSubProjectSVC {
     private static testDb: Datastore;
     private static testSubProject: SubProjectModel;
     private static mockSeistore: ISeistore;
-    // private static query: any;
 
     private static create() {
 
@@ -135,12 +134,8 @@ export class TestSubProjectSVC {
 
         Tx.testExp(async (done: any) => {
             this.journal.save.resolves();
-            const subproj = { tenant: 'tnx', name: 'spx' } as SubProjectModel;
-            const spkey = this.journal.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + subproj.tenant,
-                path: [Config.SUBPROJECTS_KIND, subproj.name],
-            });
-            await SubProjectDAO.register(this.journal, { key: spkey, data: subproj });
+            const subproject = { tenant: 'tnx', name: 'spx' } as SubProjectModel;
+            await SubProjectDAO.register(this.journal, subproject);
             done();
         });
 
@@ -168,41 +163,6 @@ export class TestSubProjectSVC {
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Get);
             Tx.check200(expRes.statusCode, done);
-        });
-
-        // Tx.testExp(async (done: any) => {
-        //     this.journal.get.resolves([{}] as never);
-        //     this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
-        //     this.sandbox.stub(Auth, 'isLegalTagValid')
-        //     const spkey = this.journal.createKey({
-        //         namespace: Config.SEISMIC_STORE_NS + '-' + 'tnx',
-        //         path: [Config.SUBPROJECTS_KIND, 'spx'],
-        //     });
-        //     await SubProjectDAO.get(this.journal, 'tnx', 'spx', spkey);
-        //     done();
-        // });
-
-        // Tx.testExp(async (done: any) => {
-        //     this.journal.get.resolves([{ name: 'name', tenant: 'tenant' }] as never);
-        //     this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
-        //     this.sandbox.stub(Auth, 'isLegalTagValid')
-        //     const spkey = this.journal.createKey({
-        //         namespace: Config.SEISMIC_STORE_NS + '-' + 'tnx',
-        //         path: [Config.SUBPROJECTS_KIND, 'spx'],
-        //     });
-        //     await SubProjectDAO.get(this.journal, 'tnx', 'spx', spkey);
-        //     done();
-        // });
-
-        Tx.testExp(async (done: any) => {
-            this.journal.get.resolves([] as never);
-            try {
-                const spkey = this.journal.createKey({
-                    namespace: Config.SEISMIC_STORE_NS + '-' + 'tnx',
-                    path: [Config.SUBPROJECTS_KIND, 'spx'],
-                });
-                await SubProjectDAO.get(this.journal, 'tnx', 'spx', spkey);
-            } catch (e) { Tx.check404(e.error.code, done); }
         });
 
     }
@@ -234,8 +194,8 @@ export class TestSubProjectSVC {
         Tx.testExp(async (done: any) => {
             this.journal.runQuery.resolves([[]] as never);
             this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
-                "admins": ["admin@xyz.com"],
-                "viewers": ["viewer@xyz.com"]
+                'admins': ['admin@xyz.com'],
+                'viewers': ['viewer@xyz.com']
             });
             await SubProjectDAO.list(this.journal, 'tnx');
             done();
@@ -244,8 +204,8 @@ export class TestSubProjectSVC {
         Tx.testExp(async (done: any) => {
             const entityID = []; entityID[this.journal.KEY] = { name: 'name' };
             this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
-                "admins": ["admin@xyz.com"],
-                "viewers": ["viewer@xyz.com"]
+                'admins': ['admin@xyz.com'],
+                'viewers': ['viewer@xyz.com']
             });
             this.journal.runQuery.resolves([[entityID]] as never);
             await SubProjectDAO.list(this.journal, 'tnx');
@@ -255,8 +215,8 @@ export class TestSubProjectSVC {
         Tx.testExp(async (done: any) => {
             const entityID = []; entityID[this.journal.KEY] = { name: 'name' };
             this.sandbox.stub(SubProjectDAO, 'constructServiceGroupACLs').resolves({
-                "admins": ["admin@xyz.com"],
-                "viewers": ["viewer@xyz.com"]
+                'admins': ['admin@xyz.com'],
+                'viewers': ['viewer@xyz.com']
             });
             this.journal.runQuery.resolves([[{ name: 'name', tenant: 'tenant' }]] as never);
             await SubProjectDAO.list(this.journal, 'tnx');
@@ -279,18 +239,6 @@ export class TestSubProjectSVC {
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             await SubProjectHandler.handler(expReq, expRes, undefined);
-            done();
-        });
-
-        Tx.testExp(async (done: any) => {
-            process.env.GCLOUD_PROJECT = 'ON';
-            this.journal.get.resolves([] as never);
-            const spkey = this.journal.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + 'tnx',
-                path: [Config.SUBPROJECTS_KIND, 'spx'],
-            });
-            await SubProjectDAO.exist(this.journal, spkey);
-            delete process.env.GCLOUD_PROJECT;
             done();
         });
 
@@ -323,9 +271,9 @@ export class TestSubProjectSVC {
                 randomBucketName() { return ''; }
             };
             this.sandbox.stub(StorageFactory, 'build').returns(storage);
-            this.sandbox.stub(SubprojectGroups, 'serviceAdminGroup').returns('admingroup');
-            this.sandbox.stub(SubprojectGroups, 'serviceEditorGroup').returns('editorgroup');
-            this.sandbox.stub(SubprojectGroups, 'serviceViewerGroup').returns('viewergroup');
+            this.sandbox.stub(SubprojectGroups, 'serviceAdminGroup').returns('adminGroup');
+            this.sandbox.stub(SubprojectGroups, 'serviceEditorGroup').returns('editorGroup');
+            this.sandbox.stub(SubprojectGroups, 'serviceViewerGroup').returns('viewerGroup');
             this.sandbox.stub(AuthGroups, 'clearGroup').resolves();
 
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Delete);

@@ -46,6 +46,10 @@ export class Utils {
         return this.getPayloadFromStringToken(base64jwtpayload).aud
     }
 
+    public static getSubFromPayload(base64jwtpayload: string): string {
+        return this.getPayloadFromStringToken(base64jwtpayload).sub;
+    }
+
     public static makeID(len: number): string {
         let id = '';
         const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

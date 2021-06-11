@@ -8,6 +8,7 @@ import { Config } from '../../config';
 import { Utils } from '../../../shared/utils'
 import { IbmConfig } from './config';
 import { logger } from './logger';
+import { LoggerFactory } from '../../logger';
 
 let docDb;
 @JournalFactory.register('ibm')
@@ -19,7 +20,9 @@ export class DatastoreDAO extends AbstractJournal {
         super();
         logger.info('In datastore.constructor.');
         this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
-        this.initDb(this.dataPartition);
+        // tslint:disable-next-line: no-floating-promises no-console
+        this.initDb(this.dataPartition).catch((error)=>{ 
+            LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));});
     }
 
     public async initDb(dataPartition: string)
@@ -218,7 +221,7 @@ export class IbmDocDbTransactionOperation {
 
 /**
  * A wrapper class for datastore transactions
- * ! Note: looks awefully close to datastore interface.
+ * ! Note: looks awfully close to datastore interface.
  */
 export class IbmDocDbTransactionDAO extends AbstractJournalTransaction {
 
@@ -374,7 +377,7 @@ export class IbmDocDbQuery implements IJournalQueryModel {
             value = '';
         }
 
-        logger.info('modifird values');
+        logger.info('modified values');
         logger.debug(property);
         logger.debug(operator);
         logger.debug(value);

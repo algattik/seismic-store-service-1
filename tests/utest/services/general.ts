@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import sinon from 'sinon';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { GeneralHandler } from '../../../src/services/general/handler';
 import { GeneralOP } from '../../../src/services/general/optype';
-import { Tx } from '../utils';
 import { Response } from '../../../src/shared';
+import { Tx } from '../utils';
 
 export class TestGeneralSVC {
 

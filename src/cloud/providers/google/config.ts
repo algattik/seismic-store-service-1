@@ -32,7 +32,7 @@ export class ConfigGoogle extends Config {
 
     // System admin role (tenant provisioning required role)
     public static SEISTORE_SYSTEM_ADMIN_ROLE = 'seismic_store.system.admin';
-    // DE target audiance for service to service communication
+    // DE target audience for service to service communication
     public static DES_SERVICE_TARGET_AUDIENCE: string;
 
     // google cloud service project id
@@ -56,7 +56,7 @@ export class ConfigGoogle extends Config {
 
     public async init(): Promise<void> {
 
-        // load des target audiance for service to service communication
+        // load des target audience for service to service communication
         ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE = process.env.SEISTORE_DES_TARGET_AUDIENCE;
         Config.checkRequiredConfig(ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE, 'DES_SERVICE_TARGET_AUDIENCE');
 
@@ -96,6 +96,8 @@ export class ConfigGoogle extends Config {
             JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS,
             JWT_AUDIENCE: process.env.JWT_AUDIENCE,
             JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
+            ENFORCE_SCHEMA_BY_KEY: true,
+            CORRELATION_ID: 'correlation-id',
             TENANT_JOURNAL_ON_DATA_PARTITION: false,
             FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
                 process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,

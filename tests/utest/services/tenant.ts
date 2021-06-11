@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
+import sinon from 'sinon';
+
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
-import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, JournalFactoryServiceClient } from '../../../src/cloud';
 import { SubProjectDAO } from '../../../src/services/subproject';
@@ -27,11 +28,10 @@ import { TenantParser } from '../../../src/services/tenant/parser';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
 
-
 export class TestTenantSVC {
 
     public static run() {
-        TestTenantSVC.testDb = new Datastore({ projectId: 'GPRJ' });
+        TestTenantSVC.testDb = new Datastore({ projectId: 'GoogleProjectID' });
 
         describe(Tx.testInit('tenant'), () => {
 
@@ -87,13 +87,6 @@ export class TestTenantSVC {
             await TenantDAO.get('tnx');
             delete process.env.GCLOUD_PROJECT;
             done();
-        });
-
-        Tx.testExp(async (done: any) => {
-            this.journal.get.resolves([] as never);
-            try {
-                await TenantDAO.get('tnx');
-            } catch (e) { Tx.check404(e.error.code, done); }
         });
 
     }
@@ -204,7 +197,7 @@ export class TestTenantSVC {
             this.sandbox.stub(TenantDAO, 'get').resolves(this.tenant);
             this.sandbox.stub(TenantDAO, 'delete').resolves();
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ name: 'subproject-a', tenant: 'tenant-a', admin: 'admin', storage_class: 'class', storage_location: 'location', ltag: 'ltag', gcs_bucket: 'bucket' }]);
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ name: 'subproject-a', tenant: 'tenant-a', admin: 'admin', storage_class: 'class', storage_location: 'location', ltag: 'ltag', gcs_bucket: 'bucket', enforce_key: false }]);
             const errorStub = this.sandbox.stub(Response, 'writeError');
             errorStub.returns();
 
@@ -237,8 +230,8 @@ export class TestTenantSVC {
             expReq.params.tenantid = 'tenant-a';
             expReq.body.esd = 'tenant-a.evt.group.com';
             expReq.body.gcpid = 'gcpid';
-            expReq.body.default_acls = 'userdatalakeadmin@tenant-a.evt.group.com';
-            Config.CLOUDPROVIDER = "google"
+            expReq.body.default_acls = 'users.datalake.admin@tenant-a.evt.group.com';
+            Config.CLOUDPROVIDER = 'google'
             TenantParser.create(expReq);
             done();
         });

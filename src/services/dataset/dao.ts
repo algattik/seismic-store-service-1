@@ -28,6 +28,16 @@ export class DatasetDAO {
         await journalClient.save(datasetEntity);
     }
 
+    public static async getByKey(journalClient: IJournal, dataset: DatasetModel): Promise<DatasetModel> {
+        const datasetEntityKey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
+            path: [Config.DATASETS_KIND],
+            enforcedKey: dataset.path.slice(0,-1) + '/' + dataset.name
+        });
+        const [entity] = await journalClient.get(datasetEntityKey);
+        return entity ? await this.fixOldModel(entity, dataset.tenant, dataset.subproject) : entity;
+    }
+
     public static async get(
         journalClient: IJournal | IJournalTransaction,
         dataset: DatasetModel): Promise<[DatasetModel, any]> {
@@ -45,25 +55,10 @@ export class DatasetDAO {
                 dataset.tenant, dataset.subproject), entities[0][journalClient.KEY]];
     }
 
-    public static async getKey(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel): Promise<[any]> {
-
-        const query = journalClient.createQuery(
-            Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' +
-            dataset.subproject, Config.DATASETS_KIND).select('__key__')
-            .filter('name', dataset.name).filter('path', dataset.path);
-
-        const [entities] = await journalClient.runQuery(query);
-
-        return entities.length === 0 ? undefined : entities[0][journalClient.KEY];
-    }
-
     public static async update(
         journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, datasetKey: any) {
-
         dataset.ctag = Utils.makeID(16);
         await journalClient.save({ key: datasetKey, data: dataset });
-
     }
 
     public static async updateAll(
@@ -109,12 +104,12 @@ export class DatasetDAO {
 
         const [entities] = await journalClient.runQuery(query);
 
-        const todelete = [];
+        const datasetsToDelete = [];
         for (const entity of entities) {
-            todelete.push(journalClient.delete(entity[journalClient.KEY]));
+            datasetsToDelete.push(journalClient.delete(entity[journalClient.KEY]));
         }
 
-        await Promise.all(todelete);
+        await Promise.all(datasetsToDelete);
     }
 
     public static async delete(journalClient: IJournal | IJournalTransaction, dataset: DatasetModel) {
@@ -135,8 +130,9 @@ export class DatasetDAO {
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
-            const [entitieshy] = await journalClient.runQuery(query);
-            output.datasets = entitieshy.map((entity) => ((entity.path || '') as string).substr(dataset.path.length));
+            const [hierarchicalEntities] = await journalClient.runQuery(query);
+            output.datasets = hierarchicalEntities.map(
+                (entity) => ((entity.path || '') as string).substr(dataset.path.length));
             output.datasets = output.datasets.map(
                 (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
                     (elem, index, self) => index === self.indexOf(elem));
@@ -155,9 +151,9 @@ export class DatasetDAO {
                 query = query.limit(pagination.limit);
             }
 
-            const [entitiesds, info] = await journalClient.runQuery(query);
-            if (entitiesds.length !== 0) {
-                output.datasets = output.datasets.concat(entitiesds.map((item) => item.name));
+            const [datasetEntities, info] = await journalClient.runQuery(query);
+            if (datasetEntities.length !== 0) {
+                output.datasets = output.datasets.concat(datasetEntities.map((item) => item.name));
                 if (pagination) {
                     output.nextPageCursor = info.endCursor;
                 }
@@ -180,10 +176,11 @@ export class DatasetDAO {
             if (pagination && pagination.cursor) query = query.start(pagination.cursor);
             if (pagination && pagination.limit) query = query.limit(pagination.limit);
 
-            const [entitiesds, info] = (await journalClient.runQuery(query)) as [DatasetModel[], {endCursor?: string}];
+            const [datasetEntities, info] = (
+                await journalClient.runQuery(query)) as [DatasetModel[], {endCursor?: string}];
 
-            if (entitiesds.length !== 0) {
-                output.datasets = entitiesds.map((entity) => {
+            if (datasetEntities.length !== 0) {
+                output.datasets = datasetEntities.map((entity) => {
                     return {data: entity, key: entity[journalClient.KEY]};
                 })
                 if (pagination) {
@@ -206,9 +203,9 @@ export class DatasetDAO {
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .filter('path', dataset.path);
 
-            const [entitiesds] = await journalClient.runQuery(query);
+            const [datasetEntities] = await journalClient.runQuery(query);
 
-            if (entitiesds.length !== 0) { results.datasets = entitiesds.map((item) => item.name); }
+            if (datasetEntities.length !== 0) { results.datasets = datasetEntities.map((item) => item.name); }
         }
 
         // Extract all the directories structure and get the subdirectories for the required directory
@@ -217,8 +214,9 @@ export class DatasetDAO {
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
-            const [entitieshy] = await journalClient.runQuery(query);
-            results.directories = entitieshy.map((entity) => (entity.path as string).substr(dataset.path.length));
+            const [hierarchicalEntities] = await journalClient.runQuery(query);
+            results.directories = hierarchicalEntities.map(
+                (entity) => (entity.path as string).substr(dataset.path.length));
             results.directories = results.directories.map(
                 (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
                     (elem, index, self) => index === self.indexOf(elem) );
@@ -228,8 +226,7 @@ export class DatasetDAO {
 
     }
 
-
-    // keep the returned metdata aligned with the original model also if internal implementation change
+    // keep the returned metadata aligned with the original model also if internal implementation change
     public static async fixOldModel(
         entity: DatasetModel, tenantName: string, subprojectName: string): Promise<DatasetModel> {
 

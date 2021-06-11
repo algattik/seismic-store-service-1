@@ -14,10 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
-import { Config, ConfigFactory, TraceFactory } from '../cloud';
+import { Config, ConfigFactory, LoggerFactory, TraceFactory } from '../cloud';
 import { StorageJobManager } from '../cloud/shared/queue';
 import { Locker } from '../services/dataset/locker';
-import { Feature, FeatureFlags } from '../shared';
+import { Feature, FeatureFlags, initSharedCache } from '../shared';
 
 async function ServerStart() {
 
@@ -32,11 +32,15 @@ async function ServerStart() {
         await ConfigFactory.build(Config.CLOUDPROVIDER).init();
 
         // tslint:disable-next-line
-        console.log('- Initializing redis cache')
+        console.log('- Initializing redis locker cache')
         await Locker.init();
 
         // tslint:disable-next-line
-        console.log('- Initializing storage transfer deamon')
+        console.log('- Initializing redis shared cache')
+        initSharedCache();
+
+        // tslint:disable-next-line
+        console.log('- Initializing storage transfer daemon')
         StorageJobManager.setup({
             ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
             PORT: Config.DES_REDIS_INSTANCE_PORT,
@@ -54,11 +58,11 @@ async function ServerStart() {
 
     } catch (error) {
         // tslint:disable-next-line
-        console.log(error);
+        LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));
         process.exit(1);
     }
 
 }
 
-// tslint:disable-next-line: no-floating-promises
-ServerStart();
+// tslint:disable-next-line: no-floating-promises no-console
+ServerStart().catch((error)=>{ LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });

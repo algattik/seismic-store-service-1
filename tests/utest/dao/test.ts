@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import { Tx } from '../utils';
 
 export class TestDao {
 	public static run() {
-		describe(Tx.title('seismic store dao test'), () => {
+		describe(Tx.title('utest seismic store [DAO]'), () => {
 			TestSubProject.run();
-			TestImpToken.run();
-			TestDataset.run();
-			TestTenant.run();
-			TestSvcApp.run();
+			// TestImpToken.run();
+			// TestDataset.run();
+			// TestTenant.run();
+			// TestSvcApp.run();
 		});
 	}
 }

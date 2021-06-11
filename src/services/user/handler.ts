@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,12 +75,8 @@ export class UserHandler {
         if (sdPath.subproject) {
 
             const journalClient = JournalFactoryTenantClient.get(tenant);
-            const spkey = journalClient.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-                path: [Config.SUBPROJECTS_KIND, sdPath.subproject],
-            });
 
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
             const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
             const subprojectAdminServiceGroups = subproject.acls.admins
@@ -234,12 +230,8 @@ export class UserHandler {
         if (sdPath.subproject) {
 
             const journalClient = JournalFactoryTenantClient.get(tenant);
-            const spkey = journalClient.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-                path: [Config.SUBPROJECTS_KIND, sdPath.subproject],
-            });
 
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
             const adminGroups = subproject.acls.admins;
             const viewerGroups = subproject.acls.viewers;
@@ -272,16 +264,12 @@ export class UserHandler {
         // parse user request
         const sdPath = UserParser.listUsers(req);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-            path: [Config.SUBPROJECTS_KIND, sdPath.subproject],
-        });
 
-        const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject, spkey);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
         let users = [];
 
