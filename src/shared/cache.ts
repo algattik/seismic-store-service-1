@@ -18,83 +18,90 @@ import redis from 'redis';
 
 import { Config } from '../cloud';
 
-export interface ICacheParameters {
-    ADDRESS: string;
-    PORT: number;
-    KEY?: string;
-    DISABLE_TLS?: boolean;
-}
+let _cacheCore: CacheCore;
 
-export class Cache<T=string> {
+export class Cache<T = string> {
 
-    private _redisClient: redis.RedisClient;
     private _defaultTTL = 3600; // default ttl in seconds -> 1h
     private _keyTag: string;
 
-    constructor(connection: ICacheParameters, keyTag?: string) {
-
+    constructor(keyTag?: string) {
+        if(!_cacheCore) {
+            initSharedCache();
+        }
         this._keyTag = keyTag;
+    }
+
+    public async del(key: string): Promise<void> {
+        return await _cacheCore._del(this.buildKey(key));
+    }
+
+    public async get(key: string): Promise<T> {
+        return await _cacheCore._get(this.buildKey(key));
+    }
+
+    public async set(key: string, value: T, expireTime = this._defaultTTL): Promise<void> {
+        await _cacheCore._set(this.buildKey(key), value, expireTime);
+    }
+
+    private buildKey(key: string): string {
+        return this._keyTag ? (this._keyTag + ':' + key) : key;
+    }
+
+};
+
+class CacheCore {
+
+    private _redisClient: redis.RedisClient;
+
+    constructor() {
 
         this._redisClient =
             Config.UTEST ?
                 require('redis-mock').createClient() :
-                connection.KEY ? connection.DISABLE_TLS ?
+                Config.DES_REDIS_INSTANCE_KEY ? Config.DES_REDIS_INSTANCE_TLS_DISABLE ?
                     redis.createClient({
-                        host: connection.ADDRESS,
-                        port: connection.PORT,
-                        auth_pass: connection.KEY,
+                        host: Config.DES_REDIS_INSTANCE_ADDRESS,
+                        port: Config.DES_REDIS_INSTANCE_PORT,
+                        auth_pass: Config.DES_REDIS_INSTANCE_KEY,
                     }) :
                     redis.createClient({
-                        host: connection.ADDRESS,
-                        port: connection.PORT,
-                        auth_pass: connection.KEY,
-                        tls: { servername: connection.ADDRESS }
+                        host: Config.DES_REDIS_INSTANCE_ADDRESS,
+                        port: Config.DES_REDIS_INSTANCE_PORT,
+                        auth_pass: Config.DES_REDIS_INSTANCE_KEY,
+                        tls: { servername: Config.DES_REDIS_INSTANCE_ADDRESS }
                     }) :
                     redis.createClient({
-                        host: connection.ADDRESS,
-                        port: connection.PORT,
+                        host: Config.DES_REDIS_INSTANCE_ADDRESS,
+                        port: Config.DES_REDIS_INSTANCE_PORT,
                     })
     }
 
-
-    public async del(key: string): Promise<void> {
-        return await this._del(key);
-    }
-
-    public async get(key: string): Promise<T> {
-        return await this._get(key);
-    }
-
-    public async set(key: string, value: T, exptime=this._defaultTTL): Promise<void> {
-        await this._set(key, value, exptime);
-    }
-
-    private buildKey(key: string): string {
-        return this._keyTag ? (this._keyTag + ':' +  key) : key;
-    }
-
-    private async _del(key: string): Promise<void> {
+    public async _del(key: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            this._redisClient.del(
-                this.buildKey(key), (err) => {
-                    err ? reject(err) : resolve(); });
-        });
+            this._redisClient.del(key, (err) => {
+                err ? reject(err) : resolve(); });
+            });
     }
 
-    private async _get(key: string): Promise<T> {
+    public async _get(key: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            this._redisClient.get(
-                this.buildKey(key), (err, res) => {
-                    err ? reject(err) : resolve(res ? JSON.parse(res).value : undefined); });
-        });
+            this._redisClient.get(key, (err, res) => {
+                err ? reject(err) : resolve(res ? JSON.parse(res).value : undefined); });
+            });
     }
 
-    private async _set(key: string, value: T, exptime:number): Promise<void> {
+    public async _set(key: string, value: any, expireTime:number): Promise<void> {
         return new Promise((resolve, reject) => {
-            this._redisClient.setex(
-                this.buildKey(key), exptime, JSON.stringify({value}), (err) => {
-                    err ? reject(err) : resolve(); });
-        });
+            this._redisClient.setex(key, expireTime, JSON.stringify({value}), (err) => {
+                err ? reject(err) : resolve(); });
+            });
     }
 
-};
+}
+
+export function initSharedCache() {
+    if(!_cacheCore) {
+        _cacheCore = new CacheCore();
+    }
+}

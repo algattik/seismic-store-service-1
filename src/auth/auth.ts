@@ -37,12 +37,7 @@ export class Auth {
         esd: string, appkey: string, mustThrow = true): Promise<boolean> {
 
         if (!this._cache) {
-            this._cache = new Cache<boolean>({
-                ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
-                PORT: Config.DES_REDIS_INSTANCE_PORT,
-                KEY: Config.DES_REDIS_INSTANCE_KEY,
-                DISABLE_TLS: Config.DES_REDIS_INSTANCE_TLS_DISABLE,
-            }, 'auth')
+            this._cache = new Cache<boolean>('auth')
         }
 
         const cacheKey = (

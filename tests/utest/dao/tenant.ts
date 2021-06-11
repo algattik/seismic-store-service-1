@@ -18,18 +18,16 @@ import sinon from 'sinon';
 
 import { Datastore } from '@google-cloud/datastore';
 import { Entity } from '@google-cloud/datastore/build/src/entity';
-import { RunQueryResponse } from '@google-cloud/datastore/build/src/query';
 import { google, JournalFactoryServiceClient } from '../../../src/cloud';
 import { RecordLatency } from '../../../src/metrics';
 import { TenantDAO } from '../../../src/services/tenant/dao';
 import { ITenantModel } from '../../../src/services/tenant/model';
 import { Tx } from '../utils';
-
 export class TestTenant {
 
    public static run() {
 
-      TestTenant.testDb = new Datastore({ projectId: 'GPRJ' });
+      TestTenant.testDb = new Datastore({ projectId: 'GoogleProjectID' });
 
       describe(Tx.testInit('seismic store dao tenant test'), () => {
          this.sandbox = sinon.createSandbox();
@@ -106,7 +104,7 @@ export class TestTenant {
       Tx.sectionInit('tenant exist');
       Tx.test(async (done: any) => {
          this.journal.get.resolves([[{ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid' }]]);
-         const result = await TenantDAO.exist({ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid', default_acls: 'dacls' });
+         const result = await TenantDAO.exist({ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid', default_acls: 'default_acls' });
          Tx.checkTrue(result, done);
       });
    }

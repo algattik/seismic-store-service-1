@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
 // limitations under the License.
 // ============================================================================
 
-import bodyparser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
 import { Feature, FeatureFlags } from '../shared';
+import { v4 as uuidv4 } from 'uuid';
 
 import fs from 'fs';
 import https from 'https';
@@ -94,8 +94,8 @@ export class Server {
         }
 
         this.app = express();
-        this.app.use(bodyparser.urlencoded({ extended: false }));
-        this.app.use(bodyparser.json());
+        this.app.use(express.urlencoded({ extended: false }));
+        this.app.use(express.json());
         this.app.disable('x-powered-by');
         this.app.use(cors(this.corsOptions));
         this.app.options('*', cors());
@@ -127,6 +127,14 @@ export class Server {
             req[Config.DE_FORWARD_APPKEY] =
                 req.headers['appkey'] !== req.headers['x-api-key'] ? req.headers['appkey'] : undefined
 
+            // set the header correlation id and keep a reference in the response locals
+            if(Config.CORRELATION_ID) {
+                if(!req.headers[Config.CORRELATION_ID]) {
+                    req.headers[Config.CORRELATION_ID] = uuidv4();
+                }
+                res.locals[Config.CORRELATION_ID] = req.headers[Config.CORRELATION_ID];
+            }
+
             next();
         });
 
@@ -145,12 +153,13 @@ export class Server {
     }
 
     public async start(port = Config.SERVICE_PORT) {
+
         this.port = port;
+
         // The timeout of the backend service should be greater than the timeout of the load balancer. This will
         // prevent premature connection closures from the service
-        // Additionally, the headerstimeout needs to be greater than keepalivetimeout
+        // Additionally, the headers-timeout needs to be greater than keep-alive-timeout
         // https://github.com/nodejs/node/issues/27363
-
 
         // SSL
         if (Config.SSL_ENABLED){

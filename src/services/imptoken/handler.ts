@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -74,11 +74,24 @@ export class ImpTokenHandler {
         const tenantName = tokenBody.resources[0].resource.split('/')[0];
         const tenant = await TenantDAO.get(tenantName);
 
-        // check if it is a trusted application
-        const appEmail = await SeistoreFactory.build(
-            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, false);
-
-        await Auth.isAppAuthorized(tenant, appEmail);
+        // check if it is a trusted application (subject, email(to review), emailV2(to review))
+        try {
+            const subject = Utils.getSubFromPayload(req.headers.authorization);
+            await Auth.isAppAuthorized(tenant, subject);
+        } catch (error) {
+            const appEmail = await SeistoreFactory.build(
+                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, false);
+            try {
+                await Auth.isAppAuthorized(tenant, appEmail);
+            } catch (error) {
+                const appEmailV2 = Utils.checkSauthV1EmailDomainName(appEmail);
+                if (appEmailV2 !== appEmail) {
+                    await Auth.isAppAuthorized(tenant, appEmailV2);
+                } else {
+                    throw(error);
+                }
+            }
+        }
 
         // check authorization in each subproject
         const checkAuthorizations = [];
@@ -91,13 +104,8 @@ export class ImpTokenHandler {
             // init journalClient client
             const journalClient = JournalFactoryTenantClient.get(tenant);
 
-            const spkey = journalClient.createKey({
-                namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-                path: [Config.SUBPROJECTS_KIND, subprojectName],
-            });
-
             // retrieve the destination subproject info
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, subprojectName, spkey);
+            const subproject = await SubProjectDAO.get(journalClient, tenant.name, subprojectName);
 
             if (item.readonly) {
                 checkAuthorizations.push(

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import { Request as expRequest, Response as expResponse } from 'express';
 import sinon from 'sinon';
+
+import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { JournalFactoryTenantClient } from '../../../src/cloud';
 import { Config } from '../../../src/cloud/config';
@@ -49,28 +50,28 @@ export class TestUserSVC {
 
                 this.userGroups = [
                     {
-                        name: 'service.seistore.dev.tenant01.sproject01.admin',
-                        description: 'seismic store tenant tenant01 subproject sproject01 admin group',
+                        name: 'service.seistore.dev.tenant01.subproject01.admin',
+                        description: 'seismic store tenant tenant01 subproject subproject01 admin group',
                         email: 'service.seistore.dev.tenant01.sproject01.admin@domain.com'
                     },
                     {
-                        name: 'service.seistore.dev.tenant01.sproject01.editor',
-                        description: 'seismic store tenant tenant01 subproject sproject01 editor group',
+                        name: 'service.seistore.dev.tenant01.subproject01.editor',
+                        description: 'seismic store tenant tenant01 subproject subproject01 editor group',
                         email: 'service.seistore.dev.tenant01.sproject01.editor@domain.com'
                     },
                     {
-                        name: 'service.seistore.dev.tenant01.sproject01.viewer',
-                        description: 'seismic store tenant tenant01 subproject sproject01 viewer group',
+                        name: 'service.seistore.dev.tenant01.subproject01.viewer',
+                        description: 'seismic store tenant tenant01 subproject subproject01 viewer group',
                         email: 'service.seistore.dev.tenant01.sproject01.viewer@domain.com'
                     },
                     {
-                        name: 'data.sdms.tenant01.sproject02.db9621fd-64da-4d32-937a-d14f2bee519c.viewer',
-                        description: 'seismic dms tenant tenant01 subproject sprojec02 viewer group',
+                        name: 'data.sdms.tenant01.subproject02.db9621fd-64da-4d32-937a-d14f2bee519c.viewer',
+                        description: 'seismic dms tenant tenant01 subproject subproject02 viewer group',
                         email: 'data.sdms.tenant01.sproject02.db9621fd-64da-4d32-937a-d14f2bee519c.viewer@domain.com'
                     },
                     {
-                        name: 'data.sdms.tenant01.sproject02.be1221rt-564a-4d32-ty54-r37v2prt821r.admin',
-                        description: 'seismic dms tenant tenant01 subproject sprojec02 admin group',
+                        name: 'data.sdms.tenant01.subproject02.be1221rt-564a-4d32-ty54-r37v2prt821r.admin',
+                        description: 'seismic dms tenant tenant01 subproject subproject02 admin group',
                         email: 'data.sdms.tenant01.sproject02.be1221rt-564a-4d32-ty54-r37v2prt821r.admin@domain.com'
                     }
 
@@ -93,7 +94,8 @@ export class TestUserSVC {
                                 'service.seistore.dev.tenant01.sproject01.viewer@domain.com'
                             ]
                         },
-                        'ltag': 'ltag'
+                        'ltag': 'ltag',
+                        'enforce_key': false
                     },
                     {
                         'gcs_bucket': 'bucket',
@@ -110,7 +112,8 @@ export class TestUserSVC {
                                 'data.sdms.tenant01.sproject02.db9621fd-64da-4d32-937a-d14f2bee519c.viewer@domain.com'
                             ]
                         },
-                        'ltag': 'ltag'
+                        'ltag': 'ltag',
+                        'enforce_key': false
                     }
                 ];
 
@@ -239,7 +242,7 @@ export class TestUserSVC {
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(AuthGroups, 'removeUserFromGroup');
             this.subproject.acls.admins = ['group1', 'group2'];
-            this.subproject.acls.viewers = ['vgroup1', 'vgroup2'];
+            this.subproject.acls.viewers = ['vGroup1', 'vGroup2'];
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             Tx.check200(expRes.statusCode, done);
@@ -291,7 +294,7 @@ export class TestUserSVC {
             expReq.query.sdpath = 'sd://tnx/spx';
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(Auth, 'isUserAuthorized');
-            this.spy.stub(AuthGroups, 'listUsersInGroup').resolves([{ email: 'userx' }] as never);
+            this.spy.stub(AuthGroups, 'listUsersInGroup').resolves([{ email: 'userX' }] as never);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
             await UserHandler.handler(expReq, expRes, UserOP.List);
             Tx.check200(expRes.statusCode, done);
@@ -317,9 +320,8 @@ export class TestUserSVC {
 
         Tx.sectionInit('roles');
 
-
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.query.sdpath = 'sd://tenant01/sproject01';
+            expReq.query.sdpath = 'sd://tenant01/subproject01';
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves(this.userGroups);
             this.spy.stub(SubProjectDAO, 'list').resolves(this.subprojectList);

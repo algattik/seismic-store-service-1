@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ export class TestLocker {
 					path: '/', subproject: 'subproject', tenant: 'tenant'
 				} as DatasetModel;
 				this.writeLockValueInCache = 'WAxAMSFEssarGGERGEG';
-				this.mutliSessionReadLockValueInCache = 'rms:RAxAMSFEssarGGERGEG:RAxAMSCLaMGBERGEG';
+				this.multiSessionReadLockValueInCache = 'rms:RAxAMSFEssarGGERGEG:RAxAMSCLaMGBERGEG';
 				this.redisClient = redis.createClient();
 				this.datasetKey = this.dataset.tenant + '/' + this.dataset.subproject + this.dataset.path + this.dataset.name;
 				this.sampleRedlock = {
@@ -69,7 +69,7 @@ export class TestLocker {
 
 	private static dataset: DatasetModel;
 	private static writeLockValueInCache;
-	private static mutliSessionReadLockValueInCache;
+	private static multiSessionReadLockValueInCache;
 	private static redisClient: redis.RedisClient;
 	private static datasetKey: string;
 	private static sampleRedlock: object;
@@ -176,7 +176,7 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'getLock' as any).resolves(this.writeLockValueInCache);
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
 
-			// no wid from userinput
+			// no wid from user input
 			try {
 				await Locker.acquireWriteLock(this.datasetKey, undefined);
 			} catch (e) {
@@ -205,15 +205,15 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 
 			// lock value in the cache is a multi session read locks string
-			this.redisClient.set(this.datasetKey, this.mutliSessionReadLockValueInCache);
+			this.redisClient.set(this.datasetKey, this.multiSessionReadLockValueInCache);
 
-			const sessionReadLockValue: string = this.mutliSessionReadLockValueInCache.substr(4).split(':')[0];
-			const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValueInCache.substr(4).split(':');
+			const sessionReadLockValue: string = this.multiSessionReadLockValueInCache.substr(4).split(':')[0];
+			const multiSessionReadLockArray: string[] = this.multiSessionReadLockValueInCache.substr(4).split(':');
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
 
 			// the wid is a session readlock value;
 			const result = await Locker.acquireWriteLock(this.datasetKey, undefined, sessionReadLockValue);
-			Tx.checkTrue(result.id === sessionReadLockValue && result.cnt === mutliSessionReadLockArray.length, done);
+			Tx.checkTrue(result.id === sessionReadLockValue && result.cnt === multiSessionReadLockArray.length, done);
 
 		});
 
@@ -222,9 +222,9 @@ export class TestLocker {
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 
 			// lock value in the cache is a multi session read locks string
-			this.redisClient.set(this.datasetKey, this.mutliSessionReadLockValueInCache);
+			this.redisClient.set(this.datasetKey, this.multiSessionReadLockValueInCache);
 
-			const sessionReadLockValue: string = this.mutliSessionReadLockValueInCache.substr(4).split(':')[0];
+			const sessionReadLockValue: string = this.multiSessionReadLockValueInCache.substr(4).split(':')[0];
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
 
 			// the wid value is not present in the multi session read locks string;
@@ -281,16 +281,16 @@ export class TestLocker {
 			Tx.checkTrue(result.id === wid && result.cnt === 1, done);
 		});
 
-		// already locked with mutlisession read lock
+		// already locked with multi session read lock
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(this.mutliSessionReadLockValueInCache);
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(this.multiSessionReadLockValueInCache);
 
-			// const sessionReadLockValue: string = this.mutliSessionReadLockValue.substr(4).split(':')[0];
-			// const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValue.substr(4).split(':');
+			// const sessionReadLockValue: string = this.multiSessionReadLockValue.substr(4).split(':')[0];
+			// const multiSessionReadLockArray: string[] = this.multiSessionReadLockValue.substr(4).split(':');
 
-			const wid = 'read-lock-not-in-mutlisession-readlock';
+			const wid = 'read-lock-not-in-multi-session-readlock';
 			try {
 				const result = await Locker.acquireReadLock(this.datasetKey, undefined, wid);
 			} catch (e) {
@@ -314,17 +314,17 @@ export class TestLocker {
 		});
 
 
-		// unlocked dataset with multisession read lock value in cache
+		// unlocked dataset with multi session read lock value in cache
 		Tx.test(async (done: any) => {
 
 
 			const readlockID = 'RAxBxCx';
-			// const sessionReadLockValue: string = this.mutliSessionReadLockValue.substr(4).split(':')[0];
-			const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValueInCache.substr(4).split(':');
+			// const sessionReadLockValue: string = this.multiSessionReadLockValue.substr(4).split(':')[0];
+			const multiSessionReadLockArray: string[] = this.multiSessionReadLockValueInCache.substr(4).split(':');
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
 			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(multiSessionReadLockArray);
 			this.sandbox.stub(Locker, 'generateReadLockID' as any).returns(readlockID);
 
 			const result = await Locker.acquireReadLock(this.datasetKey);
@@ -392,8 +392,8 @@ export class TestLocker {
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValueInCache.substr(4).split(':');
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
+			const multiSessionReadLockArray: string[] = this.multiSessionReadLockValueInCache.substr(4).split(':');
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(multiSessionReadLockArray);
 			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
 			this.sandbox.stub(DatasetDAO, 'update').resolves();
 
@@ -402,8 +402,8 @@ export class TestLocker {
 
 			const result = await Locker.unlock(this.datasetKey);
 
-			const validationResult = lockerDelStub.getCall(0).calledWith(this.datasetKey + '/' + mutliSessionReadLockArray[0]) &&
-				lockerDelStub.getCall(1).calledWith(this.datasetKey + '/' + mutliSessionReadLockArray[1]) &&
+			const validationResult = lockerDelStub.getCall(0).calledWith(this.datasetKey + '/' + multiSessionReadLockArray[0]) &&
+				lockerDelStub.getCall(1).calledWith(this.datasetKey + '/' + multiSessionReadLockArray[1]) &&
 				lockerDelStub.getCall(2).calledWith(this.datasetKey);
 
 			Tx.checkTrue(validationResult === true && result.id === null && result.cnt === 0, done);
@@ -412,19 +412,19 @@ export class TestLocker {
 
 
 		// cache has multi session read lock and the user supplies a wid
-		// which is in the cache's mutlisession read lock value
+		// which is in the cache's multi session read lock value
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValueInCache.substr(4).split(':');
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
+			const multiSessionReadLockArray: string[] = this.multiSessionReadLockValueInCache.substr(4).split(':');
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(multiSessionReadLockArray);
 			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
 			this.sandbox.stub(DatasetDAO, 'update').resolves();
 
 			const lockerDelStub = this.sandbox.stub(Locker, 'del');
 			lockerDelStub.resolves();
 
-			const wid = mutliSessionReadLockArray[0];
+			const wid = multiSessionReadLockArray[0];
 
 			const setLockStub = this.sandbox.stub(Locker, 'setLock' as any);
 			setLockStub.resolves();
@@ -434,23 +434,23 @@ export class TestLocker {
 
 			const result = await Locker.unlock(this.datasetKey, wid);
 
-			// during unlock, wid should be removed from the mutli session read lock array
+			// during unlock, wid should be removed from the multi session read lock array
 			// and the new array value must be reset in cache
-			mutliSessionReadLockArray.shift();
-			const validationResult = setLockStub.calledWith(this.datasetKey, mutliSessionReadLockArray, 3600)
+			multiSessionReadLockArray.shift();
+			const validationResult = setLockStub.calledWith(this.datasetKey, multiSessionReadLockArray, 3600)
 				&& lockerDelStub.calledWith(this.datasetKey + '/' + wid);
 
-			Tx.checkTrue(validationResult === true && result.id === mutliSessionReadLockArray[0] && result.cnt === 1, done);
+			Tx.checkTrue(validationResult === true && result.id === multiSessionReadLockArray[0] && result.cnt === 1, done);
 
 		});
 
 		// cache has multi session read lock and the user supplies a wid
-		// which is not in the cache's mutlisession read lock value
+		// which is not in the cache's multi session read lock value
 		Tx.test(async (done: any) => {
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValueInCache.substr(4).split(':');
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
+			const multiSessionReadLockArray: string[] = this.multiSessionReadLockValueInCache.substr(4).split(':');
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(multiSessionReadLockArray);
 			this.sandbox.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
 			this.sandbox.stub(DatasetDAO, 'update').resolves();
 
@@ -493,12 +493,12 @@ export class TestLocker {
 		// cache contains a multi session read lock value and the
 		// user supplies a wid present in the multi session read lock value
 		Tx.test(async (done: any) => {
-			const mutliSessionReadLockArray: string[] = this.mutliSessionReadLockValueInCache.substr(4).split(':');
-			const wid = mutliSessionReadLockArray[0];
+			const multiSessionReadLockArray: string[] = this.multiSessionReadLockValueInCache.substr(4).split(':');
+			const wid = multiSessionReadLockArray[0];
 
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(multiSessionReadLockArray);
 			this.sandbox.stub(Locker, 'getTTL' as any).resolves(3600);
 
 			const lockerDelStub = this.sandbox.stub(Locker, 'del');
@@ -509,8 +509,8 @@ export class TestLocker {
 
 			await Locker.unlockReadLockSession(this.datasetKey, wid);
 
-			mutliSessionReadLockArray.shift();
-			const validationResult = setLockStub.calledWith(this.datasetKey, mutliSessionReadLockArray, 3600);
+			multiSessionReadLockArray.shift();
+			const validationResult = setLockStub.calledWith(this.datasetKey, multiSessionReadLockArray, 3600);
 			Tx.checkTrue(validationResult === true, done);
 
 		});
@@ -520,12 +520,12 @@ export class TestLocker {
 		// cache contains a multi session read lock value and the
 		// user supplies a wid present in the multi session read lock value
 		Tx.test(async (done: any) => {
-			const mutliSessionReadLockArray: string[] = ['RAxBxCx'];
-			const wid = mutliSessionReadLockArray[0];
+			const multiSessionReadLockArray: string[] = ['RAxBxCx'];
+			const wid = multiSessionReadLockArray[0];
 
 			this.sandbox.stub(Locker, 'acquireMutex').resolves();
 			this.sandbox.stub(Locker, 'releaseMutex').resolves();
-			this.sandbox.stub(Locker, 'getLock' as any).resolves(mutliSessionReadLockArray);
+			this.sandbox.stub(Locker, 'getLock' as any).resolves(multiSessionReadLockArray);
 			this.sandbox.stub(Locker, 'getTTL' as any).resolves(3600);
 
 			const lockerDelStub = this.sandbox.stub(Locker, 'del');
@@ -544,7 +544,7 @@ export class TestLocker {
 		Tx.sectionInit('acquire mutex');
 
 		Tx.test(async (done: any) => {
-			const cacheLock = { lock: 'cachelock' };
+			const cacheLock = { lock: 'cache_lock' };
 			this.sandbox.stub(Redlock.prototype, 'lock').resolves(cacheLock);
 			const result = await Locker.acquireMutex(this.datasetKey);
 			Tx.checkTrue(result === cacheLock, done);
@@ -552,7 +552,7 @@ export class TestLocker {
 		});
 
 		Tx.test(async (done: any) => {
-			const cacheLock = { lock: 'cachelock' };
+			const cacheLock = { lock: 'cache_lock' };
 			this.sandbox.stub(Redlock.prototype, 'lock').rejects();
 			try {
 				await Locker.acquireMutex(this.datasetKey);
@@ -567,14 +567,14 @@ export class TestLocker {
 		Tx.sectionInit('release mutex');
 
 		Tx.test(async (done: any) => {
-			const cacheLock = { lock: 'cachelock' };
+			const cacheLock = { lock: 'cache_lock' };
 			this.sandbox.stub(Redlock.prototype, 'unlock').resolves();
 			await Locker.releaseMutex(cacheLock, this.datasetKey);
 			done();
 		});
 
 		Tx.test(async (done: any) => {
-			const cacheLock = { lock: 'cachelock' };
+			const cacheLock = { lock: 'cache_lock' };
 			this.sandbox.stub(Redlock.prototype, 'unlock').rejects();
 			try {
 				await Locker.releaseMutex(cacheLock, this.datasetKey);

@@ -29,6 +29,7 @@ import { IPaginationModel } from '../../../src/services/dataset/model';
 import { Tx } from '../utils';
 
 export class TestDataset {
+
 	private static dataset: DatasetModel;
 	private static journal: any;
 	private static testDb: Datastore;
@@ -43,7 +44,7 @@ export class TestDataset {
 		} as DatasetModel;
 
 		TestDataset.testDb = new Datastore({
-			projectId: 'GPRJ',
+			projectId: 'GoogleProjectID',
 		});
 
 		describe(Tx.testInit('seismic store dao dataset test'), () => {
@@ -66,7 +67,6 @@ export class TestDataset {
 
 			TestDataset.testRegister();
 			TestDataset.testGet();
-			TestDataset.testGetKey();
 			TestDataset.testUpdate();
 			TestDataset.testList();
 			TestDataset.testDelete();
@@ -82,13 +82,13 @@ export class TestDataset {
 
 		Tx.test(async (done: any) => {
 			this.journal.save.resolves({} as never);
-			await DatasetDAO.register(this.journal, { key: {'key': 'dskey'}, data: TestDataset.dataset });
+			await DatasetDAO.register(this.journal, { key: {'key': 'dataset_key'}, data: TestDataset.dataset });
 			done();
 		});
 
 		Tx.test(async (done: any) => {
 			this.journal.save.resolves();
-			await DatasetDAO.register(this.journal, { key: {'key': 'dskey'}, data: TestDataset.dataset });
+			await DatasetDAO.register(this.journal, { key: {'key': 'dataset_key'}, data: TestDataset.dataset });
 			done();
 		});
 	}
@@ -136,32 +136,6 @@ export class TestDataset {
 
 			const result = await DatasetDAO.get(this.journal, this.dataset);
 			Tx.checkTrue(result[0][Datastore.KEY].name === '123', done);
-		});
-	}
-
-	private static testGetKey() {
-		Tx.sectionInit('get key');
-
-		Tx.test(async (done: any) => {
-			const entity: Entity = {};
-			entity[Datastore.KEY] = this.journal.createKey({
-				namespace: 'seismic-store-ns',
-				path: ['datasets', '123'],
-			});
-			const queryResponse: RunQueryResponse = [[entity], undefined];
-			this.journal.runQuery.resolves(queryResponse);
-
-			const result = await DatasetDAO.getKey(this.journal, this.dataset);
-
-			Tx.checkTrue(result === entity[Datastore.KEY], done);
-		});
-
-		Tx.test(async (done: any) => {
-			this.journal.runQuery.resolves([[''], undefined]);
-
-			const result = await DatasetDAO.getKey(this.journal, this.dataset);
-
-			Tx.checkTrue(result === undefined, done);
 		});
 	}
 
@@ -511,7 +485,7 @@ export class TestDataset {
 	}
 
 	private static testFixOldModel() {
-		Tx.sectionInit('fix oldmodel');
+		Tx.sectionInit('fix old model');
 		Tx.testExp(async (done: any) => {
 			this.sandbox.stub(Locker, 'getLock').resolves('WriteLockValue');
 			const result = await DatasetDAO.fixOldModel(this.dataset, 'tenant-a', 'subproject-a');

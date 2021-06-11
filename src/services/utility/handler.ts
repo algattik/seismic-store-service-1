@@ -63,11 +63,7 @@ export class UtilityHandler {
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + sdPath.tenant,
-            path: [Config.SUBPROJECTS_KIND, sdPath.subproject],
-        });
-        const subproject = await SubProjectDAO.get(journalClient, sdPath.tenant, sdPath.subproject, spkey);
+        const subproject = await SubProjectDAO.get(journalClient, sdPath.tenant, sdPath.subproject);
 
         if (readOnly) {
             await Auth.isReadAuthorized(req.headers.authorization,
@@ -158,13 +154,7 @@ export class UtilityHandler {
         dataset.subproject = sdPath.subproject;
         dataset.path = sdPath.path || '/';
 
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant,
-            path: [Config.SUBPROJECTS_KIND, dataset.subproject],
-        });
-
-
-        const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject, spkey)
+        const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject)
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             //  Check if user is authorized
@@ -212,14 +202,8 @@ export class UtilityHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + sdPathTo.tenant,
-            path: [Config.SUBPROJECTS_KIND, sdPathTo.subproject],
-        });
-
         // retrieve the destination subproject info
-        const subproject = await SubProjectDAO.get(journalClient, sdPathTo.tenant, sdPathTo.subproject, spkey);
-
+        const subproject = await SubProjectDAO.get(journalClient, sdPathTo.tenant, sdPathTo.subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             if (sdPathFrom.subproject === sdPathTo.subproject) {
@@ -248,8 +232,11 @@ export class UtilityHandler {
         datasetFrom.subproject = sdPathFrom.subproject;
         datasetFrom.path = sdPathFrom.path;
         datasetFrom.name = sdPathFrom.dataset;
-        const datasetModelFrom = await DatasetDAO.get(journalClient, datasetFrom);
-        datasetFrom = datasetModelFrom[0];
+
+        // Retrieve the dataset metadata
+        datasetFrom = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, datasetFrom) :
+                (await DatasetDAO.get(journalClient, datasetFrom))[0];
 
         // check if the dataset does not exist
         if (!datasetFrom) {
@@ -272,7 +259,7 @@ export class UtilityHandler {
             seismicmeta.id = guidSubString + ':' + Utils.makeID(16);
         }
 
-        // build the destination dataseat metadata
+        // build the destination dataset metadata
         const datasetTo = JSON.parse(JSON.stringify(datasetFrom)) as DatasetModel;
         datasetTo.tenant = sdPathTo.tenant;
         datasetTo.subproject = sdPathTo.subproject;
@@ -292,8 +279,9 @@ export class UtilityHandler {
             const lockKeyTo = datasetTo.tenant + '/' + datasetTo.subproject + datasetTo.path + datasetTo.name;
             const toDatasetLock = await Locker.getLock(lockKeyTo)
 
-            const results = await DatasetDAO.get(journalClient, datasetTo)
-            preRegisteredDataset = results[0] as DatasetModel
+            preRegisteredDataset = subproject.enforce_key ?
+                    await DatasetDAO.getByKey(journalClient, datasetTo) :
+                    (await DatasetDAO.get(journalClient, datasetTo))[0];
 
             if (toDatasetLock && Locker.isWriteLock(toDatasetLock)) {
 
@@ -362,9 +350,10 @@ export class UtilityHandler {
                 }
             }
 
-            const dsTokey = journalClient.createKey({
+            const datasetToEntityKey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + datasetTo.tenant + '-' + datasetTo.subproject,
                 path: [Config.DATASETS_KIND],
+                enforcedKey: subproject.enforce_key ? (datasetTo.path.slice(0, -1) + '/' + datasetTo.name) : undefined
             });
 
             let storageKeyTo: any;
@@ -377,13 +366,13 @@ export class UtilityHandler {
 
             // Register the dataset and lock the source if required
             await Promise.all([
-                DatasetDAO.register(journalClient, { key: dsTokey, data: datasetTo }),
+                DatasetDAO.register(journalClient, { key: datasetToEntityKey, data: datasetTo }),
                 (datasetTo.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization, [seismicmeta],
                         tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
-            // set the objects prefixf
+            // set the objects prefix
             const bucketFrom = datasetFrom.gcsurl.split('/')[0];
             const prefixFrom = datasetFrom.gcsurl.split('/')[1];
             const bucketTo = datasetTo.gcsurl.split('/')[0];

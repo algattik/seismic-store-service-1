@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import sinon from 'sinon';
 import { Datastore } from '@google-cloud/datastore';
 import { google } from '../../../src/cloud/providers';
 import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject';
-import { Tx } from '../utils';
 import { TenantDAO } from '../../../src/services/tenant';
+import { Tx } from '../utils';
 
 export class TestSubProject {
 
    public static run() {
-      TestSubProject.testDb = new Datastore({ projectId: 'GPRJ' });
+      TestSubProject.testDb = new Datastore({ projectId: 'GoogleProjectID' });
 
-      describe(Tx.testInit('seismic store dao subproject test'), () => {
+      describe(Tx.testInit('subproject'), () => {
          this.sandbox = sinon.createSandbox();
 
          beforeEach(() => {
@@ -55,16 +55,17 @@ export class TestSubProject {
 
       Tx.sectionInit('register');
 
-      const spcreate: SubProjectModel = {
+      const createdSubproject: SubProjectModel = {
          admin: 'me', gcs_bucket: undefined, ltag: 'ltag', name: 'spx01',
          storage_class: 'regional',
          storage_location: 'us-central1', tenant: 'tnx01',
+         enforce_key: false,
 
       };
 
       Tx.test(async (done: any) => {
          this.journal.save.resolves();
-         await SubProjectDAO.register(this.journal, { key: 'key', data: spcreate });
+         await SubProjectDAO.register(this.journal, createdSubproject);
          done();
       });
    }
@@ -75,18 +76,10 @@ export class TestSubProject {
 
       Tx.testExp(async (done: any) => {
          this.journal.get.resolves([{ a: 'b' }]);
-         const result = await SubProjectDAO.get(this.journal, 'tenant-a', 'subproject-a', ['key']);
+         const result = await SubProjectDAO.get(this.journal, 'tenant-a', 'subproject-a');
          Tx.checkTrue(result.name === 'subproject-a' && result.tenant === 'tenant-a', done);
       });
 
-      Tx.testExp(async (done: any) => {
-         this.journal.get.resolves([]);
-         try {
-            const result = await SubProjectDAO.get(this.journal, 'tenant-a', 'subproject-a', ['key']);
-         } catch (e) {
-            Tx.check404(e.error.code, done);
-         }
-      });
    }
 
    private static testList() {
@@ -108,7 +101,7 @@ export class TestSubProject {
 
       Tx.testExp(async (done: any) => {
          this.journal.delete.resolves();
-         await SubProjectDAO.delete(this.journal, ['key']);
+         await SubProjectDAO.delete(this.journal, 'tenant', 'subproject');
          done();
       });
    }

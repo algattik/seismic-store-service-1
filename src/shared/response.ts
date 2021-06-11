@@ -45,7 +45,7 @@ export class Response {
     }
 
     public static write(res: expResponse, code: number, data: any = {}) {
-        res.set({
+        const headers = {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Expires': '0',
             'Service-Provider': Config.CLOUDPROVIDER,
@@ -53,7 +53,11 @@ export class Response {
             'X-Content-Type-Options': 'nosniff',
             'X-Frame-Options': 'DENY',
             'X-XSS-Protection': '1',
-        }).status(code).send(JSON.parse(xssfilters.inHTMLData(JSON.stringify(data))));
+        };
+        if(res.locals[Config.CORRELATION_ID]) {
+            headers[Config.CORRELATION_ID] = res.locals[Config.CORRELATION_ID]
+        }
+        res.set(headers).status(code).send(JSON.parse(xssfilters.inHTMLData(JSON.stringify(data))));
         this.writeMetric('Response Size', res.get('content-length') ? +res.get('content-length') : 0);
     }
     public static writeMetric(key: string, val: any): void {

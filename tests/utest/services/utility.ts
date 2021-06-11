@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
+import sinon from 'sinon';
+
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
-import sinon from 'sinon';
 import { Auth } from '../../../src/auth';
 import { Config, google, JournalFactoryTenantClient } from '../../../src/cloud';
 import { IDESEntitlementGroupModel } from '../../../src/cloud/dataecosystem';
@@ -31,12 +32,11 @@ import { UtilityParser } from '../../../src/services/utility/parser';
 import { Response, Utils } from '../../../src/shared';
 import { Tx } from '../utils';
 
-
 export class TestUtilitySVC {
 
     public static run() {
 
-        TestUtilitySVC.testDb = new Datastore({ projectId: 'GPRJ' });
+        TestUtilitySVC.testDb = new Datastore({ projectId: 'GoogleProjectID' });
 
         describe(Tx.testInit('utility'), () => {
 
@@ -134,7 +134,7 @@ export class TestUtilitySVC {
         //     this.sandbox.stub(DESEntitlement, 'getUserGroups');
         //     this.sandbox.stub(Auth, 'isReadAuthorized');
         //     this.sandbox.stub(DatasetDAO, 'listContent').resolves({ directories: ['abc'], datasets: [] } as never);
-        //     this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subprojec-a' },
+        //     this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
         //     { 'name': 'subproject-b' }] as any);
         //     await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
         //     Tx.check200(expRes.statusCode, done);
@@ -146,7 +146,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.admin' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subprojec-a' },
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
             { 'name': 'subproject-b' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
@@ -158,7 +158,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.editor' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subprojec-a' },
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
             { 'name': 'subproject-b' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
@@ -170,7 +170,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.viewer' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subprojec-a' },
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
             { 'name': 'subproject-b' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
@@ -182,7 +182,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: '' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subprojec-a' },
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
             { 'name': 'subproject-b' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
@@ -222,16 +222,16 @@ export class TestUtilitySVC {
 
             const userGroupsStub = this.sandbox.stub(DESEntitlement, 'getUserGroups');
             userGroupsStub.onCall(0).resolves([{
-                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.subproj01.admin`,
-                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.subproj01.admin@dp.p4d.domain.com`
+                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.subproject01.admin`,
+                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.subproject01.admin@dp.p4d.domain.com`
             }, {
                 'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.admin`,
                 'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-a.admin@dp.p4d.domain.com`
             }] as IDESEntitlementGroupModel[]);
 
             userGroupsStub.onCall(1).resolves([{
-                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.subproj2.admin`,
-                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.subproj2.admin@dp02.p4d.domain.com`
+                'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.subproject02.admin`,
+                'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.subproject02.admin@dp02.p4d.domain.com`
             }, {
                 'name': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.admin`,
                 'email': `${Config.SERVICEGROUPS_PREFIX}.${Config.SERVICE_ENV}.tenant-c.admin@dp02.p4d.domain.com`

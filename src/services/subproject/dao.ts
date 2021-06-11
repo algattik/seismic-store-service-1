@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,23 +15,41 @@
 // ============================================================================
 
 import { SubprojectGroups, SubProjectModel } from '.';
-import { Config, IJournal, IJournalTransaction } from '../../cloud';
-import { Error } from '../../shared';
+import { Config, IJournal } from '../../cloud';
+import { Cache, Error } from '../../shared';
 import { TenantDAO } from '../tenant';
 
 export class SubProjectDAO {
 
-    // register a new subproject under a given Tenant Project (existance check must be done externally)
-    public static async register(journalClient: IJournal | IJournalTransaction, subprojectEntity: any) {
-        await journalClient.save(subprojectEntity);
+    private static _cache = new Cache<SubProjectModel>('subproject');
+
+    // register a new subproject under a given Tenant Project (existence check must be done externally)
+    public static async register(journalClient: IJournal, subproject: SubProjectModel) {
+
+        const entityKey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + subproject.tenant,
+            path: [Config.SUBPROJECTS_KIND, subproject.name],
+        });
+
+        await journalClient.save({ data: subproject, key: entityKey });
+
+        await this._cache.set(this.getCacheKey(subproject.tenant, subproject.name), subproject);
+
     }
 
     // get subproject metadata (throw if not exist)
     public static async get(
-        journalClient: IJournal | IJournalTransaction,
-        tenantName: string, subprojectName: string, key: any): Promise<SubProjectModel> {
+        journalClient: IJournal, tenantName: string, subprojectName: string): Promise<SubProjectModel> {
 
-        let [entity] = await journalClient.get(key);
+        const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
+        if (res !== undefined && res) { return res };
+
+        const entityKey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
+            path: [Config.SUBPROJECTS_KIND, subprojectName],
+        });
+
+        let [entity] = await journalClient.get(entityKey);
 
         if (!entity) {
             throw (Error.make(Error.Status.NOT_FOUND, 'The subproject ' + subprojectName +
@@ -42,20 +60,28 @@ export class SubProjectDAO {
         entity = entity as SubProjectModel;
         if (!entity.name) { entity.name = subprojectName; }
         if (!entity.tenant) { entity.tenant = tenantName; }
+        if (entity.enforce_key === undefined) { entity.enforce_key = false; }
 
 
         // Fix entities with no acls
         if (!entity.acls) {
-            entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
+            entity.acls = await this.constructServiceGroupACLs(entity)
         }
+
+        await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
 
         return entity;
 
     }
 
     // get subproject metadata (throw if not exist)
-    public static async delete(journalClient: IJournal | IJournalTransaction, key: any) {
-        await journalClient.delete(key);
+    public static async delete(journalClient: IJournal, tenantName: string, subprojectName: string) {
+        const entityKey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
+            path: [Config.SUBPROJECTS_KIND, subprojectName],
+        });
+        await journalClient.delete(entityKey);
+        await this._cache.del(this.getCacheKey(tenantName, subprojectName));
     }
 
     // get all tenant metadata (throw if not exist)
@@ -74,9 +100,7 @@ export class SubProjectDAO {
     }
 
     // get subproject metadata
-    public static async list(
-        journalClient: IJournal | IJournalTransaction,
-        tenantName: string): Promise<SubProjectModel[]> {
+    public static async list(journalClient: IJournal, tenantName: string): Promise<SubProjectModel[]> {
 
         const query = journalClient.createQuery(Config.SEISMIC_STORE_NS + '-' + tenantName, Config.SUBPROJECTS_KIND);
 
@@ -90,7 +114,7 @@ export class SubProjectDAO {
                 if (!entity.tenant) { entity.tenant = tenantName; }
 
                 if (!entity.acls) {
-                    entity.acls = await this.constructServiceGroupACLs(entity, tenantName)
+                    entity.acls = await this.constructServiceGroupACLs(entity)
                 }
 
             }
@@ -99,28 +123,44 @@ export class SubProjectDAO {
     }
 
     // check if a subproject exists
-    public static async exist(journalClient: IJournal | IJournalTransaction, key: any): Promise<boolean> {
+    public static async exist(journalClient: IJournal, tenantName: string, subprojectName: string): Promise<boolean> {
 
-        const [entity] = await journalClient.get(key);
+        const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
+        if (res !== undefined && res) { return true };
+
+        const entityKey = journalClient.createKey({
+            namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
+            path: [Config.SUBPROJECTS_KIND, subprojectName],
+        });
+
+        const [entity] = await journalClient.get(entityKey);
+
+        if(entity) {
+            await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
+        }
 
         return entity !== undefined;
     }
 
-    public static async constructServiceGroupACLs(entity, tenantName: string) {
+    public static async constructServiceGroupACLs(subproject: SubProjectModel) {
 
-        const tenant = await TenantDAO.get(tenantName)
+        const esd = (await TenantDAO.get(subproject.tenant)).esd;
 
         const acls = {
             'admins': [],
             'viewers': []
         }
 
-        acls.admins.push(SubprojectGroups.serviceAdminGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-        acls.admins.push(SubprojectGroups.serviceEditorGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
-        acls.viewers.push(SubprojectGroups.serviceViewerGroupName(entity.tenant, entity.name) + '@' + tenant.esd)
+        acls.admins.push(SubprojectGroups.serviceAdminGroupName(subproject.tenant, subproject.name) + '@' + esd)
+        acls.admins.push(SubprojectGroups.serviceEditorGroupName(subproject.tenant, subproject.name) + '@' + esd)
+        acls.viewers.push(SubprojectGroups.serviceViewerGroupName(subproject.tenant, subproject.name) + '@' + esd)
 
         return acls
 
+    }
+
+    private static getCacheKey(tenant: string, subproject: string): string {
+        return tenant + '/' + subproject;
     }
 
 }

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -93,6 +93,12 @@ export class SubProjectHandler {
 
         subproject.admin = subproject.admin || userEmail;
 
+        // enforce the datasets schema by key for newly create subproject.
+        // this will mainly affect google for which the initial implementation
+        // of the journal was query-based (lack in performance)
+        // other cloud providers already implement ref by key.
+        subproject.enforce_key = Config.ENFORCE_SCHEMA_BY_KEY;
+
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
@@ -107,13 +113,8 @@ export class SubProjectHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        let spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-            path: [Config.SUBPROJECTS_KIND, subproject.name],
-        });
-
         // Check if the subproject already exists
-        if (await SubProjectDAO.exist(journalClient, spkey)) {
+        if (await SubProjectDAO.exist(journalClient, subproject.tenant, subproject.name)) {
             throw (Error.make(Error.Status.ALREADY_EXISTS,
                 'The subproject ' + subproject.name +
                 ' already exists in the tenant project ' + subproject.tenant));
@@ -177,14 +178,9 @@ export class SubProjectHandler {
             subproject.gcs_bucket,
             subproject.storage_location, subproject.storage_class);
 
-        spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + subproject.tenant,
-            path: [Config.SUBPROJECTS_KIND, subproject.name],
-        });
-
 
         // Register the subproject
-        await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
+        await SubProjectDAO.register(journalClient, subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // if admin is not the requestor, assign the admin and rm the requestor, has to be a sequential op
@@ -215,16 +211,11 @@ export class SubProjectHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-            path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
-        });
-
         // get subproject
-        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check if user is member of any of the subproject's acl admin groups
+            // Check if user is member of any of the subproject acl admin groups
             await Auth.isUserAuthorized(req.headers.authorization,
                 subproject.acls.admins, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
@@ -249,17 +240,12 @@ export class SubProjectHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-            path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
-        });
-
         // get the subproject metadata
-        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if user is member of any of the subproject's acl admin groups
+            // check if user is member of any of the subproject acl admin groups
             await Auth.isUserAuthorized(req.headers.authorization, subproject.acls.admins,
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
@@ -268,7 +254,7 @@ export class SubProjectHandler {
 
         await Promise.all([
             // delete the subproject metadata from Datastore
-            SubProjectDAO.delete(journalClient, spkey),
+            SubProjectDAO.delete(journalClient, tenant.name , subproject.name),
             // delete all datasets metadata from Datastore.
             DatasetDAO.deleteAll(journalClient, tenant.name, subproject.name),
             // delete the subproject associated bucket. This operation will delete all subproject data in GCS.
@@ -280,8 +266,8 @@ export class SubProjectHandler {
 
         const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
         const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
-        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
-        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
+        const viewerSubprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSubprojectDataGroups);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             for (const group of subprojectServiceGroups) {
@@ -295,8 +281,9 @@ export class SubProjectHandler {
         }
 
         // delete the bucket resource (to perform after files deletions)
-        // tslint:disable-next-line: no-floating-promises (we want it async)
-        storage.deleteBucket(subproject.gcs_bucket);
+        // tslint:disable-next-line: no-floating-promises no-console (we want it async)
+        storage.deleteBucket(subproject.gcs_bucket).catch((error)=> {
+            LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
     }
 
     // delete the subproject
@@ -304,7 +291,7 @@ export class SubProjectHandler {
 
         const parsedUserInput = SubProjectParser.patch(req);
 
-        // bad request if tehere are no field to patch
+        // bad request if there are no field to patch
         if (!parsedUserInput.ltag) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The request does not contain any field to patch'));
@@ -313,13 +300,8 @@ export class SubProjectHandler {
         // init journalClient client and key
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const spkey = journalClient.createKey({
-            namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
-            path: [Config.SUBPROJECTS_KIND, req.params.subprojectid],
-        });
-
         // get subproject
-        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid, spkey);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
@@ -351,8 +333,8 @@ export class SubProjectHandler {
                     req.headers.authorization, parsedUserInput.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
 
-            const orignalSubprojectLtag = subproject.ltag;
-            if (orignalSubprojectLtag !== parsedUserInput.ltag) {
+            const originalSubprojectLtag = subproject.ltag;
+            if (originalSubprojectLtag !== parsedUserInput.ltag) {
 
                 // update the subproject ltag
                 subproject.ltag = parsedUserInput.ltag;
@@ -363,7 +345,7 @@ export class SubProjectHandler {
                         const output = await DatasetDAO.listDatasets(
                             journalClient, subproject.tenant, subproject.name, pagination);
                         const datasets = output.datasets.filter(dataset => {
-                            return dataset.data.ltag === orignalSubprojectLtag;
+                            return dataset.data.ltag === originalSubprojectLtag;
                         });
                         for (const dataset of datasets) {
                             dataset.data.ltag = parsedUserInput.ltag;
@@ -380,7 +362,7 @@ export class SubProjectHandler {
         }
 
         if (parsedUserInput.ltag || parsedUserInput.acls) {
-            await SubProjectDAO.register(journalClient, { key: spkey, data: subproject });
+            await SubProjectDAO.register(journalClient, subproject);
         }
 
         return subproject;
@@ -442,14 +424,14 @@ export class SubProjectHandler {
     private static validateGroupNamesLength(adminGroupName: string, viewerGroupName: string,
         subproject: SubProjectModel): boolean {
 
-        const allowedSubprojLen = Config.DES_GROUP_CHAR_LIMIT - Math.max(
+        const allowedSubprojectLen = Config.DES_GROUP_CHAR_LIMIT - Math.max(
             adminGroupName.length, viewerGroupName.length
         );
 
-        if (allowedSubprojLen < 0) {
+        if (allowedSubprojectLen < 0) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 subproject.name + ' subproject name is too long, for tenant ' + subproject.tenant +
-                '. The subproject name must not more than ' + Math.abs(allowedSubprojLen) + ' characters'));
+                '. The subproject name must not more than ' + Math.abs(allowedSubprojectLen) + ' characters'));
         }
 
         return true;
