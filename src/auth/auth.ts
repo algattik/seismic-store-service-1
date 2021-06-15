@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,60 @@ import { Cache, Error, Utils } from '../shared';
 import { AuthGroups } from './groups';
 import { createHash } from 'crypto';
 
+// ===============================================================================================
+// This class is used to register all auth provider
+// ===============================================================================================
+export class AuthProviderFactoryBuilder {
+
+    public static register(providerLabel: string) {
+        return (target: any) => {
+            if(AuthProviderFactoryBuilder.providers[providerLabel]) {
+                AuthProviderFactoryBuilder.providers[providerLabel].push(target);
+            } else {
+                AuthProviderFactoryBuilder.providers[providerLabel] = [target];
+            }
+            return target;
+        };
+    }
+
+    public static build(providerLabel: string, referenceAbstraction: any, args: { [key: string]: any } = {}) {
+        if (providerLabel === undefined || providerLabel === 'unknown') {
+            throw (Error.make(Error.Status.UNKNOWN,
+                `Unrecognized auth provider: ${providerLabel}`));
+        }
+        for(const provider of AuthProviderFactoryBuilder.providers[providerLabel]) {
+            if (provider.prototype instanceof referenceAbstraction) {
+                return new provider(args);
+            }
+        }
+        throw (Error.make(Error.Status.UNKNOWN,
+            `The auth provider builder that extend ${referenceAbstraction} has not been found`));
+    }
+
+    private static providers: { [key: string]: any[] } = {};
+
+}
+
+// ===============================================================================================
+// These are the service auth provider methods used for example to generate an impersonation token
+// ===============================================================================================
+export interface IAuthProvider {
+    generateAuthCredential(): Promise<any>;
+}
+
+export abstract class AbstractAuthProvider implements IAuthProvider {
+    public abstract generateAuthCredential(): Promise<any>;
+}
+
+export class AuthProviderFactory extends AuthProviderFactoryBuilder {
+    public static build(providerLabel: string): AbstractAuthProvider {
+        return AuthProviderFactoryBuilder.build(providerLabel, AbstractAuthProvider) as IAuthProvider;
+    }
+}
+
+// ===============================================================================================
+// Generic Auth provider class to manage Authorizations in SDMS
+// ===============================================================================================
 export class Auth {
 
     private static _cache: Cache<boolean>;
