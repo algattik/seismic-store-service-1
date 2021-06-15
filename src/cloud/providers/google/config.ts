@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import fs from 'fs';
 import { Config, ConfigFactory } from '../../config';
+import { Secrets  } from './secrets'
 
 @ConfigFactory.register('google')
 export class ConfigGoogle extends Config {
@@ -54,6 +55,17 @@ export class ConfigGoogle extends Config {
     // pubsub topic
     public static PUBSUBTOPIC: string;
 
+    // service auth provider and credentials (optional)
+    // The google workload identity is used to interact with GCP solutions like datastore/gcs/log/etc...
+    // This account, if set, can be used to sign an impersonation token credential.
+    // This account, if set, can be used to perform Auth Operations like credentials exchange.
+    // Introduced because different auth providers can be used on a CSP deployment
+    // This variable should be a serialized json containing id/secrets/etc...
+    // The decoding policy is defined in the src/auth/auth.ts and src/auth/providers/*
+    public static SERVICE_AUTH_PROVIDER_CREDENTIAL: string;
+    // This id build the auth provider in the abstraction implemented in src/auth/providers/*
+    public static SERVICE_AUTH_PROVIDER: string;
+
     public async init(): Promise<void> {
 
         // load des target audience for service to service communication
@@ -74,6 +86,11 @@ export class ConfigGoogle extends Config {
         }
 
         ConfigGoogle.PUBSUBTOPIC = process.env.PUBSUBTOPIC !== undefined ? process.env.PUBSUBTOPIC : 'subproject-operations';
+
+        // read the optional auth provider id and secret
+        ConfigGoogle.SERVICE_AUTH_PROVIDER = process.env.SERVICE_AUTH_PROVIDER;
+        ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL = await new Secrets().getSecret(
+            'sdms-svc-auth-provider-credential', false);
 
         await Config.initServiceConfiguration({
             SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
@@ -98,6 +115,8 @@ export class ConfigGoogle extends Config {
             JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
             ENFORCE_SCHEMA_BY_KEY: true,
             CORRELATION_ID: 'correlation-id',
+            SERVICE_AUTH_PROVIDER: ConfigGoogle.SERVICE_AUTH_PROVIDER,
+            SERVICE_AUTH_PROVIDER_CREDENTIAL: ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL,
             TENANT_JOURNAL_ON_DATA_PARTITION: false,
             FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
                 process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,

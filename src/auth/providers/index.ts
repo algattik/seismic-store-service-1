@@ -14,10 +14,4 @@
 // limitations under the License.
 // ============================================================================
 
-export { Auth } from './auth';
-export { AuthRoles } from './roles';
-export { AuthGroups } from './groups';
-export { AuthProviderFactory } from './auth';
-
-// Providers
-export * from './providers';
+export * as generic from './generic';

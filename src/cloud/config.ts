@@ -49,6 +49,8 @@ export interface ConfigModel {
     SSL_CERT_PATH?: string;
     ENFORCE_SCHEMA_BY_KEY?: boolean;
     CORRELATION_ID?: string;
+    SERVICE_AUTH_PROVIDER?: string;
+    SERVICE_AUTH_PROVIDER_CREDENTIAL?: string;
     FEATURE_FLAG_AUTHORIZATION: boolean;
     FEATURE_FLAG_LEGALTAG: boolean;
     FEATURE_FLAG_SEISMICMETA_STORAGE: boolean;
@@ -144,6 +146,16 @@ export abstract class Config implements IConfig {
     // The Key name of the header correlation ID
     public static CORRELATION_ID: string;
 
+    // service auth provider and identity (optional)
+    // The CSP identity is used to interact with CSP solutions like db/storage/log/etc...
+    // This account, if set, can be used to sign an impersonation token credential.
+    // This account, if set, can be used to perform Auth Operations like credentials exchange.
+    // Introduced because different auth providers can be used on a CSP deployment
+    // The decoding policy is defined in the src/auth/auth.ts and implemented in src/auth/providers/*
+    public static SERVICE_AUTH_PROVIDER_CREDENTIAL: string;
+    // This id build the auth provider in the abstraction implemented in src/auth/providers/*
+    public static SERVICE_AUTH_PROVIDER: string;
+
     // WriteLock Skip
     // This is an open issue to discuss.
     // Checking the write lock is the correct behavior and this variable should be set to "false".
@@ -213,6 +225,9 @@ export abstract class Config implements IConfig {
         Config.ENFORCE_SCHEMA_BY_KEY = model.ENFORCE_SCHEMA_BY_KEY || false;
 
         Config.CORRELATION_ID = model.CORRELATION_ID || undefined;
+
+        Config.SERVICE_AUTH_PROVIDER = model.SERVICE_AUTH_PROVIDER || 'generic';
+        Config.SERVICE_AUTH_PROVIDER_CREDENTIAL = model.SERVICE_AUTH_PROVIDER_CREDENTIAL || 'undefined';
 
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');

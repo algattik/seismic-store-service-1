@@ -14,10 +14,15 @@
 // limitations under the License.
 // ============================================================================
 
-export { Auth } from './auth';
-export { AuthRoles } from './roles';
-export { AuthGroups } from './groups';
-export { AuthProviderFactory } from './auth';
+import { Error } from '../../../shared';
+import { AbstractAuthProvider, AuthProviderFactory } from '../../auth';
 
-// Providers
-export * from './providers';
+@AuthProviderFactory.register('generic')
+export class GenericAuthProvider extends AbstractAuthProvider {
+
+    public async generateAuthCredential(): Promise<any> {
+        throw (Error.make(Error.Status.NOT_IMPLEMENTED,
+            'The required feature is not supported, the credential auth provider has not been found.'));
+    }
+
+}
