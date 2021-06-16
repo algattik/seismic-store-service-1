@@ -34,7 +34,9 @@ export class SubProjectParser {
             req.body.admin : (await SeistoreFactory.build(
                 Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true));
 
-        subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] }
+        subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] };
+        subproject.access_policy = (req.body && req.body.access_policy) ? req.body.access_policy : 'uniform';
+
         // check user input params
         Params.checkString(subproject.admin, 'admin', false);
         Params.checkString(subproject.ltag, 'ltag', false);
@@ -58,14 +60,32 @@ export class SubProjectParser {
         return subproject;
     }
 
-    public static patch(req: expRequest): { ltag: string, acls: ISubprojectAcl, recursive: boolean } {
+    public static patch(req: expRequest): {
+        ltag: string, access_policy: string,
+        acls: ISubprojectAcl, recursive: boolean;
+    } {
 
         Params.checkString(req.query.recursive, 'recursive', false);
+        Params.checkString(req.body.access_policy, 'access_policy', false);
+
+        if (req.body.access_policy) {
+            SubProjectParser.checkAccessPolicy(req.body.access_policy);
+        }
 
         return {
             ltag: req.get('ltag'),
+            access_policy: (req.body && req.body.access_policy) ? req.body.access_policy : undefined,
             acls: (req.body && req.body.acls) ? req.body.acls : undefined,
             recursive: req.query.recursive ? (req.query.recursive === 'true') : false
+        };
+    }
+
+    private static checkAccessPolicy(policy: string) {
+        if (policy === 'dataset' || policy === 'uniform') {
+            return;
+        }
+        else {
+            throw (Error.make(Error.Status.BAD_REQUEST, 'Access_policy value has to be dataset or uniform'));
         }
     }
 

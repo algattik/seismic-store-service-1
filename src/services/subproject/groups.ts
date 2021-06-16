@@ -14,7 +14,6 @@
 // limitations under the License.
 // ============================================================================
 
-import { v4 as uuidv4 } from 'uuid';
 import { TenantGroups } from '../tenant';
 
 export class SubprojectGroups {
@@ -57,12 +56,12 @@ export class SubprojectGroups {
         return TenantGroups.dataGroupPrefix(tenant) + '.' + subproject;
     }
 
-    public static dataAdminGroup(tenant: string, subproject: string, esd: string): string {
-        return this.dataGroupPrefix(tenant, subproject) + '.' + uuidv4() + '.admin' + '@' + esd;
+    public static dataAdminGroup(tenant: string, subproject: string, esd: string, uuid: string): string {
+        return this.dataGroupPrefix(tenant, subproject) + '.' + uuid + '.admin' + '@' + esd;
     }
 
-    public static dataViewerGroup(tenant: string, subproject: string, esd: string): string {
-        return this.dataGroupPrefix(tenant, subproject) + '.' + uuidv4() + '.viewer' + '@' + esd;
+    public static dataViewerGroup(tenant: string, subproject: string, esd: string, uuid: string): string {
+        return this.dataGroupPrefix(tenant, subproject) + '.' + uuid + '.viewer' + '@' + esd;
     }
 
     public static dataGroupNameRegExp(tenant: string, subproject: string): RegExp {

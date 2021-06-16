@@ -14,10 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import sinon from 'sinon';
-
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
+import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, JournalFactoryServiceClient } from '../../../src/cloud';
 import { SubProjectDAO } from '../../../src/services/subproject';
@@ -27,6 +26,7 @@ import { TenantOP } from '../../../src/services/tenant/optype';
 import { TenantParser } from '../../../src/services/tenant/parser';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
+
 
 export class TestTenantSVC {
 
@@ -44,7 +44,7 @@ export class TestTenantSVC {
                 this.journal.KEY = Datastore.KEY;
 
                 this.sandbox.stub(JournalFactoryServiceClient, 'get').returns(this.journal);
-                this.sandbox.stub(Response, 'writeMetric').returns()
+                this.sandbox.stub(Response, 'writeMetric').returns();
                 this.tenant = {
                     name: 'tenant-a',
                     esd: 'esd',
@@ -97,7 +97,7 @@ export class TestTenantSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.datapartition = 'datapartition';
-            this.sandbox.stub(TenantDAO, 'getAll').resolves([{ name: 'tenant01', default_acls: 'x', esd: 'datapartition.domain.com', gcpid: 'any' }])
+            this.sandbox.stub(TenantDAO, 'getAll').resolves([{ name: 'tenant01', default_acls: 'x', esd: 'datapartition.domain.com', gcpid: 'any' }]);
             this.sandbox.stub(Auth, 'isUserRegistered').resolves();
             Tx.checkTrue((await TenantHandler.getTenantSDPath(expReq)) === Config.SDPATHPREFIX + 'tenant01', done);
         });
@@ -197,7 +197,17 @@ export class TestTenantSVC {
             this.sandbox.stub(TenantDAO, 'get').resolves(this.tenant);
             this.sandbox.stub(TenantDAO, 'delete').resolves();
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ name: 'subproject-a', tenant: 'tenant-a', admin: 'admin', storage_class: 'class', storage_location: 'location', ltag: 'ltag', gcs_bucket: 'bucket', enforce_key: false }]);
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{
+                name: 'subproject-a',
+                tenant: 'tenant-a',
+                admin: 'admin',
+                storage_class: 'class',
+                storage_location: 'location',
+                ltag: 'ltag',
+                gcs_bucket: 'bucket',
+                enforce_key: false,
+                access_policy: 'uniform'
+            }]);
             const errorStub = this.sandbox.stub(Response, 'writeError');
             errorStub.returns();
 
@@ -212,7 +222,7 @@ export class TestTenantSVC {
             this.sandbox.stub(Auth, 'isUserAuthorized').resolves(true);
             this.sandbox.stub(TenantDAO, 'delete').resolves();
             this.sandbox.stub(SubProjectDAO, 'list').resolves([]);
-            this.sandbox.stub(AuthGroups, 'clearGroup').resolves();
+            this.sandbox.stub(AuthGroups, 'deleteGroup').resolves();
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
 
 
@@ -231,7 +241,7 @@ export class TestTenantSVC {
             expReq.body.esd = 'tenant-a.evt.group.com';
             expReq.body.gcpid = 'gcpid';
             expReq.body.default_acls = 'users.datalake.admin@tenant-a.evt.group.com';
-            Config.CLOUDPROVIDER = 'google'
+            Config.CLOUDPROVIDER = 'google';
             TenantParser.create(expReq);
             done();
         });

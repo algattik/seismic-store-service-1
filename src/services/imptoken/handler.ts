@@ -88,7 +88,7 @@ export class ImpTokenHandler {
                 if (appEmailV2 !== appEmail) {
                     await Auth.isAppAuthorized(tenant, appEmailV2);
                 } else {
-                    throw(error);
+                    throw (error);
                 }
             }
         }
@@ -98,7 +98,7 @@ export class ImpTokenHandler {
         for (const item of tokenBody.resources) {
             const resourcePath = item.resource.split('/');
 
-            const subprojectName = resourcePath[1]
+            const subprojectName = resourcePath[1];
 
 
             // init journalClient client

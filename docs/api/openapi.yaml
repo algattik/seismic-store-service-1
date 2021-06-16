@@ -1054,6 +1054,11 @@ paths:
           name: recursive
           required: false
           type: boolean
+        - description: "Request body"
+          in: body
+          name: request body
+          schema:
+            $ref: "#/definitions/SubProjectPatchBody"
       responses:
         200:
           description: "Updated subproject metadata successfully"
@@ -1746,7 +1751,7 @@ definitions:
       token: "eyJhbxGccCI6IkpX.fgdgsdngfwe_cec.xc2Vpc21pYy1ddzZXJ2aWNl"
   # OK
   SubProjectCreateBody:
-    required: ["admin", "storage_class", "storage_location"]
+    required: ["admin", "storage_class", "storage_location", "access_policy"]
     properties:
       admin:
         type: string
@@ -1757,6 +1762,11 @@ definitions:
       storage_location:
         type: string
         description: Storage location for the bucket
+      access_policy:
+        type: string
+        description: Access policy for the subproject
+        default: "uniform"
+        enum: [uniform, dataset]
       acls:
         type: object
         description: ACLs with admin groups and viewere groups
@@ -1775,10 +1785,37 @@ definitions:
       storage_location: "US"
       acls:
         admins:
-          - service.seistore.p4d.tenant01.subproject01.admin@slb.p4d.cloud.slb-ds.com
-          - service.seistore.p4d.tenant01.subproject01.editor@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
         viewers:
-          - service.seistore.p4d.tenant01.subproject01.viewer@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
+
+  # Subproject patch operation request body
+  SubProjectPatchBody:
+    properties:
+      access_policy:
+        type: string
+        description: Acesss Policy for the subproject
+        default: "dataset"
+      acls:
+        type: object
+        description: ACLs with admin groups and viewer groups. Existing acls will be replaced with the provided acls.
+        properties:
+          admins:
+            type: array
+            items:
+              type: string
+          viewers:
+            type: array
+            items:
+              type: string
+    example:
+      access_policy: "dataset"
+      acls:
+        admins:
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1zr317e5-fb0e-402a-b725-123942f42f23.admin@slb.p4d.cloud.slb-ds.com
+        viewers:
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
 
   # OK
   SubProject:
@@ -1827,10 +1864,10 @@ definitions:
       gcs_bucket: "subproject-bucket"
       acls:
         admins:
-          - service.seistore.p4d.tenant01.subproject01.admin@slb.p4d.cloud.slb-ds.com
-          - service.seistore.p4d.tenant01.subproject01.editor@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1zr317e5-fb0e-402a-b725-123942f42f23.admin@slb.p4d.cloud.slb-ds.com
         viewers:
-          - service.seistore.p4d.tenant01.subproject01.viewer@slb.p4d.cloud.slb-ds.com
+          -  data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
 
   # OK
   TenantCreateBody:
@@ -1847,7 +1884,7 @@ definitions:
         description: Entitlements authorization group to manage tenant administrators
     example:
       gcpid: "google_project_id"
-      esd: "slb.p4d.cloud.slb-ds.com"
+      esd: "slb.env.cloud.slb-ds.com"
       default_acl: "authgroup@data_partition.com"
 
   # OK
@@ -1862,7 +1899,7 @@ definitions:
         type: string
     example:
       name: "tnx01"
-      esd: "slb.p4d.cloud.slb-ds.com"
+      esd: "slb.env.cloud.slb-ds.com"
       gcpid: "google_project_id"
 
   # OK

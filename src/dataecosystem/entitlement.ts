@@ -15,17 +15,17 @@
 // ============================================================================
 
 import request from 'request-promise';
-
 import { Config, DataEcosystemCoreFactory } from '../cloud';
-import { IDESEntitlementMemberModel, IDESEntitlementGroupModel } from '../cloud/dataecosystem';
+import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
 import { DESService, recordError, RecordLatency } from '../metrics';
 import { Error } from '../shared';
+
 
 export class DESEntitlement {
 
     public static async listUsersInGroup(
         userToken: string, group: string, dataPartitionID: string, appkey: string,
-        prevCursor?: string): Promise<{ members: IDESEntitlementMemberModel[], nextCursor: string }> {
+        prevCursor?: string): Promise<{ members: IDESEntitlementMemberModel[], nextCursor: string; }> {
 
         const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
 
@@ -223,6 +223,39 @@ export class DESEntitlement {
         try {
 
             await request.post(options);
+            entitlementLatency.record(DESService.ENTITLEMENT);
+
+        } catch (error) {
+
+            entitlementLatency.record(DESService.ENTITLEMENT);
+            recordError(error.statusCode, DESService.ENTITLEMENT);
+            throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
+
+        }
+
+    }
+
+    public static async deleteGroup(userToken: string, groupEmail: string, dataPartitionID: string, appkey: string) {
+
+        const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
+
+        const options = {
+            headers: {
+                'Accept': 'application/json',
+                'AppKey': appkey || Config.DES_SERVICE_APPKEY,
+                'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
+                'Content-Type': 'application/json'
+            },
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath()
+                + '/groups/data/' + groupEmail
+        };
+
+        options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
+
+        const entitlementLatency = new RecordLatency();
+        try {
+
+            await request.delete(options);
             entitlementLatency.record(DESService.ENTITLEMENT);
 
         } catch (error) {

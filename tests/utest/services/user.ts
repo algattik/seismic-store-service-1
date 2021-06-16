@@ -14,9 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
-import sinon from 'sinon';
-
 import { Request as expRequest, Response as expResponse } from 'express';
+import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { JournalFactoryTenantClient } from '../../../src/cloud';
 import { Config } from '../../../src/cloud/config';
@@ -29,6 +28,7 @@ import { UserOP } from '../../../src/services/user/optype';
 import { UserParser } from '../../../src/services/user/parser';
 import { Response, SDPathModel } from '../../../src/shared';
 import { Tx } from '../utils';
+
 
 export class TestUserSVC {
 
@@ -95,7 +95,8 @@ export class TestUserSVC {
                             ]
                         },
                         'ltag': 'ltag',
-                        'enforce_key': false
+                        'enforce_key': false,
+                        'access_policy': 'uniform'
                     },
                     {
                         'gcs_bucket': 'bucket',
@@ -113,7 +114,8 @@ export class TestUserSVC {
                             ]
                         },
                         'ltag': 'ltag',
-                        'enforce_key': false
+                        'enforce_key': false,
+                        'access_policy': 'dataset'
                     }
                 ];
 

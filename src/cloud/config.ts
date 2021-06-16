@@ -133,8 +133,8 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
 
     // DataGroups prefix
-    public static DATAGROUPS_PREFIX = 'data.sdms'
-    public static SERVICEGROUPS_PREFIX = 'service.seistore'
+    public static DATAGROUPS_PREFIX = 'data.sdms';
+    public static SERVICEGROUPS_PREFIX = 'service.seistore';
 
     // Server SSL
     public static SSL_ENABLED: boolean;
@@ -209,10 +209,10 @@ export abstract class Config implements IConfig {
         Config.DES_SERVICE_APPKEY = model.DES_SERVICE_APPKEY;
         Config.DES_GROUP_CHAR_LIMIT = model.DES_GROUP_CHAR_LIMIT;
 
-        Config.JWKS_URL = model.JWKS_URL
-        Config.JWT_EXCLUDE_PATHS = model.JWT_EXCLUDE_PATHS
-        Config.JWT_AUDIENCE = model.JWT_AUDIENCE
-        Config.JWT_ENABLE_FEATURE = model.JWT_ENABLE_FEATURE
+        Config.JWKS_URL = model.JWKS_URL;
+        Config.JWT_EXCLUDE_PATHS = model.JWT_EXCLUDE_PATHS;
+        Config.JWT_AUDIENCE = model.JWT_AUDIENCE;
+        Config.JWT_ENABLE_FEATURE = model.JWT_ENABLE_FEATURE;
 
         Config.API_BASE_PATH = model.API_BASE_PATH;
 
@@ -263,7 +263,7 @@ export abstract class Config implements IConfig {
 }
 
 export class ConfigFactory extends CloudFactory {
-    public static build(providerLabel: string, args: { [key: string]: any } = {}): IConfig {
+    public static build(providerLabel: string, args: { [key: string]: any; } = {}): IConfig {
         return CloudFactory.build(providerLabel, Config, args) as IConfig;
     }
 }

@@ -16,10 +16,9 @@
 
 import sinon from 'sinon';
 import { AuthGroups } from '../../../src/auth';
-import { Config, google } from '../../../src/cloud';
+import { Config } from '../../../src/cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../../../src/cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../../../src/dataecosystem';
-import { Utils } from '../../../src/shared';
 import { Tx } from '../utils';
 
 
@@ -31,13 +30,12 @@ export class TestAuthGroups {
 
          beforeEach(() => {
             this.spy = sinon.createSandbox();
-            Config.CLOUDPROVIDER = 'google'
+            Config.CLOUDPROVIDER = 'google';
          });
          afterEach(() => { this.spy.restore(); });
 
          this.datalakeUserAdminGroupName();
          this.createGroup();
-         this.clearGroup();
          this.addUserToGroup();
          this.removeUserFromGroup();
          this.listUsersInGroup();
@@ -72,33 +70,6 @@ export class TestAuthGroups {
          Tx.checkTrue(stub.calledWith(undefined, 'group-a', 'group-desc', 'partition-a'), done);
       });
 
-   }
-
-   private static clearGroup() {
-
-      Tx.sectionInit('clear group');
-      Tx.test(async (done: any) => {
-         const listUsersInGroupStub = this.spy.stub(DESEntitlement, 'listUsersInGroup');
-         const members: IDESEntitlementMemberModel[] = [{
-            email: 'member-email-one', role: 'OWNER',
-         }, {
-            email: 'member-email-two', role: 'MEMBER',
-         }];
-         const nextCursor: string = 'nextCursor';
-         listUsersInGroupStub.resolves({ members, nextCursor });
-         this.spy.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('member-email-one');
-         this.spy.stub(DESUtils, 'getDataPartitionID').returns('data-partition-a');
-         const removeUserFromGroupStub = this.spy.stub(DESEntitlement, 'removeUserFromGroup');
-         removeUserFromGroupStub.resolves();
-
-         await AuthGroups.clearGroup(undefined, 'group-a', 'esd', 'appkey');
-
-         const calledWithResult = removeUserFromGroupStub.getCall(0).calledWith(
-            undefined, 'group-a', 'data-partition-a', 'member-email-two');
-
-         Tx.checkTrue(calledWithResult === true, done);
-
-      });
    }
 
    private static isMemberOfaGroup() {

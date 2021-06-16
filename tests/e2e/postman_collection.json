@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "51125585-9586-484a-af75-7e913caf0ec7",
+		"_postman_id": "c6c879bc-6850-4b55-b166-ff618b95d415",
 		"name": "SDMS-E2E",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -12841,6 +12841,571 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dataset level access (dla)",
+			"item": [
+				{
+					"name": "Access Policies on subproject",
+					"item": [
+						{
+							"name": "SUBPROJECT REGISTER WITH NO ACCESS POLICY",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"// Request body has no access_policy, check if the default access_policy on the subproject metadata is set to uniform",
+											"const response = pm.response.json()",
+											"pm.expect(response.access_policy).to.eql('uniform')",
+											"",
+											"// Verify if the same uuid is used in the subproject acl admin group and viewer group",
+											"const adminGroup = String(response.acls.admins[0])",
+											"const viewerGroup = String(response.acls.viewers[0])",
+											"",
+											"pm.test(\"UUID substring in admin group and viewer group should be the same\", ()=>{",
+											"    pm.expect(adminGroup.split(\".\")[4]).to.eql(viewerGroup.split('.')[4])",
+											"})",
+											"",
+											"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
+											"    postman.setNextRequest(\"SUBPROJECT REGISTER WITH UNIFORM ACCESS POLICY\")",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const subproject = 'v' + Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-subproject-one\", subproject)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag01}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-one}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-one}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE SUBPROJECT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.expect(pm.response.code).to.eql(200);",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-one}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-one}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SUBPROJECT REGISTER WITH UNIFORM ACCESS POLICY",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"// Request body has no access_policy, check if the default access_policy on the subproject metadata is set to uniform",
+											"const response = pm.response.json()",
+											"pm.expect(response.access_policy).to.eql('uniform')",
+											"",
+											"// Verify if the same uuid is used in the subproject acl admin group and viewer group",
+											"const adminGroup = String(response.acls.admins[0])",
+											"const viewerGroup = String(response.acls.viewers[0])",
+											"",
+											"pm.test(\"UUID substring in admin group and viewer group should be the same\", ()=>{",
+											"    pm.expect(adminGroup.split(\".\")[4]).to.eql(viewerGroup.split('.')[4])",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const subproject = 'y' +  Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-subproject-two\", subproject)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag01}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n    \"access_policy\": \"uniform\"\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-two}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-two}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PATCH SUBPROJECT WITH DATASET ACCESS POLICY",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Subproject patched\", function () {",
+											"    var child = Object.keys(jsonData);",
+											"    pm.expect(jsonData.access_policy).to.eql('dataset');",
+											"});",
+											"",
+											"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
+											"    postman.setNextRequest(\"SUBPROJECT REGISTER WITH ACCESS POLICY SET TO DATASET\")",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag02}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"access_policy\": \"dataset\"\r\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-two}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-two}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE SUBPROJECT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.expect(pm.response.code).to.eql(200);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-two}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-two}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SUBPROJECT REGISTER WITH ACCESS POLICY SET TO DATASET",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"// Request body has no access_policy, check if the default access_policy on the subproject metadata is set to uniform",
+											"const response = pm.response.json()",
+											"pm.expect(response.access_policy).to.eql('dataset')",
+											"",
+											"// Verify if the same uuid is used in the subproject acl admin group and viewer group",
+											"const adminGroup = String(response.acls.admins[0])",
+											"const viewerGroup = String(response.acls.viewers[0])",
+											"",
+											"pm.test(\"UUID substring in admin group and viewer group should be the same\", ()=>{",
+											"    pm.expect(adminGroup.split(\".\")[4]).to.eql(viewerGroup.split('.')[4])",
+											"})",
+											"",
+											"postman.setNextRequest('PATCH SUBPROJECT WITH UNIFORM ACCESS POLICY')"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const subproject = 'z' + Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-subproject-three\", subproject)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag01}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n    \"access_policy\": \"dataset\"\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-three}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-three}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PATCH SUBPROJECT WITH UNIFORM ACCESS POLICY",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code should be 400. This is because it should not be possible to patch the subproject to uniform, if the exisitng policy is dataset\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
+											"    postman.setNextRequest(\"CLEANUP STATUS UNSET\")",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag02}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"access_policy\": \"uniform\"\r\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-three}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-three}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE SUBPROJECT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.expect(pm.response.code).to.eql(200);",
+											"});",
+											"",
+											"// Unset all variables created for access policy tests on subproject",
+											"pm.environment.unset('dla-subproject-one')",
+											"pm.environment.unset('dla-subproject-two')",
+											"pm.environment.unset('dla-subproject-three')"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-three}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-three}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},

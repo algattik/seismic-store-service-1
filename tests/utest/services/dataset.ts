@@ -14,10 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import sinon from 'sinon';
-
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
+import sinon from 'sinon';
 import { Auth } from '../../../src/auth';
 import { Config, google, JournalFactoryTenantClient } from '../../../src/cloud';
 import { DESStorage, DESUtils } from '../../../src/dataecosystem';
@@ -31,6 +30,7 @@ import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject
 import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
+
 
 export class TestDatasetSVC {
 

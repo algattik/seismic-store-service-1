@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { SubProjectModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
@@ -120,8 +121,9 @@ export class SubProjectHandler {
                 ' already exists in the tenant project ' + subproject.tenant));
         }
 
-        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd);
-        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd);
+        const uuid = uuidv4();
+        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd, uuid);
+        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd, uuid);
 
         const adminGroupName = adminGroup.split('@')[0];
         const viewerGroupName = viewerGroup.split('@')[0];
@@ -129,40 +131,13 @@ export class SubProjectHandler {
         SubProjectHandler.validateGroupNamesLength(adminGroupName, viewerGroupName, subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if groups exist
-            let results: any[];
-            try {
-
-                results = await Promise.all([
-                    AuthGroups.listUsersInGroup(userToken, adminGroup, tenant.esd, req[Config.DE_FORWARD_APPKEY]),
-                    AuthGroups.listUsersInGroup(userToken, viewerGroup, tenant.esd, req[Config.DE_FORWARD_APPKEY])]);
-
-            } catch (error) {
-                if (error.error.code === 404 && error.error.status === 'NOT_FOUND') {
-                    // provision new groups
-                    await AuthGroups.createGroup(userToken, adminGroupName,
-                        'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    await AuthGroups.createGroup(userToken, viewerGroupName,
-                        'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-
-                } else {
-                    throw (error);
-                }
-            }
-
-            // check if group are "clear", i.e. only the requestor shall be a member of OWNER sub-groups
-            if (results) {
-                for (let res of results) {
-                    res = res.filter((value: any, index: any, self: any) => self.indexOf(value) === index);
-                    if (res.length !== 1 || res[0].role !== 'OWNER' || res[0].email !== userEmail) {
-                        throw (Error.make(Error.Status.ALREADY_EXISTS,
-                            'The authorization groups for the subproject ' + subproject.name +
-                            ' are not cleared and cannot be used.'));
-                    }
-                }
-            }
+            // provision new groups
+            await AuthGroups.createGroup(userToken, adminGroupName,
+                'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            await AuthGroups.createGroup(userToken, viewerGroupName,
+                'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         subproject.gcs_bucket = await this.getBucketName(tenant);
@@ -243,7 +218,6 @@ export class SubProjectHandler {
         // get the subproject metadata
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
-
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is member of any of the subproject acl admin groups
             await Auth.isUserAuthorized(req.headers.authorization, subproject.acls.admins,
@@ -254,7 +228,7 @@ export class SubProjectHandler {
 
         await Promise.all([
             // delete the subproject metadata from Datastore
-            SubProjectDAO.delete(journalClient, tenant.name , subproject.name),
+            SubProjectDAO.delete(journalClient, tenant.name, subproject.name),
             // delete all datasets metadata from Datastore.
             DatasetDAO.deleteAll(journalClient, tenant.name, subproject.name),
             // delete the subproject associated bucket. This operation will delete all subproject data in GCS.
@@ -270,20 +244,18 @@ export class SubProjectHandler {
         const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSubprojectDataGroups);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            for (const group of subprojectServiceGroups) {
-                await AuthGroups.clearGroup(
-                    req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            }
             for (const group of subprojectDataGroups) {
-                await AuthGroups.clearGroup(
+                await AuthGroups.deleteGroup(
                     req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
         }
 
         // delete the bucket resource (to perform after files deletions)
         // tslint:disable-next-line: no-floating-promises no-console (we want it async)
-        storage.deleteBucket(subproject.gcs_bucket).catch((error)=> {
-            LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
+        storage.deleteBucket(subproject.gcs_bucket).catch((error) => {
+            LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));
+        });
+
     }
 
     // delete the subproject
@@ -314,6 +286,10 @@ export class SubProjectHandler {
             subproject.acls = parsedUserInput.acls;
         }
 
+        if (parsedUserInput.access_policy) {
+            this.validateAccessPolicy(parsedUserInput.access_policy, subproject.access_policy);
+            subproject.access_policy = parsedUserInput.access_policy;
+        }
 
         const adminGroups = [SubprojectGroups.serviceAdminGroup(tenant.name, subproject.name, tenant.esd),
         SubprojectGroups.serviceEditorGroup(tenant.name, subproject.name, tenant.esd)];
@@ -361,9 +337,8 @@ export class SubProjectHandler {
 
         }
 
-        if (parsedUserInput.ltag || parsedUserInput.acls) {
-            await SubProjectDAO.register(journalClient, subproject);
-        }
+        // Update the subproject metadata
+        await SubProjectDAO.register(journalClient, subproject);
 
         return subproject;
 
@@ -435,6 +410,14 @@ export class SubProjectHandler {
         }
 
         return true;
+
+    }
+
+    private static validateAccessPolicy(userInputAccessPolicy: string, exisitngAccessPolicy: string) {
+
+        if (exisitngAccessPolicy === 'dataset' && userInputAccessPolicy === 'uniform') {
+            throw (Error.make(Error.Status.BAD_REQUEST, 'Subproject access policy cannot be changed from dataset level to uniform level'));
+        }
 
     }
 
