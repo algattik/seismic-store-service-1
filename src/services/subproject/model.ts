@@ -22,11 +22,12 @@ export interface ISubProjectModel {
     storage_location: string;
     ltag: string;
     gcs_bucket: string;
-    acls?: ISubprojectAcl;
     enforce_key: boolean;
+    access_policy: string;
+    acls?: ISubprojectAcl;
 }
 
 export interface ISubprojectAcl {
     admins: string[],
-    viewers: string[]
+    viewers: string[];
 }

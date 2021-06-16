@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
+import Bull from 'bull';
 import { JournalFactoryTenantClient, StorageFactory } from '..';
 import { DatasetDAO, DatasetModel } from '../../services/dataset';
 import { Locker } from '../../services/dataset/locker';
@@ -21,7 +22,6 @@ import { SubProjectModel } from '../../services/subproject';
 import { Config } from '../config';
 import { LoggerFactory } from '../logger';
 
-import Bull from 'bull';
 export class StorageJobManager {
 
    public static copyJobsQueue: Bull.Queue;
@@ -54,7 +54,7 @@ export class StorageJobManager {
          return StorageJobManager.copy(input);
       }).catch(
          // tslint:disable-next-line:  no-console
-         (error)=>{ LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
+         (error) => { LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
 
       // setup  handlers for job events
       StorageJobManager.setupEventHandlers();
@@ -112,17 +112,18 @@ export class StorageJobManager {
          }
 
          // Retrieve the dataset metadata and key
-         if ((input.data.subproject as SubProjectModel).enforce_key ) {
-               registeredDataset = await DatasetDAO.getByKey(journalClient, input.data.datasetTo);
-               registeredDatasetKey = journalClient.createKey({
-                     namespace: Config.SEISMIC_STORE_NS +
-                     '-' + input.data.datasetTo.tenant + '-' + input.data.datasetTo.subproject,
-                     path: [Config.DATASETS_KIND],
-                     enforcedKey: input.data.datasetTo.path.slice(0,-1) + '/' + input.data.datasetTo.name});
+         if ((input.data.subproject as SubProjectModel).enforce_key) {
+            registeredDataset = await DatasetDAO.getByKey(journalClient, input.data.datasetTo);
+            registeredDatasetKey = journalClient.createKey({
+               namespace: Config.SEISMIC_STORE_NS +
+                  '-' + input.data.datasetTo.tenant + '-' + input.data.datasetTo.subproject,
+               path: [Config.DATASETS_KIND],
+               enforcedKey: input.data.datasetTo.path.slice(0, -1) + '/' + input.data.datasetTo.name
+            });
          } else {
-               const results = await DatasetDAO.get(journalClient, input.data.datasetTo);
-               registeredDataset = results[0];
-               registeredDatasetKey = results[1];
+            const results = await DatasetDAO.get(journalClient, input.data.datasetTo);
+            registeredDataset = results[0];
+            registeredDatasetKey = results[1];
          }
 
          if (!registeredDataset) {

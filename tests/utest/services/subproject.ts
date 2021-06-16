@@ -14,10 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import sinon from 'sinon';
-
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
+import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, StorageFactory } from '../../../src/cloud';
 import { ISeistore, SeistoreFactory } from '../../../src/cloud/seistore';
@@ -29,6 +28,7 @@ import { SubProjectOP } from '../../../src/services/subproject/optype';
 import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
+
 
 export class TestSubProjectSVC {
 
@@ -274,7 +274,7 @@ export class TestSubProjectSVC {
             this.sandbox.stub(SubprojectGroups, 'serviceAdminGroup').returns('adminGroup');
             this.sandbox.stub(SubprojectGroups, 'serviceEditorGroup').returns('editorGroup');
             this.sandbox.stub(SubprojectGroups, 'serviceViewerGroup').returns('viewerGroup');
-            this.sandbox.stub(AuthGroups, 'clearGroup').resolves();
+            // this.sandbox.stub(AuthGroups, 'clearGroup').resolves();
 
             await SubProjectHandler.handler(expReq, expRes, SubProjectOP.Delete);
             Tx.check200(expRes.statusCode, done);

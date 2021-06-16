@@ -133,7 +133,7 @@ export class TenantHandler {
         // clear groups and delete the mapping entry
         await Promise.all([
             // need to keep it for the old ones that have tenant group
-            TenantDAO.delete(tenant.name), !tenant.default_acls ? AuthGroups.clearGroup(req.headers.authorization,
+            TenantDAO.delete(tenant.name), !tenant.default_acls ? AuthGroups.deleteGroup(req.headers.authorization,
                 TenantGroups.adminGroup(tenant), tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
     }
 
@@ -156,7 +156,7 @@ export class TenantHandler {
             }
         } catch (error) {
             if ((error as ErrorModel).error.code === Error.Status.NOT_IMPLEMENTED) {
-                return Config.SDPATHPREFIX + datapartition
+                return Config.SDPATHPREFIX + datapartition;
             } else { throw error; }
         }
 

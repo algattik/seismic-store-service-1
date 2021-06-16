@@ -32,7 +32,7 @@ export class GCS extends AbstractStorage {
 
     public constructor(tenant: TenantModel) {
         super();
-        this.projectID = tenant.gcpid
+        this.projectID = tenant.gcpid;
     }
 
     private getStorageClient(): Storage {
@@ -60,14 +60,14 @@ export class GCS extends AbstractStorage {
         bucketName: string, location: string, storageClass: string): Promise<void> {
         const bucket = this.getStorageClient().bucket(bucketName);
 
-            await bucket.create({ location, storageClass });
-            await bucket.setMetadata({
-                iamConfiguration: {
-                    uniformBucketLevelAccess: {
-                        enabled: false
-                    }
+        await bucket.create({ location, storageClass });
+        await bucket.setMetadata({
+            iamConfiguration: {
+                uniformBucketLevelAccess: {
+                    enabled: false
                 }
-            });
+            }
+        });
     }
 
     // Delete a bucket
@@ -100,8 +100,8 @@ export class GCS extends AbstractStorage {
             // tslint:disable-next-line: no-floating-promises
             this.getStorageClient().bucket(bucketName).deleteFiles(
                 { prefix, force: true }).catch(
-                // tslint:disable-next-line: no-console
-                (error)=>{ LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
+                    // tslint:disable-next-line: no-console
+                    (error) => { LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
         }
     }
 

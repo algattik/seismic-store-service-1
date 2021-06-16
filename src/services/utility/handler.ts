@@ -14,10 +14,13 @@
 // limitations under the License.
 // ============================================================================
 
+import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
-import { Auth, AuthGroups, AuthRoles } from '../../auth';
+import { v4 as uuidv4 } from 'uuid';
+import { Auth, AuthRoles } from '../../auth';
 import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
 import { DESEntitlement, DESStorage, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
@@ -27,10 +30,7 @@ import { SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantGroups } from '../tenant';
 import { UtilityOP } from './optype';
 import { UtilityParser } from './parser';
-import { v4 as uuidv4 } from 'uuid';
 
-import Bull from 'bull';
-import { SeistoreFactory } from '../../cloud/seistore';
 
 export class UtilityHandler {
 
@@ -43,7 +43,7 @@ export class UtilityHandler {
             } else if (op === UtilityOP.LS) {
                 Response.writeOK(res, await this.ls(req));
             } else if (op === UtilityOP.CP) {
-                const response = await this.cp(req)
+                const response = await this.cp(req);
                 Response.writeOK(res, { 'status': response.status }, response.code);
             } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
         } catch (error) { Response.writeError(res, error); }
@@ -77,7 +77,7 @@ export class UtilityHandler {
 
         return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
             subproject.tenant, subproject.name,
-            subproject.gcs_bucket, readOnly,  DESUtils.getDataPartitionID(tenant.esd));
+            subproject.gcs_bucket, readOnly, DESUtils.getDataPartitionID(tenant.esd));
 
     }
 
@@ -111,7 +111,8 @@ export class UtilityHandler {
             groups = groups.filter(group => this.validateEntitlements(group)); // only valid seismic-dsm group
             const listTenants: string[] = groups.map((group) => {
                 return group.name.startsWith(Config.SERVICEGROUPS_PREFIX) ?
-                    group.name.split('.')[3] : group.name.split('.')[2]}); // tenant name
+                    group.name.split('.')[3] : group.name.split('.')[2];
+            }); // tenant name
             return listTenants.filter((item, pos, self) => self.indexOf(item) === pos); // make unique
 
         }
@@ -132,19 +133,20 @@ export class UtilityHandler {
             groups = groups.filter(group => this.validateEntitlements(group)); // only valid seismic-dsm group
             groups = groups.filter(group => group.name.startsWith( // get both data and service groups
                 TenantGroups.serviceGroupPrefix(sdPath.tenant))).concat(
-                        groups.filter(group => group.name.startsWith(
-                            TenantGroups.dataGroupPrefix(sdPath.tenant))));
+                    groups.filter(group => group.name.startsWith(
+                        TenantGroups.dataGroupPrefix(sdPath.tenant))));
             let listSubprojects: string[] = groups.map((group) => { // retrieve the subproject name
                 return group.name.startsWith(Config.SERVICEGROUPS_PREFIX) ?
-                    group.name.split('.')[4] : group.name.split('.')[3]})
+                    group.name.split('.')[4] : group.name.split('.')[3];
+            });
             listSubprojects = listSubprojects.filter((item, pos, self) => self.indexOf(item) === pos);
 
             // Registered subprojects in the journal
             const listRegisteredSubprojects = (
-                await SubProjectDAO.list(journalClient, sdPath.tenant)).map(item => item.name)
+                await SubProjectDAO.list(journalClient, sdPath.tenant)).map(item => item.name);
 
             // Intersection of two lists above
-            return listSubprojects.filter((sp) => listRegisteredSubprojects.includes(sp))
+            return listSubprojects.filter((sp) => listRegisteredSubprojects.includes(sp));
 
         }
 
@@ -154,7 +156,7 @@ export class UtilityHandler {
         dataset.subproject = sdPath.subproject;
         dataset.path = sdPath.path || '/';
 
-        const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject)
+        const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             //  Check if user is authorized
@@ -178,8 +180,8 @@ export class UtilityHandler {
     }
 
     private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
-        return (( el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
-        (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor) || el.name.endsWith(AuthRoles.viewer)))
+        return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
+            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor) || el.name.endsWith(AuthRoles.viewer)));
     }
     // copy datasets (same tenancy required)
     private static async cp(req: expRequest) {
@@ -193,7 +195,7 @@ export class UtilityHandler {
         const userInputs = UtilityParser.cp(req);
         const sdPathFrom = userInputs.sdPathFrom;
         const sdPathTo = userInputs.sdPathTo;
-        let copyJob: Bull.Job
+        let copyJob: Bull.Job;
         let preRegisteredDataset: DatasetModel;
         let writeLockSession: IWriteLockSession;
 
@@ -235,8 +237,8 @@ export class UtilityHandler {
 
         // Retrieve the dataset metadata
         datasetFrom = subproject.enforce_key ?
-                await DatasetDAO.getByKey(journalClient, datasetFrom) :
-                (await DatasetDAO.get(journalClient, datasetFrom))[0];
+            await DatasetDAO.getByKey(journalClient, datasetFrom) :
+            (await DatasetDAO.get(journalClient, datasetFrom))[0];
 
         // check if the dataset does not exist
         if (!datasetFrom) {
@@ -266,22 +268,22 @@ export class UtilityHandler {
         datasetTo.name = sdPathTo.dataset;
         datasetTo.path = sdPathTo.path;
         datasetTo.last_modified_date = new Date().toString();
-        datasetTo.gcsurl = subproject.gcs_bucket + '/' + uuidv4()
+        datasetTo.gcsurl = subproject.gcs_bucket + '/' + uuidv4();
         datasetTo.ltag = datasetTo.ltag || subproject.ltag;
         datasetTo.sbit = Utils.makeID(16);
         datasetTo.sbit_count = 1;
         datasetTo.seismicmeta_guid = datasetFrom.seismicmeta_guid ? seismicmeta.id : undefined;
-        datasetTo.transfer_status = TransferStatus.InProgress
+        datasetTo.transfer_status = TransferStatus.InProgress;
 
         try {
 
             // check if a copy is already in progress from a previous request
             const lockKeyTo = datasetTo.tenant + '/' + datasetTo.subproject + datasetTo.path + datasetTo.name;
-            const toDatasetLock = await Locker.getLock(lockKeyTo)
+            const toDatasetLock = await Locker.getLock(lockKeyTo);
 
             preRegisteredDataset = subproject.enforce_key ?
-                    await DatasetDAO.getByKey(journalClient, datasetTo) :
-                    (await DatasetDAO.get(journalClient, datasetTo))[0];
+                await DatasetDAO.getByKey(journalClient, datasetTo) :
+                (await DatasetDAO.get(journalClient, datasetTo))[0];
 
             if (toDatasetLock && Locker.isWriteLock(toDatasetLock)) {
 
@@ -290,7 +292,7 @@ export class UtilityHandler {
                     return {
                         'status': 'Copy operation is already in progress..',
                         'code': 202
-                    }
+                    };
                 }
                 else {
                     throw (Error.make(Error.Status.BAD_REQUEST,
@@ -305,7 +307,7 @@ export class UtilityHandler {
                     return {
                         'status': preRegisteredDataset.transfer_status,
                         'code': preRegisteredDataset.transfer_status === TransferStatus.Aborted ? 500 : 200
-                    }
+                    };
                 }
 
                 throw (Error.make(Error.Status.ALREADY_EXISTS,
@@ -381,7 +383,7 @@ export class UtilityHandler {
             // copy the objects
             const usermail = await SeistoreFactory.build(
                 Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
-            const RETRY_MAX_ATTEMPTS = 10
+            const RETRY_MAX_ATTEMPTS = 10;
 
             copyJob = await StorageJobManager.copyJobsQueue.add({
                 sourceBucket: bucketFrom,
@@ -396,7 +398,7 @@ export class UtilityHandler {
                 readlockId: readlock ? readlock.id : null
             }, {
                 attempts: RETRY_MAX_ATTEMPTS
-            })
+            });
 
             // release the mutex but keep the lock
             await Locker.removeWriteLock(writeLockSession, true);
@@ -404,14 +406,14 @@ export class UtilityHandler {
             return {
                 'status': 'Copy in progress',
                 'code': 202
-            }
+            };
 
         } catch (err) {
 
             await Locker.removeWriteLock(writeLockSession);
 
             if (copyJob) {
-                await copyJob.remove()
+                await copyJob.remove();
             }
 
             throw (err);

@@ -42,7 +42,7 @@ export class SubProjectDAO {
         journalClient: IJournal, tenantName: string, subprojectName: string): Promise<SubProjectModel> {
 
         const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
-        if (res !== undefined && res) { return res };
+        if (res !== undefined && res) { return res; };
 
         const entityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
@@ -65,7 +65,7 @@ export class SubProjectDAO {
 
         // Fix entities with no acls
         if (!entity.acls) {
-            entity.acls = await this.constructServiceGroupACLs(entity)
+            entity.acls = await this.constructServiceGroupACLs(entity);
         }
 
         await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
@@ -114,7 +114,7 @@ export class SubProjectDAO {
                 if (!entity.tenant) { entity.tenant = tenantName; }
 
                 if (!entity.acls) {
-                    entity.acls = await this.constructServiceGroupACLs(entity)
+                    entity.acls = await this.constructServiceGroupACLs(entity);
                 }
 
             }
@@ -126,7 +126,7 @@ export class SubProjectDAO {
     public static async exist(journalClient: IJournal, tenantName: string, subprojectName: string): Promise<boolean> {
 
         const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
-        if (res !== undefined && res) { return true };
+        if (res !== undefined && res) { return true; };
 
         const entityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
@@ -135,7 +135,7 @@ export class SubProjectDAO {
 
         const [entity] = await journalClient.get(entityKey);
 
-        if(entity) {
+        if (entity) {
             await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
         }
 
@@ -149,13 +149,13 @@ export class SubProjectDAO {
         const acls = {
             'admins': [],
             'viewers': []
-        }
+        };
 
-        acls.admins.push(SubprojectGroups.serviceAdminGroupName(subproject.tenant, subproject.name) + '@' + esd)
-        acls.admins.push(SubprojectGroups.serviceEditorGroupName(subproject.tenant, subproject.name) + '@' + esd)
-        acls.viewers.push(SubprojectGroups.serviceViewerGroupName(subproject.tenant, subproject.name) + '@' + esd)
+        acls.admins.push(SubprojectGroups.serviceAdminGroupName(subproject.tenant, subproject.name) + '@' + esd);
+        acls.admins.push(SubprojectGroups.serviceEditorGroupName(subproject.tenant, subproject.name) + '@' + esd);
+        acls.viewers.push(SubprojectGroups.serviceViewerGroupName(subproject.tenant, subproject.name) + '@' + esd);
 
-        return acls
+        return acls;
 
     }
 

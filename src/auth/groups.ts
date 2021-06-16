@@ -14,11 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import { Config } from '../cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
-import { SeistoreFactory } from '../cloud/seistore';
 import { DESEntitlement, DESUtils } from '../dataecosystem';
-import { Utils } from '../shared';
+
 
 export class AuthGroups {
 
@@ -36,30 +34,9 @@ export class AuthGroups {
             groupDescription, DESUtils.getDataPartitionID(esd), appkey);
     }
 
-    public static async clearGroup(userToken: string, group: string, esd: string, appkey: string) {
-        const userEmail = await SeistoreFactory.build(
-            Config.CLOUDPROVIDER).getEmailFromTokenPayload(userToken, true);
+    public static async deleteGroup(userToken: string, groupEmail: string, esd: string, appkey: string) {
         const dataPartition = DESUtils.getDataPartitionID(esd);
-        const members = (await DESEntitlement.listUsersInGroup(userToken, group, dataPartition, appkey)).members;
-
-        // Parallel requests does not currently work in DE azure. To restored once they fix the issue
-        // const ops = [];
-        // for (const member of members) {
-        //     // DE allows to rm all so we may want to follow. For now exclude the requestor
-        //     if (member.email !== userEmail) {
-        //         ops.push(DESEntitlement.removeUserFromGroup(userToken, group, dataPartition, member.email));
-        //     }
-        // }
-        // await Promise.all(ops);
-
-        for (const member of members) {
-            // DE allows to rm all so we may want to follow. For now exclude the requestor
-            if (member.email !== userEmail && !member.email.startsWith('users.data.root')) {
-                await DESEntitlement.removeUserFromGroup(
-                    userToken, group, dataPartition, member.email,appkey);
-            }
-        }
-
+        await DESEntitlement.deleteGroup(userToken, groupEmail, dataPartition, appkey);
     }
 
     public static async addUserToGroup(

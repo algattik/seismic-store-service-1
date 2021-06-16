@@ -15,8 +15,7 @@
 // ============================================================================
 
 import { TenantModel } from '.';
-import { JournalFactoryServiceClient } from '../../cloud';
-import { Config } from '../../cloud';
+import { Config, JournalFactoryServiceClient } from '../../cloud';
 import { Cache, Error } from '../../shared';
 
 export class TenantDAO {
@@ -27,14 +26,15 @@ export class TenantDAO {
     public static async get(tenantName: string): Promise<TenantModel> {
 
         const res = await this._cache.get(tenantName);
-        if (res !== undefined && res) { return res };
+        if (res !== undefined && res) { return res; };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? {
                 name: tenantName,
                 esd: tenantName + '.domain.com',
                 default_acls: tenantName,
-                gcpid: tenantName} : undefined);
+                gcpid: tenantName
+            } : undefined);
 
         const key = serviceClient.createKey({
             namespace: Config.ORGANIZATION_NS,
@@ -60,9 +60,9 @@ export class TenantDAO {
     // get all tenant metadata (throw if not exist)
     public static async getAll(): Promise<TenantModel[]> {
 
-        if(Config.TENANT_JOURNAL_ON_DATA_PARTITION) {
+        if (Config.TENANT_JOURNAL_ON_DATA_PARTITION) {
             throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'The invoked method is not implemented for ' +
-            'solutions having tenant\' journal deployed on client resources'));
+                'solutions having tenant\' journal deployed on client resources'));
         }
 
         const serviceClient = JournalFactoryServiceClient.get();
@@ -103,7 +103,8 @@ export class TenantDAO {
                 name: tenantName,
                 esd: tenantName + '.domain.com',
                 default_acls: tenantName,
-                gcpid: tenantName} : undefined);
+                gcpid: tenantName
+            } : undefined);
 
         await serviceClient.delete(serviceClient.createKey({
             namespace: Config.ORGANIZATION_NS,
@@ -116,7 +117,7 @@ export class TenantDAO {
     public static async exist(tenant: TenantModel): Promise<boolean> {
 
         const res = await this._cache.get(tenant.name);
-        if (res !== undefined && res) { return true };
+        if (res !== undefined && res) { return true; };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? tenant : undefined);
@@ -126,7 +127,7 @@ export class TenantDAO {
             path: [Config.TENANTS_KIND, tenant.name],
         }));
 
-        if(entity) {
+        if (entity) {
             await this._cache.set(entity.name, entity);
         }
 
