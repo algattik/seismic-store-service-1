@@ -56,6 +56,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -931,6 +936,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -2432,6 +2442,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -2499,6 +2514,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -4578,6 +4598,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -4649,6 +4674,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -6169,6 +6199,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -6250,6 +6285,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -7935,6 +7975,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -8010,6 +8055,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -9270,6 +9320,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -9335,6 +9390,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -9396,7 +9456,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"email\": \"{{newuser}}\",\n\t\"path\": \"sd://{{tenant}}/{{subproject}}\",\n\t\"group\": \"editor\"\n}"
+							"raw": "{\n\t\"email\": \"{{newuser}}\",\n\t\"path\": \"sd://{{tenant}}/{{subproject}}\",\n\t\"group\": \"viewer\"\n}"
 						},
 						"url": {
 							"raw": "{{SVC_URL}}/user",
@@ -10036,6 +10096,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -10951,6 +11016,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -11028,6 +11098,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -12087,6 +12162,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -12158,6 +12238,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
@@ -12731,6 +12816,11 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"
 							},
@@ -12836,6 +12926,11 @@
 					"request": {
 						"method": "GET",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
 							{
 								"key": "x-api-key",
 								"value": "{{SVC_API_KEY}}"

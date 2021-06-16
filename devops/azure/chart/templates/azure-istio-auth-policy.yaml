@@ -20,5 +20,4 @@ spec:
                        "*/actuator/health", "*/health",
                        "*/configuration/ui","*/configuration/security",
                        "/seistore-svc/api/v3/swagger-resources/*",
-                       "/seistore-svc/api/v3/*",
                        "/seistore-svc/api/v3/webjars/*"]
