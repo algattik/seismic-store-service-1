@@ -75,7 +75,7 @@
     "minimist": "^1.2.5",
     "mkdirp": "^1.0.4",
     "node-pre-gyp": "^0.17.0",
-    "redis": "^3.0.2",
+    "redis": "^3.1.2",
     "redlock": "^4.1.0",
     "redlock-async": "^3.1.2-fix.2",
     "replace-in-file": "^6.2.0",
