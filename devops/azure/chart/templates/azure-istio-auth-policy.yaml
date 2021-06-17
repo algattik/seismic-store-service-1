@@ -16,8 +16,6 @@ spec:
         - operation:
             notPaths: ["/","*/index.html",
                        "*/v2/api-docs",
-                       "*/swagger","*/swagger-resources","*/swagger-ui.html",
                        "*/actuator/health", "*/health",
                        "*/configuration/ui","*/configuration/security",
-                       "/seistore-svc/api/v3/swagger-resources/*",
-                       "/seistore-svc/api/v3/webjars/*"]
+                       "/seistore-svc/api/v3/swagger-ui.html*"]
