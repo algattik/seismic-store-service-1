@@ -18,6 +18,7 @@ import request from 'request-promise';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
+import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESStorage, DESUtils } from '../../../src/dataecosystem';
 import { RecordLatency } from '../../../src/metrics/metrics';
 import { Tx } from '../utils';
@@ -27,6 +28,8 @@ export class TestStorage {
    public static run() {
 
       describe(Tx.testInit('dataecosystem storage service'), () => {
+
+         ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY = 'data-partition-id'
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
@@ -71,7 +74,7 @@ export class TestStorage {
                'AppKey': 'appkey',
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
-               'slb-data-partition-id': 'tenant-a',
+               'data-partition-id': 'tenant-a',
             },
             json: JSON.stringify({ seismetadata: 'data' }),
             url: Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records',
@@ -126,7 +129,7 @@ export class TestStorage {
                'AppKey': 'appkey',
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
-               'slb-data-partition-id': 'tenant-a',
+               'data-partition-id': 'tenant-a',
             },
             url: Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records/uid' + ':delete',
          };

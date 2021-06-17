@@ -55,6 +55,12 @@ export class ConfigGoogle extends Config {
     // pubsub topic
     public static PUBSUBTOPIC: string;
 
+    // Entitlement Base Path
+    public static ENTITLEMENT_BASE_URL_PATH: string;
+
+    // Data partition header key
+    public static DATA_PARTITION_REST_HEADER_KEY: string;
+
     // service auth provider and credentials (optional)
     // The google workload identity is used to interact with GCP solutions like datastore/gcs/log/etc...
     // This account, if set, can be used to sign an impersonation token credential.
@@ -85,6 +91,8 @@ export class ConfigGoogle extends Config {
             ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY_ID = data.private_key_id;
         }
 
+        ConfigGoogle.ENTITLEMENT_BASE_URL_PATH = process.env.ENTITLEMENT_BASE_URL_PATH || '/entitlements/v2';
+        ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY = process.env.DATA_PARTITION_REST_HEADER_KEY || 'slb-data-partition-id'; // to-fix
         ConfigGoogle.PUBSUBTOPIC = process.env.PUBSUBTOPIC !== undefined ? process.env.PUBSUBTOPIC : 'subproject-operations';
 
         // read the optional auth provider id and secret
@@ -103,10 +111,10 @@ export class ConfigGoogle extends Config {
             DES_REDIS_INSTANCE_ADDRESS: process.env.DES_REDIS_INSTANCE_ADDRESS,
             DES_REDIS_INSTANCE_PORT: +process.env.DES_REDIS_INSTANCE_PORT,
             DES_REDIS_INSTANCE_KEY: process.env.DES_REDIS_INSTANCE_KEY,
-            DES_SERVICE_HOST_COMPLIANCE: process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_HOST_ENTITLEMENT: process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_HOST_STORAGE: process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_HOST_PARTITION: process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_COMPLIANCE: process.env.DES_SERVICE_HOST_COMPLIANCE || process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_ENTITLEMENT: process.env.DES_SERVICE_HOST_ENTITLEMENT || process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_STORAGE: process.env.DES_SERVICE_HOST_STORAGE || process.env.SEISTORE_DES_HOST,
+            DES_SERVICE_HOST_PARTITION: process.env.DES_SERVICE_HOST_PARTITION || process.env.SEISTORE_DES_HOST,
             DES_SERVICE_APPKEY: process.env.SEISTORE_DES_APPKEY,
             DES_GROUP_CHAR_LIMIT: ConfigGoogle.DES_GROUP_CHAR_LIMIT,
             JWKS_URL: process.env.JWKS_URL,

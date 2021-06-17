@@ -18,6 +18,7 @@ import request from 'request-promise';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
+import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESEntitlement } from '../../../src/dataecosystem';
 import { RecordLatency } from '../../../src/metrics/metrics';
 import { Error } from '../../../src/shared/error';
@@ -29,6 +30,9 @@ export class TestDESEntitlement {
    public static run() {
 
       describe(Tx.testInit('dataecosystem entitlements'), () => {
+
+         ConfigGoogle.ENTITLEMENT_BASE_URL_PATH = '/entitlements'
+         ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY = 'data-partition-id'
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
@@ -67,9 +71,9 @@ export class TestDESEntitlement {
                'AppKey': 'appkey',
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
-               'slb-data-partition-id': 'tenant-one',
+               'data-partition-id': 'tenant-one',
             },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups',
          };
          Tx.checkTrue(requestStub.calledWith(options), done);
       });
@@ -101,13 +105,13 @@ export class TestDESEntitlement {
                'AppKey': 'appkey',
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
-               'slb-data-partition-id': 'tenant-a',
+               'data-partition-id': 'tenant-a',
             },
             json: {
                email: 'user@email',
                role: 'role-a',
             },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups/' + 'group-a' + '/members',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups' + '/group-a' + '/members',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);
@@ -139,9 +143,9 @@ export class TestDESEntitlement {
                'AppKey': 'appkey',
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
-               'slb-data-partition-id': 'tenant-a',
+               'data-partition-id': 'tenant-a',
             },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups/' + 'group-a' + '/members/' + 'user@email',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/groups/' + 'group-a' + '/members/' + 'user@email',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);
@@ -172,13 +176,13 @@ export class TestDESEntitlement {
                'AppKey':'appkey',
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
-               'slb-data-partition-id': 'tenant-a',
+               'data-partition-id': 'tenant-a',
             },
             json: {
                description: 'group desc',
                name: 'group-a',
             },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/v2/groups',
+            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/groups',
          };
 
          Tx.checkTrue(requestStub.calledWith(options), done);

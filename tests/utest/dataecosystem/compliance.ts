@@ -18,6 +18,7 @@ import request from 'request-promise';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
+import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESCompliance } from '../../../src/dataecosystem/compliance';
 import { RecordLatency } from '../../../src/metrics/metrics';
 import { Cache } from '../../../src/shared';
@@ -29,6 +30,8 @@ export class TestCompliance {
    public static run() {
 
       describe(Tx.testInit('dataecosystem compliance'), () => {
+
+         ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY = 'data-partition-id'
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
@@ -50,7 +53,7 @@ export class TestCompliance {
          'AppKey': 'appkey',
          'Authorization': 'Bearer usertoken',
          'Content-Type': 'application/json',
-         'slb-data-partition-id': 'tenant-a',
+         'data-partition-id': 'tenant-a',
       },
       json: { names: ['ltag'] },
       url: Config.DES_SERVICE_HOST_COMPLIANCE + '/legal/v1/legaltags:validate',
