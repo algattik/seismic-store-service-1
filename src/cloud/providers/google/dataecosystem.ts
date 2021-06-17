@@ -18,12 +18,13 @@ import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
     IDESEntitlementGroupMembersModel } from '../../dataecosystem';
+import { ConfigGoogle } from './config';
 import { Credentials } from './credentials';
 
 @DataEcosystemCoreFactory.register('google')
 export class GoogleDataEcosystemServices extends AbstractDataEcosystemCore {
-    public getDataPartitionIDRestHeaderName(): string { return 'slb-data-partition-id'; }
-    public getEntitlementBaseUrlPath(): string { return '/entitlements/v2'; };
+    public getDataPartitionIDRestHeaderName(): string { return ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY; }
+    public getEntitlementBaseUrlPath(): string { return ConfigGoogle.ENTITLEMENT_BASE_URL_PATH };
     public getComplianceBaseUrlPath(): string { return '/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/storage/v2'; };
 
