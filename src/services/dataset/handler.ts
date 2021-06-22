@@ -65,7 +65,9 @@ export class DatasetHandler {
                 Response.writeOK(res, await this.putTags(req, tenant, subproject));
             } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
 
-        } catch (error) { Response.writeError(res, error); }
+        } catch (error) {
+            Response.writeError(res, error);
+        }
 
     }
 
@@ -107,6 +109,16 @@ export class DatasetHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         try {
+
+            if (dataset.acls) {
+                const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
+                const subprojectAccessPolicy = subprojectMetadata.access_policy;
+
+                if (subprojectAccessPolicy === 'uniform') {
+                    throw Error.make(Error.Status.BAD_REQUEST,
+                        'Subproject access policy is set to uniform and so the dataset acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
+                }
+            }
 
             // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
             // a mutex is applied on the resource on the shared cache (removed at the end of the method)
@@ -416,6 +428,17 @@ export class DatasetHandler {
             dataset.sbit_count = unlockRes.cnt;
 
             return dataset;
+        }
+
+        // Ensure subproject access policy is not set to uniform
+        if (datasetIN.acls) {
+            const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
+            const subprojectAccessPolicy = subprojectMetadata.access_policy;
+
+            if (subprojectAccessPolicy === 'uniform') {
+                throw Error.make(Error.Status.BAD_REQUEST,
+                    'Subproject access policy is set to uniform and so the dataset acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
+            }
         }
 
         // unlock the dataset for close operation (and patch)

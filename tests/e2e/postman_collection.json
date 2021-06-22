@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "3a690c64-9493-4a7f-b7ae-bddebefa46f8",
+		"_postman_id": "76a223d0-21bc-4351-b40e-a3120075c662",
 		"name": "SDMS-E2E",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -12945,7 +12945,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 200 or 404\", function () {",
-											"     pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+											"    pm.expect(pm.response.code).to.be.oneOf([200,404])",
 											"});",
 											"",
 											""
@@ -13155,7 +13155,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 200 or 404\", function () {",
-											"     pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+											"    pm.expect(pm.response.code).to.be.oneOf([200,404])",
 											"});",
 											""
 										],
@@ -13356,7 +13356,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 200 or 404\", function () {",
-											"     pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+											"    pm.expect(pm.response.code).to.be.oneOf([200,404])",
 											"});",
 											"",
 											"// Unset all variables created for access policy tests on subproject",
@@ -13406,6 +13406,785 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "Dataset ACLs",
+					"item": [
+						{
+							"name": "SUBPROJECT REGISTER WITH UNIFORM ACCESS POLICY",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.environment.set(\"adminGroupEmail\", jsonData[\"acls\"][\"admins\"][0])",
+											"pm.environment.set(\"viewerGroupEmail\", jsonData[\"acls\"][\"viewers\"][0])",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"// Request body has no access_policy, check if the default access_policy on the subproject metadata is set to uniform",
+											"const response = pm.response.json()",
+											"pm.expect(response.access_policy).to.eql('uniform')",
+											"",
+											"// Verify if the same uuid is used in the subproject acl admin group and viewer group",
+											"const adminGroup = String(response.acls.admins[0])",
+											"const viewerGroup = String(response.acls.viewers[0])",
+											"",
+											"pm.test(\"UUID substring in admin group and viewer group should be the same\", ()=>{",
+											"    pm.expect(adminGroup.split(\".\")[4]).to.eql(viewerGroup.split('.')[4])",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const subproject = 'v' + Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-subproject-four\", subproject)\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag01}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n     \"access_policy\": \"uniform\"\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-four}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-four}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DATASET REGISTER with ACLS",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400. Since the subproject has uniform access policy, datasets cannot be registered with ACLS. So we patch the subproject access policy to dataset\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const dataset = 'd' + Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-dataset-one\", dataset)\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"acls\": {\r\n        \"admins\": [\"{{adminGroupEmail}}\"],\r\n        \"viewers\": [\"{{viewerGroupEmail}}\"]\r\n    }\r\n} \r\n \r\n"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{dla-subproject-four}}/dataset/{{dla-dataset-one}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"dataset",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-four}}",
+										"dataset",
+										"{{dla-dataset-one}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SUBPROJECT PATCH WITH ACCESS POLICY SET TO DATASET",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Verfiy the subproject access policy is updated to dataset\", function(){",
+											"    pm.expect(jsonData[\"access_policy\"]).to.eql(\"dataset\")",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag02}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"access_policy\": \"dataset\"\r\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-four}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-four}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "REATTEMPT DATASET REGISTER WITH ACLS",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200. Now that the subproject access policy is dataset, dataset registration will succeed\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Check content type\", function () {",
+											"   pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+											"});",
+											"",
+											"",
+											"pm.test(\"Dataset name\", function () {",
+											"    pm.expect(jsonData.name).to.eql(pm.environment.get('dla-dataset-one'));",
+											"});",
+											"",
+											"pm.test(\"tenant\", function () {",
+											"    pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+											"});",
+											"",
+											"pm.test(\"subproject\", function () {",
+											"    pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"dla-subproject-four\"));",
+											"});",
+											"",
+											"pm.test(\"ltag\", function () {",
+											"    pm.expect(jsonData.ltag).to.eql(pm.environment.get(\"legaltag02\"));",
+											"});",
+											"",
+											"pm.test(\"Dates are present\", function () {",
+											"    pm.expect(jsonData.created_date).to.exist;",
+											"    pm.expect(jsonData.last_modified_date).to.exist;",
+											"});",
+											"",
+											"pm.test(\"sbit_count\", function () {",
+											"    pm.expect(jsonData.sbit_count).to.eql(1);",
+											"});",
+											"",
+											"pm.test(\"Verify dataset has acls\", function(){",
+											"    const admins = jsonData[\"acls\"][\"admins\"]",
+											"    const viewers = jsonData[\"acls\"][\"viewers\"]",
+											"",
+											"    pm.expect(admins.length).to.eql(1)",
+											"    pm.expect(viewers.length).to.eql(1)",
+											"",
+											"    pm.expect(admins[0]).to.eql(pm.environment.get(\"adminGroupEmail\"))",
+											"    pm.expect(viewers[0]).to.eql(pm.environment.get(\"viewerGroupEmail\"))",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"acls\": {\r\n        \"admins\": [\"{{adminGroupEmail}}\"],\r\n        \"viewers\": [\"{{viewerGroupEmail}}\"]\r\n    }\r\n} \r\n \r\n"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{dla-subproject-four}}/dataset/{{dla-dataset-one}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"dataset",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-four}}",
+										"dataset",
+										"{{dla-dataset-one}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SUBPROJECT REGISTER WITH UNIFORM ACCESS POLICY",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.environment.set(\"adminGroupEmailTwo\", jsonData[\"acls\"][\"admins\"][0])",
+											"pm.environment.set(\"viewerGroupEmailTwo\", jsonData[\"acls\"][\"viewers\"][0])",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"// Request body has no access_policy, check if the default access_policy on the subproject metadata is set to uniform",
+											"const response = pm.response.json()",
+											"pm.expect(response.access_policy).to.eql('uniform')"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const subproject = 'sp' + Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-subproject-five\", subproject)\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag01}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n     \"access_policy\": \"uniform\"\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-five}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-five}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DATASET REGISTER",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200.\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const dataset = 'dt' + Array.from(Array(20), () => Math.floor(Math.random() * 36).toString(36)).join('');\r",
+											"pm.environment.set(\"dla-dataset-two\", dataset)\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{dla-subproject-five}}/dataset/{{dla-dataset-two}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"dataset",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-five}}",
+										"dataset",
+										"{{dla-dataset-two}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DATASET PATCH WITH ACLS",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code to be 400. Since hte subproject access policy is uniform, patching acls on a dataset is not allowed. So we need to update the subproject access policy to dataset fist and reattempt patching the dataset with acls\", function(){",
+											"    pm.response.to.have.status(400);",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"acls\": {\n        \"admins\": [\"{{adminGroupEmailTwo}}\"],\n        \"viewers\": [\"{{viewerGroupEmailTwo}}\"]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{dla-subproject-five}}/dataset/{{dla-dataset-two}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"dataset",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-five}}",
+										"dataset",
+										"{{dla-dataset-two}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SUBPROJECT PATCH WITH ACCESS POLICY SET TO DATASET Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Verfiy the subproject access policy is updated to dataset\", function(){",
+											"    pm.expect(jsonData[\"access_policy\"]).to.eql(\"dataset\")",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "ltag",
+										"value": "{{legaltag02}}"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"access_policy\": \"dataset\"\r\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-five}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-five}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "REATTEMPT DATASET PATCH WITH ACLS",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code to be 200\", function(){",
+											"    pm.response.to.have.status(200);",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"acls\": {\n        \"admins\": [\"{{adminGroupEmailTwo}}\"],\n        \"viewers\": [\"{{viewerGroupEmailTwo}}\"]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{dla-subproject-five}}/dataset/{{dla-dataset-two}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"dataset",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-five}}",
+										"dataset",
+										"{{dla-dataset-two}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE SUBPROJECT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200 or 404\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([200,404])",
+											"});",
+											"",
+											"// Unset all variables created for access policy tests on subproject",
+											"pm.environment.unset('dla-subproject-four')",
+											"pm.environment.unset('adminGroupEmail')",
+											"pm.environment.unset('viewerGroupEmail')",
+											"pm.environment.unset('dla-dataset-one')",
+											"pm.environment.unset('dla-subproject')"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-four}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-four}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE SUBPROJECT TWO",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200 or 404\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([200,404])",
+											"});",
+											"",
+											"pm.environment.unset('dla-subproject-five')",
+											"pm.environment.unset('adminGroupEmailTwo')",
+											"pm.environment.unset('viewerGroupEmailTwo')",
+											"pm.environment.unset('dla-dataset-two')"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{STOKEN}}"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{SVC_API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "appkey",
+										"value": "{{DE_APP_KEY}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-five}}",
+									"host": [
+										"{{SVC_URL}}"
+									],
+									"path": [
+										"subproject",
+										"tenant",
+										"{{tenant}}",
+										"subproject",
+										"{{dla-subproject-five}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -13420,7 +14199,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"   pm.expect(pm.response.code).to.be.oneOf([200,404])",
 									"});",
 									""
 								],

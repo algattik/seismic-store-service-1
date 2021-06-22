@@ -1455,6 +1455,18 @@ definitions:
             type: string
           data:
             type: object
+      acls:
+        type: object
+        description: ACLs with admin groups and viewer groups for the dataset
+        properties:
+          admins:
+            type: array
+            items:
+              type: string
+          viewers:
+            type: array
+            items:
+              type: string
     example:
       type: "segy"
       gtags: ["tagA", "tagB", "tagC"]
@@ -1464,6 +1476,18 @@ definitions:
           "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
         }
+      acls:
+        {
+          "admins":
+            [
+              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com",
+            ],
+          "viewers":
+            [
+              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com",
+            ],
+        }
+
   # OK
   Dataset:
     required:
@@ -1595,6 +1619,18 @@ definitions:
             type: string
           data:
             type: object
+      acls:
+        type: object
+        description: ACLs with admin groups and viewer groups for the dataset
+        properties:
+          admins:
+            type: array
+            items:
+              type: string
+          viewers:
+            type: array
+            items:
+              type: string
     example:
       dataset_new_name: "dsx02"
       metadata: { "f1": "v1", "f2": "v2", "f3": "v3" }
@@ -1608,6 +1644,17 @@ definitions:
           "kind": "slb:seistore:seismic2d:1.0.0",
           "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
+        }
+      acls:
+        {
+          "admins":
+            [
+              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com",
+            ],
+          "viewers":
+            [
+              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com",
+            ],
         }
 
   # OK
@@ -1769,7 +1816,7 @@ definitions:
         enum: [uniform, dataset]
       acls:
         type: object
-        description: ACLs with admin groups and viewere groups
+        description: ACLs with admin groups and viewer groups for the subproject
         properties:
           admins:
             type: array
@@ -1798,7 +1845,7 @@ definitions:
         default: "dataset"
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups. Existing acls will be replaced with the provided acls.
+        description: ACLs with admin groups and viewer groups for the subproject. Existing acls will be replaced with the provided acls.
         properties:
           admins:
             type: array
@@ -1844,7 +1891,7 @@ definitions:
         description: Cloud storage bucket associated with the subproject
       acls:
         type: object
-        description: ACLs with admin groups and viewere groups
+        description: ACLs with admin groups and viewer groups for the subproject
         properties:
           admins:
             type: array
@@ -1867,7 +1914,7 @@ definitions:
           - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
           - data.sdms.tenant.subproject.1zr317e5-fb0e-402a-b725-123942f42f23.admin@slb.p4d.cloud.slb-ds.com
         viewers:
-          -  data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
 
   # OK
   TenantCreateBody:
