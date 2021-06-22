@@ -18,7 +18,7 @@ import { Request as expRequest } from 'express';
 import { DatasetModel } from '.';
 import { Config } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
-import { Error, Params, Utils } from '../../shared';
+import { Error, Params } from '../../shared';
 
 export class DatasetParser {
 
@@ -52,6 +52,7 @@ export class DatasetParser {
         dataset.created_date = dataset.last_modified_date = new Date().toString();
         dataset.gtags = req.body ? req.body.gtags : undefined;
 
+
         // Check the parameters
         Params.checkString(dataset.type, 'type', false);
         Params.checkString(dataset.ltag, 'ltag', false);
@@ -64,7 +65,7 @@ export class DatasetParser {
             Params.checkObject(seismicmeta.data, 'data');
 
             // {data-parititon(delfi)|auhtority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
-            if((seismicmeta.kind as string).split(':').length !== 4) {
+            if ((seismicmeta.kind as string).split(':').length !== 4) {
                 throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
             }
             // (recortdType == entityType)
@@ -72,8 +73,34 @@ export class DatasetParser {
 
         }
 
+        DatasetParser.validateAcls(dataset, req);
         return [dataset, seismicmeta];
 
+    }
+
+    private static validateAcls(dataset: DatasetModel, req) {
+        dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
+        if (dataset.acls) {
+
+            if (!('admins' in dataset.acls) || !('viewers' in dataset.acls)) {
+                throw Error.make(Error.Status.BAD_REQUEST,
+                    'Admins and viewers properties are both required in the acls ');
+            }
+
+            if (dataset.acls.admins.length === 0 || dataset.acls.viewers.length === 0) {
+                throw Error.make(Error.Status.BAD_REQUEST,
+                    'Admins and viewers groups must each have atleast one group email');
+            }
+
+            for (const adminGroupEmail of dataset.acls.admins) {
+                Params.checkEmail(adminGroupEmail, 'acls.admins', true);
+            }
+
+            for (const viewerGroupEmail of dataset.acls.viewers) {
+                Params.checkEmail(viewerGroupEmail, 'acls.viewers', true);
+            }
+
+        }
     }
 
     public static get(req: expRequest): [DatasetModel, boolean] {
@@ -125,6 +152,8 @@ export class DatasetParser {
         // Patch seismicmeta
         const seismicmeta = req.body.seismicmeta;
         Params.checkObject(seismicmeta, 'seismicmeta', false);
+
+        DatasetParser.validateAcls(dataset, req);
 
         return [dataset, seismicmeta, newName, closeid];
     }

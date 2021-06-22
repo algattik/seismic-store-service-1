@@ -34,9 +34,16 @@ export interface IDatasetModel {
     readonly: boolean;
     seismicmeta_guid: string;
     transfer_status: string;
+    acls?: IDatasetAcl;
+
 }
 
 export interface IPaginationModel {
     limit: number;
     cursor: string;
+}
+
+export interface IDatasetAcl {
+    admins: string[],
+    viewers: string[];
 }
