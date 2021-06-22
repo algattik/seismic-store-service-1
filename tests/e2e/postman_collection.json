@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "97a96e11-7cdd-4e64-b335-c4bb30050d06",
+		"_postman_id": "3a690c64-9493-4a7f-b7ae-bddebefa46f8",
 		"name": "SDMS-E2E",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -12919,7 +12919,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
+									"raw": "{\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
 								},
 								"url": {
 									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-one}}",
@@ -13059,7 +13059,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n    \"access_policy\": \"uniform\"\n}"
+									"raw": "{\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n    \"access_policy\": \"uniform\"\n}"
 								},
 								"url": {
 									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-two}}",
@@ -13267,7 +13267,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n    \"access_policy\": \"dataset\"\n}"
+									"raw": "{\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\",\n    \"access_policy\": \"dataset\"\n}"
 								},
 								"url": {
 									"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{dla-subproject-three}}",
