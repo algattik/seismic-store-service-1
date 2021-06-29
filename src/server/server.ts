@@ -19,7 +19,7 @@ import express from 'express';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
-import { Feature, FeatureFlags } from '../shared';
+import { Error, Feature, FeatureFlags, Response } from '../shared';
 import { v4 as uuidv4 } from 'uuid';
 
 import fs from 'fs';
@@ -107,6 +107,16 @@ export class Server {
             // not required anymore - to verify
             if (req.get('slb-on-behalf-of') !== undefined) {
                 req.headers.authorization = req.get('slb-on-behalf-of');
+            }
+
+            // ensure the authorization header is passed
+            if (!req.headers.authorization) {
+                if(!req.url.endsWith('svcstatus')) {
+                    Response.writeError(res, Error.make(
+                        Error.Status.UNAUTHENTICATED,
+                        'Unauthenticated Access. Authorizations not found in the request.'));
+                    return;
+                }
             }
 
             // track caller to the main log
