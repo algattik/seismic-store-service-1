@@ -52,6 +52,7 @@ export class AzureConfig extends Config {
         AzureConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST
         AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST
         AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST
+        AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = process.env.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH;
         AzureConfig.DES_SERVICE_APPKEY = 'undefined'
         Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST');
         Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST');
@@ -84,6 +85,7 @@ export class AzureConfig extends Config {
             DES_SERVICE_HOST_ENTITLEMENT: AzureConfig.DES_SERVICE_HOST_ENTITLEMENT,
             DES_SERVICE_HOST_STORAGE: AzureConfig.DES_SERVICE_HOST_STORAGE,
             DES_SERVICE_HOST_PARTITION: AzureConfig.DES_SERVICE_HOST_PARTITION,
+            DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH,
             DES_SERVICE_APPKEY: AzureConfig.DES_SERVICE_APPKEY,
             DES_GROUP_CHAR_LIMIT: AzureConfig.DES_GROUP_CHAR_LIMIT,
             JWKS_URL: process.env.JWKS_URL,

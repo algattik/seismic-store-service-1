@@ -247,7 +247,7 @@ export class DESEntitlement {
                 'Content-Type': 'application/json'
             },
             url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath()
-                + '/groups/data/' + groupEmail
+                + Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH + groupEmail
         };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
