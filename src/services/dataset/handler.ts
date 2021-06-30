@@ -410,6 +410,19 @@ export class DatasetHandler {
         // return immediately if it is a simple close with empty body (no patch to apply)
         if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
 
+            // Check authorizations
+            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+                if(wid.startsWith('W')) {
+                    await Auth.isWriteAuthorized(req.headers.authorization,
+                        subproject.acls.admins,
+                        datasetIN.tenant, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                } else {
+                    await Auth.isReadAuthorized(req.headers.authorization,
+                        subproject.acls.viewers.concat(subproject.acls.admins),
+                        datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                }
+            }
+
             // Retrieve the dataset metadata
             const dataset = subproject.enforce_key ?
                 await DatasetDAO.getByKey(journalClient, datasetIN) :
