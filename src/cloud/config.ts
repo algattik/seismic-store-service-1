@@ -36,6 +36,7 @@ export interface ConfigModel {
     DES_SERVICE_HOST_COMPLIANCE: string;
     DES_SERVICE_HOST_STORAGE: string;
     DES_SERVICE_HOST_PARTITION: string;
+    DES_ENTITLEMENT_DELETE_ENDPOINT_PATH?: string;
     DES_SERVICE_APPKEY: string;
     DES_GROUP_CHAR_LIMIT: number;
     JWKS_URL: string;
@@ -109,6 +110,7 @@ export abstract class Config implements IConfig {
     public static DES_SERVICE_HOST_COMPLIANCE: string;
     public static DES_SERVICE_HOST_STORAGE: string;
     public static DES_SERVICE_HOST_PARTITION: string;
+    public static DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: string;
     public static DES_SERVICE_APPKEY: string;
     public static DES_GROUP_CHAR_LIMIT: number;
     public static DE_FORWARD_APPKEY = Symbol('seismic-dms-fw-caller-appkey');
@@ -206,6 +208,7 @@ export abstract class Config implements IConfig {
         Config.DES_SERVICE_HOST_COMPLIANCE = model.DES_SERVICE_HOST_COMPLIANCE;
         Config.DES_SERVICE_HOST_STORAGE = model.DES_SERVICE_HOST_STORAGE;
         Config.DES_SERVICE_HOST_PARTITION = model.DES_SERVICE_HOST_PARTITION;
+        Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = model.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH || '/groups/data/';
         Config.DES_SERVICE_APPKEY = model.DES_SERVICE_APPKEY;
         Config.DES_GROUP_CHAR_LIMIT = model.DES_GROUP_CHAR_LIMIT;
 
@@ -236,6 +239,7 @@ export abstract class Config implements IConfig {
         Config.checkRequiredConfig(Config.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
         Config.checkRequiredConfig(Config.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');
         Config.checkRequiredConfig(Config.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST_PARTITION');
+        Config.checkRequiredConfig(Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH, 'DES_ENTITLEMENT_DELETE_ENDPOINT_PATH');
         Config.checkRequiredConfig(Config.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
 
         // JWT validation
