@@ -109,9 +109,13 @@ export class Server {
                 req.headers.authorization = req.get('slb-on-behalf-of');
             }
 
-            // ensure the authorization header is passed
+            // ensure the authorization header is passed/
+            // the imptoken refresh method is now obsolete because was not secured.
+            // the imptoken endpoints are not enabled in any CSP but temporarily used in SLB only.
+            // the imptoken endpoints have been marked as obsoleted and will be deprecated with the
+            // next service upgrade (v3>v4)
             if (!req.headers.authorization) {
-                if(!req.url.endsWith('svcstatus')) {
+                if(!((req.method === 'PUT' && req.url.endsWith('imptoken')) || req.url.endsWith('svcstatus'))) {
                     Response.writeError(res, Error.make(
                         Error.Status.UNAUTHENTICATED,
                         'Unauthenticated Access. Authorizations not found in the request.'));
