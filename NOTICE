@@ -157,7 +157,6 @@ The following software have components provided under the terms of this license:
 - cluster-key-slot (from https://www.npmjs.com/package/cluster-key-slot)
 - configstore (from https://www.npmjs.com/package/configstore)
 - continuation-local-storage (from https://github.com/othiym23/node-continuation-local-storage#readme)
-- emitter-listener (from https://github.com/othiym23/emitter-listener)
 - google-gax (from https://www.npmjs.com/package/google-gax)
 - google-gax (from https://www.npmjs.com/package/google-gax)
 - ieee754 (from https://github.com/feross/ieee754#readme)
