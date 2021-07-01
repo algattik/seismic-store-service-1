@@ -104,8 +104,19 @@ export class UserHandler {
 
                     // add the user as OWNER for all service groups
                     for (const group of subprojectServiceGroups) {
-                        await AuthGroups.addUserToGroup(
-                            req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                        try {
+                            await AuthGroups.addUserToGroup(
+                                req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                        } catch (e) {
+                            // If the error code is 400, retry adding the user as a member.
+                            // This would aid in adding a group email to the admin group.
+                            // Entitlements svc currently only allows one group to be added inside another
+                            // if the role is member
+                            if (e.error && e.error.code === 400) {
+                                await AuthGroups.addUserToGroup(req.headers.authorization,
+                                    group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
+                            }
+                        }
                     }
 
                 } else if (userGroupRole === AuthRoles.editor) {
@@ -136,37 +147,6 @@ export class UserHandler {
 
             if (subprojectDataGroups.length > 0) {
 
-                if (userGroupRole !== AuthRoles.viewer) {
-
-                    // rm the user from the groups since the user can be OWNER or Member
-                    for (const datagroup of subprojectDataGroups) {
-                        await this.doNotThrowIfNotMember(
-                            AuthGroups.removeUserFromGroup(
-                                req.headers.authorization, datagroup, userEmail,
-                                tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-                    }
-
-                    // add the user as OWNER for all service groups
-                    for (const datagroup of subprojectDataGroups) {
-                        await AuthGroups.addUserToGroup(
-                            req.headers.authorization, datagroup, userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
-                    }
-
-                } else {
-
-                    // add user to viewer group
-                    for (const datagroup of subprojectDataGroups) {
-                        if (datagroup.indexOf('.viewer@') !== -1) {
-                            await AuthGroups.addUserToGroup(
-                                req.headers.authorization, datagroup, userEmail,
-                                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                        }
-                    }
-
-                }
-
-
                 for (const datagroup of subprojectDataGroups) {
 
                     if (userGroupRole !== AuthRoles.viewer) {
@@ -177,9 +157,20 @@ export class UserHandler {
                                 req.headers.authorization, datagroup, userEmail,
                                 tenant.esd, req[Config.DE_FORWARD_APPKEY]));
 
-                        // add user as owner
-                        await AuthGroups.addUserToGroup(req.headers.authorization,
-                            datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                        try {
+                            // Add user as owner
+                            await AuthGroups.addUserToGroup(req.headers.authorization,
+                                datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                        } catch (e) {
+                            // If the error code is 400, retry adding the user as a member.
+                            // This would aid in adding a group email to the admin group.
+                            // Entitlements svc currently only allows one group to be added inside another
+                            // if the role is member
+                            if (e.error && e.error.code === 400) {
+                                await AuthGroups.addUserToGroup(req.headers.authorization,
+                                    datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
+                            }
+                        }
 
                     } else {
                         if (datagroup.indexOf('.viewer@') !== -1) {
