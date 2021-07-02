@@ -104,7 +104,8 @@ export class Cos extends AbstractStorage {
                     const objectKey = items[i].Key;
                     logger.info('Object to be deleted. objectKey-');
                     logger.debug(objectKey);
-                    self.deleteObject(bucketName, objectKey);
+                    // tslint:disable-next-line: no-floating-promises no-console
+                    self.deleteObject(bucketName, objectKey).catch((error)=>{ console.log('error')})
                 }
         });
         logger.info('Returning from Cos.deleteFiles.');

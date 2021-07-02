@@ -181,7 +181,8 @@ export class UtilityHandler {
 
     private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
         return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
-            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor) || el.name.endsWith(AuthRoles.viewer)));
+            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor) ||
+            el.name.endsWith(AuthRoles.viewer)));
     }
     // copy datasets (same tenancy required)
     private static async cp(req: expRequest) {
