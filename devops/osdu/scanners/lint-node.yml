@@ -1,0 +1,9 @@
+lint:
+  image: node
+  tags: ["osdu-small"]
+  stage: scan
+  needs: ['compile-and-unit-test']
+  script:
+    - npm install -g typescript
+    - npm install -g  tslint
+    - npm run lint

@@ -8,7 +8,7 @@
     "clean": "rm -rf dist coverage test-results.xml .nyc_output",
     "clean:npm": "npx rimraf ./node_modules",
     "build": "tsc",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint": "tslint -c tslint.json -p tsconfig.json 'src/**/*.ts'",
     "start": "node -r dotenv/config ./dist/server/server-start.js",
     "start:redis": "nohup redis-server > /tmp/redis.log 2>&1 &",
     "setup:dev": "(nohup redis-server > /tmp/redis.log 2>&1 &) && (npm i)",

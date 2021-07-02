@@ -218,7 +218,7 @@ export class SubProjectHandler {
         // get the subproject metadata
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
-        //Only tenant admins are allowed to delete the subproject
+        // Only tenant admins are allowed to delete the subproject
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isUserAuthorized(
                 req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
