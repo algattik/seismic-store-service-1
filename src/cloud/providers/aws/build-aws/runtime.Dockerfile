@@ -27,7 +27,7 @@ RUN apt-get install -yqq --no-install-recommends openssl
 ADD ./ /service
 WORKDIR /service
 RUN npm run clean && rm -rf node_modules && rm -rf artifact && mkdir artifact
-RUN npm install
+RUN npm ci
 RUN npm run build
 RUN cp -r package.json npm-shrinkwrap.json dist artifact
 
@@ -44,5 +44,5 @@ COPY --from=runtime-builder /service/artifact /seistore-service
 WORKDIR /seistore-service
 COPY src/cloud/providers/aws/build-aws/ssl.sh /seistore-service/ssl.sh
 COPY src/cloud/providers/aws/build-aws/entrypoint.sh /seistore-service/entrypoint.sh
-RUN npm install --production
+RUN npm ci --production
 ENTRYPOINT ["/bin/sh", "-c", "/seistore-service/entrypoint.sh"]

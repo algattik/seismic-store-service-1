@@ -49,8 +49,7 @@ include:
     
   # scan
   #fossa
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "scanners/fossa-node.yml"
+  - local: "devops/osdu/scanners/fossa-node.yml"
   #lint
   - local: "/devops/osdu/scanners/lint-node.yml"
 
