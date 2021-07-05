@@ -156,7 +156,7 @@ sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 
 # install requied packages
-npm install
+npm ci
 
 # run parallel tests
 ./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \

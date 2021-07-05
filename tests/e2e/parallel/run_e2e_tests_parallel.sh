@@ -94,7 +94,7 @@ sed -i "s/#{TENANT}#/${working_tenant}/g" ./tests/e2e/parallel/postman_env.json
 sed -i "s/#{SUBPROJECT}#/${working_subproject}/g" ./tests/e2e/parallel/postman_env.json
 
 # install requied packages
-npm install
+npm ci
 
 # run parallel tests
 npm run test-e2e-parallel

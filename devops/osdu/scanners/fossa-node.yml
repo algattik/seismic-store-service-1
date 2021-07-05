@@ -1,0 +1,23 @@
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-global.yml"
+
+# --------------------------------------------------------------------------------
+
+fossa-analyze:
+  image: $CI_REGISTRY/divido/fossa-cli-utilities/fossa-cli-utilities:v5.1
+  stage: scan
+  needs: ['compile-and-unit-test']
+  tags: ['osdu-medium']
+  only:
+    variables:
+      - $FOSSA_API_KEY
+  script:
+    # fossa-check-for-licensing-issues needs a CI_COMMIT_BRANCH defined to know how to parse the FOSSA API results
+    # When building tags, this isn't defined by GitLab. In that case, we use the tag name instead. If that's not defined
+    # then things will fail and we'll have to make this smarter
+    - test -z "$CI_COMMIT_BRANCH" && export CI_COMMIT_BRANCH="$CI_COMMIT_TAG"
+
+    - npm ci --production
+    - fossa analyze --project "${CI_PROJECT_TITLE}" --project-url "${CI_PROJECT_URL}" --branch "${CI_COMMIT_BRANCH}"
+    - fossa-check-for-licensing-issues
