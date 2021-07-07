@@ -18,14 +18,13 @@ export class DatastoreDAO extends AbstractJournal {
     public constructor(tenant: TenantModel) {
         super();
         logger.info('In datastore.constructor.');
-        this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
+        this.dataPartition = tenant.gcpid;
     }
 
     public async initDb(dataPartition: string)
     {
         logger.info('In datastore.initDb.');
         const dbUrl = IbmConfig.DOC_DB_URL;
-        logger.debug(dbUrl);
         const cloudantOb = cloudant(dbUrl);
         logger.info('DB initialized. cloudantOb-');
 
@@ -84,23 +83,22 @@ export class DatastoreDAO extends AbstractJournal {
         await this.initDb(this.dataPartition);
         logger.info('Fetching document.');
 
-        /// changed from entity.name to entity.key.name
-        await this.docDb.get(entity.key.name, { revs_info: true }, (err, existingDoc) => {
+        try{
+            const getResponse = await this.docDb.get(entity.key.name, { revs_info: true });
+            logger.info('Document exists in db.');
+            const existingDoc = getResponse;
+            const docTemp = JSON.parse(JSON.stringify(existingDoc));
+            /// have to add if condition. before that check the dataset object structure
+            docTemp.ltag = entity.ltag;
+            if (entity.data.trusted)
+                docTemp.trusted = entity.data.trusted;
 
-            if (!err) {/// update record
-                logger.info('Document exists in db.');
-                const docTemp = JSON.parse(JSON.stringify(existingDoc));
-                /// have to add if condition. before that check the dataset object structure
-                docTemp.ltag = entity.ltag;
-                if (entity.data.trusted)
-                    docTemp.trusted = entity.data.trusted;
-
-                Object.assign(docTemp, entity.data);
-                logger.debug(docTemp);
-                this.docDb.insert(docTemp, entity.key.name);
-                logger.info('Document updated.');
-            }
-            else/// insert record
+            Object.assign(docTemp, entity.data);
+            logger.debug(docTemp);
+            await this.docDb.insert(docTemp, entity.key.name);
+            logger.info('Document updated.');
+        } catch(err){
+            if(err.statusCode === 404)
             {
                 logger.info('Document does not exist. This will be a new document');
                 const customizedOb = {};
@@ -110,13 +108,13 @@ export class DatastoreDAO extends AbstractJournal {
                 for (const element in entity.data) {
                     if (!((entity.key.kind === 'datasets' || entity.key.kind === 'seismicmeta') && element === '_id'))
                         if (!((entity.key.kind === 'datasets' || entity.key.kind === 'seismicmeta') && element === '_rev'))
-                            customizedOb[element] = entity.data[element];
+                                    customizedOb[element] = entity.data[element];
                 };
                 logger.debug(customizedOb);
-                this.docDb.insert(customizedOb, entity.key.name);
+                await this.docDb.insert(customizedOb, entity.key.name);
                 logger.info('Document inserted.');
             }
-        });
+        }
         logger.info('Returning from datastore.save.');
 
     }
