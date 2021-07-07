@@ -17,11 +17,12 @@
 import jsonwebtoken from 'jsonwebtoken';
 import request from 'request-promise';
 import sinon from 'sinon';
-
-import { google } from '../../../src/cloud/providers';
 import { Config } from '../../../src/cloud';
+import { google } from '../../../src/cloud/providers';
 import { ImpTokenDAO } from '../../../src/services/imptoken';
+import { IResourceModel } from '../../../src/services/imptoken/model';
 import { Tx } from '../utils';
+
 
 export class TestImpToken {
 
@@ -57,7 +58,7 @@ export class TestImpToken {
                {
                   readonly: false,
                   resource: 'resource-a',
-               },
+               } as IResourceModel,
             ],
             user: 'user-a',
             userToken: 'user_token',
@@ -79,7 +80,7 @@ export class TestImpToken {
                   {
                      readonly: false,
                      resource: 'resource-a',
-                  },
+                  } as IResourceModel,
                ],
                user: 'user-a',
                userToken: 'user_token',

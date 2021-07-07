@@ -24,17 +24,17 @@ export class ImpTokenParser {
 
     private static checkRefreshUrl(refreshUrl: any) {
 
-        if(refreshUrl.startsWith('https://') || refreshUrl.startsWith('http://')) return;
+        if (refreshUrl.startsWith('https://') || refreshUrl.startsWith('http://')) return;
         try {
             refreshUrl = JSON.parse(refreshUrl);
             // method/url mandatory as string headers/body optional but if presents as objects
-            if(!(refreshUrl.method && typeof(refreshUrl.method) === 'string'))
+            if (!(refreshUrl.method && typeof (refreshUrl.method) === 'string'))
                 throw undefined;
-            if(!(refreshUrl.url && typeof(refreshUrl.url) === 'string'))
+            if (!(refreshUrl.url && typeof (refreshUrl.url) === 'string'))
                 throw undefined;
-            if(!(!refreshUrl.headers || (refreshUrl.headers && typeof(refreshUrl.headers) === 'object')))
+            if (!(!refreshUrl.headers || (refreshUrl.headers && typeof (refreshUrl.headers) === 'object')))
                 throw undefined;
-            if(!(!refreshUrl.body || (refreshUrl.body && typeof(refreshUrl.body) === 'object')))
+            if (!(!refreshUrl.body || (refreshUrl.body && typeof (refreshUrl.body) === 'object')))
                 throw undefined;
         } catch {
             throw (Error.make(Error.Status.BAD_REQUEST, 'The \'refresh-url\' format is not valid.'));

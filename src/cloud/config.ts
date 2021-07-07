@@ -166,6 +166,11 @@ export abstract class Config implements IConfig {
     // The C++ SDK mainly requires a fix on how behave on mutable calls.
     public static SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS = true;
 
+
+    // Access policy of a subproject can either be uniform or dataset
+    public static UNIFORM_ACCESS_POLICY = 'uniform';
+    public static DATASET_ACCESS_POLICY = 'dataset';
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {

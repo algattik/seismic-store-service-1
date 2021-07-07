@@ -15,13 +15,12 @@
 // ============================================================================
 
 import { decode as jwtDecode, verify as jwtVerify } from 'jsonwebtoken';
+import request from 'request-promise';
 import { ImpTokenModel } from '.';
-import { CredentialsFactory } from '../../cloud';
-import { Config } from '../../cloud';
+import { Config, CredentialsFactory } from '../../cloud';
 import { Error } from '../../shared';
 import { IImpTokenBodyModel as ImpTokenBodyModel, IRefreshUrl } from './model';
 
-import request from 'request-promise';
 
 export class ImpTokenDAO {
 
@@ -73,19 +72,20 @@ export class ImpTokenDAO {
 
         const options: request.Options = { method: 'GET', url: '' };
 
-        if(refreshUrl.startsWith('https://') || refreshUrl.startsWith('http://')) {
+        if (refreshUrl.startsWith('https://') || refreshUrl.startsWith('http://')) {
             options.method = 'GET';
             options.headers = {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'};
+                'Content-Type': 'application/json'
+            };
             options.url = refreshUrl;
         }
         else {
             const refreshUrlOptions = JSON.parse(refreshUrl) as IRefreshUrl;
             options.method = refreshUrlOptions.method;
             options.url = refreshUrlOptions.url;
-            if(refreshUrlOptions.headers) options.headers = refreshUrlOptions.headers;
-            if(refreshUrlOptions.body) options.json = refreshUrlOptions.body;
+            if (refreshUrlOptions.headers) options.headers = refreshUrlOptions.headers;
+            if (refreshUrlOptions.body) options.json = refreshUrlOptions.body;
         }
 
         try {
