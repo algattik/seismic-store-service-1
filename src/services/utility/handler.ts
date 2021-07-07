@@ -55,6 +55,7 @@ export class UtilityHandler {
 
         if (!FeatureFlags.isEnabled(Feature.STORAGE_CREDENTIALS)) return {};
 
+        let objectPrefix: string;
         const inputParams = UtilityParser.gcsToken(req);
         const sdPath = inputParams.sdPath;
         const readOnly = inputParams.readOnly;
@@ -65,19 +66,48 @@ export class UtilityHandler {
 
         const subproject = await SubProjectDAO.get(journalClient, sdPath.tenant, sdPath.subproject);
 
-        if (readOnly) {
-            await Auth.isReadAuthorized(req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
-                tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        if (Object.keys(inputParams.dataset).length === 0) {
+            if (readOnly) {
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    subproject.acls.viewers.concat(subproject.acls.admins),
+                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            } else {
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    subproject.acls.admins,
+                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
         } else {
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
-                tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            const dataset = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, inputParams.dataset) :
+                (await DatasetDAO.get(journalClient, inputParams.dataset))[0];
+
+            if (readOnly) {
+                if (dataset.acls) {
+                    await Auth.isReadAuthorized(req.headers.authorization,
+                        dataset.acls.viewers.concat(dataset.acls.admins),
+                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                } else {
+                    await Auth.isReadAuthorized(req.headers.authorization,
+                        subproject.acls.viewers.concat(subproject.acls.admins),
+                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                }
+            } else {
+                if (dataset.acls) {
+                    await Auth.isReadAuthorized(req.headers.authorization,
+                        dataset.acls.admins,
+                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                } else {
+                    await Auth.isReadAuthorized(req.headers.authorization,
+                        subproject.acls.admins,
+                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                }
+            }
+            objectPrefix = dataset.gcsurl.split('/')[1];
         }
 
         return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
             subproject.tenant, subproject.name,
-            subproject.gcs_bucket, readOnly, DESUtils.getDataPartitionID(tenant.esd));
+            subproject.gcs_bucket, readOnly, DESUtils.getDataPartitionID(tenant.esd), objectPrefix);
 
     }
 
@@ -181,8 +211,8 @@ export class UtilityHandler {
 
     private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
         return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
-            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor) ||
-            el.name.endsWith(AuthRoles.viewer)));
+            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor)
+                || el.name.endsWith(AuthRoles.viewer)));
     }
     // copy datasets (same tenancy required)
     private static async cp(req: expRequest) {
@@ -208,27 +238,6 @@ export class UtilityHandler {
         // retrieve the destination subproject info
         const subproject = await SubProjectDAO.get(journalClient, sdPathTo.tenant, sdPathTo.subproject);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            if (sdPathFrom.subproject === sdPathTo.subproject) {
-
-                // check if has write access on source/destination dataset (same subproject)
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    subproject.acls.admins,
-                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-
-            } else {
-
-                // check if has write access on destination dataset and read access on the source subproject
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    subproject.acls.admins,
-                    sdPathTo.tenant, sdPathTo.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                await Auth.isReadAuthorized(req.headers.authorization,
-                    subproject.acls.viewers.concat(subproject.acls.admins),
-                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-
-            }
-        }
-
         // retrieve the source dataset
         let datasetFrom = {} as DatasetModel;
         datasetFrom.tenant = sdPathFrom.tenant;
@@ -246,6 +255,25 @@ export class UtilityHandler {
             throw (Error.make(Error.Status.NOT_FOUND,
                 'The dataset ' + Config.SDPATHPREFIX + sdPathFrom.tenant + '/' + sdPathFrom.subproject +
                 sdPathFrom.path + sdPathFrom.dataset + ' does not exist exist'));
+        }
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+
+            if (datasetFrom.acls) {
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    datasetFrom.acls.viewers.concat(datasetFrom.acls.admins),
+                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
+            } else {
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    subproject.acls.viewers.concat(subproject.acls.admins),
+                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
+            // check if has write access on destination dataset and read access on the source subproject
+            await Auth.isWriteAuthorized(req.headers.authorization,
+                subproject.acls.admins,
+                sdPathTo.tenant, sdPathTo.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
         }
 
         let seismicmeta: any;
@@ -275,6 +303,10 @@ export class UtilityHandler {
         datasetTo.sbit_count = 1;
         datasetTo.seismicmeta_guid = datasetFrom.seismicmeta_guid ? seismicmeta.id : undefined;
         datasetTo.transfer_status = TransferStatus.InProgress;
+
+        if (datasetFrom.acls) {
+            datasetTo.acls = datasetFrom.acls;
+        }
 
         try {
 

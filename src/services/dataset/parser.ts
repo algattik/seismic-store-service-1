@@ -72,14 +72,15 @@ export class DatasetParser {
             seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
 
         }
+        dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
+        DatasetParser.validateAcls(dataset);
 
-        DatasetParser.validateAcls(dataset, req);
         return [dataset, seismicmeta];
 
     }
 
-    private static validateAcls(dataset: DatasetModel, req) {
-        dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
+    private static validateAcls(dataset: DatasetModel) {
+
         if (dataset.acls) {
 
             if (!('admins' in dataset.acls) || !('viewers' in dataset.acls)) {
@@ -153,7 +154,7 @@ export class DatasetParser {
         const seismicmeta = req.body.seismicmeta;
         Params.checkObject(seismicmeta, 'seismicmeta', false);
 
-        DatasetParser.validateAcls(dataset, req);
+        DatasetParser.validateAcls(dataset);
 
         return [dataset, seismicmeta, newName, closeid];
     }

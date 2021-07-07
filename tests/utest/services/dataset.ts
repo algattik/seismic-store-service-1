@@ -45,7 +45,8 @@ export class TestDatasetSVC {
                 admins: ['admin-a@domain.com'],
                 viewers: ['vieweres-b@domain.com']
             },
-            ltag: 'legalTag'
+            ltag: 'legalTag',
+            access_policy: 'uniform'
         } as SubProjectModel;
 
         this.dataset = {

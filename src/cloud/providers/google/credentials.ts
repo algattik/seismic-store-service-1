@@ -16,11 +16,11 @@
 
 import jwttoken from 'jsonwebtoken';
 import request from 'request-promise';
-
 import { Config } from '../../../cloud';
 import { Error, Utils } from '../../../shared';
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
 import { ConfigGoogle } from './config';
+
 
 interface IDTokenModel {
     id_token: string;
@@ -40,11 +40,11 @@ export class Credentials extends AbstractCredentials {
 
     public async getStorageCredentials(
         tenant: string, subproject: string,
-        bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
+        bucket: string, readonly: boolean, _partition: string, objectPrefix?: string): Promise<IAccessTokenModel> {
 
         const serviceAccessToken = await this.getServiceAccountAccessToken(false);
         const serviceAccessTokenDownscoped = await this.exchangeJwtWithDownScopedAccessToken(
-            serviceAccessToken.access_token, bucket, readonly);
+            serviceAccessToken.access_token, bucket, readonly, objectPrefix);
 
         return {
             access_token: serviceAccessTokenDownscoped.access_token,
@@ -54,27 +54,46 @@ export class Credentials extends AbstractCredentials {
     }
 
     private async exchangeJwtWithDownScopedAccessToken(accessToken: string,
-        bucket: string, readonly: boolean): Promise<IDownScopedToken> {
+        bucket: string, readonly: boolean, objectPrefix?: string): Promise<IDownScopedToken> {
         try {
-            return JSON.parse(await request.post({
+
+            const accessBoundary = {
+                'accessBoundaryRules': [
+                    {
+                        'availableResource': '//storage.googleapis.com/projects/_/buckets/' + bucket,
+                        'availablePermissions': [
+                            'inRole:roles/' + (readonly ? 'storage.objectViewer' : 'storage.objectAdmin')
+                        ],
+                    }
+                ]
+            };
+
+            if (objectPrefix) {
+                accessBoundary.accessBoundaryRules[0]['availabilityCondition'] = {
+                    'title': 'obj-prefixes',
+                    'expression': 'resource.name.startsWith(\"projects/_/buckets/' +
+                        bucket + '/objects/' + objectPrefix + '\")'
+                };
+            }
+
+            const requestOptions = {
                 form: {
-                    access_boundary: JSON.stringify({
-                        accessBoundaryRules: [{
-                            availablePermissions: [
-                                'inRole:roles/' + (readonly ? 'storage.objectViewer' : 'storage.objectAdmin')],
-                            availableResource: '//storage.googleapis.com/projects/_/buckets/' + bucket,
-                        }],
-                    }),
-                    grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
-                    requested_token_type: 'urn:ietf:params:oauth:token-type:access_token',
-                    subject_token: accessToken,
-                    subject_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+                    'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
+                    'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
+                    'requested_token_type': 'urn:ietf:params:oauth:token-type:access_token',
+                    'subject_token': accessToken,
+                    'options': JSON.stringify({
+                        'accessBoundary': accessBoundary
+                    })
                 },
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                url: 'https://securetoken.googleapis.com/v2beta1/token',
-            }));
+                url: 'https://sts.googleapis.com/v1beta/token',
+            };
+
+            return JSON.parse(await request.post(requestOptions));
+
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
         }

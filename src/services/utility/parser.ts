@@ -17,7 +17,7 @@
 import { Request as expRequest } from 'express';
 import { Config } from '../../cloud';
 import { Error, Params, SDPath, SDPathModel } from '../../shared';
-import { PaginationModel } from '../dataset';
+import { DatasetModel, PaginationModel } from '../dataset';
 
 export class UtilityParser {
 
@@ -96,7 +96,7 @@ export class UtilityParser {
         return { sdPath, wmode, pagination };
     }
 
-    public static gcsToken(req: expRequest): { sdPath: SDPathModel, readOnly: boolean } {
+    public static gcsToken(req: expRequest): { sdPath: SDPathModel, readOnly: boolean; dataset: DatasetModel } {
 
         Params.checkString(req.query.sdpath, 'sdpath');
 
@@ -112,6 +112,11 @@ export class UtilityParser {
                 'The \'sdpath\' query parameter is not a valid seismic store subproject path.'));
         }
 
+        const dataset: DatasetModel = {} as DatasetModel;
+        if (sdPath.dataset) {
+            this.constructDatasetModel(dataset, sdPath, req);
+        }
+
         Params.checkString(req.query.readonly, 'readonly', false);
         let readOnlyStr = req.query.readonly;
         if (readOnlyStr) {
@@ -123,7 +128,20 @@ export class UtilityParser {
         }
         const readOnly = readOnlyStr ? (readOnlyStr === 'true') : true;
 
-        return { sdPath, readOnly };
+        return { sdPath, readOnly, dataset };
+    }
+
+
+    private static constructDatasetModel(dataset: DatasetModel, sdPath: SDPathModel, req: expRequest) {
+        dataset.name = sdPath.dataset;
+        dataset.tenant = sdPath.tenant;
+        dataset.subproject = sdPath.subproject;
+
+        const path = req.query.path ? '/' + decodeURIComponent(req.query.path) + '/' : '/';
+        Params.checkDatasetPath(path, 'path', true);
+        dataset.path = path;
+
+        while (dataset.path.indexOf('//') !== -1) { dataset.path = dataset.path.replace('//', '/'); }
     }
 
 }

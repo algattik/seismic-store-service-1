@@ -20,8 +20,11 @@ import { Config } from '../../cloud';
 import { JournalFactoryTenantClient } from '../../cloud/journal';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
+import { DatasetDAO, DatasetModel } from '../dataset';
 import { SubProjectDAO, SubprojectGroups } from '../subproject';
+import { ISubProjectModel } from '../subproject/model';
 import { TenantDAO, TenantGroups } from '../tenant';
+import { ITenantModel } from '../tenant/model';
 import { UserOP } from './optype';
 import { UserParser } from './parser';
 
@@ -52,7 +55,7 @@ export class UserHandler {
 
     }
 
-    // add a user to a tenant or a subproject
+    // Add a user to a tenant or a subproject or a dataset
     private static async addUser(req: expRequest) {
 
         if (!FeatureFlags.isEnabled(Feature.AUTHORIZATION)) return {};
@@ -72,41 +75,41 @@ export class UserHandler {
         // retrieve the tenant informations
         const tenant = await TenantDAO.get(sdPath.tenant);
 
-        if (sdPath.subproject) {
+        if (!sdPath.subproject) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                `The specified SDMS URI is not a subproject or a dataset.
+                    Users cannot be managed at the tenant level`));
+        }
 
-            const journalClient = JournalFactoryTenantClient.get(tenant);
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
+        if (sdPath.dataset) {
 
-            const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
-            const subprojectAdminServiceGroups = subproject.acls.admins
-                .filter((group) => group.match(serviceGroupRegex));
-            const subprojectViewerServiceGroups = subproject.acls.viewers
-                .filter((group) => group.match(serviceGroupRegex));
-            const subprojectServiceGroups = subprojectAdminServiceGroups.concat(subprojectViewerServiceGroups);
+            if (subproject.access_policy !== Config.DATASET_ACCESS_POLICY) {
+                throw Error.make(Error.Status.BAD_REQUEST, 'User cannot be added to the dataset acls as the subproject access policy is not set to dataset ');
+            }
 
-            const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
-            const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
-            const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
-            const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
+            const datasetModel: DatasetModel = {
+                name: sdPath.dataset,
+                subproject: sdPath.subproject,
+                tenant: sdPath.tenant,
+                path: sdPath.path
+            } as DatasetModel;
 
-            if (subprojectServiceGroups.length > 0) {
+            const datasetOUT = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, datasetModel) :
+                (await DatasetDAO.get(journalClient, datasetModel))[0];
 
-                if (userGroupRole === AuthRoles.admin) {
 
-                    // rm the user from the groups since the user can be OWNER or Member
-                    for (const group of subprojectServiceGroups) {
-                        await this.doNotThrowIfNotMember(
-                            AuthGroups.removeUserFromGroup(
-                                req.headers.authorization, group, userEmail,
-                                tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-                    }
-
-                    // add the user as OWNER for all service groups
-                    for (const group of subprojectServiceGroups) {
+            if (userGroupRole === AuthRoles.admin || userGroupRole === AuthRoles.editor) {
+                if (datasetOUT.acls && 'admins' in datasetOUT.acls) {
+                    for (const adminGroup of datasetOUT.acls.admins) {
                         try {
                             await AuthGroups.addUserToGroup(
-                                req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                                req.headers.authorization, adminGroup, userEmail, tenant.esd,
+                                req[Config.DE_FORWARD_APPKEY],
+                                'OWNER');
                         } catch (e) {
                             // If the error code is 400, retry adding the user as a member.
                             // This would aid in adding a group email to the admin group.
@@ -114,85 +117,147 @@ export class UserHandler {
                             // if the role is member
                             if (e.error && e.error.code === 400) {
                                 await AuthGroups.addUserToGroup(req.headers.authorization,
-                                    group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
+                                    adminGroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
                             }
                         }
                     }
 
-                } else if (userGroupRole === AuthRoles.editor) {
-
-                    // add the user as member for all editor service groups
-                    for (const group of subprojectServiceGroups) {
-                        if (group.indexOf('.editor@') !== -1) {
-                            await AuthGroups.addUserToGroup(
-                                req.headers.authorization, group,
-                                userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                        }
+                } else {
+                    throw Error.make(Error.Status.BAD_REQUEST, 'Dataset has no acls so the user cannot be added.');
+                }
+            } else if (userGroupRole === AuthRoles.viewer) {
+                if (datasetOUT.acls && 'viewers' in datasetOUT.acls) {
+                    for (const viewerGroup of datasetOUT.acls.viewers) {
+                        await AuthGroups.addUserToGroup(
+                            req.headers.authorization, viewerGroup, userEmail,
+                            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
                     }
 
-                } else if (userGroupRole === AuthRoles.viewer) {
-
-                    // add the user as member for all viewer service groups
-                    for (const group of subprojectServiceGroups) {
-                        if (group.indexOf('.viewer@') !== -1) {
-                            await AuthGroups.addUserToGroup(
-                                req.headers.authorization, group,
-                                userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                        }
-                    }
-
-                } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
+                } else {
+                    throw Error.make(Error.Status.BAD_REQUEST, 'Dataset has no acls so the user cannot be added.');
+                }
 
             }
 
-            if (subprojectDataGroups.length > 0) {
+        } else if (sdPath.subproject) {
+            await UserHandler.addUserToSubprojectGroups(tenant, subproject, userGroupRole, req, userEmail);
+        }
 
-                for (const datagroup of subprojectDataGroups) {
+    }
 
-                    if (userGroupRole !== AuthRoles.viewer) {
+    private static async addUserToSubprojectGroups(tenant: ITenantModel, subproject: ISubProjectModel,
+        userGroupRole: string, req, userEmail: string, skipPolicyCheck = false) {
 
-                        // First rm the user from the groups since the user can be exclus Owner or Member
-                        await this.doNotThrowIfNotMember(
-                            AuthGroups.removeUserFromGroup(
-                                req.headers.authorization, datagroup, userEmail,
-                                tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+        const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
+        const subprojectAdminServiceGroups = subproject.acls.admins
+            .filter((group) => group.match(serviceGroupRegex));
+        const subprojectViewerServiceGroups = subproject.acls.viewers
+            .filter((group) => group.match(serviceGroupRegex));
+        const subprojectServiceGroups = subprojectAdminServiceGroups.concat(subprojectViewerServiceGroups);
 
-                        try {
-                            // Add user as owner
+        const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+        const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
+        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
+
+        if (subprojectServiceGroups.length > 0) {
+
+            if (userGroupRole === AuthRoles.admin) {
+
+                // rm the user from the groups since the user can be OWNER or Member
+                for (const group of subprojectServiceGroups) {
+                    await this.doNotThrowIfNotMember(
+                        AuthGroups.removeUserFromGroup(
+                            req.headers.authorization, group, userEmail,
+                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+                }
+
+                // add the user as OWNER for all service groups
+                for (const group of subprojectServiceGroups) {
+                    try {
+                        await AuthGroups.addUserToGroup(
+                            req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                    } catch (e) {
+                        // If the error code is 400, retry adding the user as a member.
+                        // This would aid in adding a group email to the admin group.
+                        // Entitlements svc currently only allows one group to be added inside another
+                        // if the role is member
+                        if (e.error && e.error.code === 400) {
                             await AuthGroups.addUserToGroup(req.headers.authorization,
-                                datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
-                        } catch (e) {
-                            // If the error code is 400, retry adding the user as a member.
-                            // This would aid in adding a group email to the admin group.
-                            // Entitlements svc currently only allows one group to be added inside another
-                            // if the role is member
-                            if (e.error && e.error.code === 400) {
-                                await AuthGroups.addUserToGroup(req.headers.authorization,
-                                    datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
-                            }
+                                group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
                         }
+                    }
 
-                    } else {
-                        if (datagroup.indexOf('.viewer@') !== -1) {
+                }
+
+            } else if (userGroupRole === AuthRoles.editor) {
+
+                // add the user as member for all editor service groups
+                for (const group of subprojectServiceGroups) {
+                    if (group.indexOf('.editor@') !== -1) {
+                        await AuthGroups.addUserToGroup(
+                            req.headers.authorization, group,
+                            userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    }
+                }
+
+            } else if (userGroupRole === AuthRoles.viewer) {
+
+                // add the user as member for all viewer service groups
+                for (const group of subprojectServiceGroups) {
+                    if (group.indexOf('.viewer@') !== -1) {
+                        await AuthGroups.addUserToGroup(
+                            req.headers.authorization, group,
+                            userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    }
+                }
+
+            } else { throw (Error.make(Error.Status.UNKNOWN, 'User role is not valid')); }
+
+        }
+
+        if (subprojectDataGroups.length > 0) {
+
+            for (const datagroup of subprojectDataGroups) {
+
+                if (userGroupRole !== AuthRoles.viewer) {
+
+                    // First rm the user from the groups since the user can be exclus Owner or Member
+                    await this.doNotThrowIfNotMember(
+                        AuthGroups.removeUserFromGroup(
+                            req.headers.authorization, datagroup, userEmail,
+                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+
+                    try {
+                        // Add user as owner
+                        await AuthGroups.addUserToGroup(req.headers.authorization,
+                            datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
+                    } catch (e) {
+                        // If the error code is 400, retry adding the user as a member.
+                        // This would aid in adding a group email to the admin group.
+                        // Entitlements svc currently only allows one group to be added inside another
+                        // if the role is member
+                        if (e.error && e.error.code === 400) {
                             await AuthGroups.addUserToGroup(req.headers.authorization,
-                                datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                                datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
                         }
+                    }
 
+                } else {
+                    if (datagroup.indexOf('.viewer@') !== -1) {
+                        await AuthGroups.addUserToGroup(req.headers.authorization,
+                            datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
                     }
 
                 }
 
             }
 
-
-
-        } else {
-            throw (Error.make(Error.Status.BAD_REQUEST,
-                'Please use Delfi portal to add users to ' + tenant.name + ' tenant'));
         }
+
     }
 
-    // remove a user from a tenant or a subproject
+    // Remove a user from a tenant or a subproject or a dataset
     private static async removeUser(req: expRequest) {
 
         if (!FeatureFlags.isEnabled(Feature.AUTHORIZATION)) return {};
@@ -217,27 +282,31 @@ export class UserHandler {
         // retrieve the tenant informations
         const tenant = await TenantDAO.get(sdPath.tenant);
 
-        // check authorizations
-        if (sdPath.subproject) {
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
-            const journalClient = JournalFactoryTenantClient.get(tenant);
 
-            const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
+        if (sdPath.dataset) {
+            const datasetModel: DatasetModel = {
+                name: sdPath.dataset,
+                subproject: sdPath.subproject,
+                tenant: sdPath.tenant,
+                path: sdPath.path
+            } as DatasetModel;
 
-            const adminGroups = subproject.acls.admins;
-            const viewerGroups = subproject.acls.viewers;
+            const datasetOUT = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, datasetModel) :
+                (await DatasetDAO.get(journalClient, datasetModel))[0];
 
-            for (const group of adminGroups) {
-                await this.doNotThrowIfNotMember(
-                    AuthGroups.removeUserFromGroup(req.headers.authorization, group, userEmail,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+            if (datasetOUT.acls) {
+                await UserHandler.removeUserFromAuthGroups(datasetOUT.acls.admins, datasetOUT.acls.viewers,
+                    tenant, req, userEmail);
             }
 
-            for (const group of viewerGroups) {
-                await this.doNotThrowIfNotMember(
-                    AuthGroups.removeUserFromGroup(req.headers.authorization, group, userEmail,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-            }
+        } else if (sdPath.subproject) {
+
+            await UserHandler.removeUserFromAuthGroups(subproject.acls.admins, subproject.acls.viewers,
+                tenant, req, userEmail);
 
 
         } else {
@@ -245,6 +314,22 @@ export class UserHandler {
                 'Please use Delfi portal to remove users from ' + tenant.name + ' tenant'));
         }
 
+    }
+
+    private static async removeUserFromAuthGroups(adminGroups: string[], viewerGroups: string[],
+        tenant: ITenantModel, req, userEmail: string,
+    ) {
+        for (const group of adminGroups) {
+            await this.doNotThrowIfNotMember(
+                AuthGroups.removeUserFromGroup(req.headers.authorization, group, userEmail,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+        }
+
+        for (const group of viewerGroups) {
+            await this.doNotThrowIfNotMember(
+                AuthGroups.removeUserFromGroup(req.headers.authorization, group, userEmail,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]));
+        }
     }
 
     // list users and their roles in a subproject
@@ -262,24 +347,52 @@ export class UserHandler {
 
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
+
+
+        if (sdPath.dataset) {
+
+            const datasetModel: DatasetModel = {
+                name: sdPath.dataset,
+                subproject: sdPath.subproject,
+                tenant: sdPath.tenant,
+                path: sdPath.path
+            } as DatasetModel;
+
+            const datasetOUT = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, datasetModel) :
+                (await DatasetDAO.get(journalClient, datasetModel))[0];
+
+            if (datasetOUT.acls) {
+                return await UserHandler.listUsersInAuthGroups(datasetOUT.acls.admins, datasetOUT.acls.viewers,
+                    req, tenant);
+            }
+
+
+        } else if (sdPath.subproject) {
+            return await UserHandler.listUsersInAuthGroups(subproject.acls.admins,
+                subproject.acls.viewers, req, tenant);
+
+        } else {
+            throw Error.make(Error.Status.BAD_REQUEST, 'Bad Request');
+        }
+    }
+
+    private static async listUsersInAuthGroups(admins: string[], viewers: string[], req, tenant: ITenantModel,) {
+
         let users = [];
 
-        if (subproject.acls.admins.length > 0) {
 
-            for (const adminGroup of subproject.acls.admins) {
-                const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, adminGroup, tenant.esd,
-                    req[Config.DE_FORWARD_APPKEY]));
-                users = users.concat(result.map((el) => [el.email, 'admin']));
-            }
+        for (const adminGroup of admins) {
+            const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, adminGroup, tenant.esd,
+                req[Config.DE_FORWARD_APPKEY]));
+            users = users.concat(result.map((el) => [el.email, 'admin']));
         }
 
-        if (subproject.acls.viewers.length > 0) {
 
-            for (const viewerGroup of subproject.acls.viewers) {
-                const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, viewerGroup, tenant.esd,
-                    req[Config.DE_FORWARD_APPKEY]));
-                users = users.concat(result.map((el) => [el.email, 'viewer']));
-            }
+        for (const viewerGroup of viewers) {
+            const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, viewerGroup, tenant.esd,
+                req[Config.DE_FORWARD_APPKEY]));
+            users = users.concat(result.map((el) => [el.email, 'viewer']));
         }
 
         return users;
@@ -315,52 +428,92 @@ export class UserHandler {
 
         const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant));
 
-        // Concatenate all valid subproject admin groups
-        const registeredSubprojectAdminGroups = registeredSubprojects.map(subproject => subproject.acls.admins).flat(1);
-        const registeredSubprojectViewerGroups = registeredSubprojects.map(
-            subproject => subproject.acls.viewers).flat(1);
 
-        // Find intersection of admin groups of all registered subprojects and the user group emails
-        const validAdminGroupsForUser = registeredSubprojectAdminGroups.filter(grp => groupEmailsOfUser.includes(grp));
-        const validViewerGroupsForUser = registeredSubprojectViewerGroups.filter(
-            grp => groupEmailsOfUser.includes(grp));
+        if (sdPath.dataset) {
 
-        let roles = [];
-        for (const validAdminGroup of validAdminGroupsForUser) {
-            if (validAdminGroup.startsWith('service')) {
-                roles.push(['/' + validAdminGroup.split('.')[4], 'admin']);
-                roles.push(['/' + validAdminGroup.split('.')[4], 'editor']);
+            const subproject = await SubProjectDAO.get(journalClient, sdPath.tenant, sdPath.subproject);
+
+            const datasetModel = {
+                name: sdPath.dataset,
+                tenant: sdPath.tenant,
+                subproject: sdPath.subproject,
+                path: sdPath.path
+            } as DatasetModel;
+
+            const datasetOUT = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, datasetModel) :
+                (await DatasetDAO.get(journalClient, datasetModel))[0];
+
+            const roles = [];
+
+            if (datasetOUT.acls) {
+                const validAdminGroupsForUser = datasetOUT.acls.admins.filter(grp => groupEmailsOfUser.includes(grp));
+                const validViewerGroupsForUser = datasetOUT.acls.viewers.filter(grp => groupEmailsOfUser.includes(grp));
+
+                if (validAdminGroupsForUser.length > 0) {
+                    roles.push('/' + sdPath.dataset, 'admin');
+                }
+
+                if (validViewerGroupsForUser.length > 0) {
+                    roles.push('/' + sdPath.dataset, 'viewer');
+                }
             }
-            else if (validAdminGroup.startsWith('data')) {
-                roles.push(['/' + validAdminGroup.split('.')[3], 'admin']);
-                roles.push(['/' + validAdminGroup.split('.')[3], 'editor']);
-            }
-        }
-
-        for (const validViewerGroup of validViewerGroupsForUser) {
-            if (validViewerGroup.startsWith('service')) {
-                roles.push(['/' + validViewerGroup.split('.')[4], 'viewer']);
-            }
-            else if (validViewerGroup.startsWith('data')) {
-                roles.push(['/' + validViewerGroup.split('.')[3], 'viewer']);
-            }
-        }
-
-        // Remove duplicates from roles array where each element is array by itself
-        const stringRolesArray = roles.map(role => JSON.stringify(role));
-        const uniqueRolesStringArray = new Set(stringRolesArray);
-        roles = Array.from(uniqueRolesStringArray, (ele) => JSON.parse(ele));
-
-        if (sdPath.subproject) {
-            const subprojectRoles = roles.filter((role) => role[0] === '/' + sdPath.subproject);
             return {
-                'roles': subprojectRoles
+                'roles': roles
             };
-        }
 
-        return {
-            'roles': roles
-        };
+        } else if (sdPath.tenant) {
+
+            // Concatenate all valid subproject admin groups
+            const registeredSubprojectAdminGroups = registeredSubprojects.map(subproject =>
+                subproject.acls.admins).flat(1);
+            const registeredSubprojectViewerGroups = registeredSubprojects.map(
+                subproject => subproject.acls.viewers).flat(1);
+
+            // Find intersection of admin groups of all registered subprojects and the user group emails
+            const validAdminGroupsForUser = registeredSubprojectAdminGroups.filter(grp =>
+                groupEmailsOfUser.includes(grp));
+            const validViewerGroupsForUser = registeredSubprojectViewerGroups.filter(
+                grp => groupEmailsOfUser.includes(grp));
+
+            let roles = [];
+            for (const validAdminGroup of validAdminGroupsForUser) {
+                if (validAdminGroup.startsWith('service')) {
+                    roles.push(['/' + validAdminGroup.split('.')[4], 'admin']);
+                    roles.push(['/' + validAdminGroup.split('.')[4], 'editor']);
+                }
+                else if (validAdminGroup.startsWith('data')) {
+                    roles.push(['/' + validAdminGroup.split('.')[3], 'admin']);
+                    roles.push(['/' + validAdminGroup.split('.')[3], 'editor']);
+                }
+            }
+
+            for (const validViewerGroup of validViewerGroupsForUser) {
+                if (validViewerGroup.startsWith('service')) {
+                    roles.push(['/' + validViewerGroup.split('.')[4], 'viewer']);
+                }
+                else if (validViewerGroup.startsWith('data')) {
+                    roles.push(['/' + validViewerGroup.split('.')[3], 'viewer']);
+                }
+            }
+
+            // Remove duplicates from roles array where each element is array by itself
+            const stringRolesArray = roles.map(role => JSON.stringify(role));
+            const uniqueRolesStringArray = new Set(stringRolesArray);
+            roles = Array.from(uniqueRolesStringArray, (ele) => JSON.parse(ele));
+
+            if (sdPath.subproject) {
+                const subprojectRoles = roles.filter((role) => role[0] === '/' + sdPath.subproject);
+                return {
+                    'roles': subprojectRoles
+                };
+            }
+
+            return {
+                'roles': roles
+            };
+
+        }
 
     }
 
