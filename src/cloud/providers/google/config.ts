@@ -82,6 +82,9 @@ export class ConfigGoogle extends Config {
         ConfigGoogle.SERVICE_CLOUD_PROJECT = process.env.SERVICE_CLOUD_PROJECT;
         Config.checkRequiredConfig(ConfigGoogle.SERVICE_CLOUD_PROJECT, 'SERVICE_CLOUD_PROJECT');
 
+        // set the base service path
+        ConfigGoogle.API_BASE_URL_PATH = process.env.API_BASE_URL_PATH || ConfigGoogle.API_BASE_URL_PATH;
+
         // load service identity from credential file (for local dev - on cloud use work-load identities)
         ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME = process.env.SERVICE_IDENTITY_KEY_FILENAME;
         if (ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME) {
