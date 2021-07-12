@@ -7,6 +7,7 @@ import {
     IDESEntitlementGroupMembersModel
 } from '../../dataecosystem';
 import { logger } from './logger';
+import { IbmConfig } from './config';
 
 @DataEcosystemCoreFactory.register('ibm')
 export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
@@ -57,7 +58,7 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
 
     public getComplianceBaseUrlPath(): string {
         logger.info('in IbmDataEcosystemServices.getComplianceBaseUrlPath. Returning..');
-        return '/api/legal/v1';
+        return IbmConfig.COMPLIANCE_CONTEXT_PATH;
     };
 
     public getDataPartitionIDRestHeaderName(): string {
@@ -67,12 +68,12 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
 
     public getEntitlementBaseUrlPath(): string {
         logger.info('in IbmDataEcosystemServices.getEntitlementBaseUrlPath. Returning..');
-        return '/api/entitlements/v1';
+        return IbmConfig.ENTITLEMENT_CONTEXT_PATH;
     };
 
     public getStorageBaseUrlPath(): string {
         logger.info('in IbmDataEcosystemServices.getStorageBaseUrlPath. Returning..');
-        return '/api/storage/v2';
+        return IbmConfig.STORAGE_CONTEXT_PATH;
     };
 
     public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string } | string[] {
