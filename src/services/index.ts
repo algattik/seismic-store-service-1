@@ -19,6 +19,7 @@ import { Config } from '../cloud';
 import { DatasetRouter } from './dataset/service';
 import { GeneralRouter } from './general/service';
 import { ImpTokenRouter } from './imptoken/service';
+import { ImpersonationTokenRouter } from './impersonation_token/service';
 import { SubprojectRouter } from './subproject/service';
 import { SvcAppRouter } from './svcapp/service';
 import { TenantRouter } from './tenant/service';
@@ -33,8 +34,11 @@ router.use(Config.API_BASE_PATH + '/dataset', DatasetRouter);
 // general
 router.use(Config.API_BASE_PATH + '/svcstatus', GeneralRouter);
 
-// impersonation token
+// impersonation token (obsolete)
 router.use(Config.API_BASE_PATH + '/imptoken', ImpTokenRouter);
+
+// impersonation token
+router.use(Config.API_BASE_PATH + '/impersonation-token', ImpersonationTokenRouter);
 
 // subproject
 router.use(Config.API_BASE_PATH + '/subproject', SubprojectRouter);

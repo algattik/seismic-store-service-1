@@ -22,6 +22,7 @@ import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubProjectDAO } from '../subproject';
 import { TenantDAO } from '../tenant';
+import { ITenantModel } from '../tenant/model';
 import { ImpTokenDAO } from './dao';
 import { ImpTokenOP } from './optype';
 import { ImpTokenParser } from './parser';
@@ -96,10 +97,8 @@ export class ImpTokenHandler {
         // check authorization in each subproject
         const checkAuthorizations = [];
         for (const item of tokenBody.resources) {
-            const resourcePath = item.resource.split('/');
 
-            const subprojectName = resourcePath[1];
-
+            const subprojectName = item.resource.split('/')[1]
 
             // init journalClient client
             const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -111,12 +110,12 @@ export class ImpTokenHandler {
                 checkAuthorizations.push(
                     Auth.isReadAuthorized(tokenBody.userToken,
                         subproject.acls.viewers.concat(subproject.acls.admins),
-                        resourcePath[0], resourcePath[1], tenant.esd, req[Config.DE_FORWARD_APPKEY], false));
+                        tenant, subprojectName, req[Config.DE_FORWARD_APPKEY], false));
             } else {
                 checkAuthorizations.push(
                     Auth.isWriteAuthorized(tokenBody.userToken,
                         subproject.acls.admins,
-                        resourcePath[0], resourcePath[1], tenant.esd, req[Config.DE_FORWARD_APPKEY], false));
+                        tenant, subprojectName, req[Config.DE_FORWARD_APPKEY], false));
             }
         }
         const results = await Promise.all(checkAuthorizations);

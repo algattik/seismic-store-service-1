@@ -44,8 +44,7 @@ include:
     file: "standard-setup.yml"
 
   # build
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "build/seismic-store-service.yml"
+  - local: "devops/osdu/build/seismic-store-service.yml"
 
   # scan
   #fossa
@@ -65,8 +64,7 @@ include:
 
   # deploy
   #azure
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/azure-seismic-store-service.yml"
+  - local: "/devops/osdu/cloud-providers/azure-seismic-store-service.yml"
 
     #ibm
   - project: "osdu/platform/ci-cd-pipelines"

@@ -29,6 +29,7 @@ export class Keyvault {
     public static DATA_PARTITION_STORAGE_ACCOUNT_NAME = 'sdms-storage-account-name';
     public static DATA_PARTITION_COSMOS_ENDPOINT = 'cosmos-endpoint';
     public static DATA_PARTITION_COSMOS_PRIMARY_KEY = 'cosmos-primary-key';
+    public static SERVICE_AUTH_PROVIDER_CREDENTIAL = 'sdms-svc-auth-provider-credential';
 
     // to restore when the impersonation token for azure will be implemented
     // public static IMP_SERVICE_ACCOUNT_SIGNER = 'imp-service-account-signer';
@@ -54,6 +55,15 @@ export class Keyvault {
         // locksmap redis cache secret
         AzureConfig.LOCKSMAP_REDIS_INSTANCE_KEY = (await client.getSecret(this.REDIS_KEY)).value;
         AzureConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS = (await client.getSecret(this.REDIS_HOST)).value;
+
+        try {
+            AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL = (
+                await client.getSecret(this.SERVICE_AUTH_PROVIDER_CREDENTIAL)).value;
+        } catch(error) {
+            if(!(error && error['statusCode'] && error['statusCode'] === 404)) {
+                throw error;
+            }
+        }
 
         // service principal secrets
         AzureConfig.SP_TENANT_ID =
