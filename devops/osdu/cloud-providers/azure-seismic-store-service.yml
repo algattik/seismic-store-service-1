@@ -1,0 +1,76 @@
+variables:
+  CHART_PATH: devops/azure/chart
+  CLOUD_PROVIDER: azure
+  E2E_ADMIN_EMAIL: integration.test@azureglobal1.onmicrosoft.com
+  E2E_DATA_PARTITION: opendes
+  E2E_LEGALTAG01: opendes-public-usa-dataset-7643990
+  E2E_LEGALTAG02: opendes-dps-integration-test-valid2-legal-tag
+  E2E_SUBPROJECT: demosandbox02
+  E2E_SUBPROJECT_LONG_NAME: looooooooooooooooooooooooooooooooooooooooooooooooooooongnaaaaaaaaaaaaaaaaaaaameeeeeee
+  E2E_TENANT: opendes
+  POD_IDENTITY: osdu-identity
+  REDIS_INSTANCE_PORT: 6380
+  
+
+azure_deploy:
+  tags: ["osdu-medium"]
+  image: danielscholl/azure-build-image
+  stage: deploy
+  needs: ["push_runtime_image_azure"]
+  variables:
+    AZURE_KEYVAULT: osdu-svc-properties
+    DES_URL: ${AZURE_DNS_NAME}
+    IMAGE: ${AZURE_REGISTRY}.azurecr.io/${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
+    SERVICE_NAME: ${AZURE_SERVICE}
+    TAG: ${CI_COMMIT_SHA}
+  before_script:
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
+  script:
+    # Replace values in config file
+    - cp ${CHART_PATH}/helm-config.yaml ${CHART_PATH}/values.yaml
+    - sed -i 's,#{CONTAINER_REGISTRY_NAME}#,'$IMAGE',' ${CHART_PATH}/values.yaml
+    - sed -i 's,#{DNS_HOST}#,'$DES_URL',' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{ENVIRONMENT_NAME}#/'$ENVIRONMENT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{IMAGE_TAG}#/'$TAG'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{KEYVAULT_NAME}#/'$AZURE_KEYVAULT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{PORT}#/'${PORT}'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{PROVIDER_NAME}#/'$CLOUD_PROVIDER'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{REDIS_HOST}#/'$REDIS_INSTANCE_ADDRESS'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{REDIS_PORT}#/'$REDIS_INSTANCE_PORT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{REPLICA_COUNT}#/'$REPLICA'/' ${CHART_PATH}/values.yaml
+    # Install helm chart
+    - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
+    - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
+    # Wait for service to be running to start
+    - kubectl rollout status deployment.v1.apps/$SERVICE_NAME -n osdu --timeout=900s
+    - pod=$(kubectl get pod -n osdu|grep $CI_PROJECT_NAME |tail -1 |awk '{print $1}')
+    - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=600s)
+    - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
+  only:
+    variables:
+      - $AZURE == 'true'
+      
+azure_test:
+  tags: ["osdu-medium"]
+  image: node
+  stage: integration
+  needs: ["azure_deploy"]
+  variables:
+    AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
+    AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
+    AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
+    INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
+  script:
+    - apt-get update
+    - apt-get install -y python
+    - apt-get install -y python-pip
+    - pip install msal
+    - svctoken=$(python devops/scripts/azure_jwt_client.py)
+    - echo $svctoken
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}/seistore-svc/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user1-idtoken="$svctoken" --tenant="${E2E_TENANT}" --subproject="${E2E_SUBPROJECT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --subproject-long-name="${E2E_SUBPROJECT_LONG_NAME}" --VCS-Provider="${ISGITLAB}"
+  only:
+    variables:
+      - $AZURE == 'true'

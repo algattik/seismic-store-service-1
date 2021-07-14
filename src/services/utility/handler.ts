@@ -70,11 +70,11 @@ export class UtilityHandler {
             if (readOnly) {
                 await Auth.isReadAuthorized(req.headers.authorization,
                     subproject.acls.viewers.concat(subproject.acls.admins),
-                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
             } else {
                 await Auth.isWriteAuthorized(req.headers.authorization,
                     subproject.acls.admins,
-                    tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
             }
         } else {
             const dataset = subproject.enforce_key ?
@@ -85,21 +85,21 @@ export class UtilityHandler {
                 if (dataset.acls) {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         dataset.acls.viewers.concat(dataset.acls.admins),
-                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
                 } else {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         subproject.acls.viewers.concat(subproject.acls.admins),
-                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
                 }
             } else {
                 if (dataset.acls) {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         dataset.acls.admins,
-                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
                 } else {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         subproject.acls.admins,
-                        tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
                 }
             }
             objectPrefix = dataset.gcsurl.split('/')[1];
@@ -192,7 +192,7 @@ export class UtilityHandler {
             //  Check if user is authorized
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                sdPath.tenant, sdPath.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                tenant, sdPath.subproject, req[Config.DE_FORWARD_APPKEY]);
         }
 
         if (pagination) {
@@ -262,17 +262,17 @@ export class UtilityHandler {
             if (datasetFrom.acls) {
                 await Auth.isReadAuthorized(req.headers.authorization,
                     datasetFrom.acls.viewers.concat(datasetFrom.acls.admins),
-                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY]);
 
             } else {
                 await Auth.isReadAuthorized(req.headers.authorization,
                     subproject.acls.viewers.concat(subproject.acls.admins),
-                    sdPathFrom.tenant, sdPathFrom.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY]);
             }
             // check if has write access on destination dataset and read access on the source subproject
             await Auth.isWriteAuthorized(req.headers.authorization,
                 subproject.acls.admins,
-                sdPathTo.tenant, sdPathTo.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY]);
 
         }
 

@@ -135,6 +135,7 @@ export class TestImpTokenSVC {
             this.spy.stub(Auth, 'isWriteAuthorized').resolves(true);
             this.spy.stub(ImpTokenDAO, 'create').resolves(undefined);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await ImpTokenHandler.handler(expReq, expRes, ImpTokenOP.Generate);
             Tx.check200(expRes.statusCode, done);
         });
@@ -368,6 +369,7 @@ export class TestImpTokenSVC {
             this.spy.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
             this.spy.stub(ImpTokenDAO, 'validate').resolves({ refreshUrl: '' } as any);
             this.spy.stub(ImpTokenDAO, 'create').resolves(undefined);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await ImpTokenHandler.handler(expReq, expRes, ImpTokenOP.Patch);
             Tx.check200(expRes.statusCode, done);
         });
