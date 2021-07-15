@@ -75,7 +75,7 @@ export class Error {
     }
 
     private static create423Reason(stringCode: string, ttl: number): string {
-        return '[RCODE: ' + stringCode + ':' + ttl + ']';
+        return '[RCODE:' + stringCode + ttl + ']';
     }
 
     public static get423WriteLockReason(): string {
