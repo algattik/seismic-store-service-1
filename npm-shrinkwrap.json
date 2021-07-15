@@ -5622,6 +5622,12 @@
             }
          }
       },
+      "husky": {
+         "version": "7.0.1",
+         "resolved": "https://registry.npmjs.org/husky/-/husky-7.0.1.tgz",
+         "integrity": "sha512-gceRaITVZ+cJH9sNHqx5tFwbzlLCVxtVZcusME8JYQ8Edy5mpGDOqD8QBCdMhpyo9a+JXddnujQ4rpY2Ff9SJA==",
+         "dev": true
+      },
       "iconv-lite": {
          "version": "0.4.24",
          "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.24.tgz",
@@ -9233,6 +9239,12 @@
          "version": "1.2.4",
          "resolved": "https://registry.npmjs.org/sax/-/sax-1.2.4.tgz",
          "integrity": "sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw=="
+      },
+      "scan-for-secrets": {
+         "version": "2.0.3",
+         "resolved": "https://registry.npmjs.org/scan-for-secrets/-/scan-for-secrets-2.0.3.tgz",
+         "integrity": "sha512-4pJW61DTUn5ONk4xwlh3j7c/pu0zKqFkNNTMYqh6V3WckdPCgWmnPGpsFSQOKzMhZ6jxYma8GRGznx8gQvtInA==",
+         "dev": true
       },
       "semaphore": {
          "version": "1.1.0",
