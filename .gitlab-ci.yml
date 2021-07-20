@@ -53,9 +53,6 @@ include:
   # lint
   - local: "/devops/osdu/scanners/lint-node.yml"
 
-  # scan for secrets
-  - local: "/devops/osdu/scanners/scan-for-secrets-node.yml"
-
   # containerize
   - project: "osdu/platform/ci-cd-pipelines"
     file: "containerize/seismic-store-service.yml"

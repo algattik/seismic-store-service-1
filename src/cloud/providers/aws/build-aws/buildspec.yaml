@@ -28,6 +28,8 @@ phases:
       # fix error noted here: https://github.com/yarnpkg/yarn/issues/7866
       - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
       - apt-get update -y
+      - export AWS_ACCOUNT_ID=`aws sts get-caller-identity | grep Account | cut -d':' -f 2 | cut -d'"' -f 2`
+      - aws codeartifact login --tool npm --domain osdu-dev --domain-owner ${AWS_ACCOUNT_ID} --repository osdu-npm
       - npm install
 
   pre_build:
@@ -52,6 +54,8 @@ phases:
       - printenv
       - node_modules/.bin/tslint -c tslint.json 'src/cloud/providers/aws/**/*.ts'
       - echo "Building seismic-store-service"
+
+
       - npm run build
 
       - echo "Building integration testing assemblies and gathering artifacts..."
