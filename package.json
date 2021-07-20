@@ -117,7 +117,7 @@
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "^3.3.0",
     "fs-jetpack": "2.2.3",
-    "handlebars": "^4.7.3",
+    "handlebars": "^4.7.7",
     "husky": "^7.0.1",
     "inline-css": "2.6.2",
     "istanbul": "0.4.5",
