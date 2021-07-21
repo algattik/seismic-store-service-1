@@ -50,10 +50,13 @@ The following software have components provided under the terms of this license:
 - @opentelemetry/types (from https://www.npmjs.com/package/@opentelemetry/types)
 - aws-sdk (from https://www.npmjs.com/package/aws-sdk)
 - aws-sign2 (from https://www.npmjs.com/package/aws-sign2)
+- boto3 (from https://github.com/boto/boto3)
+- botocore (from https://github.com/boto/botocore)
 - browser-request (from http://github.com/iriscouch/browser-request)
 - caseless (from https://www.npmjs.com/package/caseless)
 - cloudant-follow (from https://www.npmjs.com/package/cloudant-follow)
 - cluster-key-slot (from https://www.npmjs.com/package/cluster-key-slot)
+- cryptography (from https://github.com/pyca/cryptography)
 - denque (from https://www.npmjs.com/package/denque)
 - denque (from https://www.npmjs.com/package/denque)
 - detect-libc (from https://www.npmjs.com/package/detect-libc)
@@ -94,8 +97,11 @@ The following software have components provided under the terms of this license:
 - msal (from https://www.npmjs.com/package/msal)
 - nano (from https://www.npmjs.com/package/nano)
 - oauth-sign (from https://www.npmjs.com/package/oauth-sign)
+- python-dateutil (from https://dateutil.readthedocs.org)
 - rc (from https://www.npmjs.com/package/rc)
 - request (from https://www.npmjs.com/package/request)
+- requests (from http://python-requests.org)
+- s3transfer (from https://github.com/boto/s3transfer)
 - swagger-ui-dist (from https://www.npmjs.com/package/swagger-ui-dist)
 - teeny-request (from https://www.npmjs.com/package/teeny-request)
 - tslib (from https://www.npmjs.com/package/tslib)
@@ -120,14 +126,16 @@ The following software have components provided under the terms of this license:
 - cls-hooked (from https://www.npmjs.com/package/cls-hooked)
 - configstore (from https://www.npmjs.com/package/configstore)
 - continuation-local-storage (from https://github.com/othiym23/node-continuation-local-storage#readme)
+- docutils (from http://docutils.sourceforge.net/)
 - dotenv (from https://www.npmjs.com/package/dotenv)
 - emitter-listener (from https://github.com/othiym23/emitter-listener)
-- ieee754 (from https://github.com/feross/ieee754#readme)
+- ieee754 (from https://www.npmjs.com/package/ieee754)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-pre-gyp (from https://www.npmjs.com/package/node-pre-gyp)
 - node-pre-gyp (from https://www.npmjs.com/package/node-pre-gyp)
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
+- pycparser (from https://github.com/eliben/pycparser)
 - qs (from https://www.npmjs.com/package/qs)
 - qs (from https://www.npmjs.com/package/qs)
 - qs (from https://www.npmjs.com/package/qs)
@@ -159,20 +167,25 @@ The following software have components provided under the terms of this license:
 - async-listener (from https://github.com/othiym23/async-listener#readme)
 - aws-sdk (from https://www.npmjs.com/package/aws-sdk)
 - bcrypt-pbkdf (from https://www.npmjs.com/package/bcrypt-pbkdf)
-- buffer-equal-constant-time (from https://github.com/goinstant/buffer-equal-constant-time/issues)
+- buffer-equal-constant-time (from https://www.npmjs.com/package/buffer-equal-constant-time)
 - cls-hooked (from https://www.npmjs.com/package/cls-hooked)
 - cluster-key-slot (from https://www.npmjs.com/package/cluster-key-slot)
 - configstore (from https://www.npmjs.com/package/configstore)
 - continuation-local-storage (from https://github.com/othiym23/node-continuation-local-storage#readme)
+- cryptography (from https://github.com/pyca/cryptography)
+- docutils (from http://docutils.sourceforge.net/)
 - google-gax (from https://www.npmjs.com/package/google-gax)
 - google-gax (from https://www.npmjs.com/package/google-gax)
-- ieee754 (from https://github.com/feross/ieee754#readme)
+- idna (from https://github.com/kjd/idna)
+- ieee754 (from https://www.npmjs.com/package/ieee754)
 - json-schema (from http://github.com/kriszyp/json-schema)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-pre-gyp (from https://www.npmjs.com/package/node-pre-gyp)
 - node-pre-gyp (from https://www.npmjs.com/package/node-pre-gyp)
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
+- pycparser (from https://github.com/eliben/pycparser)
+- python-dateutil (from https://dateutil.readthedocs.org)
 - qs (from https://www.npmjs.com/package/qs)
 - qs (from https://www.npmjs.com/package/qs)
 - qs (from https://www.npmjs.com/package/qs)
@@ -224,6 +237,21 @@ The following software have components provided under the terms of this license:
 
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-forge (from https://www.npmjs.com/package/node-forge)
+
+========================================================================
+GPL-3.0-only
+========================================================================
+The following software have components provided under the terms of this license:
+
+- docutils (from http://docutils.sourceforge.net/)
+- xmlrunner (from https://github.com/pycontribs/xmlrunner)
+
+========================================================================
+GPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- docutils (from http://docutils.sourceforge.net/)
 
 ========================================================================
 ISC
@@ -301,6 +329,29 @@ The following software have components provided under the terms of this license:
 - yargs-parser (from https://www.npmjs.com/package/yargs-parser)
 
 ========================================================================
+LGPL-2.1-only
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
+- xmlrunner (from https://github.com/pycontribs/xmlrunner)
+
+========================================================================
+LGPL-2.1-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
+
+========================================================================
+LGPL-3.0-only
+========================================================================
+The following software have components provided under the terms of this license:
+
+- chardet (from https://github.com/chardet/chardet)
+- pycparser (from https://github.com/eliben/pycparser)
+
+========================================================================
 MIT
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -341,9 +392,11 @@ The following software have components provided under the terms of this license:
 - @types/serve-static (from https://www.npmjs.com/package/@types/serve-static)
 - @types/tough-cookie (from https://www.npmjs.com/package/@types/tough-cookie)
 - @types/tunnel (from https://www.npmjs.com/package/@types/tunnel)
+- PyJWT (from http://github.com/jpadilla/pyjwt)
 - abbrev (from https://www.npmjs.com/package/abbrev)
 - abort-controller (from https://www.npmjs.com/package/abort-controller)
 - accepts (from https://github.com/jshttp/accepts)
+- adal (from https://github.com/AzureAD/azure-activedirectory-library-for-python)
 - agent-base (from https://github.com/TooTallNate/node-agent-base#readme)
 - ajv (from https://www.npmjs.com/package/ajv)
 - ansi-regex (from https://www.npmjs.com/package/ansi-regex)
@@ -354,7 +407,7 @@ The following software have components provided under the terms of this license:
 - aproba (from https://www.npmjs.com/package/aproba)
 - are-we-there-yet (from https://www.npmjs.com/package/are-we-there-yet)
 - argparse (from https://www.npmjs.com/package/argparse)
-- array-flatten (from https://github.com/blakeembrey/array-flatten)
+- array-flatten (from https://www.npmjs.com/package/array-flatten)
 - arrify (from https://www.npmjs.com/package/arrify)
 - asn1 (from https://www.npmjs.com/package/asn1)
 - assert-plus (from https://www.npmjs.com/package/assert-plus)
@@ -363,7 +416,7 @@ The following software have components provided under the terms of this license:
 - async-hook-jl (from https://www.npmjs.com/package/async-hook-jl)
 - asynckit (from https://www.npmjs.com/package/asynckit)
 - aws-sdk (from https://www.npmjs.com/package/aws-sdk)
-- aws4 (from https://github.com/mhart/aws4#readme)
+- aws4 (from https://www.npmjs.com/package/aws4)
 - axios (from https://www.npmjs.com/package/axios)
 - axios (from https://www.npmjs.com/package/axios)
 - balanced-match (from https://www.npmjs.com/package/balanced-match)
@@ -371,7 +424,8 @@ The following software have components provided under the terms of this license:
 - bcrypt-pbkdf (from https://www.npmjs.com/package/bcrypt-pbkdf)
 - bignumber.js (from https://github.com/MikeMcl/bignumber.js#readme)
 - bluebird (from https://www.npmjs.com/package/bluebird)
-- body-parser (from https://github.com/expressjs/body-parser)
+- body-parser (from https://www.npmjs.com/package/body-parser)
+- botocore (from https://github.com/boto/botocore)
 - brace-expansion (from https://github.com/juliangruber/brace-expansion)
 - browser-request (from http://github.com/iriscouch/browser-request)
 - buffer (from https://www.npmjs.com/package/buffer)
@@ -382,6 +436,7 @@ The following software have components provided under the terms of this license:
 - call-bind (from https://www.npmjs.com/package/call-bind)
 - camelcase (from https://www.npmjs.com/package/camelcase)
 - camelize (from https://www.npmjs.com/package/camelize)
+- cffi (from http://cffi.readthedocs.org)
 - chalk (from https://www.npmjs.com/package/chalk)
 - chownr (from https://www.npmjs.com/package/chownr)
 - cliui (from https://www.npmjs.com/package/cliui)
@@ -402,7 +457,7 @@ The following software have components provided under the terms of this license:
 - concat-stream (from https://www.npmjs.com/package/concat-stream)
 - console-control-strings (from https://www.npmjs.com/package/console-control-strings)
 - console-log-level (from https://www.npmjs.com/package/console-log-level)
-- content-disposition (from https://github.com/jshttp/content-disposition)
+- content-disposition (from https://www.npmjs.com/package/content-disposition)
 - content-type (from https://github.com/jshttp/content-type)
 - cookie (from https://www.npmjs.com/package/cookie)
 - cookie-signature (from https://github.com/visionmedia/node-cookie-signature)
@@ -435,7 +490,7 @@ The following software have components provided under the terms of this license:
 - diagnostic-channel-publishers (from https://www.npmjs.com/package/diagnostic-channel-publishers)
 - dot-prop (from https://www.npmjs.com/package/dot-prop)
 - dot-prop (from https://www.npmjs.com/package/dot-prop)
-- duplexify (from https://github.com/mafintosh/duplexify)
+- duplexify (from https://www.npmjs.com/package/duplexify)
 - ecc-jsbn (from https://github.com/quartzjer/ecc-jsbn)
 - ee-first (from https://github.com/jonathanong/ee-first)
 - emoji-regex (from https://www.npmjs.com/package/emoji-regex)
@@ -449,19 +504,19 @@ The following software have components provided under the terms of this license:
 - es-to-primitive (from https://www.npmjs.com/package/es-to-primitive)
 - escalade (from https://www.npmjs.com/package/escalade)
 - escape-html (from https://www.npmjs.com/package/escape-html)
-- etag (from https://github.com/jshttp/etag)
+- etag (from https://www.npmjs.com/package/etag)
 - event-target-shim (from https://www.npmjs.com/package/event-target-shim)
 - events (from https://www.npmjs.com/package/events)
 - events (from https://www.npmjs.com/package/events)
 - execa (from https://www.npmjs.com/package/execa)
 - express (from https://www.npmjs.com/package/express)
-- extend (from https://github.com/justmoon/node-extend#readme)
+- extend (from https://www.npmjs.com/package/extend)
 - extsprintf (from https://github.com/davepacheco/node-extsprintf)
 - fast-deep-equal (from https://www.npmjs.com/package/fast-deep-equal)
 - fast-json-stable-stringify (from https://www.npmjs.com/package/fast-json-stable-stringify)
 - fast-safe-stringify (from https://www.npmjs.com/package/fast-safe-stringify)
 - fecha (from https://www.npmjs.com/package/fecha)
-- finalhandler (from https://github.com/pillarjs/finalhandler)
+- finalhandler (from https://www.npmjs.com/package/finalhandler)
 - find-up (from https://www.npmjs.com/package/find-up)
 - flatted (from https://www.npmjs.com/package/flatted)
 - fn.name (from https://www.npmjs.com/package/fn.name)
@@ -470,7 +525,7 @@ The following software have components provided under the terms of this license:
 - form-data (from https://www.npmjs.com/package/form-data)
 - form-data (from https://www.npmjs.com/package/form-data)
 - form-data (from https://www.npmjs.com/package/form-data)
-- forwarded (from https://github.com/jshttp/forwarded)
+- forwarded (from https://www.npmjs.com/package/forwarded)
 - fresh (from https://www.npmjs.com/package/fresh)
 - fs-extra (from https://www.npmjs.com/package/fs-extra)
 - fs-minipass (from https://www.npmjs.com/package/fs-minipass)
@@ -519,7 +574,7 @@ The following software have components provided under the terms of this license:
 - ipaddr.js (from https://github.com/whitequark/ipaddr.js/issues)
 - is (from https://github.com/enricomarino/is)
 - is-arrayish (from https://www.npmjs.com/package/is-arrayish)
-- is-buffer (from http://feross.org)
+- is-buffer (from https://www.npmjs.com/package/is-buffer)
 - is-callable (from https://www.npmjs.com/package/is-callable)
 - is-callable (from https://www.npmjs.com/package/is-callable)
 - is-date-object (from https://www.npmjs.com/package/is-date-object)
@@ -540,6 +595,7 @@ The following software have components provided under the terms of this license:
 - isexe (from https://github.com/isaacs/isexe#readme)
 - isstream (from https://github.com/rvagg/isstream)
 - jmespath (from https://www.npmjs.com/package/jmespath)
+- jmespath (from https://github.com/jmespath/jmespath.py)
 - jsbn (from https://github.com/andyperlitch/jsbn)
 - json-bigint (from https://www.npmjs.com/package/json-bigint)
 - json-bigint (from https://www.npmjs.com/package/json-bigint)
@@ -547,13 +603,13 @@ The following software have components provided under the terms of this license:
 - json-schema-traverse (from https://www.npmjs.com/package/json-schema-traverse)
 - json-stringify-safe (from https://github.com/isaacs/json-stringify-safe)
 - jsonfile (from https://www.npmjs.com/package/jsonfile)
-- jsonwebtoken (from https://github.com/auth0/node-jsonwebtoken#readme)
+- jsonwebtoken (from https://www.npmjs.com/package/jsonwebtoken)
 - jsprim (from https://github.com/davepacheco/node-jsprim)
-- jwa (from https://github.com/brianloveswords/node-jwa#readme)
-- jwa (from https://github.com/brianloveswords/node-jwa#readme)
+- jwa (from https://www.npmjs.com/package/jwa)
+- jwa (from https://www.npmjs.com/package/jwa)
 - jwks-rsa (from https://www.npmjs.com/package/jwks-rsa)
-- jws (from https://github.com/brianloveswords/node-jws#readme)
-- jws (from https://github.com/brianloveswords/node-jws#readme)
+- jws (from https://www.npmjs.com/package/jws)
+- jws (from https://www.npmjs.com/package/jws)
 - kuler (from https://www.npmjs.com/package/kuler)
 - limiter (from https://www.npmjs.com/package/limiter)
 - locate-path (from https://www.npmjs.com/package/locate-path)
@@ -582,7 +638,7 @@ The following software have components provided under the terms of this license:
 - make-dir (from https://www.npmjs.com/package/make-dir)
 - map-obj (from https://www.npmjs.com/package/map-obj)
 - media-typer (from https://github.com/jshttp/media-typer)
-- merge-descriptors (from https://github.com/component/merge-descriptors)
+- merge-descriptors (from https://www.npmjs.com/package/merge-descriptors)
 - methods (from https://github.com/jshttp/methods)
 - mime (from https://www.npmjs.com/package/mime)
 - mime (from https://www.npmjs.com/package/mime)
@@ -643,7 +699,7 @@ The following software have components provided under the terms of this license:
 - p-map (from https://www.npmjs.com/package/p-map)
 - p-timeout (from https://www.npmjs.com/package/p-timeout)
 - p-try (from https://www.npmjs.com/package/p-try)
-- parseurl (from https://github.com/pillarjs/parseurl)
+- parseurl (from https://www.npmjs.com/package/parseurl)
 - path-exists (from https://www.npmjs.com/package/path-exists)
 - path-is-absolute (from https://github.com/sindresorhus/path-is-absolute)
 - path-key (from https://www.npmjs.com/package/path-key)
@@ -655,7 +711,7 @@ The following software have components provided under the terms of this license:
 - process-nextick-args (from https://github.com/calvinmetcalf/process-nextick-args)
 - promise.prototype.finally (from https://www.npmjs.com/package/promise.prototype.finally)
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
-- proxy-addr (from https://github.com/jshttp/proxy-addr)
+- proxy-addr (from https://www.npmjs.com/package/proxy-addr)
 - proxy-from-env (from https://www.npmjs.com/package/proxy-from-env)
 - pseudomap (from https://www.npmjs.com/package/pseudomap)
 - psl (from https://www.npmjs.com/package/psl)
@@ -664,7 +720,7 @@ The following software have components provided under the terms of this license:
 - punycode (from https://mths.be/punycode)
 - punycode (from https://mths.be/punycode)
 - querystring (from https://www.npmjs.com/package/querystring)
-- range-parser (from https://github.com/jshttp/range-parser)
+- range-parser (from https://www.npmjs.com/package/range-parser)
 - raw-body (from https://www.npmjs.com/package/raw-body)
 - rc (from https://www.npmjs.com/package/rc)
 - readable-stream (from https://www.npmjs.com/package/readable-stream)
@@ -698,13 +754,14 @@ The following software have components provided under the terms of this license:
 - semver (from https://www.npmjs.com/package/semver)
 - semver (from https://www.npmjs.com/package/semver)
 - send (from https://www.npmjs.com/package/send)
-- serve-static (from https://github.com/expressjs/serve-static)
+- serve-static (from https://www.npmjs.com/package/serve-static)
 - set-blocking (from https://github.com/yargs/set-blocking#readme)
 - setprototypeof (from https://www.npmjs.com/package/setprototypeof)
 - shebang-command (from https://www.npmjs.com/package/shebang-command)
 - shebang-regex (from https://www.npmjs.com/package/shebang-regex)
 - signal-exit (from https://www.npmjs.com/package/signal-exit)
 - simple-swizzle (from https://www.npmjs.com/package/simple-swizzle)
+- six (from http://pypi.python.org/pypi/six/)
 - snakecase-keys (from https://www.npmjs.com/package/snakecase-keys)
 - snakeize (from https://www.npmjs.com/package/snakeize)
 - source-map-support (from https://www.npmjs.com/package/source-map-support)
@@ -747,7 +804,7 @@ The following software have components provided under the terms of this license:
 - toidentifier (from https://www.npmjs.com/package/toidentifier)
 - triple-beam (from https://www.npmjs.com/package/triple-beam)
 - tslib (from https://www.npmjs.com/package/tslib)
-- tunnel (from https://github.com/koichik/node-tunnel/)
+- tunnel (from https://www.npmjs.com/package/tunnel)
 - tweetnacl (from https://dchest.github.io/tweetnacl-js)
 - type-fest (from https://www.npmjs.com/package/type-fest)
 - type-is (from https://github.com/jshttp/type-is)
@@ -760,15 +817,16 @@ The following software have components provided under the terms of this license:
 - untildify (from https://www.npmjs.com/package/untildify)
 - url (from https://github.com/defunctzombie/node-url#readme)
 - url-join (from https://www.npmjs.com/package/url-join)
+- urllib3 (from https://urllib3.readthedocs.io/)
 - util-deprecate (from https://github.com/TooTallNate/util-deprecate)
 - util.promisify (from https://www.npmjs.com/package/util.promisify)
-- utils-merge (from http://github.com/jaredhanson/utils-merge/issues)
+- utils-merge (from https://www.npmjs.com/package/utils-merge)
 - uuid (from https://www.npmjs.com/package/uuid)
 - uuid (from https://www.npmjs.com/package/uuid)
 - uuid (from https://www.npmjs.com/package/uuid)
 - uuid (from https://www.npmjs.com/package/uuid)
 - uuid (from https://www.npmjs.com/package/uuid)
-- vary (from https://github.com/jshttp/vary)
+- vary (from https://www.npmjs.com/package/vary)
 - verror (from https://github.com/davepacheco/node-verror)
 - which (from https://github.com/isaacs/node-which#readme)
 - which-module (from https://www.npmjs.com/package/which-module)
@@ -807,6 +865,23 @@ The following software have components provided under the terms of this license:
 - mime-db (from https://www.npmjs.com/package/mime-db)
 
 ========================================================================
+MPL-2.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- certifi (from http://certifi.io/)
+
+========================================================================
+Python-2.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- cryptography (from https://github.com/pyca/cryptography)
+- docutils (from http://docutils.sourceforge.net/)
+- python-dateutil (from https://dateutil.readthedocs.org)
+- urllib3 (from https://urllib3.readthedocs.io/)
+
+========================================================================
 SPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -836,7 +911,9 @@ The following software have components provided under the terms of this license:
 - @azure/core-lro (from https://www.npmjs.com/package/@azure/core-lro)
 - @dabh/diagnostics (from https://www.npmjs.com/package/@dabh/diagnostics)
 - aws-sdk (from https://www.npmjs.com/package/aws-sdk)
+- botocore (from https://github.com/boto/botocore)
 - colorspace (from https://www.npmjs.com/package/colorspace)
+- docutils (from http://docutils.sourceforge.net/)
 - http-signature (from https://www.npmjs.com/package/http-signature)
 - kuler (from https://www.npmjs.com/package/kuler)
 - node-forge (from https://www.npmjs.com/package/node-forge)
