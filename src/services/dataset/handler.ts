@@ -131,8 +131,10 @@ export class DatasetHandler {
                 const alreadyRegisteredDataset = subproject.enforce_key ?
                     await DatasetDAO.getByKey(journalClient, dataset) :
                     (await DatasetDAO.get(journalClient, dataset))[0];
-                await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
-                return alreadyRegisteredDataset;
+                if (alreadyRegisteredDataset) {
+                    await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
+                    return alreadyRegisteredDataset;
+                }
             }
 
             // set gcs URL and LegalTag with the subproject information
@@ -434,7 +436,7 @@ export class DatasetHandler {
 
             // Check authorizations
             if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                if(wid.startsWith('W')) {
+                if (wid.startsWith('W')) {
                     await Auth.isWriteAuthorized(req.headers.authorization,
                         subproject.acls.admins,
                         tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
@@ -527,7 +529,7 @@ export class DatasetHandler {
             }
 
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups,tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // patch datasetOUT with datasetIN
