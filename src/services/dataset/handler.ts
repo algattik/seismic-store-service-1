@@ -822,10 +822,17 @@ export class DatasetHandler {
 
 
         // check if the dataset does not exist
+        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
         if (!dataset) {
-            throw (Error.make(Error.Status.NOT_FOUND,
-                'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            if(await Locker.getLock(lockKey)) {
+                // if a previous call fails, the dataset is not created but the lock is acquired and not released
+                await Locker.unlock(lockKey);
+                return;
+            } else { // the dataset does not exist and is not locked
+                throw (Error.make(Error.Status.NOT_FOUND,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            }
         }
 
         // check if user is write authorized
@@ -845,7 +852,6 @@ export class DatasetHandler {
             authGroups, tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
 
         // unlock
-        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
         await Locker.unlock(lockKey);
 
     }
