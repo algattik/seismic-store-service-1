@@ -21,9 +21,16 @@ env:
   secrets-manager:
     DOCKER_USERNAME: /osdu/devops/docker_credentials:username
     DOCKER_PASSWORD: /osdu/devops/docker_credentials:password
+    SONAR_USERNAME: /osdu/devops/sonar_credentials:username
+    SONAR_PASSWORD: /osdu/devops/sonar_credentials:password
+  
+  parameter-store:
+    SONAR_URL: /osdu/devops/sonar_url
 
 phases:
   install:
+    runtime-versions:
+      java: corretto8
     commands:
       # fix error noted here: https://github.com/yarnpkg/yarn/issues/7866
       - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -31,6 +38,8 @@ phases:
       - export AWS_ACCOUNT_ID=`aws sts get-caller-identity | grep Account | cut -d':' -f 2 | cut -d'"' -f 2`
       - aws codeartifact login --tool npm --domain osdu-dev --domain-owner ${AWS_ACCOUNT_ID} --repository osdu-npm
       - npm install
+      - wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472.zip
+      - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
 
   pre_build:
     commands:
@@ -60,6 +69,11 @@ phases:
 
       - echo "Building integration testing assemblies and gathering artifacts..."
       - ./tests/aws-test/build-aws/prepare-dist.sh
+
+      # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
+      - |
+        java -jar sonar-scanner-4.6.2.2472/lib/sonar-scanner-cli-4.6.2.2472.jar -Dsonar.projectKey=seismic-store-service -Dsonar.host.url=${SONAR_URL} \
+          -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
 
       - echo "Logging into Docker Hub..."
       - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
