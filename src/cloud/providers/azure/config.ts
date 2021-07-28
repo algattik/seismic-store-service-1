@@ -69,6 +69,11 @@ export class AzureConfig extends Config {
         AzureConfig.LOCKSMAP_REDIS_INSTANCE_PORT = +process.env.REDIS_INSTANCE_PORT
         Config.checkRequiredConfig(AzureConfig.LOCKSMAP_REDIS_INSTANCE_PORT, 'REDIS_INSTANCE_PORT');
 
+        // set the auth provider
+        AzureConfig.SERVICE_AUTH_PROVIDER = process.env.SERVICE_AUTH_PROVIDER;
+        AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL = // If not set as secret try to load from envs
+            AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL || process.env.SERVICE_AUTH_PROVIDER_CREDENTIAL
+
         // init generic configurations
         await Config.initServiceConfiguration({
             SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
@@ -88,6 +93,8 @@ export class AzureConfig extends Config {
             DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH,
             DES_SERVICE_APPKEY: AzureConfig.DES_SERVICE_APPKEY,
             DES_GROUP_CHAR_LIMIT: AzureConfig.DES_GROUP_CHAR_LIMIT,
+            SERVICE_AUTH_PROVIDER: AzureConfig.SERVICE_AUTH_PROVIDER,
+            SERVICE_AUTH_PROVIDER_CREDENTIAL: AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL,
             JWKS_URL: process.env.JWKS_URL,
             JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS,
             JWT_AUDIENCE: process.env.JWT_AUDIENCE,

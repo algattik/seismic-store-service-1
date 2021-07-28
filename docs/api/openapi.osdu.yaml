@@ -227,7 +227,7 @@ paths:
       <li>Required roles: subproject.admin, subproject.editor</li>
       <li>Patchable fields: <ul>
       <li><b>dataset_new_name:</b> new name to use for the dataset (rename).</li>
-      <li><b>filemetadata:</b> This is a seismic store specific field and describes how the physical data is stored in the cloud storage system (GCS/AzureContainer etc.). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nOboject: N, totalSize: 1024, objsize: 64, sizeUnit: MB}”.</li>
+      <li><b>filemetadata:</b> This is a seismic store specific field and describes how the physical data is stored in the cloud storage system (GCS/AzureContainer etc.). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nObject: N, totalSize: 1024, objsize: 64, sizeUnit: MB}”.</li>
       <li><b>last_modified_date:</b> Mark this field as true to update the dataset last modified date.</li>
       <li><b>gtags:</b> Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then new gtags are appended to this list.</li>
       <li><b>ltag:</b> Update the existing legalTag value.</b></li>
@@ -835,19 +835,19 @@ paths:
       <li>Required roles: app.trusted</li></ul>"
       operationId: imp-token
       tags:
-        - Impersonation Token
+        - Impersonation Token (Obsolete)
       parameters:
         - description: "Request body"
           in: body
           name: request body
           required: true
           schema:
-            $ref: "#/definitions/ImpTokenRequest"
+            $ref: "#/definitions/ImpersonationToken"
       responses:
         200:
           description: "Generated a impersonation credentials token successfully."
           schema:
-            $ref: "#/definitions/ImpToken"
+            $ref: "#/definitions/ImpersonationToken"
         400:
           description: "Bad request."
         401:
@@ -864,7 +864,7 @@ paths:
         - api-key: []
       operationId: imp-token-refresh
       tags:
-        - Impersonation Token
+        - Impersonation Token (Obsolete)
       parameters:
         - description: "Request body"
           in: body
@@ -876,7 +876,7 @@ paths:
         200:
           description: "Refreshed impersonation credential token successfully."
           schema:
-            $ref: "#/definitions/ImpToken"
+            $ref: "#/definitions/ImpersonationToken"
         400:
           description: "Bad request."
         401:
@@ -893,7 +893,7 @@ paths:
       <li>Required roles: none</li></ul>"
       operationId: imp-token-patch
       tags:
-        - Impersonation Token
+        - Impersonation Token (Obsolete)
       parameters:
         - description: "Request body"
           in: body
@@ -905,7 +905,139 @@ paths:
         200:
           description: "Generated impersonation token successfully and its refresh url is updated."
           schema:
-            $ref: "#/definitions/ImpToken"
+            $ref: "#/definitions/ImpersonationToken"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
+  /api/v3/impersonation-token:
+    post:
+      summary: "Create an impersonation token credential."
+      description: "<ul><li>Generate a credential token to impersonate user access for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"
+      operationId: impersonation-token-generate
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "The credential of the user to impersonate."
+          in: header
+          name: user-token
+          type: string
+          required: true
+          default: ""
+        - description: "Request body."
+          in: body
+          name: request body
+          required: true
+          schema:
+            $ref: "#/definitions/ImpersonationTokenRequest"
+      responses:
+        200:
+          description: "The impersonation token has been successfully created."
+          schema:
+            $ref: "#/definitions/ImpersonationToken"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+    put:
+      summary: "Refresh the impersonation credential token."
+      description: "<ul><li>Refresh an impersonation credential token.</li><li>Required roles: app.trusted</li></ul>"
+      operationId: impersonation-token-refresh
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "The impersonation token to refresh."
+          in: header
+          name: impersonation-token
+          type: string
+          required: true
+          default: ""
+        - description: "The name of the tenant/data-partition."
+          in: query
+          name: tenant-name
+          type: string
+          required: true
+          default: ""
+      responses:
+        200:
+          description: "Refreshed impersonation credential token successfully."
+          schema:
+            $ref: "#/definitions/ImpersonationToken"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+    delete:
+      summary: "Revoke the impersonation token and/or a list of impersonation token signatures."
+      description: "<ul><li>Revoke the impersonation token and/or a list of impersonation token signatures</li><li>Required roles: app.trusted</li></ul>"
+      operationId: impersonation-token-revoke
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "The impersonation token to revoke (required if the signatures body field is not specified)."
+          in: header
+          name: impersonation-token
+          type: string
+          required: false
+          default: ""
+        - description: "The name of the tenant/data-partition."
+          in: query
+          name: tenant-name
+          type: string
+          required: true
+          default: ""
+        - description: "List of impersonation token signatures."
+          in: query
+          name: signatures
+          required: false
+          type: array
+          items:
+            type: string
+            default: ""
+          collectionFormat: multi
+      responses:
+        200:
+          description: "The impersonation token and/or the requested signatures have been successfully revoked."
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+  /api/v3/impersonation-token/signatures:
+    get:
+      summary: "Retrieve the list of active impersonation token signatures."
+      description: "<ul><li>Retrieve the list of active impersonation token signatures.</li><li>Required roles: app.trusted</li></ul>"
+      operationId: impersonation-token-signature
+      tags:
+        - Impersonation Token
+      parameters:
+        - description: "The name of the tenant/data-partition"
+          in: query
+          name: tenant-name
+          type: string
+          required: true
+          default: ""
+      responses:
+        200:
+          description: "The list of signatures with their metadata."
+          schema:
+            $ref: "#/definitions/ImpersonationTokenSignatureResponse"
         400:
           description: "Bad request."
         401:
@@ -1422,6 +1554,7 @@ paths:
 # ===========================================================================
 
 definitions:
+
   # OK
   Status:
     required: ["status"]
@@ -1712,25 +1845,25 @@ definitions:
         type: number
         description: Time in seconds for expiration of the access token.
     example:
-      access_token: "ya29.fgdgsdngevrjbinb0ednberoibnerbnerber-fdsfwefwe_cece"
+      access_token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
       token_type: "Bearer"
       expires_in: 3600
 
   # OK
-  ImpToken:
+  ImpersonationToken:
     required: ["impersonation_token", "token_type", "expires_in"]
     properties:
       impersonation_token:
         type: string
-        description: Impersonation token.
+        description: The Impersonation token.
       token_type:
         type: string
-        description: Type of the token.
+        description: Token type.
       expires_in:
         type: number
-        description: Time in seconds for the expiration of the impersonation token.
+        description: Token expiration time.
     example:
-      impersonation_token: "ya29.fgdgsdngevrjbinb0ednberoibnerbanerber-fdsfwefwe_cece"
+      impersonation_token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
       token_type: "Bearer"
       expires_in: 3600
 
@@ -1742,6 +1875,55 @@ definitions:
         type: string
       readonly:
         type: boolean
+
+  # OK
+  ImpersonationTokenRequest:
+    required: ["resources"]
+    properties:
+      resources:
+        type: array
+        items:
+          $ref: "#/definitions/Resource"
+      metadata:
+        type: object
+        description: A general field to set extra meta-information to the impersonation token signature. These are saved along with the token signatures.
+    example:
+      resources:
+        [
+          { "resource": "sd://tnx01/spx01", "readonly": true },
+          { "resource": "sd://tnx01/spx02", "readonly": false }
+        ]
+      metadata: { "jobId": 1234 }
+
+  # OK
+  ImpersonationTokenSignature:
+    required: ["created_by", "created_date", "resources", "signature"]
+    properties:
+      created_by:
+        type: string
+        description: The trusted app id .
+      created_date:
+        type: string
+        description: The create date and time.
+      resources:
+        type: array
+        items:
+          $ref: "#/definitions/Resource"
+      signature:
+        type: string
+        description: the impersonation token signature.
+      metadata:
+        type: object
+        description: the custom metadata associated.
+
+  # OK
+  ImpersonationTokenSignatureResponse:
+    required: ["signatures"]
+    properties:
+      signatures:
+        type: array
+        items:
+          $ref: "#/definitions/ImpersonationTokenSignature"
 
   # OK
   ImpTokenRequest:
@@ -1767,6 +1949,7 @@ definitions:
         ]
       refresh-url: "https://httpstat.us/200"
 
+  # OK
   ImpTokenPatchRequest:
     required: ["token", "refresh-url"]
     properties:
@@ -1788,7 +1971,8 @@ definitions:
         type: string
         description: Impersonation token
     example:
-      token: "eyJhbxGccCI6IkpX.fgdgsdngfwe_cec.xc2Vpc21pYy1ddzZXJ2aWNl"
+      token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
+  
   # OK
   SubProjectCreateBody:
     required: ["admin", "storage_class", "storage_location", "access_policy"]
@@ -1834,7 +2018,7 @@ definitions:
     properties:
       access_policy:
         type: string
-        description: Acesss Policy for the subproject.
+        description: Access Policy for the subproject.
         default: "dataset"
       acls:
         type: object
@@ -1957,7 +2141,7 @@ definitions:
         enum: [viewer, editor, admin]
     example:
       email: "test@slb.com"
-      path: "sd://slb/testproject"
+      path: "sd://slb/test_project"
       group: "editor"
 
   # OK
@@ -1972,7 +2156,7 @@ definitions:
         description: Seismic store path in the format sd://tenant/subproject.
     example:
       email: "test@email"
-      path: "sd://slb/testproject"
+      path: "sd://slb/test_project"
 
   # OK
   UserRoles:
@@ -1994,7 +2178,7 @@ definitions:
     description: Array of directories and datasets inside a subproject.
     items:
       type: string
-    example: ["subdirA/", "subdirB/", "dataset01", "dataset02", "dataset03"]
+    example: ["folderA/", "folderB/", "dataset01", "dataset02", "dataset03"]
 
   # OK
   LsPaginatedDatasets:
@@ -2008,7 +2192,7 @@ definitions:
       nextPageCursor:
         type: string
         description: Next cursor for pagination.
-    example: { datasets: ["subdirA/", "subdirB/", "dataset01"], nextPageCursor: "abc1234" }
+    example: { datasets: ["folderA/", "folderB/", "dataset01"], nextPageCursor: "abc1234" }
 
 # ===========================================================================
 # Endpoints Security Section

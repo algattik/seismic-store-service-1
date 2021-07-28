@@ -114,9 +114,9 @@ export class DatasetHandler {
                 const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
                 const subprojectAccessPolicy = subprojectMetadata.access_policy;
 
-                if (subprojectAccessPolicy === 'uniform') {
+                if (subprojectAccessPolicy === Config.UNIFORM_ACCESS_POLICY) {
                     throw Error.make(Error.Status.BAD_REQUEST,
-                        'Subproject access policy is set to uniform and so the dataset acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
+                        'Subproject access policy is set to uniform and so acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
                 }
             }
 
@@ -131,8 +131,10 @@ export class DatasetHandler {
                 const alreadyRegisteredDataset = subproject.enforce_key ?
                     await DatasetDAO.getByKey(journalClient, dataset) :
                     (await DatasetDAO.get(journalClient, dataset))[0];
-                await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
-                return alreadyRegisteredDataset;
+                if (alreadyRegisteredDataset) {
+                    await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
+                    return alreadyRegisteredDataset;
+                }
             }
 
             // set gcs URL and LegalTag with the subproject information
@@ -152,7 +154,7 @@ export class DatasetHandler {
                 FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
                     Auth.isWriteAuthorized(req.headers.authorization,
                         subproject.acls.admins,
-                        dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
+                        tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]) : undefined,
                 FeatureFlags.isEnabled(Feature.LEGALTAG) ?
                     dataset.ltag ? Auth.isLegalTagValid(
                         req.headers.authorization, dataset.ltag,
@@ -271,17 +273,28 @@ export class DatasetHandler {
         // Check if retrieve the seismic metadata storage record
         const getSeismicMeta = datasetOUT.seismicmeta_guid !== undefined && userInput[1];
 
-        // Check if user has read access and legal tag is valid
-        await Promise.all([
-            FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
-                Auth.isReadAuthorized(req.headers.authorization,
-                    subproject.acls.viewers.concat(subproject.acls.admins),
-                    datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
-            FeatureFlags.isEnabled(Feature.LEGALTAG) ?
-                datasetOUT.ltag ? Auth.isLegalTagValid(
-                    req.headers.authorization, datasetOUT.ltag,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined
-        ]);
+        // Check if legal tag is valid
+        if (FeatureFlags.isEnabled(Feature.LEGALTAG) && datasetOUT.ltag) {
+            await Auth.isLegalTagValid(req.headers.authorization, datasetOUT.ltag,
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
+
+        // Use the access policy to determine which groups to fetch for read authorization
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            let authGroups = [];
+            if (subproject.access_policy === Config.UNIFORM_ACCESS_POLICY) {
+                authGroups = subproject.acls.viewers.concat(subproject.acls.admins);
+            } else if (subproject.access_policy === Config.DATASET_ACCESS_POLICY) {
+                authGroups = datasetOUT.acls ? datasetOUT.acls.viewers.concat(datasetOUT.acls.admins)
+                    : subproject.acls.viewers.concat(subproject.acls.admins);
+            } else {
+                throw (Error.make(Error.Status.PERMISSION_DENIED,
+                    'Access policy for the subproject is neither uniform nor dataset'));
+            }
+            await Auth.isReadAuthorized(req.headers.authorization, authGroups,
+                tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+        }
 
         // return the seismicmetadata (if exist)
         if (getSeismicMeta) {
@@ -312,7 +325,7 @@ export class DatasetHandler {
             // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
         }
 
 
@@ -349,13 +362,6 @@ export class DatasetHandler {
         // init datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        // check authorization (write)
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
-                tenant.name, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
-
         // Retrieve the dataset metadata
         const dataset = subproject.enforce_key ?
             await DatasetDAO.getByKey(journalClient, datasetIn) :
@@ -363,6 +369,24 @@ export class DatasetHandler {
 
         // if the dataset does not exist return ok
         if (!dataset) { return; }
+
+        // check authorization (write)
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            let authGroups = [];
+            const accessPolicy = subproject.access_policy;
+
+            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                authGroups = subproject.acls.admins;
+            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                authGroups = dataset.acls ? dataset.acls.admins : subproject.acls.admins;
+            } else {
+                throw (Error.make(Error.Status.PERMISSION_DENIED,
+                    'Access policy for the subproject is neither uniform nor dataset'));
+            }
+
+            await Auth.isWriteAuthorized(req.headers.authorization,
+                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+        }
 
         // check if valid url
         if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
@@ -412,14 +436,14 @@ export class DatasetHandler {
 
             // Check authorizations
             if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                if(wid.startsWith('W')) {
+                if (wid.startsWith('W')) {
                     await Auth.isWriteAuthorized(req.headers.authorization,
                         subproject.acls.admins,
-                        datasetIN.tenant, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
                 } else {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         subproject.acls.viewers.concat(subproject.acls.admins),
-                        datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
                 }
             }
 
@@ -448,7 +472,7 @@ export class DatasetHandler {
             const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
             const subprojectAccessPolicy = subprojectMetadata.access_policy;
 
-            if (subprojectAccessPolicy === 'uniform') {
+            if (subprojectAccessPolicy === Config.UNIFORM_ACCESS_POLICY) {
                 throw Error.make(Error.Status.BAD_REQUEST,
                     'Subproject access policy is set to uniform and so the dataset acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
             }
@@ -490,11 +514,22 @@ export class DatasetHandler {
                 datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
         }
 
+        // If the input request has dataset acls then the subproject access policy is always dataset
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check authorizations
+            let authGroups = [];
+            const accessPolicy = subproject.access_policy;
+
+            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                authGroups = subproject.acls.admins;
+            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                authGroups = datasetOUT.acls ? datasetOUT.acls.admins : subproject.acls.admins;
+            } else {
+                throw (Error.make(Error.Status.PERMISSION_DENIED, 'Access policy is neither uniform nor dataset.'
+                ));
+            }
+
             await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
-                datasetIN.tenant, subproject.name, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // patch datasetOUT with datasetIN
@@ -627,6 +662,11 @@ export class DatasetHandler {
             }
         }
 
+        // Update the acls if the input request has them
+        if (datasetIN.acls) {
+            datasetOUT.acls = datasetIN.acls;
+        }
+
         if (newName) {
             await Promise.all([
                 DatasetDAO.delete(journalClient, datasetOUT),
@@ -693,23 +733,47 @@ export class DatasetHandler {
                 datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
         }
 
-        await Promise.all([
-            FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
-                open4write ?
-                    Auth.isWriteAuthorized(req.headers.authorization,
-                        subproject.acls.admins,
-                        datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) :
-                    Auth.isReadAuthorized(req.headers.authorization,
-                        subproject.acls.viewers.concat(subproject.acls.admins),
-                        datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]) :
-                undefined,
-            FeatureFlags.isEnabled(Feature.LEGALTAG) ?
-                datasetOUT.ltag ?
-                    Auth.isLegalTagValid(req.headers.authorization, datasetOUT.ltag,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) :
-                    undefined :
-                undefined
-        ]);
+        // Check if legal tag is valid;
+        if (FeatureFlags.isEnabled(Feature.LEGALTAG) && datasetOUT.ltag) {
+            await Auth.isLegalTagValid(req.headers.authorization, datasetOUT.ltag,
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
+        // Use the access policy to determine which groups to fetch for read authorization
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            let authGroups = [];
+            const accessPolicy = subproject.access_policy;
+
+            if (open4write) {
+                if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                    authGroups = subproject.acls.admins;
+                } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                    authGroups = datasetOUT.acls ? datasetOUT.acls.admins : subproject.acls.admins;
+                } else {
+                    throw (Error.make(Error.Status.PERMISSION_DENIED,
+                        'Access policy is neither uniform nor dataset'));
+                }
+
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    authGroups, tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+
+            } else {
+
+                if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                    authGroups = subproject.acls.viewers.concat(subproject.acls.admins);
+                } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                    authGroups = datasetOUT.acls ? datasetOUT.acls.viewers.concat(datasetOUT.acls.admins)
+                        : subproject.acls.viewers.concat(subproject.acls.admins);
+                } else {
+                    throw (Error.make(Error.Status.PERMISSION_DENIED,
+                        'Access policy is neither uniform nor dataset'));
+                }
+
+                await Auth.isReadAuthorized(req.headers.authorization, authGroups,
+                    tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+            }
+
+        }
 
         // managing read-only datasets
         if (datasetOUT.readonly) {
@@ -758,19 +822,36 @@ export class DatasetHandler {
 
 
         // check if the dataset does not exist
+        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
         if (!dataset) {
-            throw (Error.make(Error.Status.NOT_FOUND,
-                'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
-                datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            if(await Locker.getLock(lockKey)) {
+                // if a previous call fails, the dataset is not created but the lock is acquired and not released
+                await Locker.unlock(lockKey);
+                return;
+            } else { // the dataset does not exist and is not locked
+                throw (Error.make(Error.Status.NOT_FOUND,
+                    'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
+                    datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            }
         }
 
         // check if user is write authorized
+        let authGroups = [];
+        const accessPolicy = subproject.access_policy;
+
+        if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+            authGroups = subproject.acls.admins;
+        } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+            authGroups = dataset.acls ? dataset.acls.admins : subproject.acls.admins;
+        } else {
+            throw (Error.make(Error.Status.PERMISSION_DENIED,
+                'Access policy is neither uniform nor dataset'));
+        }
+
         await Auth.isWriteAuthorized(req.headers.authorization,
-            subproject.acls.admins,
-            tenant.name, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            authGroups, tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
 
         // unlock
-        const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
         await Locker.unlock(lockKey);
 
     }
@@ -785,9 +866,10 @@ export class DatasetHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                datasets[0].tenant, datasets[0].subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // Check if the required datasets exist
@@ -816,7 +898,7 @@ export class DatasetHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                datasets[0].tenant, datasets[0].subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // Check if the required datasets exist
@@ -858,7 +940,7 @@ export class DatasetHandler {
             // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // list the folder content
@@ -924,9 +1006,21 @@ export class DatasetHandler {
         }
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+
+            let authGroups = [];
+            const accessPolicy = subproject.access_policy;
+
+            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                authGroups = subproject.acls.admins;
+            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                authGroups = datasetOUT.acls ? datasetOUT.acls.admins : subproject.acls.admins;
+            } else {
+                throw (Error.make(Error.Status.PERMISSION_DENIED,
+                    'Access policy is neither uniform nor dataset'));
+            }
+
             await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
-                datasetIN.tenant, datasetIN.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                authGroups, tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
         }
 
         await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
@@ -955,14 +1049,36 @@ export class DatasetHandler {
         const res = { read: false, write: false, delete: false };
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check if has write and read access
+            let authGroups = [];
+            const accessPolicy = subproject.access_policy;
+
+            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                authGroups = subproject.acls.admins;
+            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                authGroups = dataset.acls ? dataset.acls.admins : subproject.acls.admins;
+            } else {
+                throw (Error.make(Error.Status.PERMISSION_DENIED, 'Access policy is neither uniform nor dataset'
+                ));
+            }
+
             res.write = await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
-                dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY], false);
-            res.read = await Auth.isReadAuthorized(
-                req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
-                dataset.tenant, dataset.subproject, tenant.esd, req[Config.DE_FORWARD_APPKEY], false);
+                authGroups, tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY], false);
+
+
+            // Check write authorization
+            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
+                authGroups = subproject.acls.viewers.concat(subproject.acls.admins);
+            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
+                authGroups = dataset.acls ? dataset.acls.viewers.concat(dataset.acls.admins)
+                    : subproject.acls.viewers.concat(subproject.acls.admins);
+            } else {
+                throw (Error.make(Error.Status.PERMISSION_DENIED,
+                    'Access policy is neither uniform nor dataset'));
+            }
+
+            res.read = await Auth.isReadAuthorized(req.headers.authorization, authGroups,
+                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY], false);
+
         } else {
             res.write = true;
             res.read = true;

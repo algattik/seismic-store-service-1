@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,31 +15,30 @@
 // ============================================================================
 
 // Impersonation Token
-export interface IImpTokenModel {
+export interface ImpersonationTokenModel {
     impersonation_token: string;
     expires_in: number;
     token_type: string;
 }
 
-// Resource
-export interface IResourceModel {
+// Impersonation Token Resource
+export interface ImpersonationTokenResourceModel {
     resource: string;
     readonly: boolean;
 }
 
-// Impersonation Token Body
-export interface IImpTokenBodyModel {
-    user: string;
-    resources: IResourceModel[];
-    refreshUrl: string;
-    iat: number;
+// Impersonation Token Request Body
+export interface ImpersonationTokenRequestBodyModel {
+    resources: ImpersonationTokenResourceModel[];
     userToken: string;
+    metadata: object;
 }
 
-// Refresh URL general model
-export interface IRefreshUrl {
-    method: string;
-    url: string;
-    headers: object;
-    body: object;
+// Impersonation Token Signature Model
+export interface ImpersonationTokenDataModel {
+    signature: string;
+    resources: ImpersonationTokenResourceModel[];
+    metadata: object;
+    created_by: string;
+    created_date: string;
 }

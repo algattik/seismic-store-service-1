@@ -68,6 +68,11 @@ export class SubProjectDAO {
             entity.acls = await this.constructServiceGroupACLs(entity);
         }
 
+        // Fix entities with no access policy previously set
+        if (!entity.access_policy) {
+            entity.access_policy = Config.UNIFORM_ACCESS_POLICY;
+        }
+
         await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
 
         return entity;

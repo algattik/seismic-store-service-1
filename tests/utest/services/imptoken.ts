@@ -14,11 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
+import { Request as expRequest, Response as expResponse } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'request-promise';
 import sinon from 'sinon';
-
-import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth } from '../../../src/auth';
 import { Config, google } from '../../../src/cloud';
 import { ImpTokenDAO } from '../../../src/services/imptoken';
@@ -30,6 +29,7 @@ import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject
 import { TenantDAO } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
+
 
 export class TestImpTokenSVC {
     public static userAuthExp: string;
@@ -49,7 +49,7 @@ export class TestImpTokenSVC {
                 viewers: ['vieweres-b@domain.com']
             },
             ltag: 'legalTag'
-        } as SubProjectModel
+        } as SubProjectModel;
 
         Config.IMP_SERVICE_ACCOUNT_SIGNER = 'signer@seistore.com';
 
@@ -118,7 +118,7 @@ export class TestImpTokenSVC {
     private static tokenNoKid: string;
     private static tokenWrongIss: string;
     private static tokenWrong: string;
-    private static testSubProject: SubProjectModel
+    private static testSubProject: SubProjectModel;
 
 
     private static create() {
@@ -135,6 +135,7 @@ export class TestImpTokenSVC {
             this.spy.stub(Auth, 'isWriteAuthorized').resolves(true);
             this.spy.stub(ImpTokenDAO, 'create').resolves(undefined);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await ImpTokenHandler.handler(expReq, expRes, ImpTokenOP.Generate);
             Tx.check200(expRes.statusCode, done);
         });
@@ -229,7 +230,7 @@ export class TestImpTokenSVC {
             const resourceModel: IResourceModel = {
                 readonly: false,
                 resource: 'resource',
-            };
+            } as IResourceModel;
             const impToken: ImpTokenBodyModel = {
                 iat: undefined,
                 refreshUrl: 'url',
@@ -368,6 +369,7 @@ export class TestImpTokenSVC {
             this.spy.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
             this.spy.stub(ImpTokenDAO, 'validate').resolves({ refreshUrl: '' } as any);
             this.spy.stub(ImpTokenDAO, 'create').resolves(undefined);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await ImpTokenHandler.handler(expReq, expRes, ImpTokenOP.Patch);
             Tx.check200(expRes.statusCode, done);
         });

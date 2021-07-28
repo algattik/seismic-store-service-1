@@ -25,7 +25,7 @@ export interface IAccessTokenModel {
 export interface ICredentials {
     getStorageCredentials(
         tenant: string, subproject: string,
-        bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel>;
+        bucket: string, readonly: boolean, partitionID: string, objectPrefix?: string): Promise<IAccessTokenModel>;
     getServiceAccountAccessToken(): Promise<IAccessTokenModel>;
     getIAMResourceUrl(serviceSigner: string): string;
     getAudienceForImpCredentials(): string;
@@ -35,7 +35,7 @@ export interface ICredentials {
 export abstract class AbstractCredentials implements ICredentials {
     public abstract getStorageCredentials(
         tenant: string, subproject: string,
-        bucket: string, readonly: boolean, partitionID: string): Promise<IAccessTokenModel>;
+        bucket: string, readonly: boolean, partitionID: string, objectPrefix?: string): Promise<IAccessTokenModel>;
     public abstract getServiceAccountAccessToken(): Promise<IAccessTokenModel>;
     public abstract getIAMResourceUrl(serviceSigner: string): string;
     public abstract getAudienceForImpCredentials(): string;
@@ -43,7 +43,7 @@ export abstract class AbstractCredentials implements ICredentials {
 }
 
 export class CredentialsFactory extends CloudFactory {
-    public static build(providerLabel: string, args: { [key: string]: any } = {}): ICredentials {
+    public static build(providerLabel: string, args: { [key: string]: any; } = {}): ICredentials {
         return CloudFactory.build(providerLabel, AbstractCredentials, args) as ICredentials;
     }
 }

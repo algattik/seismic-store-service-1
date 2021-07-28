@@ -86,6 +86,7 @@ export abstract class Config implements IConfig {
     public static DATASETS_KIND = 'datasets';
     public static SEISMICMETA_KIND = 'seismicmeta';
     public static APPS_KIND = 'apps';
+    public static IMPERSONATION_TOKEN_SIGNATURE_KIND = 'imptoken_signatures'
 
     // Listing modes
     public static LS_MODE = { ALL: 'all', DATASETS: 'datasets', DIRS: 'dirs' };
@@ -166,6 +167,11 @@ export abstract class Config implements IConfig {
     // The C++ SDK mainly requires a fix on how behave on mutable calls.
     public static SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS = true;
 
+
+    // Access policy of a subproject can either be uniform or dataset
+    public static UNIFORM_ACCESS_POLICY = 'uniform';
+    public static DATASET_ACCESS_POLICY = 'dataset';
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -230,7 +236,7 @@ export abstract class Config implements IConfig {
         Config.CORRELATION_ID = model.CORRELATION_ID || undefined;
 
         Config.SERVICE_AUTH_PROVIDER = model.SERVICE_AUTH_PROVIDER || 'generic';
-        Config.SERVICE_AUTH_PROVIDER_CREDENTIAL = model.SERVICE_AUTH_PROVIDER_CREDENTIAL || 'undefined';
+        Config.SERVICE_AUTH_PROVIDER_CREDENTIAL = model.SERVICE_AUTH_PROVIDER_CREDENTIAL || undefined;
 
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');

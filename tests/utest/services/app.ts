@@ -60,6 +60,7 @@ export class TestAppSVC {
             this.spy.stub(Auth, 'isUserAuthorized');
             this.spy.stub(AppsDAO, 'get').resolves(undefined);
             this.spy.stub(AppsDAO, 'register').resolves(undefined);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await AppHandler.handler(expReq, expRes, AppOp.Register);
             Tx.check200(expRes.statusCode, done);
         });
@@ -94,6 +95,7 @@ export class TestAppSVC {
             this.spy.stub(Auth, 'isAppAuthorized');
             this.spy.stub(AppsDAO, 'get').resolves({ email: 'x', trusted: false });
             this.spy.stub(AppsDAO, 'register').resolves(undefined);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await AppHandler.handler(expReq, expRes, AppOp.RegisterTrusted);
             Tx.check200(expRes.statusCode, done);
         });
@@ -109,6 +111,7 @@ export class TestAppSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(Auth, 'isUserAuthorized');
             this.spy.stub(AppsDAO, 'list').resolves([]);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await AppHandler.handler(expReq, expRes, AppOp.List);
             Tx.check200(expRes.statusCode, done);
         });
@@ -138,6 +141,7 @@ export class TestAppSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(Auth, 'isUserAuthorized');
             this.spy.stub(AppsDAO, 'list').resolves([]);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await AppHandler.handler(expReq, expRes, AppOp.ListTrusted);
             Tx.check200(expRes.statusCode, done);
         });

@@ -13,6 +13,7 @@ const mockSpTenantID = 'mockSpTenantID';
 const mockSpClientID = 'mockSpClientID';
 const mockSpClientSecret = 'mockSpClientSecret';
 const mockSpAppSourceID = 'mockSpAppSourceID';
+const mockSauthProvider = 'mockSauthProvider';
 
 const mockSecretClient = {
     getSecret:  (secretName: string) => {
@@ -52,6 +53,11 @@ const mockSecretClient = {
                     value: mockSpAppSourceID,
                 } as any)
             }
+            if (secretName === Keyvault.SERVICE_AUTH_PROVIDER_CREDENTIAL) {
+                resolve( {
+                    value: mockSauthProvider,
+                } as any)
+            }
         })
     },
 } as any;
@@ -84,6 +90,8 @@ export class TestAzureKeyVault {
             assert.equal(AzureConfig.SP_CLIENT_ID, mockSpClientID);
             assert.equal(AzureConfig.SP_CLIENT_SECRET, mockSpClientSecret);
             assert.equal(AzureConfig.SP_APP_RESOURCE_ID, mockSpAppSourceID);
+            assert.equal(AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL, mockSauthProvider);
+
             done();
         });
     }

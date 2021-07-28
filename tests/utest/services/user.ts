@@ -21,6 +21,7 @@ import { JournalFactoryTenantClient } from '../../../src/cloud';
 import { Config } from '../../../src/cloud/config';
 import { IDESEntitlementGroupModel } from '../../../src/cloud/dataecosystem';
 import { google } from '../../../src/cloud/providers';
+import { DatasetDAO, DatasetModel } from '../../../src/services/dataset';
 import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject';
 import { TenantDAO } from '../../../src/services/tenant';
 import { UserHandler } from '../../../src/services/user/handler';
@@ -45,7 +46,8 @@ export class TestUserSVC {
                     acls: {
                         admins: [],
                         viewers: []
-                    }
+                    },
+                    access_policy: 'uniform'
                 } as SubProjectModel;
 
                 this.userGroups = [
@@ -119,6 +121,11 @@ export class TestUserSVC {
                     }
                 ];
 
+                this.dataset = {
+                    name: 'dataset-test',
+                    tenant: 'tenant01',
+                    subproject: 'subproject-test'
+                } as DatasetModel;
 
                 this.journal = this.spy.createStubInstance(google.DatastoreDAO);
                 Config.CLOUDPROVIDER = 'google';
@@ -139,7 +146,9 @@ export class TestUserSVC {
     private static subproject: SubProjectModel;
     private static userGroups: IDESEntitlementGroupModel[];
     private static subprojectList: SubProjectModel[];
+    private static dataset: DatasetModel;
     private static journal: any;
+
 
     private static add() {
 
@@ -154,6 +163,8 @@ export class TestUserSVC {
             this.spy.stub(UserHandler, 'doNotThrowIfNotMember' as never).resolves();
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+            this.spy.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check200(expRes.statusCode, done);
         });
@@ -167,6 +178,8 @@ export class TestUserSVC {
             this.spy.stub(UserHandler, 'doNotThrowIfNotMember' as never).resolves();
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+            this.spy.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check200(expRes.statusCode, done);
         });
@@ -181,6 +194,8 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid' } as any);
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+            this.spy.stub(DatasetDAO, 'get').resolves([this.dataset, undefined]);
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check200(expRes.statusCode, done);
         });
@@ -191,6 +206,7 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await UserHandler.handler(expReq, expRes, UserOP.Add);
             Tx.check400(expRes.statusCode, done);
         });
@@ -246,6 +262,7 @@ export class TestUserSVC {
             this.subproject.acls.admins = ['group1', 'group2'];
             this.subproject.acls.viewers = ['vGroup1', 'vGroup2'];
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             Tx.check200(expRes.statusCode, done);
         });
@@ -256,6 +273,7 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             Tx.check400(expRes.statusCode, done);
         });
@@ -298,6 +316,7 @@ export class TestUserSVC {
             this.spy.stub(Auth, 'isUserAuthorized');
             this.spy.stub(AuthGroups, 'listUsersInGroup').resolves([{ email: 'userX' }] as never);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await UserHandler.handler(expReq, expRes, UserOP.List);
             Tx.check200(expRes.statusCode, done);
         });
@@ -327,7 +346,8 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves(this.userGroups);
             this.spy.stub(SubProjectDAO, 'list').resolves(this.subprojectList);
-            const response = await UserHandler.handler(expReq, expRes, UserOP.Roles);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+            await UserHandler.handler(expReq, expRes, UserOP.Roles);
             Tx.check200(expRes.statusCode, done);
         });
 
@@ -336,6 +356,7 @@ export class TestUserSVC {
             this.spy.stub(TenantDAO, 'get').resolves({} as any);
             this.spy.stub(AuthGroups, 'getUserGroups').resolves(this.userGroups);
             this.spy.stub(SubProjectDAO, 'list').resolves(this.subprojectList);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await UserHandler.handler(expReq, expRes, UserOP.Roles);
             Tx.check200(expRes.statusCode, done);
         });
