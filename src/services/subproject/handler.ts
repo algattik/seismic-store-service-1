@@ -130,12 +130,14 @@ export class SubProjectHandler {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // provision new groups
-            await AuthGroups.createGroup(userToken, adminGroupName,
-                'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            await AuthGroups.createGroup(userToken, viewerGroupName,
-                'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            await Promise.all([
+                AuthGroups.createGroup(userToken, adminGroupName,
+                    'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]),
+                AuthGroups.createGroup(userToken, viewerGroupName,
+                    'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY])]
+            );
         }
 
         subproject.gcs_bucket = await this.getBucketName(tenant);
@@ -163,11 +165,12 @@ export class SubProjectHandler {
             // if admin is not the requestor, assign the admin and rm the requestor, has to be a sequential op
             if (subprojectCreatorEmail !== userEmail) {
 
-                await AuthGroups.addUserToGroup(userToken, adminGroup, subprojectCreatorEmail,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
-
-                await AuthGroups.addUserToGroup(userToken, viewerGroup, subprojectCreatorEmail,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
+                await Promise.all([
+                    AuthGroups.addUserToGroup(userToken, adminGroup, subprojectCreatorEmail,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true),
+                    AuthGroups.addUserToGroup(userToken, viewerGroup, subprojectCreatorEmail,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true)
+                ]);
 
             }
         }
