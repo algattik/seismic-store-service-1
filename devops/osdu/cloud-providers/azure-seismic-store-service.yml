@@ -39,6 +39,8 @@ azure_deploy:
     - sed -i 's/#{REDIS_HOST}#/'$REDIS_INSTANCE_ADDRESS'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REDIS_PORT}#/'$REDIS_INSTANCE_PORT'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REPLICA_COUNT}#/'$REPLICA'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{SDMS_MIN_REPLICAS}#/'$SDMS_MIN_REPLICAS'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{SDMS_MAX_REPLICAS}#/'$SDMS_MAX_REPLICAS'/' ${CHART_PATH}/values.yaml
     # Install helm chart
     - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
     - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 

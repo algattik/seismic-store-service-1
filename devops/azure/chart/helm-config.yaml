@@ -2,6 +2,8 @@ global:
   replicaCount: #{REPLICA_COUNT}#
   namespace: osdu
   podidentity: osdu-identity
+  minReplicaCount: #{SDMS_MIN_REPLICAS}#
+  maxReplicaCount: #{SDMS_MAX_REPLICAS}#
  
 configEnv:
   cloudProvider: #{PROVIDER_NAME}#

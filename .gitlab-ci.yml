@@ -5,6 +5,8 @@ variables:
   PORT: 80
   REPLICA: 1
   UTEST_RUNTIME_IMAGE: seistore-svc-runtime
+  SDMS_MIN_REPLICAS: 1
+  SDMS_MAX_REPLICAS: 5
 
   #aws variables
   AWS_SERVICE: seismic-store
