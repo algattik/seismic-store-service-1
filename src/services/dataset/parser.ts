@@ -154,6 +154,7 @@ export class DatasetParser {
         const seismicmeta = req.body.seismicmeta;
         Params.checkObject(seismicmeta, 'seismicmeta', false);
 
+        dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
         DatasetParser.validateAcls(dataset);
 
         return [dataset, seismicmeta, newName, closeid];
