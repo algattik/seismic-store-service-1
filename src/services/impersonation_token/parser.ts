@@ -81,56 +81,24 @@ export class ImpersonationTokenParser {
 
     }
 
-    public static refresh(req: expRequest): {token: string, tenantName: string} {
+    public static refresh(req: expRequest): {token: string, tokenContext: string} {
 
         const token = req.headers['impersonation-token'] as string;
         if(!token) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The request impersonation-token header has not been specified.'));
         }
-        const tenantName = req.query['tenant-name'];
-        if(!tenantName) {
+        const tokenContext = req.headers['impersonation-token-context'] as string;
+        if(!tokenContext) {
             throw (Error.make(Error.Status.BAD_REQUEST,
-                'The tenant-name query paramter has not been specified.'));
+                'The request impersonation-token-context header has not been specified.'));
         }
-
-        return {token, tenantName}
-    }
-
-    public static getSignatures(req: expRequest): string {
-
-        const tenantName = req.query['tenant-name'];
-        if(!tenantName) {
+        if(tokenContext.split('.').length !== 2) {
             throw (Error.make(Error.Status.BAD_REQUEST,
-                'The tenant-name query paramter has not been specified.'));
-        }
-        return tenantName;
-    }
-
-    public static deleteSignatures(req: expRequest): {token: string, tenantName: string, signatures: string[]} {
-
-        const tenantName = req.query['tenant-name'];
-        if(!tenantName) {
-            throw (Error.make(Error.Status.BAD_REQUEST,
-                'The tenant-name query paramter has not been specified.'));
+                'The request impersonation-token-context header value is not in the right form.'));
         }
 
-        const token = req.headers['impersonation-token'] as string;
-        const signatures = req.query['signatures'];
-
-        if(!signatures && !token) {
-            throw (Error.make(Error.Status.BAD_REQUEST,
-                'The request must present the impersonation-token header or a non-empty of signatures.'));
-        }
-
-        if(signatures) {
-            if(signatures.length === 0 && !token) {
-                throw (Error.make(Error.Status.BAD_REQUEST,
-                    'The request must present the impersonation-token header or a non-empty list of signatures.'));
-            }
-        }
-
-        return {token, tenantName, signatures}
+        return {token, tokenContext}
     }
 
 }

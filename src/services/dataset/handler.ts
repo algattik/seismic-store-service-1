@@ -154,7 +154,8 @@ export class DatasetHandler {
                 FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
                     Auth.isWriteAuthorized(req.headers.authorization,
                         subproject.acls.admins,
-                        tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]) : undefined,
+                        tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string) : undefined,
                 FeatureFlags.isEnabled(Feature.LEGALTAG) ?
                     dataset.ltag ? Auth.isLegalTagValid(
                         req.headers.authorization, dataset.ltag,
@@ -293,7 +294,8 @@ export class DatasetHandler {
                     'Access policy for the subproject is neither uniform nor dataset'));
             }
             await Auth.isReadAuthorized(req.headers.authorization, authGroups,
-                tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         // return the seismicmetadata (if exist)
@@ -325,7 +327,8 @@ export class DatasetHandler {
             // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
 
@@ -385,7 +388,8 @@ export class DatasetHandler {
             }
 
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         // check if valid url
@@ -439,11 +443,13 @@ export class DatasetHandler {
                 if (wid.startsWith('W')) {
                     await Auth.isWriteAuthorized(req.headers.authorization,
                         subproject.acls.admins,
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
                 } else {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         subproject.acls.viewers.concat(subproject.acls.admins),
-                        tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
                 }
             }
 
@@ -529,7 +535,8 @@ export class DatasetHandler {
             }
 
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         // patch datasetOUT with datasetIN
@@ -755,7 +762,9 @@ export class DatasetHandler {
                 }
 
                 await Auth.isWriteAuthorized(req.headers.authorization,
-                    authGroups, tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+                    authGroups, tenant, datasetIN.subproject,
+                    req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
 
             } else {
 
@@ -770,7 +779,8 @@ export class DatasetHandler {
                 }
 
                 await Auth.isReadAuthorized(req.headers.authorization, authGroups,
-                    tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
             }
 
         }
@@ -849,7 +859,9 @@ export class DatasetHandler {
         }
 
         await Auth.isWriteAuthorized(req.headers.authorization,
-            authGroups, tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
+            authGroups, tenant, dataset.subproject,
+            req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
 
         // unlock
         await Locker.unlock(lockKey);
@@ -869,7 +881,8 @@ export class DatasetHandler {
 
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         // Check if the required datasets exist
@@ -898,7 +911,8 @@ export class DatasetHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         // Check if the required datasets exist
@@ -940,7 +954,8 @@ export class DatasetHandler {
             // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         // list the folder content
@@ -1020,7 +1035,9 @@ export class DatasetHandler {
             }
 
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY]);
+                authGroups, tenant, datasetIN.subproject,
+                req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
@@ -1062,7 +1079,9 @@ export class DatasetHandler {
             }
 
             res.write = await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY], false);
+                authGroups, tenant, dataset.subproject,
+                req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string, false);
 
 
             // Check write authorization
@@ -1077,7 +1096,8 @@ export class DatasetHandler {
             }
 
             res.read = await Auth.isReadAuthorized(req.headers.authorization, authGroups,
-                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY], false);
+                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string, false);
 
         } else {
             res.write = true;

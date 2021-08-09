@@ -30,14 +30,4 @@ router.put('/', async (req: expRequest, res: expResponse) => {
     await ImpersonationTokenHandler.handler(req, res, ImpersonationTokenOps.Refresh);
 });
 
-// delete impersonation token signatures
-router.delete('/', async (req: expRequest, res: expResponse) => {
-    await ImpersonationTokenHandler.handler(req, res, ImpersonationTokenOps.DeleteSignatures);
-});
-
-// list impersonation token signatures
-router.get('/signatures', async (req: expRequest, res: expResponse) => {
-    await ImpersonationTokenHandler.handler(req, res, ImpersonationTokenOps.GetSignatures);
-});
-
 export { router as ImpersonationTokenRouter };

@@ -77,33 +77,33 @@ export class TestAuth {
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'none' }] as never);
             this.sandbox.stub(Auth, 'isNewImpersonationToken').returns(false);
             try {
-                await Auth.isWriteAuthorized(this.userToken, [], tenant, 's', 'appkey');
+                await Auth.isWriteAuthorized(this.userToken, [], tenant, 's', 'appkey', undefined);
             } catch (e) { Tx.check403(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns(
                 { resources: [{ resource: 't/s', readonly: false }] } as ImpTokenBodyModel);
-            Tx.checkTrue(await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey'), done);
+            Tx.checkTrue(await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined), done);
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
-            Tx.checkFalse(await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey', false), done);
+            Tx.checkFalse(await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined, false), done);
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns(
                 { resources: [{ resource: 't/s', readonly: true }] } as ImpTokenBodyModel);
             try {
-                await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey');
+                await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined);
             } catch (e) { Tx.check403(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
             try {
-                await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey');
+                await Auth.isWriteAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined);
             } catch (e) { Tx.check403(e.error.code, done); }
         });
 
@@ -121,20 +121,20 @@ export class TestAuth {
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: 'none' }] as never);
             this.sandbox.stub(Auth, 'isNewImpersonationToken').returns(false);
             try {
-                await Auth.isReadAuthorized(this.userToken, [], tenant, 's', 'appkey');
+                await Auth.isReadAuthorized(this.userToken, [], tenant, 's', 'appkey', undefined);
             } catch (e) { Tx.check403(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns(
                 { resources: [{ resource: 't/s', readonly: false }] } as ImpTokenBodyModel);
-            Tx.checkTrue(await Auth.isReadAuthorized(this.impToken, [], tenant, 's', 'appkey'), done);
+            Tx.checkTrue(await Auth.isReadAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined), done);
         });
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
             try {
-                await Auth.isReadAuthorized(this.impToken, [], tenant, 's', 'appkey');
+                await Auth.isReadAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined);
             } catch (e) { Tx.check403(e.error.code, done); }
         });
 

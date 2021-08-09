@@ -22,7 +22,7 @@ import { TenantModel } from '../services/tenant';
 import { Cache, Error, Utils } from '../shared';
 import { AuthGroups } from './groups';
 import { createHash } from 'crypto';
-import { ImpersonationTokenModel } from '../services/impersonation_token/model';
+import { ImpersonationTokenContextModel, ImpersonationTokenModel } from '../services/impersonation_token/model';
 import { ImpersonationTokenHandler } from '../services/impersonation_token/handler';
 import { ITenantModel } from '../services/tenant/model';
 
@@ -33,7 +33,7 @@ export class AuthProviderFactoryBuilder {
 
     public static register(providerLabel: string) {
         return (target: any) => {
-            if(AuthProviderFactoryBuilder.providers[providerLabel]) {
+            if (AuthProviderFactoryBuilder.providers[providerLabel]) {
                 AuthProviderFactoryBuilder.providers[providerLabel].push(target);
             } else {
                 AuthProviderFactoryBuilder.providers[providerLabel] = [target];
@@ -47,7 +47,7 @@ export class AuthProviderFactoryBuilder {
             throw (Error.make(Error.Status.UNKNOWN,
                 `Unrecognized auth provider: ${providerLabel}`));
         }
-        for(const provider of AuthProviderFactoryBuilder.providers[providerLabel]) {
+        for (const provider of AuthProviderFactoryBuilder.providers[providerLabel]) {
             if (provider.prototype instanceof referenceAbstraction) {
                 return new provider(args);
             }
@@ -67,12 +67,14 @@ export interface IAuthProvider {
     generateAuthCredential(): Promise<any>;
     convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel;
     getClientID(): string;
+    getClientSecret(): string;
 }
 
 export abstract class AbstractAuthProvider implements IAuthProvider {
     public abstract generateAuthCredential(): Promise<any>;
     public abstract convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel;
     public abstract getClientID(): string;
+    public abstract getClientSecret(): string;
 }
 
 export class AuthProviderFactory extends AuthProviderFactoryBuilder {
@@ -105,7 +107,7 @@ export class Auth {
             createHash('sha1').update(authToken).digest('base64') + ',' + authGroupEmails.sort().join(','));
 
         let isAuthorized = await this._cache.get(cacheKey);
-        if (isAuthorized === undefined) { // key not exist in cache -> canll entitlement
+        if (isAuthorized === undefined) { // key not exist in cache -> call entitlement
             isAuthorized = await AuthGroups.isMemberOfAtleastOneGroup(authToken, authGroupEmails, esd, appkey);
             await this._cache.set(cacheKey, isAuthorized, this._cacheItemTTL);
         }
@@ -121,13 +123,15 @@ export class Auth {
     public static async isWriteAuthorized(
         authToken: string, authGroupsName: string[],
         tenant: ITenantModel, subprojectName: string,
-        appkey: string, mustThrow: boolean = true): Promise<boolean> {
+        appkey: string, impersonationTokenContext: string,
+        mustThrow: boolean = true): Promise<boolean> {
 
         if (Auth.isObsoleteImpersonationToken(authToken)) {
             return Auth.isImpersonationTokenWriteAuthorized(authToken,
                 tenant.name, subprojectName, mustThrow);
         } else if (Auth.isNewImpersonationToken(authToken)) {
-            return await Auth.isNewImpersonationTokenWriteAuthorized(authToken, tenant, subprojectName, mustThrow);
+            return await Auth.isNewImpersonationTokenWriteAuthorized(
+                impersonationTokenContext, tenant, subprojectName, mustThrow);
         } else {
             return await Auth.isUserAuthorized(authToken, authGroupsName, tenant.esd, appkey, mustThrow);
         }
@@ -136,13 +140,15 @@ export class Auth {
     public static async isReadAuthorized(
         authToken: string, authGroupsName: string[],
         tenant: ITenantModel, subprojectName: string,
-        appkey: string, mustThrow: boolean = true): Promise<boolean> {
+        appkey: string, impersonationTokenContext: string,
+        mustThrow: boolean = true): Promise<boolean> {
 
         if (Auth.isObsoleteImpersonationToken(authToken)) {
             return Auth.isImpersonationTokenReadAuthorized(authToken,
                 tenant.name, subprojectName, mustThrow);
         } else if (Auth.isNewImpersonationToken(authToken)) {
-            return Auth.isNewImpersonationTokenReadAuthorized(authToken, tenant, subprojectName, mustThrow);
+            return Auth.isNewImpersonationTokenReadAuthorized(
+                impersonationTokenContext, tenant, subprojectName, mustThrow);
         } else {
             return await Auth.isUserAuthorized(authToken, authGroupsName, tenant.esd, appkey, mustThrow);
         }
@@ -220,49 +226,92 @@ export class Auth {
     }
 
     private static async isNewImpersonationTokenWriteAuthorized(
-        token: string, tenant: ITenantModel, subprojectName: string, mustThrow = true): Promise<boolean> {
+        tokenContext: string, tenant: ITenantModel,
+        subprojectName: string, mustThrow = true): Promise<boolean> {
 
-        const metadata = await ImpersonationTokenHandler.getImpersonationTokenData(tenant, token);
-        if(!metadata) { // signature not found
-            throw (Error.make(Error.Status.PERMISSION_DENIED,
+        if (!tokenContext) {
+            if (!mustThrow) { return false; }
+            throw (Error.make(Error.Status.BAD_REQUEST,
                 'Unauthorized Access to ' + 'sd://' + tenant.name + '/' + subprojectName +
-                '. The impersonation token signature has not been found. Please generate a new impersonation token and try again'));
+                'The request impersonation-token-context header has not been specified.'));
         }
-        const resource = metadata.resources.find((el) => el.resource === (tenant.name + '/' + subprojectName));
+
+        if (tokenContext.split('.').length !== 2) {
+            if (!mustThrow) { return false; }
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'Unauthorized Access to ' + 'sd://' + tenant.name + '/' + subprojectName +
+                'The request impersonation-token-context header value is not in the right form.'));
+        }
+
+        const authClientSecret = AuthProviderFactory.build(
+            Config.SERVICE_AUTH_PROVIDER).getClientSecret();
+
+        // decrypt the impersonation token context
+        const context = JSON.parse(Utils.decrypt(
+            tokenContext.split('.')[0],
+            tokenContext.split('.')[1],
+            authClientSecret)) as ImpersonationTokenContextModel;
+
+        const resource = context.resources.find((el) => el.resource === (tenant.name + '/' + subprojectName));
 
         // resource not found
-        if (!resource && mustThrow) {
+        if (!resource) {
+            if (!mustThrow) { return false; }
             throw (Error.make(Error.Status.PERMISSION_DENIED,
-                'The imptoken has not been authorized for the subproject resource ' +
+                'The impersonation token has not been authorized for the subproject resource ' +
                 'sd://' + tenant.name + '/' + subprojectName));
         }
-        if (!resource) { return false; }
 
-        if (resource.readonly && mustThrow) {
+        if (resource.readonly) {
+            if (!mustThrow) { return false; }
             throw (Error.make(Error.Status.PERMISSION_DENIED,
-                'The imptoken has not been write authorized for the subproject resource ' +
+                'The impersonation token has not been write authorized for the subproject resource ' +
                 'sd://' + tenant.name + '/' + subprojectName));
         }
-        return !resource.readonly;
+
+        return true;
+
     }
 
     private static async isNewImpersonationTokenReadAuthorized(
-        token: string, tenant: ITenantModel , subprojectName: string, mustThrow: boolean = true): Promise<boolean> {
+        tokenContext: string, tenant: ITenantModel,
+        subprojectName: string, mustThrow: boolean = true): Promise<boolean> {
 
-        const metadata = await ImpersonationTokenHandler.getImpersonationTokenData(tenant, token);
-        if(!metadata) { // signature not found
-            throw (Error.make(Error.Status.PERMISSION_DENIED,
+        if (!tokenContext) {
+            if (!mustThrow) { return false; }
+            throw (Error.make(Error.Status.BAD_REQUEST,
                 'Unauthorized Access to ' + 'sd://' + tenant.name + '/' + subprojectName +
-                '. The impersonation token signature has not been found. Please generate a new impersonation token and try again'));
+                'The request impersonation-token-context header has not been specified.'));
         }
-        const resource = metadata.resources.find((el) => el.resource === (tenant.name + '/' + subprojectName));
 
-        if (!resource && mustThrow) {
+        if (tokenContext.split('.').length !== 2) {
+            if (!mustThrow) { return false; }
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'Unauthorized Access to ' + 'sd://' + tenant.name + '/' + subprojectName +
+                'The request impersonation-token-context header value is not in the right form.'));
+        }
+
+        const authClientSecret = AuthProviderFactory.build(
+            Config.SERVICE_AUTH_PROVIDER).getClientSecret();
+
+        // decrypt the impersonation token context
+        const context = JSON.parse(Utils.decrypt(
+            tokenContext.split('.')[0],
+            tokenContext.split('.')[1],
+            authClientSecret)) as ImpersonationTokenContextModel;
+
+        const resource = context.resources.find((el) => el.resource === (tenant.name + '/' + subprojectName));
+
+        // resource not found
+        if (!resource) {
+            if (!mustThrow) { return false; }
             throw (Error.make(Error.Status.PERMISSION_DENIED,
-                'The imptoken has not been authorized for the subproject resource ' +
+                'The impersonation token has not been authorized for the subproject resource ' +
                 'sd://' + tenant.name + '/' + subprojectName));
         }
-        return resource !== undefined;
+
+        return true;
+
     }
 
 }
