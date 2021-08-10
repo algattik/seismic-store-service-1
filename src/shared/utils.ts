@@ -14,9 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import * as crypto from 'crypto'
-
+import * as crypto from 'crypto';
 import { Config } from '../cloud';
+
 
 export class Utils {
 
@@ -44,7 +44,7 @@ export class Utils {
     }
 
     public static getAudienceFromPayload(base64JwtPayload: string): string {
-        return this.getPayloadFromStringToken(base64JwtPayload).aud
+        return this.getPayloadFromStringToken(base64JwtPayload).aud;
     }
 
     public static getSubFromPayload(base64JwtPayload: string): string {
@@ -92,7 +92,7 @@ export class Utils {
         return {
             encryptedText: encrypted.toString('hex'),
             encryptedTextIV: iv.toString('hex')
-        }
+        };
     }
 
     public static decrypt(encryptedText: string, encryptedTextIV: string, key: string) {

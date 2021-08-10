@@ -129,7 +129,6 @@ export class SubProjectDAO {
 
     // check if a subproject exists
     public static async exist(journalClient: IJournal, tenantName: string, subprojectName: string): Promise<boolean> {
-
         const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
         if (res !== undefined && res) { return true; };
 
@@ -139,10 +138,6 @@ export class SubProjectDAO {
         });
 
         const [entity] = await journalClient.get(entityKey);
-
-        if (entity) {
-            await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
-        }
 
         return entity !== undefined;
     }

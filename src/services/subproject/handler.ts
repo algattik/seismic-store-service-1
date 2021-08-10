@@ -20,7 +20,7 @@ import { SubProjectModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
-import { Error, Feature, FeatureFlags, Response } from '../../shared';
+import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
 import { TenantGroups, TenantModel } from '../tenant';
 import { TenantDAO } from '../tenant/dao';
@@ -92,8 +92,6 @@ export class SubProjectHandler {
         const userEmail = await SeistoreFactory.build(
             Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
 
-        subproject.admin = subproject.admin || userEmail;
-
         // enforce the datasets schema by key for newly create subproject.
         // this will mainly affect google for which the initial implementation
         // of the journal was query-based (lack in performance)
@@ -153,18 +151,22 @@ export class SubProjectHandler {
             subproject.gcs_bucket,
             subproject.storage_location, subproject.storage_class);
 
+        const subprojectCreatorEmail = subproject.admin || userEmail;
+
+        subproject.admin = Utils.getSubIDFromPayload(req.headers.authorization) ||
+            Utils.getSubFromPayload(req.headers.authorization) || undefined;
 
         // Register the subproject
         await SubProjectDAO.register(journalClient, subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // if admin is not the requestor, assign the admin and rm the requestor, has to be a sequential op
-            if (subproject.admin !== userEmail) {
+            if (subprojectCreatorEmail !== userEmail) {
 
-                await AuthGroups.addUserToGroup(userToken, adminGroup, subproject.admin,
+                await AuthGroups.addUserToGroup(userToken, adminGroup, subprojectCreatorEmail,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
 
-                await AuthGroups.addUserToGroup(userToken, viewerGroup, subproject.admin,
+                await AuthGroups.addUserToGroup(userToken, viewerGroup, subprojectCreatorEmail,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true);
 
             }
