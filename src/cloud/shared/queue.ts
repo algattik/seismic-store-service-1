@@ -34,6 +34,7 @@ export class StorageJobManager {
       };
 
       if (cacheParams.KEY) {
+         // pragma: allowlist nextline secret
          redisx['password'] = cacheParams.KEY;
          if (!cacheParams.DISABLE_TLS) {
             redisx['tls'] = { servername: cacheParams.ADDRESS };
