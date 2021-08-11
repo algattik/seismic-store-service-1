@@ -102,6 +102,7 @@ export class Credentials extends AbstractCredentials {
         );
         const crdntls = {
             username: IbmConfig.KEYCLOAK_USERNAME,
+            // pragma: allowlist nextline secret
             password: IbmConfig.KEYCLOAK_PASSWORD,
             grantType: IbmConfig.KEYCLOAK_GRANTTYPE,
             clientId: IbmConfig.KEYCLOAK_CLIENTID,

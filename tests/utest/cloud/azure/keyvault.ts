@@ -11,6 +11,7 @@ const mockRedisKey = 'mockRedisKey';
 const mockRedisHost= 'mockRedisHost';
 const mockSpTenantID = 'mockSpTenantID';
 const mockSpClientID = 'mockSpClientID';
+// pragma: allowlist nextline secret
 const mockSpClientSecret = 'mockSpClientSecret';
 const mockSpAppSourceID = 'mockSpAppSourceID';
 const mockSauthProvider = 'mockSauthProvider';

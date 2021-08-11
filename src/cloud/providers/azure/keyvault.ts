@@ -24,6 +24,7 @@ export class Keyvault {
     public static REDIS_KEY = 'redis-password';
     public static SP_TENANT_ID = 'app-dev-sp-tenant-id';
     public static SP_CLIENT_ID = 'app-dev-sp-username';
+    // pragma: allowlist nextline secret
     public static SP_CLIENT_SECRET = 'app-dev-sp-password';
     public static SP_APP_RESOURCE_ID = 'aad-client-id';
     public static DATA_PARTITION_STORAGE_ACCOUNT_NAME = 'sdms-storage-account-name';

@@ -118,3 +118,11 @@ $ docker run --rm -it -v $(pwd):/opt community.opengroup.org:5555/osdu/platform/
 ```bash
 $ docker run --rm -it -v $(pwd):/opt community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/seismic/seismic-dms-suite/seismic-store-service/seismic-store-service-detect-secrets:latest detect-secrets-hook --baseline /opt/devops/docker/detect_secrets/.secrets.baseline $(git ls-files)
 ```
+
+##### False positives
+
+Add next comment above the line (in the proper file) that has been detected and is a false positives
+
+```
+pragma: allowlist nextline secret
+```
