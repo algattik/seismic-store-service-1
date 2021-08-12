@@ -26,13 +26,13 @@ info:
   description: "Seismic Data Management APIs to store and manage seismic datasets ."
 
 host: "#{gcp.endpoints.service.name}#"
-basePath: "/"
+basePath: "/seistore-svc"
 
 x-google-endpoints:
   - name: "#{gcp.endpoints.service.name}#"
     allowCors: True
 
-x-google-allow: all
+x-google-allow: configured
 
 consumes:
   - application/json
