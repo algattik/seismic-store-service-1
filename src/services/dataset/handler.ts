@@ -318,7 +318,10 @@ export class DatasetHandler {
     private static async list(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
-        const dataset = DatasetParser.list(req);
+        const userInput = DatasetParser.list(req);
+
+        const dataset = userInput.dataset;
+        const pagination = userInput.pagination;
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -331,18 +334,21 @@ export class DatasetHandler {
                 req.headers['impersonation-token-context'] as string);
         }
 
-
         // Retrieve the list of datasets metadata
-        const datasets = await DatasetDAO.list(journalClient, dataset);
+        const output = await DatasetDAO.list(journalClient, dataset, pagination) as any;
 
         // attach the gcpid for fast check
-        for (const item of datasets) {
+        for (const item of output.datasets) {
             item.ctag = item.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
         }
 
-        // Retrieve the list of datasets metadata
-        return datasets;
 
+        // Retrieve the list of datasets metadata
+        if (output.nextPageCursor) {
+            return output;
+        }
+
+        return output.datasets;
     }
 
     // delete a dataset
@@ -834,7 +840,7 @@ export class DatasetHandler {
         // check if the dataset does not exist
         const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
         if (!dataset) {
-            if(await Locker.getLock(lockKey)) {
+            if (await Locker.getLock(lockKey)) {
                 // if a previous call fails, the dataset is not created but the lock is acquired and not released
                 await Locker.unlock(lockKey);
                 return;

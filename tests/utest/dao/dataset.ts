@@ -14,19 +14,19 @@
 // limitations under the License.
 // ============================================================================
 
-import sinon from 'sinon';
-
 import { Datastore } from '@google-cloud/datastore';
 import { Entity } from '@google-cloud/datastore/build/src/entity';
 import { RunQueryResponse } from '@google-cloud/datastore/build/src/query';
-import { google } from '../../../src/cloud/providers';
+import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
+import { google } from '../../../src/cloud/providers';
 import { RecordLatency } from '../../../src/metrics';
 import { DatasetModel } from '../../../src/services/dataset';
 import { DatasetDAO } from '../../../src/services/dataset/dao';
 import { Locker } from '../../../src/services/dataset/locker';
 import { IPaginationModel } from '../../../src/services/dataset/model';
 import { Tx } from '../utils';
+
 
 export class TestDataset {
 
@@ -82,13 +82,13 @@ export class TestDataset {
 
 		Tx.test(async (done: any) => {
 			this.journal.save.resolves({} as never);
-			await DatasetDAO.register(this.journal, { key: {'key': 'dataset_key'}, data: TestDataset.dataset });
+			await DatasetDAO.register(this.journal, { key: { 'key': 'dataset_key' }, data: TestDataset.dataset });
 			done();
 		});
 
 		Tx.test(async (done: any) => {
 			this.journal.save.resolves();
-			await DatasetDAO.register(this.journal, { key: {'key': 'dataset_key'}, data: TestDataset.dataset });
+			await DatasetDAO.register(this.journal, { key: { 'key': 'dataset_key' }, data: TestDataset.dataset });
 			done();
 		});
 	}
@@ -186,7 +186,7 @@ export class TestDataset {
 			this.journal.runQuery.resolves([expectedResult, undefined]);
 			this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves(expectedResult[0]);
 
-			const result = await DatasetDAO.list(this.journal, this.dataset);
+			const result = await DatasetDAO.list(this.journal, this.dataset, null);
 
 			Tx.checkTrue(
 				this.journal.runQuery.calledWith(query) && result[0] === expectedResult[0],
@@ -231,7 +231,7 @@ export class TestDataset {
 			this.journal.runQuery.resolves([expectedResult, undefined]);
 			this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves(expectedResult[0]);
 
-			const result = await DatasetDAO.list(this.journal, this.dataset);
+			const result = await DatasetDAO.list(this.journal, this.dataset, null);
 
 			Tx.checkTrue(
 				this.journal.runQuery.calledWith(query) && result[0] === expectedResult[0],
@@ -274,7 +274,7 @@ export class TestDataset {
 			this.journal.getQueryFilterSymbolContains.returns('=');
 			this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves(expectedResult[0]);
 
-			const result = await DatasetDAO.list(this.journal, this.dataset);
+			const result = await DatasetDAO.list(this.journal, this.dataset, null);
 
 			Tx.checkTrue(
 				this.journal.runQuery.calledWith(query) && result[0] === expectedResult[0],
@@ -320,7 +320,7 @@ export class TestDataset {
 			this.journal.getQueryFilterSymbolContains.returns('=');
 			this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves(expectedResult[0]);
 
-			const result = await DatasetDAO.list(this.journal, this.dataset);
+			const result = await DatasetDAO.list(this.journal, this.dataset, null);
 
 			Tx.checkTrue(
 				this.journal.runQuery.calledWith(query) && result[0] === expectedResult[0],
@@ -329,7 +329,7 @@ export class TestDataset {
 		});
 
 		Tx.test(async (done: any) => {
-			Config.CLOUDPROVIDER='azure'
+			Config.CLOUDPROVIDER = 'azure';
 			this.dataset.gtags = ['tagA', 'tagB'];
 			const expectedResult = [
 				{
@@ -367,7 +367,7 @@ export class TestDataset {
 			this.journal.getQueryFilterSymbolContains.returns('CONTAINS');
 			this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves(expectedResult[0]);
 
-			const result = await DatasetDAO.list(this.journal, this.dataset);
+			const result = await DatasetDAO.list(this.journal, this.dataset, null);
 
 			Tx.checkTrue(
 				this.journal.runQuery.calledWith(query) && result[0] === expectedResult[0],

@@ -662,7 +662,14 @@ paths:
           items:
             type: string
           collectionFormat: multi
-
+        - description: 'Limit the number of datasets in the response'
+          in: query
+          name: limit
+          type: string 
+        - description: 'Cursor for pagination on the datasets list'
+          in: query
+          name: cursor
+          type: string 
       responses:
         200:
           description: "The list of all datasets in the subproject if no gtags are in the request parameters. If gtags exist in the request parameters, then list all datasets that have the same list of gtags."
@@ -670,6 +677,10 @@ paths:
             type: array
             items:
               $ref: "#/definitions/Dataset"
+        201:
+          description: "Paginated dataset list with nextPageCursor. For documentation purposes, if limit or cursor is given, status code here is 200."
+          schema:
+            $ref: "#/definitions/PaginatedDatasets"
         400:
           description: "Bad request."
         401:
@@ -2196,6 +2207,16 @@ definitions:
         type: string
         description: Next cursor for pagination.
     example: { datasets: ["folderA/", "folderB/", "dataset01"], nextPageCursor: "abc1234" }
+    
+ # PaginatedDatasets
+  PaginatedDatasets:
+    properties:
+        datasets:
+          type: array
+          items:
+            $ref: '#/definitions/Dataset'
+        nextPageCursor:
+            type: string 
 
 # ===========================================================================
 # Endpoints Security Section
