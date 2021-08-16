@@ -468,7 +468,7 @@ The following software have components provided under the terms of this license:
 - cross-spawn (from https://www.npmjs.com/package/cross-spawn)
 - crypto-random-string (from https://www.npmjs.com/package/crypto-random-string)
 - d64 (from https://www.npmjs.com/package/d64)
-- dashdash (from https://github.com/trentm/node-dashdash)
+- dashdash (from https://www.npmjs.com/package/dashdash)
 - date-and-time (from https://www.npmjs.com/package/date-and-time)
 - date-format (from https://www.npmjs.com/package/date-format)
 - date-format (from https://www.npmjs.com/package/date-format)

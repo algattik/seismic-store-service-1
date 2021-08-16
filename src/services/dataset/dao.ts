@@ -15,10 +15,10 @@
 // ============================================================================
 
 import { DatasetModel, PaginationModel } from '.';
-import { IJournal, IJournalTransaction } from '../../cloud';
-import { Config } from '../../cloud';
+import { Config, IJournal, IJournalTransaction } from '../../cloud';
 import { Utils } from '../../shared';
 import { Locker } from './locker';
+import { PaginatedDatasetList } from './model';
 
 export class DatasetDAO {
 
@@ -69,7 +69,9 @@ export class DatasetDAO {
 
     public static async list(
         journalClient: IJournal | IJournalTransaction,
-        dataset: DatasetModel): Promise<DatasetModel[]> {
+        dataset: DatasetModel, pagination: PaginationModel):
+        Promise<any> {
+
         let query: any;
         if (dataset.gtags === undefined || dataset.gtags.length === 0) {
             query = journalClient.createQuery(
@@ -83,16 +85,27 @@ export class DatasetDAO {
             }
         }
 
-        let [entities] = await journalClient.runQuery(query);
+        if (pagination && pagination.cursor) { query = query.start(pagination.cursor); }
 
-        entities = (entities) as DatasetModel[];
+        if (pagination && pagination.limit) { query = query.limit(pagination.limit); }
+
+        const [entities, info] = await journalClient.runQuery(query);
 
         // Fix model for old entity
         for (let entity of entities) {
             entity = await this.fixOldModel(entity, dataset.tenant, dataset.subproject);
         }
 
-        return entities;
+        const output: PaginatedDatasetList = {
+            datasets: entities,
+            nextPageCursor: null
+        };
+
+        if (pagination) {
+            output.nextPageCursor = info.endCursor;
+        }
+
+        return output;
 
     }
 

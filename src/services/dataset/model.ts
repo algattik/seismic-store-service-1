@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
+
 export interface IDatasetModel {
     name: string;
     tenant: string;
@@ -46,4 +47,9 @@ export interface IPaginationModel {
 export interface IDatasetAcl {
     admins: string[],
     viewers: string[];
+}
+
+export interface PaginatedDatasetList {
+    datasets: IDatasetModel[];
+    nextPageCursor: string;
 }
