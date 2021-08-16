@@ -16,9 +16,7 @@
 
 import { Request as expRequest } from 'express';
 import { DatasetModel } from '.';
-import { Config } from '../../cloud';
-import { SeistoreFactory } from '../../cloud/seistore';
-import { Error, Params } from '../../shared';
+import { Error, Params, Utils } from '../../shared';
 
 export class DatasetParser {
 
@@ -47,8 +45,10 @@ export class DatasetParser {
         const dataset = this.createDatasetModelFromRequest(req);
         dataset.ltag = (req.headers.ltag) as string;
         dataset.type = req.body ? req.body.type : undefined;
-        dataset.created_by = await SeistoreFactory.build(
-            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
+        dataset.created_by = Utils.getSubIDFromPayload(req.headers.authorization) ||
+            Utils.getSubFromPayload(req.headers.authorization) ||
+            undefined;
+
         dataset.created_date = dataset.last_modified_date = new Date().toString();
         dataset.gtags = req.body ? req.body.gtags : undefined;
 
@@ -154,6 +154,7 @@ export class DatasetParser {
         const seismicmeta = req.body.seismicmeta;
         Params.checkObject(seismicmeta, 'seismicmeta', false);
 
+        dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
         DatasetParser.validateAcls(dataset);
 
         return [dataset, seismicmeta, newName, closeid];

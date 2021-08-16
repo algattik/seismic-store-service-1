@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2fdb1165-b3c5-4641-b322-d7576f6662ea",
+		"_postman_id": "29c4591d-57e6-4a83-855f-bfbbd4a09f70",
 		"name": "SDMS-E2E ver.xxx",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -16,8 +16,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -34,7 +33,6 @@
 									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -61,23 +59,24 @@
 									"    postman.setEnvironmentVariable(\"maxAmountOfRetries\", 4);\r",
 									"}\r",
 									"\r",
-									"postman.setGlobalVariable(\"retryOnFailure\", (failureCode, numberOfRetrys) => {\r",
-									"      \r",
-									"        var key = request.name + '_counter';\r",
+									"Object.prototype.retryOnFailure = function(postman, failureCode, requestName, numberOfRetrys) {\r",
+									"        var key = requestName + '_counter';\r",
 									"        var execCounter = postman.getEnvironmentVariable(key) || 1;\r",
-									"\r",
 									"        var sleepDuration = 1000;\r",
 									"        var waitUntilTime = new Date().getTime() + sleepDuration;\r",
-									"        if (responseCode.code >= failureCode && execCounter <= numberOfRetrys) {\r",
+									"        if (execCounter <= numberOfRetrys) {\r",
 									"            while (new Date().getTime() < waitUntilTime) {\r",
 									"                // Do Nothing -> Wait\r",
 									"            }\r",
-									"            console.log('Retrying: ' + request.name + '\\nGot: ' + responseCode.code + '\\nWaiting: ' + sleepDuration / 1000 + 'sec  \\nRetry Number: ' + execCounter + ' of max ' + numberOfRetrys);\r",
+									"            console.log('Retrying: ' + requestName + '\\nGot: ' + failureCode + '\\nWaiting: ' + sleepDuration / 1000 + 'sec  \\nRetry Number: ' + execCounter + ' of max ' + numberOfRetrys);\r",
 									"            execCounter++;\r",
 									"            postman.setEnvironmentVariable(key, execCounter);\r",
-									"            postman.setNextRequest(request.name);\r",
+									"            postman.setNextRequest(requestName);\r",
+									"        } else {\r",
+									"            console.log('Max amount of retries is reached after ' + numberOfRetrys + ' attempts ');\r",
+									"            postman.clearEnvironmentVariable(key);\r",
 									"        }\r",
-									"});"
+									"}"
 								],
 								"type": "text/javascript"
 							}
@@ -121,8 +120,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -133,8 +131,6 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(jsonData.status).to.eql(\"running\");",
 									"    });",
-									"    ",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -184,8 +180,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -198,8 +193,6 @@
 									"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"tenant\"));",
 									"        pm.expect(jsonData.gcpid).to.exist;",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -244,8 +237,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -255,8 +247,6 @@
 									"    pm.test(\"Body is correct\", function () {",
 									"        pm.response.to.have.body(\"sd://\" + pm.environment.get(\"datapartition\"));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -314,8 +304,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404 or 403\", function () {",
@@ -343,8 +332,6 @@
 									"            }",
 									"        };",
 									"    };",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -396,8 +383,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404 or 403\", function () {",
@@ -407,8 +393,6 @@
 									"    if (pm.response.headers.get('service-provider') !== 'google') {",
 									"\t    postman.setNextRequest(\"SUBPROJECT REGISTER\");",
 									"    }",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -487,8 +471,6 @@
 									"    pm.test(\"Status code is 400\", function () {",
 									"        pm.response.to.have.status(400);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -566,8 +548,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -586,8 +567,6 @@
 									"            pm.expect(jsonData.storage_location).to.eql('US-CENTRAL1');",
 									"        }",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"    ",
 									"    postman.setNextRequest(\"SUBPROJECT GET NEW\");",
 									"}"
@@ -648,8 +627,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -725,8 +703,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -799,8 +776,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -879,8 +855,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -960,8 +935,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1046,8 +1020,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -1126,8 +1099,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1238,8 +1210,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1391,8 +1362,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -1474,15 +1444,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1549,8 +1516,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -1629,8 +1595,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1689,8 +1654,6 @@
 									"    pm.test(\"ctag\", function () {",
 									"        postman.setEnvironmentVariable(\"ctag\", jsonData.ctag);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1746,8 +1709,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1759,8 +1721,6 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1833,8 +1793,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1850,8 +1809,6 @@
 									"    pm.test(\"Data List\", function () {",
 									"        pm.expect(jsonData.length).gte(1);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1899,8 +1856,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -1972,8 +1928,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -1994,8 +1949,6 @@
 									"    pm.test(\"Filemetadata is added\", function () {",
 									"        pm.expect(jsonData.filemetadata).to.exist;",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2063,8 +2016,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -2074,8 +2026,6 @@
 									"    pm.test(\"Validate ctag\", function () {",
 									"        pm.expect(pm.response.json()).eql(false);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2136,8 +2086,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -2148,8 +2097,6 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"[false,true,false,false,true]\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2206,8 +2153,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -2217,8 +2163,6 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"[-1,-1,-1,-1,1021]\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2275,8 +2219,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -2292,8 +2235,6 @@
 									"    pm.test(\"Read Directories\", function () {",
 									"        pm.expect(jsonData.directories.length).to.eql(0);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2352,8 +2293,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -2367,8 +2307,6 @@
 									"        pm.expect(jsonData.write).to.eql(true);",
 									"        pm.expect(jsonData.delete).to.eql(true);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2425,15 +2363,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2489,8 +2424,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -2506,8 +2440,6 @@
 									"    pm.test(\"Data List\", function () {",
 									"        pm.expect(jsonData.length).gte(0);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2555,8 +2487,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -2638,15 +2569,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2702,8 +2630,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -2781,8 +2708,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -2792,8 +2718,6 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2857,8 +2781,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -2900,8 +2823,6 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2959,8 +2880,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 423 locked\", function () {",
@@ -2970,8 +2890,6 @@
 									"    pm.test(\"Read a data locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3036,15 +2954,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3113,8 +3028,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 423 locked\", function () {",
@@ -3124,8 +3038,6 @@
 									"    pm.test(\"Write a data already locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3190,8 +3102,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -3207,8 +3118,6 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3277,8 +3186,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 404\", function () {",
@@ -3288,8 +3196,6 @@
 									"    pm.test(\"Close data using wrong sbit\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked with different ID');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3353,8 +3259,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -3370,8 +3275,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3435,8 +3338,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -3468,8 +3370,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3519,8 +3419,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -3537,8 +3436,6 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit_new\", jsonData.sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3603,8 +3500,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 423 locked\", function () {",
@@ -3614,8 +3510,6 @@
 									"    pm.test(\"Read a data locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3680,8 +3574,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 423 locked\", function () {",
@@ -3691,8 +3584,6 @@
 									"    pm.test(\"Write a data already locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3757,8 +3648,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -3774,8 +3664,6 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3844,8 +3732,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 404\", function () {",
@@ -3855,8 +3742,6 @@
 									"    pm.test(\"Close data using wrong sbit\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked with different ID');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3920,8 +3805,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -3937,8 +3821,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4002,8 +3884,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4035,8 +3916,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4086,8 +3965,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4101,8 +3979,6 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit_new_01\", jsonData.sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4171,8 +4047,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 423 locked\", function () {",
@@ -4182,8 +4057,6 @@
 									"    pm.test(\"Write a data locked for reading\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for read');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4248,8 +4121,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4262,8 +4134,6 @@
 									"        pm.expect(jsonData.sbit_count).to.eql(2);",
 									"        postman.setEnvironmentVariable(\"sbit_new_02\", jsonData.sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4328,8 +4198,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4345,8 +4214,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4410,8 +4277,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4427,8 +4293,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4492,8 +4356,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4525,8 +4388,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4576,15 +4437,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4634,8 +4492,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4677,8 +4534,6 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4736,8 +4591,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4753,8 +4607,6 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4818,8 +4670,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -4831,8 +4682,6 @@
 									"    pm.test(\"readonly\", function () {",
 									"        pm.expect(jsonData.readonly).to.eql(true);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4890,15 +4739,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4963,8 +4809,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 400 Bad Request\", function () {",
@@ -4974,8 +4819,6 @@
 									"    pm.test(\"Read a data locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('cannot be locked');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5040,15 +4883,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5098,8 +4938,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -5174,8 +5013,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -5185,8 +5023,6 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5254,8 +5090,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -5306,8 +5141,6 @@
 									"    pm.test(\"Check seismicmetadata\", () => {",
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5371,8 +5204,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -5442,8 +5274,6 @@
 									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.coordinates[0][1]).to.equal(242030.61);",
 									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.type).to.equal(\"AnyCrsMultiPoint\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5503,8 +5333,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -5554,8 +5383,6 @@
 									"    pm.test(\"Check seismicmetadata\", () => {",
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5638,8 +5465,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -5708,8 +5534,6 @@
 									"        pm.expect(jsonData.seismicmeta.data.geometry.type).to.equal(\"Polygon\");",
 									"        pm.expect(jsonData.seismicmeta.meta[0].kind).to.eql(\"Unit\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5769,15 +5593,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5833,8 +5654,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -5891,8 +5711,6 @@
 									"        var req = JSON.parse(pm.request.body.raw);",
 									"        pm.environment.set(\"dsx01_record_type\", req.seismicmeta.recordType);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5956,15 +5774,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6041,8 +5856,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -6117,8 +5931,6 @@
 									"        const record_type = jsonData.seismicmeta_guid.split(\":\")[1] ",
 									"        pm.expect(dsx01_record_type).to.equal(record_type)",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6178,15 +5990,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6242,8 +6051,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -6285,8 +6093,6 @@
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6350,15 +6156,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6435,8 +6238,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -6477,8 +6279,6 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(0);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6538,15 +6338,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6602,16 +6399,13 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"        postman.setEnvironmentVariable(\"sbit\", pm.response.json().sbit);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6675,8 +6469,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -6688,8 +6481,6 @@
 									"    pm.test(\"Check seismicmetadata\", () => {",
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6757,15 +6548,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6821,8 +6609,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -6900,8 +6687,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -6911,8 +6697,6 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6989,8 +6773,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7013,8 +6796,6 @@
 									"        pm.expect(jsonData.gtags[0]).to.eql(\"tag1\");",
 									"        pm.expect(jsonData.gtags[1]).to.eql(\"tag2\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7078,8 +6859,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7095,8 +6875,6 @@
 									"    pm.test(\"path\", function () {",
 									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath01'));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7152,15 +6930,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7243,15 +7018,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}    "
 								],
 								"type": "text/javascript"
@@ -7307,8 +7079,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7332,8 +7103,6 @@
 									"        pm.expect(jsonData.gtags[1]).to.eql(\"tag3\");",
 									"        pm.expect(jsonData.gtags[2]).to.eql(\"tag4\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7397,8 +7166,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7414,8 +7182,6 @@
 									"    pm.test(\"path\", function () {",
 									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath02'));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7471,15 +7237,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7562,15 +7325,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7626,8 +7386,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7652,8 +7411,6 @@
 									"        pm.expect(jsonData.gtags[2]).to.eql(\"tag4\");",
 									"        pm.expect(jsonData.gtags[3]).to.eql(\"tag5\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7717,8 +7474,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7734,8 +7490,6 @@
 									"    pm.test(\"path\", function () {",
 									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath03'));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7791,15 +7545,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7876,8 +7627,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7893,8 +7643,6 @@
 									"    pm.test(\"Data List\", function () {",
 									"        pm.expect(jsonData.length).to.eql(0);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7948,8 +7696,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -7977,8 +7724,6 @@
 									"        });",
 									"        pm.expect(data2.path).to.eql(pm.environment.get('testPath01'));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8032,8 +7777,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -8061,8 +7805,6 @@
 									"        });",
 									"        pm.expect(data2.path).to.eql(pm.environment.get('testPath03'));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8124,8 +7866,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -8137,8 +7878,6 @@
 									"    pm.test(\"Check content type\", function () {",
 									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8250,8 +7989,6 @@
 									"        pm.expect(jsonData.gtags[2]).to.eql('tag4');",
 									"        pm.expect(jsonData.gtags[3]).to.eql('tag1');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8307,8 +8044,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -8331,8 +8067,6 @@
 									"        });",
 									"        pm.expect(data1.path).to.eql(pm.environment.get('testPath02'));",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8386,8 +8120,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -8401,8 +8134,6 @@
 									"        pm.expect(jsonData.gtags[1]).to.eql('tag3');",
 									"        pm.expect(jsonData.gtags[2]).to.eql('tag4');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8466,8 +8197,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -8479,8 +8209,6 @@
 									"    pm.test(\"Tagged Data List\", function () {",
 									"        pm.expect(jsonData.length).gte(0);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8534,8 +8262,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -8555,8 +8282,6 @@
 									"        pm.expect(data1.path).to.eql(pm.environment.get('testPath03'));",
 									"        pm.expect(data1.gtags[2]).to.eql('tag4');",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8614,15 +8339,12 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8678,8 +8400,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -8742,8 +8463,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -8806,8 +8526,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -8887,8 +8606,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -8971,8 +8689,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9093,8 +8810,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -9178,8 +8894,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9263,8 +8978,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9344,8 +9058,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 201\", function () {",
@@ -9454,8 +9167,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9521,8 +9233,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -9623,8 +9334,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -9687,8 +9397,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9799,8 +9508,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9871,8 +9579,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -9957,8 +9664,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 202\", function () {",
@@ -10020,8 +9726,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -10092,8 +9797,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10156,8 +9860,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10220,8 +9923,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -10284,8 +9986,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10367,8 +10068,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10439,8 +10139,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10501,8 +10200,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -10570,8 +10268,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -10648,8 +10345,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10708,8 +10404,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -10788,8 +10483,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10851,8 +10545,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -10924,8 +10617,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -10987,8 +10679,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code should be 400\", function () {",
@@ -11050,8 +10741,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -11143,8 +10833,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -11234,8 +10923,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -11298,8 +10986,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -11441,8 +11128,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -11558,8 +11244,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -11643,8 +11328,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -11709,8 +11393,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -11826,8 +11509,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -11911,8 +11593,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -11981,8 +11662,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 400\", function () {",
@@ -12043,8 +11723,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -12107,8 +11786,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -12171,8 +11849,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -12249,8 +11926,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -12335,8 +12011,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -12434,8 +12109,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -12561,8 +12235,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -12647,8 +12320,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -12729,8 +12401,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -12817,8 +12488,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 201\", function () {",
@@ -12886,8 +12556,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 202\", function () {",
@@ -12949,8 +12618,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -13066,8 +12734,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -13167,8 +12834,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -13234,8 +12900,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -13294,8 +12959,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -13358,8 +13022,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -13422,8 +13085,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -13507,8 +13169,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -13587,8 +13248,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -13719,8 +13379,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -13841,8 +13500,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -13932,8 +13590,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    var jsonData = pm.response.json();",
@@ -14018,8 +13675,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -14082,8 +13738,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -14146,8 +13801,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -14222,8 +13876,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200 or 404\", function () {",
@@ -14282,8 +13935,7 @@
 							"script": {
 								"exec": [
 									"if (responseCode.code >= 500) {",
-									"    retry = eval(pm.globals.get(\"retryOnFailure\"));",
-									"    retry();",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -14298,8 +13950,6 @@
 									"    pm.environment.unset('subproject');",
 									"    pm.environment.unset('appAdminEmail');",
 									"    pm.environment.unset('maxAmountOfRetries');",
-									"    pm.environment.unset('execCounter');",
-									"    pm.globals.unset(\"retryOnFailure\");",
 									"}"
 								],
 								"type": "text/javascript"

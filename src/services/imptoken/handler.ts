@@ -110,12 +110,14 @@ export class ImpTokenHandler {
                 checkAuthorizations.push(
                     Auth.isReadAuthorized(tokenBody.userToken,
                         subproject.acls.viewers.concat(subproject.acls.admins),
-                        tenant, subprojectName, req[Config.DE_FORWARD_APPKEY], false));
+                        tenant, subprojectName, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string, false));
             } else {
                 checkAuthorizations.push(
                     Auth.isWriteAuthorized(tokenBody.userToken,
                         subproject.acls.admins,
-                        tenant, subprojectName, req[Config.DE_FORWARD_APPKEY], false));
+                        tenant, subprojectName, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string, false));
             }
         }
         const results = await Promise.all(checkAuthorizations);

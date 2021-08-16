@@ -27,6 +27,7 @@ export class Secrets{
 
     public async getSecret(secretName: string, required = true): Promise<string> {
         try {
+            // pragma: allowlist nextline secret
             const [secret] = await this.client.accessSecretVersion({
                 name: `projects/${ConfigGoogle.SERVICE_CLOUD_PROJECT}/secrets/${secretName}/versions/latest`
             });

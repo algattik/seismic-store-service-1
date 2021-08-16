@@ -83,6 +83,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Legal tag of the dataset."
           in: header
           name: ltag
@@ -142,6 +148,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -188,6 +200,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -237,6 +255,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -300,6 +324,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -358,6 +388,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -404,6 +440,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -446,6 +488,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -496,6 +544,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -548,6 +602,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "The tenant project name."
           in: path
           name: tenantid
@@ -579,6 +639,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -623,6 +689,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -666,6 +738,12 @@ paths:
       tags:
         - Dataset
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -709,6 +787,12 @@ paths:
       tags:
         - Utility
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Seismic store path, sd://tenant/sub-project/path."
           in: query
           name: sdpath
@@ -758,6 +842,12 @@ paths:
       tags:
         - Utility
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Seismic store source dataset path."
           in: query
           name: sdpath_from
@@ -803,6 +893,12 @@ paths:
       tags:
         - Utility
       parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""      
         - description: "Seismic store path in the format sd://tenant/sub-project."
           in: query
           name: sdpath
@@ -842,7 +938,7 @@ paths:
           name: request body
           required: true
           schema:
-            $ref: "#/definitions/ImpersonationToken"
+            $ref: "#/definitions/ImpTokenRequest"
       responses:
         200:
           description: "Generated a impersonation credentials token successfully."
@@ -961,9 +1057,9 @@ paths:
           type: string
           required: true
           default: ""
-        - description: "The name of the tenant/data-partition."
-          in: query
-          name: tenant-name
+        - description: "The impersonation token context."
+          in: header
+          name: impersonation-token-context
           type: string
           required: true
           default: ""
@@ -980,72 +1076,6 @@ paths:
           description: "Forbidden"
         404:
           description: "Not found"
-    delete:
-      summary: "Revoke the impersonation token and/or a list of impersonation token signatures."
-      description: "<ul><li>Revoke the impersonation token and/or a list of impersonation token signatures</li><li>Required roles: app.trusted</li></ul>"
-      operationId: impersonation-token-revoke
-      tags:
-        - Impersonation Token
-      parameters:
-        - description: "The impersonation token to revoke (required if the signatures body field is not specified)."
-          in: header
-          name: impersonation-token
-          type: string
-          required: false
-          default: ""
-        - description: "The name of the tenant/data-partition."
-          in: query
-          name: tenant-name
-          type: string
-          required: true
-          default: ""
-        - description: "List of impersonation token signatures."
-          in: query
-          name: signatures
-          required: false
-          type: array
-          items:
-            type: string
-            default: ""
-          collectionFormat: multi
-      responses:
-        200:
-          description: "The impersonation token and/or the requested signatures have been successfully revoked."
-        400:
-          description: "Bad request"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-        404:
-          description: "Not found"
-  /api/v3/impersonation-token/signatures:
-    get:
-      summary: "Retrieve the list of active impersonation token signatures."
-      description: "<ul><li>Retrieve the list of active impersonation token signatures.</li><li>Required roles: app.trusted</li></ul>"
-      operationId: impersonation-token-signature
-      tags:
-        - Impersonation Token
-      parameters:
-        - description: "The name of the tenant/data-partition"
-          in: query
-          name: tenant-name
-          type: string
-          required: true
-          default: ""
-      responses:
-        200:
-          description: "The list of signatures with their metadata."
-          schema:
-            $ref: "#/definitions/ImpersonationTokenSignatureResponse"
-        400:
-          description: "Bad request."
-        401:
-          description: "Unauthorized."
-        403:
-          description: "Forbidden."
-        404:
-          description: "Not found."
 
   /subproject/tenant/{tenantid}/subproject/{subprojectid}:
     post:
@@ -1851,7 +1881,7 @@ definitions:
 
   # OK
   ImpersonationToken:
-    required: ["impersonation_token", "token_type", "expires_in"]
+    required: ["impersonation_token", "token_type", "expires_in", "context"]
     properties:
       impersonation_token:
         type: string
@@ -1862,10 +1892,14 @@ definitions:
       expires_in:
         type: number
         description: Token expiration time.
+      context:
+        type: string
+        description: the Impersonation token context.
     example:
       impersonation_token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
       token_type: "Bearer"
       expires_in: 3600
+      context: "xf420cvrv303fm4vksvdkvnejvrjbinb0exdnberonswc2mvmalksdvdeakvwrmk"
 
   # OK
   Resource:
@@ -1894,37 +1928,6 @@ definitions:
           { "resource": "sd://tnx01/spx02", "readonly": false }
         ]
       metadata: { "jobId": 1234 }
-
-  # OK
-  ImpersonationTokenSignature:
-    required: ["created_by", "created_date", "resources", "signature"]
-    properties:
-      created_by:
-        type: string
-        description: The trusted app id .
-      created_date:
-        type: string
-        description: The create date and time.
-      resources:
-        type: array
-        items:
-          $ref: "#/definitions/Resource"
-      signature:
-        type: string
-        description: the impersonation token signature.
-      metadata:
-        type: object
-        description: the custom metadata associated.
-
-  # OK
-  ImpersonationTokenSignatureResponse:
-    required: ["signatures"]
-    properties:
-      signatures:
-        type: array
-        items:
-          $ref: "#/definitions/ImpersonationTokenSignature"
-
   # OK
   ImpTokenRequest:
     required: ["token", "resources", "refresh-url"]

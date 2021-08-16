@@ -70,11 +70,13 @@ export class UtilityHandler {
             if (readOnly) {
                 await Auth.isReadAuthorized(req.headers.authorization,
                     subproject.acls.viewers.concat(subproject.acls.admins),
-                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
             } else {
                 await Auth.isWriteAuthorized(req.headers.authorization,
                     subproject.acls.admins,
-                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
             }
         } else {
             const dataset = subproject.enforce_key ?
@@ -85,21 +87,25 @@ export class UtilityHandler {
                 if (dataset.acls) {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         dataset.acls.viewers.concat(dataset.acls.admins),
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
                 } else {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         subproject.acls.viewers.concat(subproject.acls.admins),
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
                 }
             } else {
                 if (dataset.acls) {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         dataset.acls.admins,
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
                 } else {
                     await Auth.isReadAuthorized(req.headers.authorization,
                         subproject.acls.admins,
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY]);
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
                 }
             }
             objectPrefix = dataset.gcsurl.split('/')[1];
@@ -192,7 +198,8 @@ export class UtilityHandler {
             //  Check if user is authorized
             await Auth.isReadAuthorized(req.headers.authorization,
                 subproject.acls.viewers.concat(subproject.acls.admins),
-                tenant, sdPath.subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, sdPath.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
 
         if (pagination) {
@@ -262,17 +269,20 @@ export class UtilityHandler {
             if (datasetFrom.acls) {
                 await Auth.isReadAuthorized(req.headers.authorization,
                     datasetFrom.acls.viewers.concat(datasetFrom.acls.admins),
-                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
 
             } else {
                 await Auth.isReadAuthorized(req.headers.authorization,
                     subproject.acls.viewers.concat(subproject.acls.admins),
-                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY]);
+                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
             }
             // check if has write access on destination dataset and read access on the source subproject
             await Auth.isWriteAuthorized(req.headers.authorization,
                 subproject.acls.admins,
-                tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY]);
+                tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
 
         }
 

@@ -19,6 +19,7 @@ export interface ImpersonationTokenModel {
     impersonation_token: string;
     expires_in: number;
     token_type: string;
+    context: string;
 }
 
 // Impersonation Token Resource
@@ -34,11 +35,9 @@ export interface ImpersonationTokenRequestBodyModel {
     metadata: object;
 }
 
-// Impersonation Token Signature Model
-export interface ImpersonationTokenDataModel {
-    signature: string;
+// Impersonation Token Context Model
+export interface ImpersonationTokenContextModel {
     resources: ImpersonationTokenResourceModel[];
     metadata: object;
-    created_by: string;
-    created_date: string;
+    user: string;
 }

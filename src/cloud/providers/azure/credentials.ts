@@ -87,6 +87,7 @@ export class AzureCredentials extends AbstractCredentials {
             form: {
                 grant_type: 'client_credentials',
                 client_id: clientID,
+                // pragma: allowlist nextline secret
                 client_secret: clientSecret,
                 resource: appResourceID
             },

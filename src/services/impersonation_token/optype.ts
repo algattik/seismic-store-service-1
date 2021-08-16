@@ -14,4 +14,4 @@
 // limitations under the License.
 // ============================================================================
 
-export enum ImpersonationTokenOps { Generate, Refresh, DeleteSignatures, GetSignatures }
+export enum ImpersonationTokenOps { Generate, Refresh }
