@@ -27,7 +27,7 @@ export class ConfigGoogle extends Config {
     // endpoints
     public static GOOGLE_EP_IAM = 'https://iam.googleapis.com/v1';
     public static GOOGLE_EP_OAUTH2 = 'https://www.googleapis.com/oauth2/v4';
-    public static GOOGLE_EP_METADATA = 'http://metadata/computeMetadata/v1';
+    public static GOOGLE_EP_METADATA = 'http://169.254.169.254/computeMetadata/v1';
     public static GOOGLE_EP_ROBOT = 'https://www.googleapis.com/robot/v1';
     public static GOOGLE_EP_RESOURCES = 'https://cloudresourcemanager.googleapis.com/v1';
 

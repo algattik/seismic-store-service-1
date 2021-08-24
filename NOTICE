@@ -675,7 +675,7 @@ The following software have components provided under the terms of this license:
 - npm-run-path (from https://www.npmjs.com/package/npm-run-path)
 - npmlog (from https://www.npmjs.com/package/npmlog)
 - number-is-nan (from https://github.com/sindresorhus/number-is-nan#readme)
-- object-assign (from https://github.com/sindresorhus/object-assign#readme)
+- object-assign (from https://www.npmjs.com/package/object-assign)
 - object-hash (from https://www.npmjs.com/package/object-hash)
 - object-inspect (from https://www.npmjs.com/package/object-inspect)
 - object-inspect (from https://www.npmjs.com/package/object-inspect)
@@ -931,3 +931,5 @@ The following software have components provided under the terms of this license:
 - json-schema (from http://github.com/kriszyp/json-schema)
 - querystring (from https://www.npmjs.com/package/querystring)
 - sax (from https://www.npmjs.com/package/sax)
+
+
