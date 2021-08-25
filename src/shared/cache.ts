@@ -14,9 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import redis from 'redis';
-
+import Redis from 'ioredis';
 import { Config } from '../cloud';
+
 
 let _cacheCore: CacheCore;
 
@@ -26,7 +26,7 @@ export class Cache<T = string> {
     private _keyTag: string;
 
     constructor(keyTag?: string) {
-        if(!_cacheCore) {
+        if (!_cacheCore) {
             initSharedCache();
         }
         this._keyTag = keyTag;
@@ -52,7 +52,12 @@ export class Cache<T = string> {
 
 class CacheCore {
 
-    private _redisClient: redis.RedisClient;
+    private _redisClient: any;
+
+    // retry strategy
+    private static retryStrategy = (times: number) => {
+        return Math.pow(2, times) + Math.random() * 100;
+    };
 
     constructor() {
 
@@ -60,48 +65,60 @@ class CacheCore {
             Config.UTEST ?
                 require('redis-mock').createClient() :
                 Config.DES_REDIS_INSTANCE_KEY ? Config.DES_REDIS_INSTANCE_TLS_DISABLE ?
-                    redis.createClient({
+                    new Redis({
                         host: Config.DES_REDIS_INSTANCE_ADDRESS,
                         port: Config.DES_REDIS_INSTANCE_PORT,
-                        auth_pass: Config.DES_REDIS_INSTANCE_KEY,
+                        password: Config.DES_REDIS_INSTANCE_KEY,
+                        retryStrategy: CacheCore.retryStrategy,
+                        maxRetriesPerRequest: 5,
+                        commandTimeout: 2000
                     }) :
-                    redis.createClient({
+                    new Redis({
                         host: Config.DES_REDIS_INSTANCE_ADDRESS,
                         port: Config.DES_REDIS_INSTANCE_PORT,
-                        auth_pass: Config.DES_REDIS_INSTANCE_KEY,
-                        tls: { servername: Config.DES_REDIS_INSTANCE_ADDRESS }
+                        password: Config.DES_REDIS_INSTANCE_KEY,
+                        tls: { servername: Config.DES_REDIS_INSTANCE_ADDRESS },
+                        retryStrategy: CacheCore.retryStrategy,
+                        maxRetriesPerRequest: 5,
+                        commandTimeout: 2000
                     }) :
-                    redis.createClient({
+                    new Redis({
                         host: Config.DES_REDIS_INSTANCE_ADDRESS,
                         port: Config.DES_REDIS_INSTANCE_PORT,
-                    })
+                        retryStrategy: CacheCore.retryStrategy,
+                        maxRetriesPerRequest: 5,
+                        commandTimeout: 2000
+                    });
     }
 
     public async _del(key: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this._redisClient.del(key, (err) => {
-                err ? reject(err) : resolve(); });
+                err ? reject(err) : resolve();
             });
+        });
     }
 
     public async _get(key: string): Promise<any> {
         return new Promise((resolve, reject) => {
             this._redisClient.get(key, (err, res) => {
-                err ? reject(err) : resolve(res ? JSON.parse(res).value : undefined); });
+                err ? reject(err) : resolve(res ? JSON.parse(res).value : undefined);
             });
+        });
     }
 
-    public async _set(key: string, value: any, expireTime:number): Promise<void> {
+    public async _set(key: string, value: any, expireTime: number): Promise<void> {
         return new Promise((resolve, reject) => {
-            this._redisClient.setex(key, expireTime, JSON.stringify({value}), (err) => {
-                err ? reject(err) : resolve(); });
+            this._redisClient.setex(key, expireTime, JSON.stringify({ value }), (err) => {
+                err ? reject(err) : resolve();
             });
+        });
     }
 
 }
 
 export function initSharedCache() {
-    if(!_cacheCore) {
+    if (!_cacheCore) {
         _cacheCore = new CacheCore();
     }
 }
