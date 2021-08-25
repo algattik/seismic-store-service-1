@@ -14,16 +14,16 @@
 // limitations under the License.
 // ============================================================================
 
+import Redis from 'ioredis';
 import Redlock from 'redlock-async';
-
-import { Config } from '../../cloud';
+import { Config, LoggerFactory } from '../../cloud';
 import { Error, Utils } from '../../shared';
 
 // lock interface (this is the cache entry)
 interface ILock { id: string; cnt: number; }
 
 // Write Lock interface
-export interface IWriteLockSession {idempotent: boolean, wid: string, mutex: any, key: string};
+export interface IWriteLockSession { idempotent: boolean, wid: string, mutex: any, key: string; };
 
 export class Locker {
 
@@ -32,14 +32,18 @@ export class Locker {
     private static EXP_READLOCK = 3600; // after 1h  readlock entry will be removed
     private static TIME_5MIN = 300; // exp time margin to use in the main read locks
 
-    // the redis client
     private static redisClient;
     private static redisSubscriptionClient;
     private static redlock;
 
-    public static getWriteLockTTL(): number { return this.EXP_WRITELOCK };
-    public static getReadLockTTL(): number { return this.EXP_READLOCK };
-    public static getMutexTTL(): number { return this.TTL };
+    public static getWriteLockTTL(): number { return this.EXP_WRITELOCK; };
+    public static getReadLockTTL(): number { return this.EXP_READLOCK; };
+    public static getMutexTTL(): number { return this.TTL; };
+
+    // Exponential Retry strategy in event of an error
+    private static retryStrategy = (times: number) => {
+        return Math.pow(2, times) + Math.random() * 100;
+    };
 
     public static async init() {
 
@@ -48,35 +52,61 @@ export class Locker {
             this.redisClient = redis.createClient();
             this.redisSubscriptionClient = redis.createClient();
         } else {
-            const redis = require('redis');
-            if(Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
+
+            if (Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
                 Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE ?
-                this.redisClient = redis.createClient({
+                    this.redisClient = new Redis({
+                        host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                        port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                        password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
+
+                        /* Retry failed requests only once*/
+                        maxRetriesPerRequest: 5,
+
+                        /* Exponential backoff retry strategy */
+                        retryStrategy: this.retryStrategy,
+
+                        /* Max time for a single command after which a timeout occurs.
+                        Without this the client waits indefinitely*/
+                        commandTimeout: 2000 //
+
+                    }) :
+                    this.redisClient = new Redis({
+                        host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                        port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                        password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
+                        tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
+                        maxRetriesPerRequest: 5,
+                        retryStrategy: this.retryStrategy,
+                        commandTimeout: 2000
+                    }
+                    );
+                this.redisSubscriptionClient = new Redis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    auth_pass: Config.LOCKSMAP_REDIS_INSTANCE_KEY
-                }):
-                this.redisClient = redis.createClient({
-                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    auth_pass: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
-                    tls: {servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS}}
-                );
-                this.redisSubscriptionClient = redis.createClient({
-                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    auth_pass: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
-                    tls: {servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS}}
-                );
+                    password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
+                    tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
+                    maxRetriesPerRequest: 5,
+                    retryStrategy: this.retryStrategy,
+                    commandTimeout: 2000
+                });
+
             }
             else {
-                this.redisClient = redis.createClient({
+
+                this.redisClient = new Redis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                    maxRetriesPerRequest: 5,
+                    retryStrategy: this.retryStrategy,
+                    commandTimeout: 2000
                 });
-                this.redisSubscriptionClient = redis.createClient({
+                this.redisSubscriptionClient = new Redis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                    maxRetriesPerRequest: 5,
+                    retryStrategy: this.retryStrategy,
+                    commandTimeout: 2000
                 });
             }
 
@@ -89,6 +119,11 @@ export class Locker {
                     );
                 }
             });
+
+            this.redisClient.on('error', (error) => {
+                LoggerFactory.build(Config.CLOUDPROVIDER).error(error);
+            });
+
         }
 
         // initialize the locker
@@ -164,7 +199,7 @@ export class Locker {
         const lockValue = (await Locker.getLock(lockKey));
 
         // idempotency requirement
-        if(idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
+        if (idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The provided idempotency key, for a write-lock operation, must start with the \'W\' letter'));
         }
@@ -174,26 +209,26 @@ export class Locker {
         if (!lockValue) {
             const lockValueNew = idempotentWriteLock || this.generateWriteLockID();
             await this.set(lockKey, lockValueNew, this.EXP_WRITELOCK);
-            return {idempotent: false, wid: lockValueNew, mutex: cachelock, key: lockKey};
+            return { idempotent: false, wid: lockValueNew, mutex: cachelock, key: lockKey };
         }
 
         // check if writelock already exist and match the input one (idempotent call)
-        if(idempotentWriteLock && lockValue === idempotentWriteLock) {
-            return {idempotent: true, wid: idempotentWriteLock, mutex: cachelock, key: lockKey};
+        if (idempotentWriteLock && lockValue === idempotentWriteLock) {
+            return { idempotent: true, wid: idempotentWriteLock, mutex: cachelock, key: lockKey };
         }
 
         throw (Error.make(Error.Status.LOCKED,
             lockKey + ' is ' + (this.isWriteLock(lockValue) ?
-                ('write locked ') + Error.get423WriteLockReason():
+                ('write locked ') + Error.get423WriteLockReason() :
                 ('read locked ' + + Error.get423ReadLockReason()))));
     }
 
     // remove both lock and mutex
     public static async removeWriteLock(writeLockSession: IWriteLockSession, keepTheLock = false): Promise<void> {
-        if(writeLockSession && writeLockSession.mutex) {
+        if (writeLockSession && writeLockSession.mutex) {
             await Locker.releaseMutex(writeLockSession.mutex, writeLockSession.key);
         }
-        if(!keepTheLock) {
+        if (!keepTheLock) {
             if (writeLockSession && writeLockSession.wid) {
                 await Locker.del(writeLockSession.key);
             }
@@ -204,7 +239,7 @@ export class Locker {
     public static async acquireWriteLock(lockKey: string, idempotentWriteLock: string, wid?: string): Promise<ILock> {
 
         // idempotency requirement
-        if(idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
+        if (idempotentWriteLock && !idempotentWriteLock.startsWith('W')) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The provided idempotency key, for a write-lock operation, must start with the \'W\' letter'));
         }
@@ -213,9 +248,9 @@ export class Locker {
         const lockValue = (await Locker.getLock(lockKey));
 
         // Already write locked but the idempotentWriteLock match the once in cache (idempotent call)
-        if(lockValue && idempotentWriteLock && lockValue === idempotentWriteLock) {
+        if (lockValue && idempotentWriteLock && lockValue === idempotentWriteLock) {
             await this.releaseMutex(cachelock, lockKey);
-            return {id: idempotentWriteLock, cnt: 0};
+            return { id: idempotentWriteLock, cnt: 0 };
         }
 
         if (lockValue && wid && wid !== lockValue && this.isWriteLock(lockValue)) {
@@ -273,7 +308,7 @@ export class Locker {
     public static async acquireReadLock(lockKey: string, idempotentReadLock?: string, wid?: string): Promise<ILock> {
 
         // idempotency requirement
-        if(idempotentReadLock && !idempotentReadLock.startsWith('R')) {
+        if (idempotentReadLock && !idempotentReadLock.startsWith('R')) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The provided idempotency key, for a read-lock operation, must start with the \'R\' letter'));
         }
@@ -282,7 +317,7 @@ export class Locker {
         const cachelock = await this.acquireMutex(lockKey);
         const lockValue = (await Locker.getLock(lockKey));
 
-        if(lockValue && idempotentReadLock && !this.isWriteLock(lockValue) &&
+        if (lockValue && idempotentReadLock && !this.isWriteLock(lockValue) &&
             (lockValue as string[]).indexOf(idempotentReadLock) > -1) {
             await this.releaseMutex(cachelock, lockKey);
             return { id: idempotentReadLock, cnt: (lockValue as string[]).length };
