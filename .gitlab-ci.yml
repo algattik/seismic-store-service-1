@@ -13,6 +13,8 @@ variables:
   AWS_BUILD_SUBDIR: src/cloud/providers/aws/build-aws
   AWS_TEST_SUBDIR: tests
   AWS_ENVIRONMENT: dev
+  AWS_DEPLOY_TARGET: EKS
+  AWS_EKS_DEPLOYMENT_NAME: os-seismic-store
   AWS_BUILDER_DOCKERFILE_PATH: src/cloud/providers/aws/build-aws/builder.Dockerfile
   AWS_RUNTIME_DOCKERFILE_PATH: src/cloud/providers/aws/build-aws/runtime.Dockerfile
   # skipping tests here. Using a local file to run tests
