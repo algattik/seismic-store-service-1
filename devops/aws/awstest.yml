@@ -1,7 +1,7 @@
 aws-test-newman:
   extends:
     - .aws
-    - .aws_base_variables
+    - .aws_common_variables
     - .aws_variables
   stage: integration
   image: node
