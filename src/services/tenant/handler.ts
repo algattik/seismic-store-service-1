@@ -141,7 +141,6 @@ export class TenantHandler {
     public static async getTenantSDPath(req: expRequest): Promise<string> {
 
         const datapartition = TenantParser.dataPartition(req);
-        
         try {
             const tenants = await TenantDAO.getAll();
             if (datapartition === 'slb') return (Config.SDPATHPREFIX + datapartition);
