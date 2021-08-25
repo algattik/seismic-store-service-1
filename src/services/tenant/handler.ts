@@ -141,13 +141,6 @@ export class TenantHandler {
     public static async getTenantSDPath(req: expRequest): Promise<string> {
 
         const datapartition = TenantParser.dataPartition(req);
-        // // retrieve the tenant informations
-        // const tenant = await TenantDAO.get(datapartition);
-
-        // if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-        //     await Auth.isUserRegistered(req.headers.authorization,
-        //         tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        // }
         
         try {
             const tenants = await TenantDAO.getAll();
