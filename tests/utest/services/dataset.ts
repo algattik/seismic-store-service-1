@@ -444,7 +444,7 @@ export class TestDatasetSVC {
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isReadAuthorized').resolves(undefined);
-            this.sandbox.stub(DatasetDAO, 'list').resolves([{}] as DatasetModel[]);
+            this.sandbox.stub(DatasetDAO, 'list').resolves({ datasets: [{} as DatasetModel], nextPageCursor: null });
             this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
             this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
             this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('datapartition');
@@ -1039,7 +1039,7 @@ export class TestDatasetSVC {
             this.journal.runQuery.resolves([[{}], {}] as never);
             this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves();
             this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
-            await DatasetDAO.list(this.journal, this.dataset);
+            await DatasetDAO.list(this.journal, this.dataset, null);
             done();
         });
     }

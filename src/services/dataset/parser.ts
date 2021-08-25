@@ -109,10 +109,28 @@ export class DatasetParser {
         req.query.seismicmeta === 'true'];
     }
 
-    public static list(req: expRequest): DatasetModel {
+    public static list(req: expRequest): any {
         const dataset = this.createDatasetModelFromRequest(req);
         dataset.gtags = req.query.gtag;
-        return dataset;
+
+        const limit = parseInt(req.query.limit, 10);
+        if (limit < 0) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The \'limit\' query parameter can not be less than zero.'));
+        }
+        const cursor = req.query.cursor as string;
+        if (cursor === '') {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The \'cursor\' query parameter can not be empty if supplied'));
+        }
+        let pagination = null;
+        if (limit || cursor) {
+            pagination = { limit, cursor };
+        }
+
+        // Retrieve the list of datasets metadata
+        return { dataset, pagination };
+
     }
 
     public static delete(req: expRequest): DatasetModel {

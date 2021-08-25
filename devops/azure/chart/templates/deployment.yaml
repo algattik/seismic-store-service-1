@@ -15,7 +15,11 @@ spec:
       labels:
         app: {{ .Release.Name }}
         aadpodidbinding: {{ .Values.global.podidentity }}
-    spec:
+    spec: 
+{{- if .Values.global.isAutoscalingEnabled }}
+      nodeSelector:
+        nodepool: {{ .Values.global.nodepool }} 
+{{- end }}   
       containers:
         - name: {{ .Release.Name }}
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}

@@ -91,7 +91,11 @@ export class ImpTokenDAO {
         try {
             await request(options);
         } catch (error) {
-            throw (Error.make(Error.Status.BAD_REQUEST, 'The impersonation token cannot be refreshed.'));
+            // For any code different than 4xx the imptoken can be refreshed
+            // This is a temporary fix to handle unavailability of client infrastructure
+            if (error.statusCode >= 400 && error.statusCode <= 499) {
+                throw (Error.make(Error.Status.BAD_REQUEST, 'The impersonation token cannot be refreshed.'));
+            }
         }
 
     }
