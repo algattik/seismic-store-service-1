@@ -5,7 +5,7 @@ aws-test-newman:
     - .aws_variables
   stage: integration
   image: node
-  needs: ['aws-update-eks']
+  needs: [{ job: 'aws-update-ecs', optional: true }, { job: 'aws-update-eks', optional: true }]
   script:
     - apt-get update
     - apt-get install -y python
