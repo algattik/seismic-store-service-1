@@ -140,12 +140,18 @@ export class TenantHandler {
     // get tenant path from data partition information
     public static async getTenantSDPath(req: expRequest): Promise<string> {
 
-        const datapartition = TenantParser.dataPartition(req);
+        const dataPartition = TenantParser.dataPartition(req);
+
+        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            await Auth.isUserRegistered(req.headers.authorization,
+                (await TenantDAO.get(dataPartition)).esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
         try {
             const tenants = await TenantDAO.getAll();
-            if (datapartition === 'slb') return (Config.SDPATHPREFIX + datapartition);
+            if (dataPartition === 'slb') return (Config.SDPATHPREFIX + dataPartition);
             for (const tenant of tenants) {
-                if (tenant.esd.startsWith(datapartition)) {
+                if (tenant.esd.startsWith(dataPartition)) {
                     if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
                         await Auth.isUserRegistered(req.headers.authorization,
                             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
@@ -155,7 +161,7 @@ export class TenantHandler {
             }
         } catch (error) {
             if ((error as ErrorModel).error.code === Error.Status.NOT_IMPLEMENTED) {
-                return Config.SDPATHPREFIX + datapartition;
+                return Config.SDPATHPREFIX + dataPartition;
             } else { throw error; }
         }
 
