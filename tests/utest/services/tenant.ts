@@ -97,8 +97,9 @@ export class TestTenantSVC {
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.datapartition = 'datapartition';
-            this.sandbox.stub(TenantDAO, 'getAll').resolves([{ name: 'tenant01', default_acls: 'x', esd: 'datapartition.domain.com', gcpid: 'any' }]);
             this.sandbox.stub(Auth, 'isUserRegistered').resolves();
+            this.sandbox.stub(TenantDAO, 'get').resolves({ name: 'tenant01', default_acls: 'x', esd: 'datapartition.domain.com', gcpid: 'any' });
+            this.sandbox.stub(TenantDAO, 'getAll').resolves([{ name: 'tenant01', default_acls: 'x', esd: 'datapartition.domain.com', gcpid: 'any' }]);
             Tx.checkTrue((await TenantHandler.getTenantSDPath(expReq)) === Config.SDPATHPREFIX + 'tenant01', done);
         });
 
