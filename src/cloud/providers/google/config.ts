@@ -16,7 +16,8 @@
 
 import fs from 'fs';
 import { Config, ConfigFactory } from '../../config';
-import { Secrets  } from './secrets'
+import { LoggerFactory } from '../../logger';
+import { Secrets } from './secrets';
 
 @ConfigFactory.register('google')
 export class ConfigGoogle extends Config {
@@ -74,78 +75,86 @@ export class ConfigGoogle extends Config {
 
     public async init(): Promise<void> {
 
-        // load des target audience for service to service communication
-        ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE = process.env.SEISTORE_DES_TARGET_AUDIENCE;
-        Config.checkRequiredConfig(ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE, 'DES_SERVICE_TARGET_AUDIENCE');
+        try {
 
-        // set the google cloud service project id
-        ConfigGoogle.SERVICE_CLOUD_PROJECT = process.env.SERVICE_CLOUD_PROJECT;
-        Config.checkRequiredConfig(ConfigGoogle.SERVICE_CLOUD_PROJECT, 'SERVICE_CLOUD_PROJECT');
+            // load des target audience for service to service communication
+            ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE = process.env.SEISTORE_DES_TARGET_AUDIENCE;
+            Config.checkRequiredConfig(ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE, 'DES_SERVICE_TARGET_AUDIENCE');
 
-        // set the base service path
-        ConfigGoogle.API_BASE_URL_PATH = process.env.API_BASE_URL_PATH || ConfigGoogle.API_BASE_URL_PATH;
+            // set the google cloud service project id
+            ConfigGoogle.SERVICE_CLOUD_PROJECT = process.env.SERVICE_CLOUD_PROJECT;
+            Config.checkRequiredConfig(ConfigGoogle.SERVICE_CLOUD_PROJECT, 'SERVICE_CLOUD_PROJECT');
 
-        // load service identity from credential file (for local dev - on cloud use work-load identities)
-        ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME = process.env.SERVICE_IDENTITY_KEY_FILENAME;
-        if (ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME) {
-            const data = JSON.parse(fs.readFileSync(ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME).toString());
-            ConfigGoogle.SERVICE_IDENTITY_EMAIL = data.client_email;
-            ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY = data.private_key;
-            ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY_ID = data.private_key_id;
+            // set the base service path
+            ConfigGoogle.API_BASE_URL_PATH = process.env.API_BASE_URL_PATH || ConfigGoogle.API_BASE_URL_PATH;
+
+            // load service identity from credential file (for local dev - on cloud use work-load identities)
+            ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME = process.env.SERVICE_IDENTITY_KEY_FILENAME;
+            if (ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME) {
+                const data = JSON.parse(fs.readFileSync(ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME).toString());
+                ConfigGoogle.SERVICE_IDENTITY_EMAIL = data.client_email;
+                ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY = data.private_key;
+                ConfigGoogle.SERVICE_IDENTITY_PRIVATE_KEY_ID = data.private_key_id;
+            }
+
+            ConfigGoogle.ENTITLEMENT_BASE_URL_PATH = process.env.ENTITLEMENT_BASE_URL_PATH || '/entitlements/v2';
+            ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY = process.env.DATA_PARTITION_REST_HEADER_KEY || 'slb-data-partition-id'; // to-fix
+            ConfigGoogle.PUBSUBTOPIC = process.env.PUBSUBTOPIC !== undefined ? process.env.PUBSUBTOPIC : 'subproject-operations';
+
+            // read the optional auth provider id and secret
+            ConfigGoogle.SERVICE_AUTH_PROVIDER = process.env.SERVICE_AUTH_PROVIDER;
+            ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL = await new Secrets().getSecret(
+                'sdms-svc-auth-provider-credential', false);
+
+            await Config.initServiceConfiguration({
+                SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
+                SERVICE_PORT: +process.env.PORT || 5000,
+                API_BASE_PATH: ConfigGoogle.API_BASE_URL_PATH,
+                IMP_SERVICE_ACCOUNT_SIGNER: process.env.IMP_SERVICE_ACCOUNT_SIGNER,
+                LOCKSMAP_REDIS_INSTANCE_ADDRESS: process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                LOCKSMAP_REDIS_INSTANCE_PORT: +process.env.LOCKSMAP_REDIS_INSTANCE_PORT,
+                LOCKSMAP_REDIS_INSTANCE_KEY: process.env.LOCKSMAP_REDIS_INSTANCE_KEY,
+                DES_REDIS_INSTANCE_ADDRESS: process.env.DES_REDIS_INSTANCE_ADDRESS,
+                DES_REDIS_INSTANCE_PORT: +process.env.DES_REDIS_INSTANCE_PORT,
+                DES_REDIS_INSTANCE_KEY: process.env.DES_REDIS_INSTANCE_KEY,
+                DES_SERVICE_HOST_COMPLIANCE: process.env.DES_SERVICE_HOST_COMPLIANCE || process.env.SEISTORE_DES_HOST,
+                DES_SERVICE_HOST_ENTITLEMENT: process.env.DES_SERVICE_HOST_ENTITLEMENT || process.env.SEISTORE_DES_HOST,
+                DES_SERVICE_HOST_STORAGE: process.env.DES_SERVICE_HOST_STORAGE || process.env.SEISTORE_DES_HOST,
+                DES_SERVICE_HOST_PARTITION: process.env.DES_SERVICE_HOST_PARTITION || process.env.SEISTORE_DES_HOST,
+                DES_SERVICE_APPKEY: process.env.SEISTORE_DES_APPKEY,
+                DES_GROUP_CHAR_LIMIT: ConfigGoogle.DES_GROUP_CHAR_LIMIT,
+                JWKS_URL: process.env.JWKS_URL,
+                JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS,
+                JWT_AUDIENCE: process.env.JWT_AUDIENCE,
+                JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
+                ENFORCE_SCHEMA_BY_KEY: true,
+                CORRELATION_ID: 'correlation-id',
+                SERVICE_AUTH_PROVIDER: ConfigGoogle.SERVICE_AUTH_PROVIDER,
+                SERVICE_AUTH_PROVIDER_CREDENTIAL: ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL,
+                TENANT_JOURNAL_ON_DATA_PARTITION: false,
+                FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
+                    process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,
+                FEATURE_FLAG_LEGALTAG: process.env.FEATURE_FLAG_LEGALTAG !== undefined ?
+                    process.env.FEATURE_FLAG_LEGALTAG !== 'false' : true,
+                FEATURE_FLAG_SEISMICMETA_STORAGE: process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== undefined ?
+                    process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== 'false' : true,
+                FEATURE_FLAG_IMPTOKEN: process.env.FEATURE_FLAG_IMPTOKEN !== undefined ?
+                    process.env.FEATURE_FLAG_IMPTOKEN !== 'false' : true,
+                FEATURE_FLAG_STORAGE_CREDENTIALS: process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== undefined ?
+                    process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== 'false' : true,
+                FEATURE_FLAG_TRACE: process.env.FEATURE_FLAG_TRACE !== undefined ?
+                    process.env.FEATURE_FLAG_TRACE !== 'false' : true,
+                FEATURE_FLAG_LOGGING: process.env.FEATURE_FLAG_LOGGING !== undefined ?
+                    process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
+                FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
+                    process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
+            });
+
         }
-
-        ConfigGoogle.ENTITLEMENT_BASE_URL_PATH = process.env.ENTITLEMENT_BASE_URL_PATH || '/entitlements/v2';
-        ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY = process.env.DATA_PARTITION_REST_HEADER_KEY || 'slb-data-partition-id'; // to-fix
-        ConfigGoogle.PUBSUBTOPIC = process.env.PUBSUBTOPIC !== undefined ? process.env.PUBSUBTOPIC : 'subproject-operations';
-
-        // read the optional auth provider id and secret
-        ConfigGoogle.SERVICE_AUTH_PROVIDER = process.env.SERVICE_AUTH_PROVIDER;
-        ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL = await new Secrets().getSecret(
-            'sdms-svc-auth-provider-credential', false);
-
-        await Config.initServiceConfiguration({
-            SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
-            SERVICE_PORT: +process.env.PORT || 5000,
-            API_BASE_PATH: ConfigGoogle.API_BASE_URL_PATH,
-            IMP_SERVICE_ACCOUNT_SIGNER: process.env.IMP_SERVICE_ACCOUNT_SIGNER,
-            LOCKSMAP_REDIS_INSTANCE_ADDRESS: process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-            LOCKSMAP_REDIS_INSTANCE_PORT: +process.env.LOCKSMAP_REDIS_INSTANCE_PORT,
-            LOCKSMAP_REDIS_INSTANCE_KEY: process.env.LOCKSMAP_REDIS_INSTANCE_KEY,
-            DES_REDIS_INSTANCE_ADDRESS: process.env.DES_REDIS_INSTANCE_ADDRESS,
-            DES_REDIS_INSTANCE_PORT: +process.env.DES_REDIS_INSTANCE_PORT,
-            DES_REDIS_INSTANCE_KEY: process.env.DES_REDIS_INSTANCE_KEY,
-            DES_SERVICE_HOST_COMPLIANCE: process.env.DES_SERVICE_HOST_COMPLIANCE || process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_HOST_ENTITLEMENT: process.env.DES_SERVICE_HOST_ENTITLEMENT || process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_HOST_STORAGE: process.env.DES_SERVICE_HOST_STORAGE || process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_HOST_PARTITION: process.env.DES_SERVICE_HOST_PARTITION || process.env.SEISTORE_DES_HOST,
-            DES_SERVICE_APPKEY: process.env.SEISTORE_DES_APPKEY,
-            DES_GROUP_CHAR_LIMIT: ConfigGoogle.DES_GROUP_CHAR_LIMIT,
-            JWKS_URL: process.env.JWKS_URL,
-            JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS,
-            JWT_AUDIENCE: process.env.JWT_AUDIENCE,
-            JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
-            ENFORCE_SCHEMA_BY_KEY: true,
-            CORRELATION_ID: 'correlation-id',
-            SERVICE_AUTH_PROVIDER: ConfigGoogle.SERVICE_AUTH_PROVIDER,
-            SERVICE_AUTH_PROVIDER_CREDENTIAL: ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL,
-            TENANT_JOURNAL_ON_DATA_PARTITION: false,
-            FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
-                process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,
-            FEATURE_FLAG_LEGALTAG: process.env.FEATURE_FLAG_LEGALTAG !== undefined ?
-                process.env.FEATURE_FLAG_LEGALTAG !== 'false' : true,
-            FEATURE_FLAG_SEISMICMETA_STORAGE: process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== undefined ?
-                process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== 'false' : true,
-            FEATURE_FLAG_IMPTOKEN: process.env.FEATURE_FLAG_IMPTOKEN !== undefined ?
-                process.env.FEATURE_FLAG_IMPTOKEN !== 'false' : true,
-            FEATURE_FLAG_STORAGE_CREDENTIALS: process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== undefined ?
-                process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== 'false' : true,
-            FEATURE_FLAG_TRACE: process.env.FEATURE_FLAG_TRACE !== undefined ?
-                process.env.FEATURE_FLAG_TRACE !== 'false' : true,
-            FEATURE_FLAG_LOGGING: process.env.FEATURE_FLAG_LOGGING !== undefined ?
-                process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
-            FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
-                process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
-        });
+        catch (error) {
+            LoggerFactory.build(Config.CLOUDPROVIDER).error('Unable to initialize configuration for Google Cloud provider');
+            throw error;
+        }
 
     }
 
