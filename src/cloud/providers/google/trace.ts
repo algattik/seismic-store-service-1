@@ -14,10 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
+import * as tracer from '@google-cloud/trace-agent';
 import { AbstractTrace, TraceFactory } from '../../trace';
 import { ConfigGoogle } from './config';
 
-import * as tracer from '@google-cloud/trace-agent';
 
 @TraceFactory.register('google')
 export class GoogleTrace extends AbstractTrace {
@@ -26,6 +26,7 @@ export class GoogleTrace extends AbstractTrace {
         tracer.start({
             keyFilename: ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME,
             projectId: ConfigGoogle.SERVICE_CLOUD_PROJECT,
+            ignoreUrls: [ConfigGoogle.API_BASE_PATH + '/svcstatus']
         });
     }
 
