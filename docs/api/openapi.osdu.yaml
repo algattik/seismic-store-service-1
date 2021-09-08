@@ -1469,7 +1469,7 @@ paths:
   /app:
     post:
       summary: "Register a new application."
-      description: "<ul><li>Register a new application in the seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Register a new application in the seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: app-register
       tags:
         - Apps
