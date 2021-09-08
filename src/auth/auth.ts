@@ -68,6 +68,7 @@ export interface IAuthProvider {
     convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel;
     getClientID(): string;
     getClientSecret(): string;
+    exchangeCredentialAudience(credential: string, audience: string): Promise<string>;
 }
 
 export abstract class AbstractAuthProvider implements IAuthProvider {
@@ -75,6 +76,7 @@ export abstract class AbstractAuthProvider implements IAuthProvider {
     public abstract convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel;
     public abstract getClientID(): string;
     public abstract getClientSecret(): string;
+    public abstract exchangeCredentialAudience(credential: string, audience: string): Promise<string>;
 }
 
 export class AuthProviderFactory extends AuthProviderFactoryBuilder {
