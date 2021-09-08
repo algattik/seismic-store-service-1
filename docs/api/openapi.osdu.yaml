@@ -60,14 +60,14 @@ paths:
 
   /svcstatus/access:
     get:
-      summary: "Seismic store service status."
-      description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
+      summary: "Seismic store service access check."
+      description: "<ul><li>Validates if the token audience is allowed</li></ul>"
       operationId: service-status-check
       tags:
         - General
       responses:
         200:
-          description: "Seismic store service status."
+          description: "User token audience is allowed by seismic store service."
           schema:
             $ref: "#/definitions/Status"
         401:
