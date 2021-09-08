@@ -52,6 +52,9 @@ export interface ConfigModel {
     CORRELATION_ID?: string;
     SERVICE_AUTH_PROVIDER?: string;
     SERVICE_AUTH_PROVIDER_CREDENTIAL?: string;
+    ENABLE_SDMS_ID_AUDIENCE_CHECK?: boolean;
+    ENABLE_DE_TOKEN_EXCHANGE?: boolean;
+    DES_TARGET_AUDIENCE?: string;
     FEATURE_FLAG_AUTHORIZATION: boolean;
     FEATURE_FLAG_LEGALTAG: boolean;
     FEATURE_FLAG_SEISMICMETA_STORAGE: boolean;
@@ -167,10 +170,20 @@ export abstract class Config implements IConfig {
     // The C++ SDK mainly requires a fix on how behave on mutable calls.
     public static SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS = true;
 
-
     // Access policy of a subproject can either be uniform or dataset
     public static UNIFORM_ACCESS_POLICY = 'uniform';
     public static DATASET_ACCESS_POLICY = 'dataset';
+
+    // Audience Check Reporting
+    // This will be temporary used instead of the more generic JWKS PROXY.
+    // We want a non-fail check that report only the missing audience
+    // slb requirement - to support client migration in september 2021
+    // This will be removed and replace in october 2021 with the generic JWKS PROXY
+    public static ENABLE_SDMS_ID_AUDIENCE_CHECK = false;
+
+    // Enable token exchange to include DE target audience
+    public static ENABLE_DE_TOKEN_EXCHANGE = false;
+    public static DES_TARGET_AUDIENCE = undefined;
 
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
@@ -237,6 +250,10 @@ export abstract class Config implements IConfig {
 
         Config.SERVICE_AUTH_PROVIDER = model.SERVICE_AUTH_PROVIDER || 'generic';
         Config.SERVICE_AUTH_PROVIDER_CREDENTIAL = model.SERVICE_AUTH_PROVIDER_CREDENTIAL || undefined;
+
+        Config.ENABLE_SDMS_ID_AUDIENCE_CHECK = model.ENABLE_SDMS_ID_AUDIENCE_CHECK || false;
+        Config.ENABLE_DE_TOKEN_EXCHANGE = model.ENABLE_DE_TOKEN_EXCHANGE || false;
+        Config.DES_TARGET_AUDIENCE = model.DES_TARGET_AUDIENCE;
 
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');

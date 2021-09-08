@@ -43,7 +43,7 @@ export class Utils {
         return Number(this.getPayloadFromStringToken(base64JwtPayload).exp);
     }
 
-    public static getAudienceFromPayload(base64JwtPayload: string): string {
+    public static getAudienceFromPayload(base64JwtPayload: string): string | string[] {
         return this.getPayloadFromStringToken(base64JwtPayload).aud;
     }
 

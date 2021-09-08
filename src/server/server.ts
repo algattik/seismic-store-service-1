@@ -19,7 +19,8 @@ import express from 'express';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
-import { Error, Feature, FeatureFlags, Response } from '../shared';
+import { Error, Feature, FeatureFlags, Response, Utils } from '../shared';
+import { AuthProviderFactory } from '../auth';
 import { v4 as uuidv4 } from 'uuid';
 
 import fs from 'fs';
@@ -102,11 +103,35 @@ export class Server {
         this.app.use('/seistore-svc/api/v3/swagger-ui.html',swaggerUi.serve, swaggerUi.setup(swaggerDocument,{
             customCss: '.swagger-ui .topbar { display: none }'
         }));
-        this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+        this.app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
 
-            // not required anymore - to verify
-            if (req.get('slb-on-behalf-of') !== undefined) {
-                req.headers.authorization = req.get('slb-on-behalf-of');
+            // Audience Check Reporting
+            // This will be temporary used instead of the more generic JWKS PROXY.
+            // We want a non-fail check that report only the missing audience
+            // slb requirement - to support client migration in september 2021
+            // This will be removed and replace in october 2021 with the generic JWKS PROXY
+            if(Config.ENABLE_SDMS_ID_AUDIENCE_CHECK) {
+                if(req.headers.authorization) {
+                    const audience = Utils.getAudienceFromPayload(req.headers.authorization);
+                    const sdmsID = AuthProviderFactory.build(Config.SERVICE_AUTH_PROVIDER).getClientID();
+                    if((Array.isArray(audience) && audience.indexOf(sdmsID) === -1) || (audience !== sdmsID)) {
+                        if(audience.indexOf(sdmsID) === -1) {
+                            LoggerFactory.build(Config.CLOUDPROVIDER).info('[audience] ' +
+                                JSON.stringify(Utils.getPayloadFromStringToken(req.headers.authorization)));
+                        }
+                    }
+                }
+            }
+
+            // If required, exchange the caller credentials to include the DE target audience
+            if(Config.ENABLE_DE_TOKEN_EXCHANGE) {
+                if(Config.DES_TARGET_AUDIENCE) {
+                    if(req.headers.authorization) {
+                        req.headers.authorization = await AuthProviderFactory.build(
+                            Config.SERVICE_AUTH_PROVIDER).exchangeCredentialAudience(
+                                req.headers.authorization, Config.DES_TARGET_AUDIENCE);
+                    }
+                }
             }
 
             // ensure the authorization header is passed/
@@ -160,7 +185,7 @@ export class Server {
             audience: Config.JWT_AUDIENCE
         }
 
-        // adding middleware to intercept and valiate jwt
+        // adding middleware to intercept and validate jwt
         this.app.use(jwtProxy(jwtValidateOptions));
 
         this.app.use(ServiceRouter);

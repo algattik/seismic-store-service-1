@@ -131,6 +131,11 @@ export class ConfigGoogle extends Config {
                 CORRELATION_ID: 'correlation-id',
                 SERVICE_AUTH_PROVIDER: ConfigGoogle.SERVICE_AUTH_PROVIDER,
                 SERVICE_AUTH_PROVIDER_CREDENTIAL: ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL,
+                ENABLE_SDMS_ID_AUDIENCE_CHECK: process.env.ENABLE_SDMS_ID_AUDIENCE_CHECK !== undefined ?
+                    process.env.ENABLE_SDMS_ID_AUDIENCE_CHECK === 'true' : false,
+                ENABLE_DE_TOKEN_EXCHANGE: process.env.ENABLE_DE_TOKEN_EXCHANGE !== undefined ?
+                    process.env.ENABLE_DE_TOKEN_EXCHANGE === 'true' : false,
+                DES_TARGET_AUDIENCE: process.env.DES_TARGET_AUDIENCE,
                 TENANT_JOURNAL_ON_DATA_PARTITION: false,
                 FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
                     process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,

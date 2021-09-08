@@ -41,4 +41,9 @@ export class GenericAuthProvider extends AbstractAuthProvider {
             'The required feature is not supported, the credential auth provider has not been found.'));
     }
 
+    public exchangeCredentialAudience(credential: string, audience: string): Promise<string> {
+        throw (Error.make(Error.Status.NOT_IMPLEMENTED,
+            'The required feature is not supported, the credential auth provider has not been found.'));
+    }
+
 }
