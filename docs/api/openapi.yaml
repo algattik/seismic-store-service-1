@@ -1480,7 +1480,7 @@ paths:
   /api/v3/app:
     post:
       summary: "Register a new application"
-      description: "<ul><li>Register a new application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Register a new application in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: app-register
       tags:
         - Apps
@@ -1509,7 +1509,7 @@ paths:
 
     get:
       summary: "Retrieve the list of registered applications"
-      description: "<ul><li>Retrieve the list of the registered application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Retrieve the list of the registered application in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: app-list
       tags:
         - Apps
@@ -1540,7 +1540,7 @@ paths:
   /api/v3/app/trusted:
     post:
       summary: "Set a registered application as a trusted application"
-      description: "<ul><li>Set a registered application as a trusted application in seismic store.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Set a registered application as a trusted application in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: trustedapp-register
       tags:
         - Apps
@@ -1570,7 +1570,7 @@ paths:
           description: "Not found"
     get:
       summary: "List the trusted applications in a seismic store tenant"
-      description: "<ul><li>Return the list of the trusted application in seismic store tenant.</li><li>Required roles: users.datalake.admin/li></ul>"
+      description: "<ul><li>Return the list of the trusted application in seismic store tenant.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: trustedapp-list
       tags:
         - Apps
