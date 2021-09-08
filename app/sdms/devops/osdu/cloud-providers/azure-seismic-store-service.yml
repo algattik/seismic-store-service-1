@@ -1,4 +1,6 @@
 variables:
+  #azure variables
+  AZURE_SERVICE: seismic-store-service
   CHART_PATH: devops/azure/chart
   CLOUD_PROVIDER: azure
   E2E_ADMIN_EMAIL: integration.test@azureglobal1.onmicrosoft.com
@@ -10,8 +12,38 @@ variables:
   E2E_TENANT: opendes
   POD_IDENTITY: osdu-identity
   REDIS_INSTANCE_PORT: 6380
+  SDMS_MIN_REPLICAS: 1
+  SDMS_MAX_REPLICAS: 5
   
-
+push_runtime_image_azure:
+  image: danielscholl/azure-build-image
+  tags: ["osdu-medium"]
+  stage: containerize
+  variables:
+    SHA_IMAGE: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+  before_script:
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az acr login -n $AZURE_REGISTRY
+  script:
+    # Azure Container Registry
+    - cd app/sdms
+    - docker build -t builder_sdms:latest --file docker/builder.Dockerfile .
+    - docker build -t $UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
+    - docker tag $UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker tag $UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+  only:
+    variables:
+      - $AZURE == 'true'
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+  
 azure_deploy:
   tags: ["osdu-medium"]
   image: danielscholl/azure-build-image
@@ -28,6 +60,7 @@ azure_deploy:
     - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
   script:
     # Replace values in config file
+    - cd app/sdms
     - cp ${CHART_PATH}/helm-config.yaml ${CHART_PATH}/values.yaml
     - sed -i 's,#{CONTAINER_REGISTRY_NAME}#,'$IMAGE',' ${CHART_PATH}/values.yaml
     - sed -i 's,#{DNS_HOST}#,'$DES_URL',' ${CHART_PATH}/values.yaml
@@ -52,6 +85,12 @@ azure_deploy:
   only:
     variables:
       - $AZURE == 'true'
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
       
 azure_test:
   tags: ["osdu-medium"]
@@ -64,6 +103,7 @@ azure_test:
     AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
+    - cd app/sdms
     - apt-get update
     - apt-get install -y python
     - apt-get install -y python-pip
@@ -76,3 +116,9 @@ azure_test:
   only:
     variables:
       - $AZURE == 'true'
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests

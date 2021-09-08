@@ -1,0 +1,39 @@
+variables:
+  #seismic store service variables
+  ENVIRONMENT: cloud
+  ISGITLAB: "true"
+  PORT: 80
+  REPLICA: 1
+  UTEST_RUNTIME_IMAGE: seistore-svc-runtime
+
+include:
+
+  # build
+  - local: "app/sdms/devops/osdu/build/seismic-store-service.yml"
+
+  # scan
+  # fossa
+  - local: "app/sdms/devops/osdu/scanners/fossa-node.yml"
+  
+  # lint
+  - local: "app/sdms/devops/osdu/scanners/lint-node.yml"
+  
+  # scan for secrets
+  - local: "app/sdms/devops/osdu/scanners/scan-for-secrets-node.yml"
+
+  # containerize
+  # osdu
+  - project: "app/sdms/devops/osdu/contenerize/seismic-store-service.yml"
+
+  # deploy
+  # azure
+  - local: "app/sdms/devops/osdu/cloud-providers/azure-seismic-store-service.yml"
+  
+  # aws
+  - local: "app/sdms/devops/osdu/cloud-providers/aws-seismic-store-service.yml"
+  
+  # gcp
+  - local: "app/sdms/devops/osdu/cloud-providers/gcp-seismic-store-service.yml"
+  
+  # ibm
+  - local: "app/sdms/devops/osdu/cloud-providers/ibm-seismic-store-service.yml"

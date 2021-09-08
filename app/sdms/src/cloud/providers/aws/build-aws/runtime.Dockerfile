@@ -45,4 +45,6 @@ WORKDIR /seistore-service
 COPY src/cloud/providers/aws/build-aws/ssl.sh /seistore-service/ssl.sh
 COPY src/cloud/providers/aws/build-aws/entrypoint.sh /seistore-service/entrypoint.sh
 RUN npm ci --production
+RUN chmod +x /seistore-service/ssl.sh
+RUN chmod +x /seistore-service/entrypoint.sh
 ENTRYPOINT ["/bin/sh", "-c", "/seistore-service/entrypoint.sh"]
