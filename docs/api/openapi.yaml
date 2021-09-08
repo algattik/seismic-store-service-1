@@ -1345,7 +1345,7 @@ paths:
       description: "<ul><li>Return the seistore path to a tenant associated with the data partition.</li><li>Required roles: none</li></ul>"
       operationId: tenant-sdpath
       tags:
-        - Tenant
+        - Tenant (Obsolete)
       parameters:
         - description: "Datapartition of the tenant"
           in: query

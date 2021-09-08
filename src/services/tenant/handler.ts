@@ -142,11 +142,6 @@ export class TenantHandler {
 
         const dataPartition = TenantParser.dataPartition(req);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isUserRegistered(req.headers.authorization,
-                (await TenantDAO.get(dataPartition)).esd, req[Config.DE_FORWARD_APPKEY]);
-        }
-
         try {
             const tenants = await TenantDAO.getAll();
             if (dataPartition === 'slb') return (Config.SDPATHPREFIX + dataPartition);
