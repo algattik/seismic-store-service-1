@@ -4,6 +4,14 @@ lint:
   stage: scan
   needs: ['compile-and-unit-test']
   script:
+    - cd app/sdms
     - npm install -g typescript
     - npm install -g  tslint
     - npm run lint
+  only:
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests

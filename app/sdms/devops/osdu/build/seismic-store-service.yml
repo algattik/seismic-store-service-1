@@ -5,10 +5,18 @@ compile-and-unit-test:
   artifacts:
     reports:
       junit: test-results.xml
-      cobertura: coverage/cobertura-coverage.xml
+      cobertura: app/sdms/coverage/cobertura-coverage.xml
     paths:
-      - coverage/
+      - app/sdms/coverage/
     expire_in: 15 days
   script:
+    - cd app/sdms
     - chmod +x devops/scripts/utest_build_run.sh
     - devops/scripts/utest_build_run.sh
+  only:
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests

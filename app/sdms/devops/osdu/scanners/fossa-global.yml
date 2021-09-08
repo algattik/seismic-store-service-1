@@ -1,0 +1,148 @@
+# This checks to see if the NOTICE file generated based on the current code
+# matches the one that is committed in the repository. Because FOSSA can
+# occassionally order the lines different between executions, we use a python
+# program to parse the file into sections and sort each section. Then we compare
+# and expect the same number of sections, names of sections, and contents
+# (without consider order).
+
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-global.yml"
+
+fossa-check-notice:
+  image: $CI_REGISTRY/divido/fossa-cli/fossa-cli:v6.1
+  stage: attribution
+  needs: ['fossa-analyze']
+  tags: ['osdu-small']
+  only:
+    variables:
+      - $FOSSA_API_KEY
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+  artifacts:
+    when: on_failure
+    paths:
+      - app/sdms/public
+
+  script:
+    # fossa-check-for-licensing-issues needs a CI_COMMIT_BRANCH defined to know how to parse the FOSSA API results
+    # When building tags, this isn't defined by GitLab. In that case, we use the tag name instead. If that's not defined
+    # then things will fail and we'll have to make this smarter
+    - cd app/sdms
+    - test -z "$CI_COMMIT_BRANCH" && export CI_COMMIT_BRANCH="$CI_COMMIT_TAG"
+
+    - mkdir -p public
+    - fossa report licenses --project "${CI_PROJECT_TITLE}" --branch "${CI_COMMIT_BRANCH}" > public/NOTICE
+    - mkdir committed-NOTICE generated-NOTICE
+    - |
+      python <<EOF
+      import re
+      import os
+
+      regexSeparator = re.compile(r"^=+$")
+      regexSubtitle = re.compile(r"^The following software have components provided under the terms of this license:$")
+
+      # ----------------------------------------
+
+      def writeComponents(sectionFile, components):
+          for component in sorted(components):
+              sectionFile.write(component)
+
+          sectionFile.close()
+
+      # ----------------------------------------
+
+      def matchSectionHeader(lines, idx):
+          if (idx <= 3): return None
+
+          sep1 = regexSeparator.match(lines[idx - 4].rstrip())
+          sep2 = regexSeparator.match(lines[idx - 2].rstrip())
+          sub = regexSubtitle.match(lines[idx - 1].rstrip())
+          blank = (lines[idx].rstrip() == "")
+
+          if sep1 and sep2 and sub and blank:
+              return lines[idx - 3].rstrip()
+
+          return None
+
+      # ----------------------------------------
+
+      def split(licenseFile, outputDir):
+          lines = []
+          with open(licenseFile, 'r') as f:
+              lines = f.readlines()
+
+          # --------------------
+
+          sectionFile = None
+          components = []
+
+          for idx in range(0, len(lines)):
+              line = lines[idx]
+
+              if (line.startswith("-")):
+                  components.append(line)
+
+              newHeader = matchSectionHeader(lines, idx)
+              if newHeader:
+                  if sectionFile is not None: writeComponents(sectionFile, components)
+
+                  sectionFile = open(os.path.join(outputDir, newHeader), 'w')
+                  components = []
+
+                  # Write the header to the new file
+                  for writeIdx in range(idx - 4, idx + 1):
+                      sectionFile.write(lines[writeIdx])
+
+      # ----------------------------------------
+
+      split("NOTICE", "committed-NOTICE")
+      split("public/NOTICE", "generated-NOTICE")
+      EOF
+    - |
+      if ! diff -r committed-NOTICE generated-NOTICE; then
+        echo "================================================================================"
+        echo "There are differences between the NOTICE file in the repository and the one generated just now by this command"
+        echo "The most likely cause of this is changes to the project dependencies -- the NOTICE file is providing attribution"
+        echo "to the projects being used, so it must be updated whenever that changes. This includes projects used indirectly as"
+        echo "dependencies of dependencies."
+        echo "----------------------------------------"
+        echo "You can download the NOTICE file from this job's artifacts and directly commit it to the repository to resolve"
+        echo "this. Before doing so, review the differences to make sure that they make sense given the changes that you have"
+        echo "made. If they do not, reach out to a maintainer to help diagnose the issue."
+        exit 1
+      fi
+
+# --------------------------------------------------------------------------------
+
+fossa-report:
+  image: $CI_REGISTRY/divido/fossa-cli/fossa-cli:v6.1
+  stage: attribution
+  needs: ['fossa-analyze']
+  tags: ['osdu-small']
+  only:
+    variables:
+      # To get the FOSSA_ACCESS, log into the project's main page and generate a "Live Project Report" URL from the Summary tab
+      # The access token will be shown in the URL (the last path component)
+      - $FOSSA_API_KEY && $FOSSA_ACCESS
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+  variables:
+    FOSSA_REPORT_URL: https://app.fossa.com/api/revisions/custom%2B12773%2F${CI_PROJECT_NAME}%24${CI_COMMIT_SHA}/attribution?access=${FOSSA_ACCESS}&includeProjectLicense=true&includeLicenseScan=true&includeDirectDependencies=true&includeDeepDependencies=true&includeLicenseHeaders=&includeLicenseList=true&format=HTML
+
+  artifacts:
+    paths:
+      - public
+
+  script:
+    - mkdir -p public
+    - wget $FOSSA_REPORT_URL -O public/fossa-notice.html

@@ -1,0 +1,111 @@
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws-global.yml"
+    
+variables:
+  #aws variables
+  AWS_SERVICE: seismic-store
+  AWS_BUILD_SUBDIR: src/cloud/providers/aws/build-aws
+  AWS_TEST_SUBDIR: tests
+  AWS_ENVIRONMENT: dev
+  AWS_DEPLOY_TARGET: EKS
+  AWS_EKS_DEPLOYMENT_NAME: os-seismic-store
+  AWS_BUILDER_DOCKERFILE_PATH: src/cloud/providers/aws/build-aws/builder.Dockerfile
+  AWS_RUNTIME_DOCKERFILE_PATH: src/cloud/providers/aws/build-aws/runtime.Dockerfile
+  # skipping tests here. Using a local file to run tests
+  AWS_SKIP_TESTS: "true"
+
+aws-containerize:
+  extends:
+    - .aws    
+    - .aws_common_variables
+    - .aws_variables
+  stage: containerize
+  needs: ['compile-and-unit-test']
+  script:
+    - |
+      if [ -z $AWS_BUILDER_DOCKERFILE_PATH ] && [ -z $AWS_RUNTIME_DOCKERFILE_PATH ]; then
+        echo Building BUILD_DIR/Dockerfile container
+        docker build  -f $BUILD_DIR/Dockerfile -t $LOCAL_IMAGE_TAG .;
+      else
+        echo Building BUILDER->RUNTIME containers;
+        cd app/sdms;
+        docker build -t builder:latest --file $AWS_BUILDER_DOCKERFILE_PATH .;
+        docker build -t $LOCAL_IMAGE_TAG --file $AWS_RUNTIME_DOCKERFILE_PATH --build-arg docker_builder_image=builder .;
+      fi
+    # Push to the local container registry
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $LOCAL_IMAGE_TAG
+    # Push to Amazon's container registry
+    - $(aws ecr get-login --no-include-email --region $AWS_ECR_REGION)
+    - docker tag $LOCAL_IMAGE_TAG $AWS_IMAGE_TAG_BASE:$CI_COMMIT_SHA
+    - docker tag $LOCAL_IMAGE_TAG $AWS_IMAGE_TAG_BASE:latest
+    - docker push $AWS_IMAGE_TAG_BASE:$CI_COMMIT_SHA
+    - docker push $AWS_IMAGE_TAG_BASE:latest
+  only:
+    variables:
+      - $AWS == 'true'
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+aws-update-eks:
+  extends:
+    - .aws
+    - .aws_variables
+    - .aws_common_variables
+  stage: deploy
+  needs: ['aws-containerize']
+  script:
+    - cd app/sdms
+    - export KUBECONFIG=/tmp/kubeconfig-${RANDOM}.yaml
+    - export EKS_CLUSTER_MGMT_ROLE=$(aws cloudformation describe-stacks --region $AWS_REGION --stack-name $AWS_INFRA_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='MainEKSClusterManagementRole'].OutputValue" --output text)
+    - export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --region $AWS_REGION --stack-name $AWS_INFRA_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='MainEKSClusterName'].OutputValue" --output text)
+    - echo Using Role -- $EKS_CLUSTER_MGMT_ROLE
+    - aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME --role-arn $EKS_CLUSTER_MGMT_ROLE
+    #Some CLIs require a restrictive KUBECONFIG file
+    - chmod 644 $KUBECONFIG
+    - kubectl -n osdu-services rollout restart deployment/${AWS_EKS_DEPLOYMENT_NAME}
+    - kubectl -n osdu-services rollout status -w deployment/${AWS_EKS_DEPLOYMENT_NAME} --timeout=900s
+  only:
+    variables:
+      - $AWS_SKIP_DEPLOY != 'true' && $AWS == 'true' && $AWS_DEPLOY_TARGET == 'EKS'
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+      
+aws-test-newman:
+  extends:
+    - .aws
+    - .aws_common_variables
+    - .aws_variables
+  stage: integration
+  image: $CI_REGISTRY/osdu/platform/deployment-and-operations/base-containers-aws/aws-node/aws-node:v1.0-node14
+  needs: [{ job: 'aws-update-ecs', optional: true }, { job: 'aws-update-eks', optional: true }]
+  script:
+    - cd app/sdms
+    - pip3 install -r devops/aws/requirements.txt
+    - svctoken=$(python3 devops/scripts/aws_jwt_client.py)   
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url=${SEISMICSTORE_SVC_URL} --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user-idtoken="$svctoken" --tenant=opendes --subproject=awsdemosubproject --admin-email="${AWS_COGNITO_AUTH_PARAMS_USER}" --datapartition=opendes --legaltag01=opendes-sdmstestlegaltag --legaltag02=opendes-sdmstestlegaltag --subproject-long-name=subprojectlonggggggggggggggggggggggname --VCS-Provider="${ISGITLAB}"
+  only:
+    variables:
+      -  $AWS == 'true'
+    changes:
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+  artifacts:
+    when: always
+    paths:
+      - app/sdms/$INTEGRATION_TEST_DIR
+    expire_in: 14 days
