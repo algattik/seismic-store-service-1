@@ -5,14 +5,10 @@
 # and expect the same number of sections, names of sections, and contents
 # (without consider order).
 
-include:
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "scanners/fossa-global.yml"
-
-fossa-check-notice:
+sdms_fossa-check-notice:
   image: $CI_REGISTRY/divido/fossa-cli/fossa-cli:v6.1
   stage: attribution
-  needs: ['fossa-analyze']
+  needs: ['sdms_fossa-analyze']
   tags: ['osdu-small']
   only:
     variables:
@@ -119,10 +115,10 @@ fossa-check-notice:
 
 # --------------------------------------------------------------------------------
 
-fossa-report:
+sdms_fossa-report:
   image: $CI_REGISTRY/divido/fossa-cli/fossa-cli:v6.1
   stage: attribution
-  needs: ['fossa-analyze']
+  needs: ['sdms_fossa-analyze']
   tags: ['osdu-small']
   only:
     variables:

@@ -1,16 +1,42 @@
-include:
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/ibm-seismic-store-service.yml"
-
 variables:
   #ibm variables
   IBM_OPENSHIFT_PROJECT: og-cicd
   IBM_VENDOR: ibm
 
-ibm-deploy:
+.ibm:
+  tags: ['osdu-medium']
+  image: openshift/origin-cli
+  environment:
+    name: IBM
+
+  variables:
+    IBM_OPENSHIFT_PROJECT: og-cicd
+    IBM_OPENSHIFT_DEVPRI_PROJECT: og-cicd
+
+  before_script:
+#    - mkdir -p "$IBM_DEPLOY_DIR"
+    - oc login --token=$IBM_OPENSHIFT_TOKEN --server=$IBM_OPENSHIFT_URL
+
+.ibm_variables:
+
+  variables:
+    # Services
+    SEISMIC_HOST: $IBM_SEISMIC_HOST
+
+    # common security
+    KEYCLOAK_URL: $IBM_KEYCLOAK_URL
+    KEYCLOAK_REALM: OSDU
+    KEYCLOAK_CLIENT_ID: $IBM_KEYCLOAK_CLIENT_ID
+    KEYCLOAK_CLIENT_SECRET: $IBM_KEYCLOAK_CLIENT_SECRET
+
+    AUTH_USER_ACCESS: $IBM_AUTH_USER_ACCESS
+    AUTH_USER_ACCESS_PASSWORD: $IBM_AUTH_USER_ACCESS_PASSWORD
+
+
+sdms_ibm-deploy:
   extends: .ibm
   stage: deploy
-  needs: ['compile-and-unit-test']
+  needs: ['sdms_compile-and-unit-test']
   script:
     - cd app/sdms
     - echo "In IBM deploy"
@@ -28,10 +54,10 @@ ibm-deploy:
       - main
       - merge_requests
       
-ibm-deploy-devpri:
+sdms_ibm-deploy-devpri:
   extends: .ibm
   stage: deploy
-  needs: ['compile-and-unit-test']
+  needs: ['sdms_compile-and-unit-test']
   script:
     - cd app/sdms
     - echo "In IBM deploy"
@@ -45,14 +71,14 @@ ibm-deploy-devpri:
       changes:
         - app/sdms/**/*
     
-ibm-test:
+sdms_ibm-test:
   tags: ["osdu-medium"]
   image: node
   stage: integration
   extends:
     - .ibm_variables
   allow_failure: false
-  needs: ["ibm-deploy"]
+  needs: ["sdms_ibm-deploy"]
   script:
     - cd app/sdms
     - apt-get update
@@ -74,10 +100,10 @@ ibm-test:
       - main
       - merge_requests
 
-ibm-preship-promote:
+sdms_ibm-preship-promote:
   extends: .ibm
   stage: publish
-  needs: ['ibm-test']
+  needs: ['sdms_ibm-test']
   script:
     - cd app/sdms
     - oc login --token=$IBM_PRESHIP_OPENSHIFT_TOKEN --server=$IBM_PRESHIP_OPENSHIFT_URL

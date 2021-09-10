@@ -1,4 +1,4 @@
-push_runtime_image:
+sdms_push_runtime_image:
   image: docker:19.03.12
   services:
     - docker:19.03.12-dind
