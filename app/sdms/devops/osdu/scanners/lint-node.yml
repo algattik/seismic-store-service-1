@@ -1,8 +1,8 @@
-lint:
+sdms_lint:
   image: node
   tags: ["osdu-small"]
   stage: scan
-  needs: ['compile-and-unit-test']
+  needs: ['sdms_compile-and-unit-test']
   script:
     - cd app/sdms
     - npm install -g typescript

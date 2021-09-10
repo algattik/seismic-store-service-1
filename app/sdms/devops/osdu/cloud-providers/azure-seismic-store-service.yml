@@ -15,7 +15,7 @@ variables:
   SDMS_MIN_REPLICAS: 1
   SDMS_MAX_REPLICAS: 5
   
-push_runtime_image_azure:
+sdms_push_runtime_image_azure:
   image: danielscholl/azure-build-image
   tags: ["osdu-medium"]
   stage: containerize
@@ -44,11 +44,11 @@ push_runtime_image_azure:
       - main
       - merge_requests
   
-azure_deploy:
+sdms_azure_deploy:
   tags: ["osdu-medium"]
   image: danielscholl/azure-build-image
   stage: deploy
-  needs: ["push_runtime_image_azure"]
+  needs: ["sdms_push_runtime_image_azure"]
   variables:
     AZURE_KEYVAULT: osdu-svc-properties
     DES_URL: ${AZURE_DNS_NAME}
@@ -92,11 +92,11 @@ azure_deploy:
       - main
       - merge_requests
       
-azure_test:
+sdms_azure_test:
   tags: ["osdu-medium"]
   image: node
   stage: integration
-  needs: ["azure_deploy"]
+  needs: ["sdms_azure_deploy"]
   variables:
     AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
     AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
