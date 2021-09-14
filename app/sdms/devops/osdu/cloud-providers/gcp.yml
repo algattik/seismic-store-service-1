@@ -1,0 +1,162 @@
+# Copyright 2020 Google LLC
+# Copyright 2017-2019, Schlumberger
+# Copyright 2020 EPAM
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Global Protected Variables:
+#
+# OSDU_GCP
+# OSDU_GCP_DEPLOY_FILE
+# OSDU_GCP_SERVICE_ACCOUNT
+# OSDU_GCP_INTEGRATION_TESTER
+# OSDU_GCP_NO_DATA_ACCESS_TESTER
+
+include:
+  - local: "devops/osdu/cloud-providers/gcp.yml"
+
+variables:
+  #gcp variables
+  GCP_APPLICATION_NAME: os-seismic-store-service
+  GCP_DEPLOY_FILE: $OSDU_GCP_DEPLOY_FILE
+  GCP_PROJECT: opendes-evt
+  GCP_SERVICE: seismic-store-service
+  GCP_VENDOR: gcp
+  OSDU_GCP_LOG_LEVEL: INFO
+  OSDU_GCP_SERVICE: seismic-store
+  OSDU_GCP_VENDOR: gcp
+  OSDU_GCP_APPLICATION_NAME: seismic-store
+  OSDU_GCP_APPLICATION: seismic-store
+  OSDU_GCP_ENTITLEMENT_BASE_URL_PATH: /entitlements/v2
+  OSDU_GCP_DATA_PARTITION_REST_HEADER_KEY: data-partition-id
+  OSDU_GCP_DES_SERVICE_HOST_COMPLIANCE: https://community.osdu-gcp.go3-nrg.projects.epam.com/api
+  OSDU_GCP_DES_SERVICE_HOST_STORAGE: https://os-storage-attcrcktoa-uc.a.run.app/api
+  OSDU_GCP_ENV_VARS: CLOUDPROVIDER=${OSDU_GCP_CLOUD_PROVIDER},DES_SERVICE_HOST_PARTITION=${OSDU_GCP_PARTITION_API},ENTITLEMENT_BASE_URL_PATH=${OSDU_GCP_ENTITLEMENT_BASE_URL_PATH},DATA_PARTITION_REST_HEADER_KEY=${OSDU_GCP_DATA_PARTITION_REST_HEADER_KEY},DES_SERVICE_HOST_STORAGE=${OSDU_GCP_DES_SERVICE_HOST_STORAGE},DES_SERVICE_HOST_COMPLIANCE=${OSDU_GCP_DES_SERVICE_HOST_COMPLIANCE},SEISTORE_DES_TARGET_AUDIENCE=${GOOGLE_AUDIENCE},SERVICE_CLOUD_PROJECT=${OSDU_GCP_PROJECT},APP_ENVIRONMENT_IDENTIFIER=${TENANT},IMP_SERVICE_ACCOUNT_SIGNER=${OSDU_GCP_IMP_SERVICE_ACCOUNT_SIGNER},DES_SERVICE_HOST_ENTITLEMENT=${OSDU_GCP_ENTITLEMENTS_V2_BASE_URL},SEISTORE_DES_APPKEY=${OSDU_GCP_SEISTORE_DES_APPKEY},DES_REDIS_INSTANCE_ADDRESS=${OSDU_GCP_DES_REDIS_INSTANCE_ADDRESS},DES_REDIS_INSTANCE_PORT=${OSDU_GCP_DES_REDIS_INSTANCE_PORT},LOCKSMAP_REDIS_INSTANCE_ADDRESS=${OSDU_GCP_LOCKSMAP_REDIS_INSTANCE_ADDRESS},LOCKSMAP_REDIS_INSTANCE_PORT=${OSDU_GCP_LOCKSMAP_REDIS_INSTANCE_PORT}  --vpc-connector=$OSDU_GCP_VPC_CONNECTOR
+
+sdms_push_runtime_image_gcp:
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  tags: ["osdu-medium"]
+  stage: containerize
+  variables:
+    SHA_IMAGE: ${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+  before_script:
+    - gcloud auth activate-service-account --key-file="$GCP_DEPLOY_FILE"
+    - gcloud config set project $GCP_PROJECT
+  script:
+    # GCP Container Registry
+    - cd app/$SERVICE
+    - gcloud builds submit --config provider/$GCP_VENDOR/cloudbuild/cloudbuild.yaml --substitutions=_GCP_SERVICE=$GCP_SERVICE,_APPLICATION_NAME=$GCP_APPLICATION_NAME,_PROVIDER_NAME=$GCP_VENDOR,_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PORT=$PORT
+  only:
+    variables:
+      - $GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+sdms_osdu-gcp-containerize-gcloud:
+  stage: containerize
+  needs: ["sdms_compile-and-unit-test"]
+  extends: .osdu-gcp-variables
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  cache: {}
+  script:
+    - cd app/$SERVICE
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - touch .gcloudignore
+    - gcloud builds submit --config provider/$OSDU_GCP_SERVICE-$OSDU_GCP_VENDOR/cloudbuild/cloudbuild.yaml --substitutions=_GCP_SERVICE=$OSDU_GCP_SERVICE,_APPLICATION_NAME=$OSDU_GCP_APPLICATION_NAME,_PROVIDER_NAME=$OSDU_GCP_VENDOR,_SHORT_SHA=$CI_COMMIT_SHORT_SHA,_PORT=$OSDU_GCP_PORT
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+sdms_osdu-gcp-containerize-gitlab:
+  stage: containerize
+  needs: ["sdms_compile-and-unit-test"]
+  tags: ["osdu-medium"]
+  extends: .osdu-gcp-variables
+  image: docker:19.03
+  cache: {}
+  allow_failure: true
+  script:
+    - cd app/$SERVICE
+    - export EXTRA_DOCKER_TAG=""; if [ "$CI_COMMIT_TAG" != "" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_TAG" ; elif [ "$CI_COMMIT_REF_NAME" = "master" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp:latest" ; fi
+    - docker build -t $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA $EXTRA_DOCKER_TAG --file docker/runtime.Dockerfile .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/osdu-gcp
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+sdms_osdu-gcp-deploy:
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  needs: ["sdms_osdu-gcp-containerize-gcloud"]
+  stage: deploy
+  extends: .osdu-gcp-variables
+  cache: {}
+  script:
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - >
+      gcloud beta run deploy $OSDU_GCP_APPLICATION_NAME
+      --image gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_SERVICE-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA
+      --platform managed
+      --region $OSDU_GCP_CLOUDRUN_REGION
+      --allow-unauthenticated
+      --service-account $OSDU_GCP_SERVICE_ACCOUNT
+      --memory 512M
+      $OSDU_GCP_CLOUD_RUN_PARAMETERS
+      --set-env-vars=LOG_LEVEL=${OSDU_GCP_LOG_LEVEL:="INFO"},$OSDU_GCP_ENV_VARS
+    - gcloud run services update-traffic $OSDU_GCP_APPLICATION_NAME --platform managed --region $OSDU_GCP_CLOUDRUN_REGION --to-latest
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/sdms/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+sdms_osdu-gcp-tagging:
+  image: google/cloud-sdk
+  needs: ["sdms_osdu-gcp-deploy"]
+  stage: integration
+  extends: .osdu-gcp-variables
+  cache: {}
+  script:
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+    - gcloud config set project $OSDU_GCP_PROJECT
+    - gcloud container images add-tag gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_SERVICE-$OSDU_GCP_VENDOR:$CI_COMMIT_SHORT_SHA gcr.io/$OSDU_GCP_PROJECT/$OSDU_GCP_APPLICATION_NAME/$OSDU_GCP_SERVICE-$OSDU_GCP_VENDOR:$CI_COMMIT_TAG
+  when: manual
+  only:
+    - tags

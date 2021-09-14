@@ -1,0 +1,28 @@
+.ibm:
+  tags: ['osdu-medium']
+  image: openshift/origin-cli
+  environment:
+    name: IBM
+
+  variables:
+    IBM_OPENSHIFT_PROJECT: og-cicd
+    IBM_OPENSHIFT_DEVPRI_PROJECT: og-cicd
+
+  before_script:
+#    - mkdir -p "$IBM_DEPLOY_DIR"
+    - oc login --token=$IBM_OPENSHIFT_TOKEN --server=$IBM_OPENSHIFT_URL
+
+.ibm_variables:
+
+  variables:
+    # Services
+    SEISMIC_HOST: $IBM_SEISMIC_HOST
+
+    # common security
+    KEYCLOAK_URL: $IBM_KEYCLOAK_URL
+    KEYCLOAK_REALM: OSDU
+    KEYCLOAK_CLIENT_ID: $IBM_KEYCLOAK_CLIENT_ID
+    KEYCLOAK_CLIENT_SECRET: $IBM_KEYCLOAK_CLIENT_SECRET
+
+    AUTH_USER_ACCESS: $IBM_AUTH_USER_ACCESS
+    AUTH_USER_ACCESS_PASSWORD: $IBM_AUTH_USER_ACCESS_PASSWORD
