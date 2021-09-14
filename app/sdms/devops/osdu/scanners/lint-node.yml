@@ -4,12 +4,13 @@ sdms_lint:
   stage: scan
   needs: ['sdms_compile-and-unit-test']
   script:
-    - cd app/sdms
+    - cd app/$SERVICE
     - npm install -g typescript
     - npm install -g  tslint
     - npm run lint
   only:
     changes:
+      - devops/**/*
       - app/sdms/**/*
     refs:
       - branches
