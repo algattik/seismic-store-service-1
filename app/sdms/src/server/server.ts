@@ -16,19 +16,19 @@
 
 import cors from 'cors';
 import express from 'express';
+import fs from 'fs';
+import https from 'https';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
+import replaceInFile from 'replace-in-file';
+import swaggerUi from 'swagger-ui-express';
+import { v4 as uuidv4 } from 'uuid';
+import YAML from 'yamljs';
+import { AuthProviderFactory } from '../auth';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../shared';
-import { AuthProviderFactory } from '../auth';
-import { v4 as uuidv4 } from 'uuid';
 
-import fs from 'fs';
-import https from 'https';
 
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
-import replaceInFile from 'replace-in-file';
 
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -69,19 +69,19 @@ export class Server {
             'Access-Control-Allow-Origin',
             'x-traffic-manager'
         ]
-    }
+    };
 
     private optionsDivClear = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.swagger-ui .topbar{display:none;visibility:hidden',
         to: '.swagger-ui .topbar{'
-    }
+    };
 
     private optionsDivHide = {
         files: 'node_modules/swagger-ui-dist/swagger-ui.css',
         from: '.swagger-ui .topbar{',
         to: '.swagger-ui .topbar{display:none;visibility:hidden;'
-    }
+    };
 
     constructor() {
 
@@ -149,24 +149,6 @@ export class Server {
                     }
                 }
 
-                // track caller to the main log
-                const key = req.headers['x-api-key'] as string;
-                const logger = LoggerFactory.build(Config.CLOUDPROVIDER);
-                logger.info(
-                    ((key && key.length > 5) ? ('[***' + key.substr(key.length - 5) + '] ') : '')
-                    + '[' + req.method + '] ' + req.url);
-
-                // init the metrics logger
-                if (FeatureFlags.isEnabled(Feature.LOGGING)) {
-                    LoggerFactory.build(Config.CLOUDPROVIDER).metric('Request Size',
-                        req.headers['content-length'] ? +req.headers['content-length'] : 0)
-                }
-
-                // forward the caller appkey if exist
-                // if exists ensure it does not collide the google-esp api-key (required for backward compatibility)
-                req[Config.DE_FORWARD_APPKEY] =
-                    req.headers['appkey'] !== req.headers['x-api-key'] ? req.headers['appkey'] : undefined
-
                 // set the header correlation id and keep a reference in the response locals
                 if (Config.CORRELATION_ID) {
                     if (!req.headers[Config.CORRELATION_ID]) {
@@ -174,6 +156,27 @@ export class Server {
                     }
                     res.locals[Config.CORRELATION_ID] = req.headers[Config.CORRELATION_ID];
                 }
+
+                if (FeatureFlags.isEnabled(Feature.LOGGING)) {
+
+                    const logger = LoggerFactory.build(Config.CLOUDPROVIDER);
+
+                    // track caller to the main log
+                    const key = req.headers['x-api-key'] as string;
+                    logger.info(
+                        ((key && key.length > 5) ? ('[***' + key.substr(key.length - 5) + '] ') : '')
+                        + '[' + req.method + '] ' + req.url);
+
+                    logger.metric('SeismicDMS Request Size',
+                        req.headers['content-length'] ? +req.headers['content-length'] : 0);
+
+                }
+
+                // forward the caller appkey if exist
+                // if exists ensure it does not collide the google-esp api-key (required for backward compatibility)
+                req[Config.DE_FORWARD_APPKEY] =
+                    req.headers['appkey'] !== req.headers['x-api-key'] ? req.headers['appkey'] : undefined;
+
 
                 next();
 
@@ -188,7 +191,7 @@ export class Server {
             jwksUrl: Config.JWKS_URL,
             algorithms: ['RS256'],
             audience: Config.JWT_AUDIENCE
-        }
+        };
 
         // adding middleware to intercept and validate jwt
         this.app.use(jwtProxy(jwtValidateOptions));

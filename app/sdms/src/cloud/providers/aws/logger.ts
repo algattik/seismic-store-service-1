@@ -13,14 +13,14 @@
 // limitations under the License.
 
 import { getLogger } from 'log4js';
-import {AbstractLogger, LoggerFactory} from '../../logger';
+import { AbstractLogger, LoggerFactory } from '../../logger';
 import { AWSConfig } from './config';
 
 // fetch logger and export
 @LoggerFactory.register('aws')
 export class AwsLogger extends AbstractLogger {
 
-	public info(data: any): void {
+    public info(data: any): void {
         logger.info(data);
     }
 
@@ -32,14 +32,14 @@ export class AwsLogger extends AbstractLogger {
         logger.error(data);
     }
 
-    public metric(key:string,data: any): void {
-        logger.info('No Metric');
+    // [TODO] this method should report a metrics using CSP SDK
+    public metric(key: string, data: any): void {
+        return;
     }
 }
 
 export const logger = getLogger();
 
-export function config()
-{
+export function config() {
     logger.level = AWSConfig.LOGGER_LEVEL;
 }

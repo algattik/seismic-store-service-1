@@ -14,11 +14,11 @@
 // limitations under the License.
 // ============================================================================
 
-import winston from 'winston';
-
 import { LoggingWinston } from '@google-cloud/logging-winston';
+import winston from 'winston';
 import { AbstractLogger, LoggerFactory } from '../../logger';
 import { ConfigGoogle } from './config';
+
 
 const loggingWinston = new LoggingWinston();
 const logger = winston.createLogger({
@@ -38,7 +38,9 @@ export class Logger extends AbstractLogger {
     public error(data: any): void {
         if (!ConfigGoogle.UTEST) { logger.error(data); }
     }
-    public metric(key: string, data:any): void {
-        // no op
+
+    // [TODO] this method should report a metric using CSP SDK
+    public metric(key: string, data: any): void {
+        return;
     }
 }

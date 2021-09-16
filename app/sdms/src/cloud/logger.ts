@@ -19,17 +19,16 @@ import { CloudFactory } from './cloud';
 export interface ILogger {
     info(data: any): void;
     error(data: any): void;
-    metric(key:string,data: any): void;
+    metric(key: string, data: any): void;
 }
-
 export abstract class AbstractLogger implements ILogger {
     public abstract info(data: any): void;
     public abstract error(data: any): void;
-    public abstract metric(key:string,data: any): void;
-}
+    public abstract metric(key: string, data: any): void;
 
+}
 export class LoggerFactory extends CloudFactory {
-    public static build(providerLabel: string, args: { [key: string]: any } = {}): ILogger {
+    public static build(providerLabel: string, args: { [key: string]: any; } = {}): ILogger {
         return CloudFactory.build(providerLabel, AbstractLogger, args) as ILogger;
     }
 }
