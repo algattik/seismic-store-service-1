@@ -48,4 +48,4 @@ RUN apk --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-head
     && npm install --production --quiet \
     && apk del native-deps    
 
-ENTRYPOINT ["node", "./dist/server/server-start.js", "--trace-warnings", "--trace-uncaught"]
+ENTRYPOINT ["node", "--trace-warnings", "--trace-uncaught", "./dist/server/server-start.js"]
