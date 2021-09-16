@@ -1,8 +1,15 @@
+variables:
+  OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
+
 include:
   # pipeline logic
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
 
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/osdu-gcp-global.yml"
+
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
+
