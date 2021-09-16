@@ -4,7 +4,7 @@ sdms_lint:
   stage: scan
   needs: ['sdms_compile-and-unit-test']
   script:
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - npm install -g typescript
     - npm install -g  tslint
     - npm run lint

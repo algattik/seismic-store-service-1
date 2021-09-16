@@ -4,13 +4,13 @@ sdms_compile-and-unit-test:
   stage: build
   artifacts:
     reports:
-      junit: app/$SERVICE/test-results.xml
-      cobertura: app/$SERVICE/coverage/cobertura-coverage.xml
+      junit: app/$SDMS_SERVICE/test-results.xml
+      cobertura: app/$SDMS_SERVICE/coverage/cobertura-coverage.xml
     paths:
-      - app/$SERVICE/coverage/
+      - app/$SDMS_SERVICE/coverage/
     expire_in: 15 days
   script:
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - chmod +x devops/scripts/utest_build_run.sh
     - devops/scripts/utest_build_run.sh
   only:
