@@ -5,18 +5,18 @@ sdms_push_runtime_image:
   tags: ["osdu-medium"]
   stage: containerize
   variables:
-    SHA_IMAGE: ${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
-    LATEST_IMAGE: ${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+    SHA_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     # Gitlab Container Registry
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - docker build -t builder_sdms:latest --file docker/builder.Dockerfile .
-    - docker build -t $UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
-    - docker tag $UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$SHA_IMAGE
+    - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
+    - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$SHA_IMAGE
     - docker push $CI_REGISTRY_IMAGE/$SHA_IMAGE
-    - docker tag $UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+    - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE
     - docker push $CI_REGISTRY_IMAGE/$LATEST_IMAGE
   only:
     changes:

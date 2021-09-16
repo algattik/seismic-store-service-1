@@ -1,10 +1,10 @@
 variables:
   #seismic store service variables
-  SERVICE: sdms
-  PROJECT_TITLE: seismic-dms-service
-  PROJECT_NAME: seismic-store-service
-  ENVIRONMENT: cloud
+  SDMS_SERVICE: sdms
+  SDMS_PROJECT_TITLE: seismic-dms-service
+  SDMS_PROJECT_NAME: seismic-store-service
+  SDMS_ENVIRONMENT: cloud
   ISGITLAB: "true"
-  PORT: 80
-  REPLICA: 1
-  UTEST_RUNTIME_IMAGE: seistore-svc-runtime
+  SDMS_PORT: 80
+  SDMS_REPLICA: 1
+  SDMS_UTEST_RUNTIME_IMAGE: seistore-svc-runtime

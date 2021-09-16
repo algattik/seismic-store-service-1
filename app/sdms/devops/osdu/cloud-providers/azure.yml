@@ -20,19 +20,19 @@ sdms_push_runtime_image_azure:
   tags: ["osdu-medium"]
   stage: containerize
   variables:
-    SHA_IMAGE: ${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
-    LATEST_IMAGE: ${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+    SHA_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
   before_script:
     - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
     - az acr login -n $AZURE_REGISTRY
   script:
     # Azure Container Registry
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - docker build -t builder_sdms:latest --file docker/builder.Dockerfile .
-    - docker build -t $UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
-    - docker tag $UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
+    - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
     - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
-    - docker tag $UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
     - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
   only:
     variables:
@@ -53,7 +53,7 @@ sdms_azure_deploy:
   variables:
     AZURE_KEYVAULT: osdu-svc-properties
     DES_URL: ${AZURE_DNS_NAME}
-    IMAGE: ${AZURE_REGISTRY}.azurecr.io/${PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
+    IMAGE: ${AZURE_REGISTRY}.azurecr.io/${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
     SERVICE_NAME: ${AZURE_SERVICE}
     TAG: ${CI_COMMIT_SHA}
   before_script:
@@ -61,18 +61,18 @@ sdms_azure_deploy:
     - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
   script:
     # Replace values in config file
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - cp ${CHART_PATH}/helm-config.yaml ${CHART_PATH}/values.yaml
     - sed -i 's,#{CONTAINER_REGISTRY_NAME}#,'$IMAGE',' ${CHART_PATH}/values.yaml
     - sed -i 's,#{DNS_HOST}#,'$DES_URL',' ${CHART_PATH}/values.yaml
-    - sed -i 's/#{ENVIRONMENT_NAME}#/'$ENVIRONMENT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{ENVIRONMENT_NAME}#/'$SDMS_ENVIRONMENT'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{IMAGE_TAG}#/'$TAG'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{KEYVAULT_NAME}#/'$AZURE_KEYVAULT'/' ${CHART_PATH}/values.yaml
-    - sed -i 's/#{PORT}#/'${PORT}'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{PORT}#/'${SDMS_PORT}'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{PROVIDER_NAME}#/'$CLOUD_PROVIDER'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REDIS_HOST}#/'$REDIS_INSTANCE_ADDRESS'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REDIS_PORT}#/'$REDIS_INSTANCE_PORT'/' ${CHART_PATH}/values.yaml
-    - sed -i 's/#{REPLICA_COUNT}#/'$REPLICA'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{REPLICA_COUNT}#/'$SDMS_REPLICA'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MIN_REPLICAS}#/'$SDMS_MIN_REPLICAS'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MAX_REPLICAS}#/'$SDMS_MAX_REPLICAS'/' ${CHART_PATH}/values.yaml
     # Install helm chart
@@ -80,7 +80,7 @@ sdms_azure_deploy:
     - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
     # Wait for service to be running to start
     - kubectl rollout status deployment.v1.apps/$SERVICE_NAME -n osdu --timeout=900s
-    - pod=$(kubectl get pod -n osdu|grep $PROJECT_NAME |tail -1 |awk '{print $1}')
+    - pod=$(kubectl get pod -n osdu|grep $SDMS_PROJECT_NAME |tail -1 |awk '{print $1}')
     - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=600s)
     - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
   only:
@@ -105,7 +105,7 @@ sdms_azure_test:
     AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - apt-get update
     - apt-get install -y python
     - apt-get install -y python-pip

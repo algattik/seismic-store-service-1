@@ -28,7 +28,7 @@ sdms_aws-containerize:
         docker build  -f $BUILD_DIR/Dockerfile -t $LOCAL_IMAGE_TAG .;
       else
         echo Building BUILDER->RUNTIME containers;
-        cd app/$SERVICE;
+        cd app/$SDMS_SERVICE;
         docker build -t builder:latest --file $AWS_BUILDER_DOCKERFILE_PATH .;
         docker build -t $LOCAL_IMAGE_TAG --file $AWS_RUNTIME_DOCKERFILE_PATH --build-arg docker_builder_image=builder .;
       fi
@@ -60,7 +60,7 @@ sdms_aws-update-eks:
   stage: deploy
   needs: ['sdms_aws-containerize']
   script:
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - export KUBECONFIG=/tmp/kubeconfig-${RANDOM}.yaml
     - export EKS_CLUSTER_MGMT_ROLE=$(aws cloudformation describe-stacks --region $AWS_REGION --stack-name $AWS_INFRA_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='MainEKSClusterManagementRole'].OutputValue" --output text)
     - export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --region $AWS_REGION --stack-name $AWS_INFRA_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='MainEKSClusterName'].OutputValue" --output text)
@@ -90,7 +90,7 @@ sdms_aws-test-newman:
   image: $CI_REGISTRY/osdu/platform/deployment-and-operations/base-containers-aws/aws-node/aws-node:v1.0-node14
   needs: [{ job: 'sdms_aws-update-eks', optional: true }]
   script:
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - pip3 install -r devops/aws/requirements.txt
     - svctoken=$(python3 devops/scripts/aws_jwt_client.py)   
     - npm install -g newman
@@ -109,5 +109,5 @@ sdms_aws-test-newman:
   artifacts:
     when: always
     paths:
-      - app/$SERVICE/$INTEGRATION_TEST_DIR
+      - app/$SDMS_SERVICE/$INTEGRATION_TEST_DIR
     expire_in: 14 days

@@ -23,17 +23,17 @@ sdms_fossa-check-notice:
   artifacts:
     when: on_failure
     paths:
-      - app/$SERVICE/public
+      - app/$SDMS_SERVICE/public
 
   script:
     # fossa-check-for-licensing-issues needs a CI_COMMIT_BRANCH defined to know how to parse the FOSSA API results
     # When building tags, this isn't defined by GitLab. In that case, we use the tag name instead. If that's not defined
     # then things will fail and we'll have to make this smarter
-    - cd app/$SERVICE
+    - cd app/$SDMS_SERVICE
     - test -z "$CI_COMMIT_BRANCH" && export CI_COMMIT_BRANCH="$CI_COMMIT_TAG"
 
     - mkdir -p public
-    - fossa report licenses --project "${PROJECT_TITLE}" --branch "${CI_COMMIT_BRANCH}" > public/NOTICE
+    - fossa report licenses --project "${SDMS_PROJECT_TITLE}" --branch "${CI_COMMIT_BRANCH}" > public/NOTICE
     - mkdir committed-NOTICE generated-NOTICE
     - |
       python <<EOF
@@ -135,7 +135,7 @@ sdms_fossa-report:
       - merge_requests
 
   variables:
-    FOSSA_REPORT_URL: https://app.fossa.com/api/revisions/custom%2B12773%2F${PROJECT_NAME}%24${CI_COMMIT_SHA}/attribution?access=${FOSSA_ACCESS}&includeProjectLicense=true&includeLicenseScan=true&includeDirectDependencies=true&includeDeepDependencies=true&includeLicenseHeaders=&includeLicenseList=true&format=HTML
+    FOSSA_REPORT_URL: https://app.fossa.com/api/revisions/custom%2B12773%2F${SDMS_PROJECT_NAME}%24${CI_COMMIT_SHA}/attribution?access=${FOSSA_ACCESS}&includeProjectLicense=true&includeLicenseScan=true&includeDirectDependencies=true&includeDeepDependencies=true&includeLicenseHeaders=&includeLicenseList=true&format=HTML
 
   artifacts:
     paths:
