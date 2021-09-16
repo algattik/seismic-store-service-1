@@ -2,14 +2,14 @@
 /* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
 
 import { getLogger } from 'log4js';
-import {AbstractLogger, LoggerFactory} from '../../logger';
+import { AbstractLogger, LoggerFactory } from '../../logger';
 import { IbmConfig } from './config';
 
 // fetch logger and export
 @LoggerFactory.register('ibm')
 export class IbmLogger extends AbstractLogger {
 
-	public info(data: any): void {
+    public info(data: any): void {
         logger.info(data);
     }
 
@@ -21,14 +21,14 @@ export class IbmLogger extends AbstractLogger {
         logger.error(data);
     }
 
-    public metric(key:string,data: any): void {
-        logger.info('No Metric');
+    // [TODO] this method should report a metric using CSP SDK
+    public metric(key: string, data: any): void {
+        return;
     }
 }
 
 export const logger = getLogger();
 
-export function config()
-{
+export function config() {
     logger.level = IbmConfig.LOGGER_LEVEL;
 }

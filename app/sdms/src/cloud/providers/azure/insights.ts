@@ -13,17 +13,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ============================================================================
-
+import * as appinsights from 'applicationinsights';
+import { Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractLogger, LoggerFactory } from '../../logger';
 import { AzureConfig } from './config';
-import * as appinsights from 'applicationinsights'
+
 
 @LoggerFactory.register('azure')
 export class AzureInsightsLogger extends AbstractLogger {
 
+    public static logCustomHeaders(envelope, context) {
+        const httpRequest = context['http.ServerRequest'];
+        if (httpRequest && appinsights.Contracts.domainSupportsProperties(envelope.data.baseData)) {
+
+            // Log the correlation-id
+            if ('correlation-id' in httpRequest.headers) {
+                envelope.data.baseData.properties['correlation-id'] = httpRequest.headers['correlation-id'];
+            }
+
+            // Log party to which the JWT was originally issued
+            if (httpRequest.headers.authorization) {
+                const azp = Utils.getAzpFromPayload(httpRequest.headers.authorization);
+                if (azp) {
+                    envelope.data.baseData.properties['client-id'] = azp;
+                }
+            }
+        }
+        return true;
+    }
+
     public static initialize() {
-        if(!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
+        if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
             appinsights.setup(AzureConfig.AI_INSTRUMENTATION_KEY)
                 .setAutoDependencyCorrelation(true)
                 .setAutoCollectRequests(true)
@@ -34,30 +55,33 @@ export class AzureInsightsLogger extends AbstractLogger {
                 .setUseDiskRetryCaching(true)
                 .setDistributedTracingMode(appinsights.DistributedTracingModes.AI_AND_W3C);
 
-                appinsights.defaultClient.context.tags[
-                    appinsights.defaultClient.context.keys.cloudRole] = 'seismic-dms';
+            appinsights.defaultClient.context.tags[
+                appinsights.defaultClient.context.keys.cloudRole] = 'seismic-dms';
 
-                appinsights.start();
+            appinsights.defaultClient.addTelemetryProcessor(AzureInsightsLogger.logCustomHeaders);
+            appinsights.start();
         }
     }
 
+
+
     public info(data: any): void {
         if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
-            appinsights.defaultClient.trackTrace({message:JSON.stringify(data)});
+            appinsights.defaultClient.trackTrace({ message: JSON.stringify(data) });
         }
     }
 
     public error(data: any): void {
         if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
-            appinsights.defaultClient.trackException({exception:data});
+            appinsights.defaultClient.trackException({ exception: data });
             // tslint:disable-next-line
             console.log(data);
         }
     }
 
-    public metric(key:string, data:any) {
+    public metric(key: string, data: any) {
         if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
-            appinsights.defaultClient.trackMetric({name:key, value:data});
+            appinsights.defaultClient.trackMetric({ name: key, value: data });
         }
     }
 }

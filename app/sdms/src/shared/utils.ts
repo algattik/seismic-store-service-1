@@ -51,6 +51,12 @@ export class Utils {
         return this.getPayloadFromStringToken(base64JwtPayload).sub;
     }
 
+    // Authorized party - The party to which the token was issued to
+    public static getAzpFromPayload(base64JwtPayload: string): string {
+        return this.getPayloadFromStringToken(base64JwtPayload).azp;
+    }
+
+
     public static getSubIDFromPayload(base64JwtPayload: string): string {
         return this.getPayloadFromStringToken(base64JwtPayload).subid;
     }
