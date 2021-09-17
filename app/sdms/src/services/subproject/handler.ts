@@ -223,11 +223,10 @@ export class SubProjectHandler {
         // get the subproject metadata
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
-        // Only tenant admins are allowed to delete the subproject
+        // Only subproject admins are allowed to delete the subproject
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            await Auth.isWriteAuthorized(req.headers.authorization, subproject.acls.admins,
+                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY], undefined);
         }
 
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
@@ -419,9 +418,9 @@ export class SubProjectHandler {
 
     }
 
-    private static validateAccessPolicy(userInputAccessPolicy: string, exisitngAccessPolicy: string) {
+    private static validateAccessPolicy(userInputAccessPolicy: string, existingAccessPolicy: string) {
 
-        if (exisitngAccessPolicy === 'dataset' && userInputAccessPolicy === 'uniform') {
+        if (existingAccessPolicy === 'dataset' && userInputAccessPolicy === 'uniform') {
             throw (Error.make(Error.Status.BAD_REQUEST, 'Subproject access policy cannot be changed from dataset level to uniform level'));
         }
 

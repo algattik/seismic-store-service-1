@@ -16,7 +16,6 @@
 
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
-import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, StorageFactory } from '../../../src/cloud';
 import { ISeistore, SeistoreFactory } from '../../../src/cloud/seistore';
@@ -29,6 +28,7 @@ import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
 
+import sinon from 'sinon';
 
 export class TestSubProjectSVC {
 
@@ -253,7 +253,7 @@ export class TestSubProjectSVC {
             Config.CLOUDPROVIDER = 'google';
             this.sandbox.stub(SubProjectDAO, 'delete').resolves();
             this.sandbox.stub(DatasetDAO, 'deleteAll').resolves();
-            this.sandbox.stub(Auth, 'isUserAuthorized').resolves();
+            this.sandbox.stub(Auth, 'isWriteAuthorized').resolves();
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             const storage: IStorage = {
                 async deleteFiles() {
