@@ -20,7 +20,8 @@
     "test-lcov-coverage": "env UTEST=true nyc mocha -r ts-node/register -r source-map-support/register --recursive -R mocha-bamboo-reporter tests/utest/test.ts",
     "test-e2e-parallel": "node ./tests/e2e/parallel/run_e2e_tests_parallel.js",
     "copy-static-files": "copyfiles --error --up 1 ./docs/api/openapi.osdu.yaml ./dist/docs",
-    "postbuild": "npm run copy-static-files"
+    "postbuild": "npm run copy-static-files",
+    "prepare": "cd ../.. && husky install ./app/sdms/.husky"
   },
   "nyc": {
     "include": [
@@ -97,6 +98,8 @@
     "yargs-parser": "^18.1.3"
   },
   "devDependencies": {
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
     "@types/bull": "^3.14.4",
     "@types/chai": "4.2.9",
     "@types/cors": "^2.8.6",
@@ -131,8 +134,8 @@
     "nyc": "^15.0.0",
     "path": "^0.12.7",
     "redis-mock": "^0.49.0",
-    "sinon": "8.1.1",
     "scan-for-secrets": "^2.0.3",
+    "sinon": "8.1.1",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
     "tslint": "6.0.0",
@@ -140,7 +143,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "./app/sdms/node_modules/cz-conventional-changelog"
     }
   }
 }
