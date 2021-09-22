@@ -7,7 +7,7 @@ AFL-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- json-schema (from http://github.com/kriszyp/json-schema)
+- json-schema (from https://www.npmjs.com/package/json-schema)
 
 ========================================================================
 Apache-2.0
@@ -175,7 +175,7 @@ The following software have components provided under the terms of this license:
 - google-gax (from https://www.npmjs.com/package/google-gax)
 - idna (from https://github.com/kjd/idna)
 - ieee754 (from https://www.npmjs.com/package/ieee754)
-- json-schema (from http://github.com/kriszyp/json-schema)
+- json-schema (from https://www.npmjs.com/package/json-schema)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-pre-gyp (from https://www.npmjs.com/package/node-pre-gyp)
@@ -603,10 +603,10 @@ The following software have components provided under the terms of this license:
 - isstream (from https://github.com/rvagg/isstream)
 - jmespath (from https://github.com/jmespath/jmespath.py)
 - jmespath (from https://www.npmjs.com/package/jmespath)
-- jsbn (from https://github.com/andyperlitch/jsbn)
+- jsbn (from https://www.npmjs.com/package/jsbn)
 - json-bigint (from https://www.npmjs.com/package/json-bigint)
 - json-bigint (from https://www.npmjs.com/package/json-bigint)
-- json-schema (from http://github.com/kriszyp/json-schema)
+- json-schema (from https://www.npmjs.com/package/json-schema)
 - json-schema-traverse (from https://www.npmjs.com/package/json-schema-traverse)
 - json-stringify-safe (from https://github.com/isaacs/json-stringify-safe)
 - jsonfile (from https://www.npmjs.com/package/jsonfile)
@@ -817,7 +817,7 @@ The following software have components provided under the terms of this license:
 - tslib (from https://www.npmjs.com/package/tslib)
 - tslib (from https://www.npmjs.com/package/tslib)
 - tunnel (from https://www.npmjs.com/package/tunnel)
-- tweetnacl (from https://dchest.github.io/tweetnacl-js)
+- tweetnacl (from https://www.npmjs.com/package/tweetnacl)
 - type-fest (from https://www.npmjs.com/package/type-fest)
 - type-is (from https://www.npmjs.com/package/type-is)
 - typedarray (from https://github.com/substack/typedarray)
@@ -904,7 +904,7 @@ Unlicense
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- tweetnacl (from https://dchest.github.io/tweetnacl-js)
+- tweetnacl (from https://www.npmjs.com/package/tweetnacl)
 
 ========================================================================
 W3C
@@ -928,7 +928,7 @@ The following software have components provided under the terms of this license:
 - kuler (from https://www.npmjs.com/package/kuler)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-forge (from https://www.npmjs.com/package/node-forge)
-- tweetnacl (from https://dchest.github.io/tweetnacl-js)
+- tweetnacl (from https://www.npmjs.com/package/tweetnacl)
 
 ========================================================================
 unknown
@@ -938,7 +938,7 @@ The following software have components provided under the terms of this license:
 - deep-extend (from https://www.npmjs.com/package/deep-extend)
 - for-each (from https://www.npmjs.com/package/for-each)
 - jmespath (from https://www.npmjs.com/package/jmespath)
-- json-schema (from http://github.com/kriszyp/json-schema)
+- json-schema (from https://www.npmjs.com/package/json-schema)
 - querystring (from https://www.npmjs.com/package/querystring)
 - sax (from https://www.npmjs.com/package/sax)
 
