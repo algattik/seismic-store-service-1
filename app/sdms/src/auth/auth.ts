@@ -14,17 +14,17 @@
 // limitations under the License.
 // ============================================================================
 
+import { createHash } from 'crypto';
+
 import { Config } from '../cloud';
 import { DESCompliance, DESUtils } from '../dataecosystem';
+import { ImpersonationTokenContextModel, ImpersonationTokenModel } from '../services/impersonation_token/model';
 import { ImpTokenDAO } from '../services/imptoken';
 import { AppsDAO } from '../services/svcapp/dao';
 import { TenantModel } from '../services/tenant';
+import { ITenantModel } from '../services/tenant/model';
 import { Cache, Error, Utils } from '../shared';
 import { AuthGroups } from './groups';
-import { createHash } from 'crypto';
-import { ImpersonationTokenContextModel, ImpersonationTokenModel } from '../services/impersonation_token/model';
-import { ImpersonationTokenHandler } from '../services/impersonation_token/handler';
-import { ITenantModel } from '../services/tenant/model';
 
 // ===============================================================================================
 // This class is used to register all auth provider
@@ -65,6 +65,7 @@ export class AuthProviderFactoryBuilder {
 // ===============================================================================================
 export interface IAuthProvider {
     generateAuthCredential(): Promise<any>;
+    generateScopedAuthCredential(scopes: string[]): Promise<any>;
     convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel;
     getClientID(): string;
     getClientSecret(): string;
@@ -73,6 +74,7 @@ export interface IAuthProvider {
 
 export abstract class AbstractAuthProvider implements IAuthProvider {
     public abstract generateAuthCredential(): Promise<any>;
+    public abstract generateScopedAuthCredential(scopes: string[]): Promise<any>;
     public abstract convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel;
     public abstract getClientID(): string;
     public abstract getClientSecret(): string;

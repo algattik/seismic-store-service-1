@@ -26,7 +26,7 @@ import YAML from 'yamljs';
 import { AuthProviderFactory } from '../auth';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
-import { Error, Feature, FeatureFlags, Response, Utils } from '../shared';
+import { Cache, Error, Feature, FeatureFlags, Response, Utils } from '../shared';
 
 
 
@@ -40,6 +40,8 @@ export class Server {
 
     private httpServer: import('http').Server;
     private httpsServer: import('https').Server;
+
+    private static _exchangedTokenCache: Cache<string>;
 
     private corsOptions = {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -127,10 +129,35 @@ export class Server {
                 // If required, exchange the caller credentials to include the DE target audience
                 if (Config.ENABLE_DE_TOKEN_EXCHANGE) {
                     if (Config.DES_TARGET_AUDIENCE) {
+
+                        // init the cache
+                        if (!Server._exchangedTokenCache) {
+                            Server._exchangedTokenCache = new Cache<string>('tkex')
+                        }
+
                         if (req.headers.authorization) {
-                            req.headers.authorization = await AuthProviderFactory.build(
-                                Config.SERVICE_AUTH_PROVIDER).exchangeCredentialAudience(
-                                    req.headers.authorization, Config.DES_TARGET_AUDIENCE);
+
+                            // use the token signature as unique key
+                            const originalAuthorizationHeaderSignature = req.headers.authorization.split('.')[2];
+
+                            // check if in cache before
+                            const cachedExchangedToken = await Server._exchangedTokenCache.get(
+                                originalAuthorizationHeaderSignature);
+
+                            if (cachedExchangedToken) {
+                                req.headers.authorization = cachedExchangedToken;
+                            } else {
+
+                                // exchange the token
+                                req.headers.authorization = await AuthProviderFactory.build(
+                                    Config.SERVICE_AUTH_PROVIDER).exchangeCredentialAudience(
+                                        req.headers.authorization, Config.DES_TARGET_AUDIENCE);
+
+                                // cache the exchanged credential for 5 minute
+                                await Server._exchangedTokenCache.set(
+                                    originalAuthorizationHeaderSignature, req.headers.authorization, 300);
+                            }
+
                         }
                     }
                 }

@@ -26,6 +26,11 @@ export class GenericAuthProvider extends AbstractAuthProvider {
             'The required feature is not supported, the credential auth provider has not been found.'));
     }
 
+    public generateScopedAuthCredential(scopes: string[]): Promise<any> {
+        throw (Error.make(Error.Status.NOT_IMPLEMENTED,
+            'The required feature is not supported, the credential auth provider has not been found.'));
+    }
+
     public convertToImpersonationTokenModel(credential: any): ImpersonationTokenModel {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED,
             'The required feature is not supported, the credential auth provider has not been found.'));
