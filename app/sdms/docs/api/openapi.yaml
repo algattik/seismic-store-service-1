@@ -189,6 +189,14 @@ paths:
           name: seismicmeta
           required: false
           type: boolean
+        - description: 'If the dataset creator value is a subid, then enable conversion of it to email'
+          name: subid-to-email
+          default: true
+          in: query
+          type: boolean
+          enum:
+            - true
+            - false
       responses:
         200:
           description: "Metadata of the dataset"
@@ -1154,6 +1162,14 @@ paths:
           required: true
           type: string
           default: common
+        - description: 'Convert subid value of subproject admin to email'
+          name: subid-to-email
+          default: true
+          in: query
+          type: boolean
+          enum:
+            - true
+            - false
       responses:
         200:
           description: "Retrieved subproject metadata successfully"

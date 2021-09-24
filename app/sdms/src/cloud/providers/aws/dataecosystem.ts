@@ -15,15 +15,17 @@
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
-    IDESEntitlementGroupMembersModel } from '../../dataecosystem';
-import { AWSCredentials } from './credentials';
+    IDESEntitlementGroupMembersModel
+} from '../../dataecosystem';
 
 @DataEcosystemCoreFactory.register('aws')
 export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
+
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
     public getEntitlementBaseUrlPath(): string { return '/api/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
+    public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;
@@ -33,8 +35,8 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
         return groupMembers as IDESEntitlementGroupMembersModel;
     }
 
-    public getUserAddBodyRequest(userEmail: string, role: string): {email: string, role: string} | string[] {
-        return { email: userEmail, role }
+    public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string; } | string[] {
+        return { email: userEmail, role };
     }
 
     public tenantNameAndDataPartitionIDShouldMatch() {

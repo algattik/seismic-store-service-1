@@ -15,7 +15,6 @@
 // ============================================================================
 
 import { createHash } from 'crypto';
-
 import { Config } from '../cloud';
 import { DESCompliance, DESUtils } from '../dataecosystem';
 import { ImpersonationTokenContextModel, ImpersonationTokenModel } from '../services/impersonation_token/model';
@@ -42,7 +41,7 @@ export class AuthProviderFactoryBuilder {
         };
     }
 
-    public static build(providerLabel: string, referenceAbstraction: any, args: { [key: string]: any } = {}) {
+    public static build(providerLabel: string, referenceAbstraction: any, args: { [key: string]: any; } = {}) {
         if (providerLabel === undefined || providerLabel === 'unknown') {
             throw (Error.make(Error.Status.UNKNOWN,
                 `Unrecognized auth provider: ${providerLabel}`));
@@ -56,7 +55,7 @@ export class AuthProviderFactoryBuilder {
             `The auth provider builder that extend ${referenceAbstraction} has not been found`));
     }
 
-    private static providers: { [key: string]: any[] } = {};
+    private static providers: { [key: string]: any[]; } = {};
 
 }
 
@@ -104,7 +103,7 @@ export class Auth {
         esd: string, appkey: string, mustThrow = true): Promise<boolean> {
 
         if (!this._cache) {
-            this._cache = new Cache<boolean>('auth')
+            this._cache = new Cache<boolean>('auth');
         }
 
         const cacheKey = (

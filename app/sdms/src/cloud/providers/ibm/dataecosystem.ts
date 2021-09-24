@@ -6,8 +6,8 @@ import {
     DataEcosystemCoreFactory,
     IDESEntitlementGroupMembersModel
 } from '../../dataecosystem';
-import { logger } from './logger';
 import { IbmConfig } from './config';
+import { logger } from './logger';
 
 @DataEcosystemCoreFactory.register('ibm')
 export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
@@ -25,7 +25,7 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
                 },
                 statusCode: 404,
                 name: 'StatusCodeError'
-            }
+            };
         }
 
         if (groupMembers && groupMembers.length === 1) {
@@ -76,7 +76,7 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
         return IbmConfig.STORAGE_CONTEXT_PATH;
     };
 
-    public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string } | string[] {
+    public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string; } | string[] {
         const userBody = {
             'email': userEmail,
             'role': role
@@ -88,6 +88,10 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
     public tenantNameAndDataPartitionIDShouldMatch() {
         logger.info('in IbmDataEcosystemServices.tenantNameAndDataPartitionIDShouldMatch. Returning..');
         return true;
+    }
+
+    public getUserAssociationSvcBaseUrlPath(): string {
+        return IbmConfig.CCM_USER_ASSOC_CONTEXT_PATH;
     }
 
 }

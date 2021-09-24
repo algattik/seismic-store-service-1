@@ -20,6 +20,7 @@ import { DatasetModel } from '.';
 import { Auth } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { DESStorage, DESUtils } from '../../dataecosystem';
+import { DESUserAssociation } from '../../dataecosystem/user-association';
 import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
 import { SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
@@ -255,6 +256,7 @@ export class DatasetHandler {
         // parse user request
         const userInput = DatasetParser.get(req);
         const datasetIN = userInput[0];
+        const convertSubIdToEmail = (userInput[2] !== undefined) ? userInput[2] : true;
 
         // retrieve journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -296,6 +298,17 @@ export class DatasetHandler {
             await Auth.isReadAuthorized(req.headers.authorization, authGroups,
                 tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
+        }
+
+        // Convert subid to email if userinput query param subid_to_email is true
+        if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
+            if (!Utils.isEmail(datasetOUT.created_by)) {
+                const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
+                const userEmail = await DESUserAssociation.convertSubIdToEmail
+                    (req[Config.DE_FORWARD_APPKEY], datasetOUT.created_by, dataPartition);
+                datasetOUT.created_by = userEmail;
+            }
+
         }
 
         // return the seismicmetadata (if exist)

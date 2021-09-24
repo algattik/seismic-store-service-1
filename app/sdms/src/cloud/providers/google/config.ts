@@ -153,6 +153,10 @@ export class ConfigGoogle extends Config {
                     process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
                 FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
                     process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
+                FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
+                    process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+                CCM_SERVICE_URL: process.env.CCM_SERVICE_URL,
+                CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE
             });
 
         }

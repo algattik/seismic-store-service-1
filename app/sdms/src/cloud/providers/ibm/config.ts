@@ -20,16 +20,16 @@ export class IbmConfig extends Config {
     public static IBM_REGION: string;
 
     // IBM COS
-	public static COS_ACCESS_KEY_ID: string;
-	public static COS_SECRET_ACCESS_KEY: string;
-	public static COS_ENDPOINT: string;
-	public static COS_S3_FORCEPATHSTYLE: boolean;
-	public static COS_SIGNATUREVERSION: string;
+    public static COS_ACCESS_KEY_ID: string;
+    public static COS_SECRET_ACCESS_KEY: string;
+    public static COS_ENDPOINT: string;
+    public static COS_S3_FORCEPATHSTYLE: boolean;
+    public static COS_SIGNATUREVERSION: string;
     public static COS_SUBUSER_ACCESS_KEY_ID: string;
-	public static COS_SUBUSER_SECRET_ACCESS_KEY: string;
+    public static COS_SUBUSER_SECRET_ACCESS_KEY: string;
     public static COS_TEMP_CRED_EXPITY: string;
 
-	// IBM Keycloak
+    // IBM Keycloak
     public static KEYCLOAK_BASEURL: string;
     public static KEYCLOAK_URL_TOKEN: string;
     public static KEYCLOAK_REALM: string;
@@ -58,6 +58,7 @@ export class IbmConfig extends Config {
     public static ENTITLEMENT_CONTEXT_PATH: string;
     public static COMPLIANCE_CONTEXT_PATH: string;
     public static STORAGE_CONTEXT_PATH: string;
+    public static CCM_USER_ASSOC_CONTEXT_PATH: string;
 
     public async init(): Promise<void> {
 
@@ -66,12 +67,18 @@ export class IbmConfig extends Config {
         IbmConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST_ENTITLEMENT;
         IbmConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST_STORAGE;
         IbmConfig.IMP_SERVICE_ACCOUNT_SIGNER = process.env.IMP_SERVICE_ACCOUNT_SIGNER;
+        IbmConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
 
         // DES service context path
-        IbmConfig.ENTITLEMENT_CONTEXT_PATH = process.env.ENTITLEMENT_CONTEXT_PATH
-        IbmConfig.COMPLIANCE_CONTEXT_PATH = process.env.COMPLIANCE_CONTEXT_PATH
-        IbmConfig.STORAGE_CONTEXT_PATH = process.env.STORAGE_CONTEXT_PATH
-        IbmConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = '/groups/'
+        IbmConfig.ENTITLEMENT_CONTEXT_PATH = process.env.ENTITLEMENT_CONTEXT_PATH;
+        IbmConfig.COMPLIANCE_CONTEXT_PATH = process.env.COMPLIANCE_CONTEXT_PATH;
+        IbmConfig.STORAGE_CONTEXT_PATH = process.env.STORAGE_CONTEXT_PATH;
+        IbmConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = '/groups/';
+
+        // CCM values
+        IbmConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
+        IbmConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
+        IbmConfig.CCM_USER_ASSOC_CONTEXT_PATH = process.env.CCM_USER_ASSOC_CONTEXT_PATH;
 
         // DES_SERVICE_HOST replaced by new variable ENTITLEMENT_HOST
         IbmConfig.ENTITLEMENT_HOST = process.env.ENTITLEMENT_HOST;
@@ -79,23 +86,23 @@ export class IbmConfig extends Config {
         IbmConfig.STORAGE_HOST = process.env.STORAGE_HOST;// DES_SERVICE_HOST replaced by new variable LEGAL_HOST
 
         // IBM COS
-		IbmConfig.COS_ACCESS_KEY_ID = process.env.COS_ACCESS_KEY_ID;
-		IbmConfig.COS_SECRET_ACCESS_KEY = process.env.COS_SECRET_ACCESS_KEY;
-		IbmConfig.COS_ENDPOINT = process.env.COS_ENDPOINT;
-		IbmConfig.COS_S3_FORCEPATHSTYLE = process.env.COS_S3_FORCEPATHSTYLE === 'true';// string to boolean
-		IbmConfig.COS_SIGNATUREVERSION = process.env.COS_SIGNATUREVERSION;
+        IbmConfig.COS_ACCESS_KEY_ID = process.env.COS_ACCESS_KEY_ID;
+        IbmConfig.COS_SECRET_ACCESS_KEY = process.env.COS_SECRET_ACCESS_KEY;
+        IbmConfig.COS_ENDPOINT = process.env.COS_ENDPOINT;
+        IbmConfig.COS_S3_FORCEPATHSTYLE = process.env.COS_S3_FORCEPATHSTYLE === 'true';// string to boolean
+        IbmConfig.COS_SIGNATUREVERSION = process.env.COS_SIGNATUREVERSION;
         IbmConfig.COS_SUBUSER_ACCESS_KEY_ID = process.env.COS_SUBUSER_ACCESS_KEY_ID;
         IbmConfig.COS_SUBUSER_SECRET_ACCESS_KEY = process.env.COS_SUBUSER_SECRET_ACCESS_KEY;
         IbmConfig.COS_TEMP_CRED_EXPITY = process.env.COS_TEMP_CRED_EXPITY;
 
-		// IBM Keycloak
-		IbmConfig.KEYCLOAK_BASEURL = process.env.KEYCLOAK_BASEURL;
-		IbmConfig.KEYCLOAK_URL_TOKEN = process.env.KEYCLOAK_URL_TOKEN;
-		IbmConfig.KEYCLOAK_USERNAME = process.env.KEYCLOAK_USERNAME;
-		IbmConfig.KEYCLOAK_PASSWORD = process.env.KEYCLOAK_PASSWORD;
-		IbmConfig.KEYCLOAK_GRANTTYPE = process.env.KEYCLOAK_GRANTTYPE;
-		IbmConfig.KEYCLOAK_CLIENTID = process.env.KEYCLOAK_CLIENTID;
-		IbmConfig.KEYCLOAK_CLIENTSECRET = process.env.KEYCLOAK_CLIENTSECRET;
+        // IBM Keycloak
+        IbmConfig.KEYCLOAK_BASEURL = process.env.KEYCLOAK_BASEURL;
+        IbmConfig.KEYCLOAK_URL_TOKEN = process.env.KEYCLOAK_URL_TOKEN;
+        IbmConfig.KEYCLOAK_USERNAME = process.env.KEYCLOAK_USERNAME;
+        IbmConfig.KEYCLOAK_PASSWORD = process.env.KEYCLOAK_PASSWORD;
+        IbmConfig.KEYCLOAK_GRANTTYPE = process.env.KEYCLOAK_GRANTTYPE;
+        IbmConfig.KEYCLOAK_CLIENTID = process.env.KEYCLOAK_CLIENTID;
+        IbmConfig.KEYCLOAK_CLIENTSECRET = process.env.KEYCLOAK_CLIENTSECRET;
         IbmConfig.KEYCLOAK_REALM = process.env.KEYCLOAK_REALM;
 
         // IBM Document DB
@@ -105,22 +112,22 @@ export class IbmConfig extends Config {
         IbmConfig.DOC_DB_QUERY_RESULT_LIMIT = process.env.DOC_DB_QUERY_RESULT_LIMIT;
         IbmConfig.DOC_DB_QUERY_RESULT_LIMIT_VALUE = parseInt(process.env.DOC_DB_QUERY_RESULT_LIMIT_VALUE, 10);
         ///////////////////////////////////////
-        IbmConfig.DES_SERVICE_APPKEY = 'na'
+        IbmConfig.DES_SERVICE_APPKEY = 'na';
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST_ENTITLEMENT');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
 
         // redis cache port for locks (the port as env variable)
-        IbmConfig.LOCKSMAP_REDIS_INSTANCE_PORT = +process.env.REDIS_INSTANCE_PORT
-        IbmConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS = process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS
-        IbmConfig.LOCKSMAP_REDIS_INSTANCE_KEY = process.env.LOCKSMAP_REDIS_INSTANCE_KEY
-        IbmConfig.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false
+        IbmConfig.LOCKSMAP_REDIS_INSTANCE_PORT = +process.env.REDIS_INSTANCE_PORT;
+        IbmConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS = process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
+        IbmConfig.LOCKSMAP_REDIS_INSTANCE_KEY = process.env.LOCKSMAP_REDIS_INSTANCE_KEY;
+        IbmConfig.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false;
 
-        IbmConfig.DES_REDIS_INSTANCE_ADDRESS = process.env.DES_REDIS_INSTANCE_ADDRESS
-        IbmConfig.DES_REDIS_INSTANCE_PORT = +process.env.DES_REDIS_INSTANCE_PORT
-        IbmConfig.DES_REDIS_INSTANCE_KEY = process.env.DES_REDIS_INSTANCE_KEY
-        IbmConfig.DES_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false
+        IbmConfig.DES_REDIS_INSTANCE_ADDRESS = process.env.DES_REDIS_INSTANCE_ADDRESS;
+        IbmConfig.DES_REDIS_INSTANCE_PORT = +process.env.DES_REDIS_INSTANCE_PORT;
+        IbmConfig.DES_REDIS_INSTANCE_KEY = process.env.DES_REDIS_INSTANCE_KEY;
+        IbmConfig.DES_REDIS_INSTANCE_TLS_DISABLE = process.env.CACHE_TLS_DISABLE ? true : false;
 
         // Logger
         IbmConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'debug';
@@ -169,6 +176,11 @@ export class IbmConfig extends Config {
                 process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
             FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
                 process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
+            FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
+                process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+            CCM_SERVICE_URL: IbmConfig.CCM_SERVICE_URL,
+            CCM_TOKEN_SCOPE: IbmConfig.CCM_TOKEN_SCOPE
+
         });
 
         config();

@@ -17,16 +17,19 @@
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
-    IDESEntitlementGroupMembersModel } from '../../dataecosystem';
+    IDESEntitlementGroupMembersModel
+} from '../../dataecosystem';
 import { ConfigGoogle } from './config';
 import { Credentials } from './credentials';
 
 @DataEcosystemCoreFactory.register('google')
 export class GoogleDataEcosystemServices extends AbstractDataEcosystemCore {
+
     public getDataPartitionIDRestHeaderName(): string { return ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY; }
-    public getEntitlementBaseUrlPath(): string { return ConfigGoogle.ENTITLEMENT_BASE_URL_PATH };
+    public getEntitlementBaseUrlPath(): string { return ConfigGoogle.ENTITLEMENT_BASE_URL_PATH; };
     public getComplianceBaseUrlPath(): string { return '/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/storage/v2'; };
+    public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return 'Bearer ' + await new Credentials().getServiceCredentials();
@@ -36,8 +39,8 @@ export class GoogleDataEcosystemServices extends AbstractDataEcosystemCore {
         return groupMembers as IDESEntitlementGroupMembersModel;
     }
 
-    public getUserAddBodyRequest(userEmail: string, role: string): {email: string, role: string} | string[] {
-        return { email: userEmail, role }
+    public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string; } | string[] {
+        return { email: userEmail, role };
     }
 
     public tenantNameAndDataPartitionIDShouldMatch() {

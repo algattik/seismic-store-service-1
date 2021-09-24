@@ -20,7 +20,6 @@ import { AbstractAuthProvider, AuthProviderFactory } from '../../auth';
 
 @AuthProviderFactory.register('generic')
 export class GenericAuthProvider extends AbstractAuthProvider {
-
     public async generateAuthCredential(): Promise<any> {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED,
             'The required feature is not supported, the credential auth provider has not been found.'));

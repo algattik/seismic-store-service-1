@@ -63,6 +63,9 @@ export interface ConfigModel {
     FEATURE_FLAG_TRACE: boolean;
     FEATURE_FLAG_LOGGING: boolean;
     FEATURE_FLAG_STACKDRIVER_EXPORTER: boolean;
+    FEATURE_FLAG_CCM_INTERACTION: boolean;
+    CCM_SERVICE_URL: string;
+    CCM_TOKEN_SCOPE: string;
 }
 
 export abstract class Config implements IConfig {
@@ -89,7 +92,7 @@ export abstract class Config implements IConfig {
     public static DATASETS_KIND = 'datasets';
     public static SEISMICMETA_KIND = 'seismicmeta';
     public static APPS_KIND = 'apps';
-    public static IMPERSONATION_TOKEN_SIGNATURE_KIND = 'imptoken_signatures'
+    public static IMPERSONATION_TOKEN_SIGNATURE_KIND = 'imptoken_signatures';
 
     // Listing modes
     public static LS_MODE = { ALL: 'all', DATASETS: 'datasets', DIRS: 'dirs' };
@@ -137,6 +140,7 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_TRACE = true;
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
+    public static FEATURE_FLAG_CCM_INTERACTION = undefined;
 
     // DataGroups prefix
     public static DATAGROUPS_PREFIX = 'data.sdms';
@@ -185,6 +189,10 @@ export abstract class Config implements IConfig {
     public static ENABLE_DE_TOKEN_EXCHANGE = false;
     public static DES_TARGET_AUDIENCE = undefined;
 
+    // CCM service url and token scope
+    public static CCM_SERVICE_URL = undefined;
+    public static CCM_TOKEN_SCOPE = undefined;
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -222,6 +230,7 @@ export abstract class Config implements IConfig {
         Config.FEATURE_FLAG_TRACE = model.FEATURE_FLAG_TRACE;
         Config.FEATURE_FLAG_LOGGING = model.FEATURE_FLAG_LOGGING;
         Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = model.FEATURE_FLAG_STACKDRIVER_EXPORTER;
+        Config.FEATURE_FLAG_CCM_INTERACTION = model.FEATURE_FLAG_CCM_INTERACTION;
 
         Config.DES_SERVICE_HOST_ENTITLEMENT = model.DES_SERVICE_HOST_ENTITLEMENT;
         Config.DES_SERVICE_HOST_COMPLIANCE = model.DES_SERVICE_HOST_COMPLIANCE;
@@ -264,6 +273,14 @@ export abstract class Config implements IConfig {
         Config.checkRequiredConfig(Config.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST_PARTITION');
         Config.checkRequiredConfig(Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH, 'DES_ENTITLEMENT_DELETE_ENDPOINT_PATH');
         Config.checkRequiredConfig(Config.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
+
+        // CCM interaction
+        if (Config.FEATURE_FLAG_CCM_INTERACTION) {
+            Config.CCM_SERVICE_URL = model.CCM_SERVICE_URL;
+            Config.CCM_TOKEN_SCOPE = model.CCM_TOKEN_SCOPE;
+            Config.checkRequiredConfig(Config.CCM_SERVICE_URL, 'CCM_SERVICE_URL');
+            Config.checkRequiredConfig(Config.CCM_TOKEN_SCOPE, 'CCM_TOKEN_SCOPE');
+        }
 
         // JWT validation
         if (Config.JWT_ENABLE_FEATURE) {
