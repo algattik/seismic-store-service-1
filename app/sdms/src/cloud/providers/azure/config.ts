@@ -58,6 +58,8 @@ export class AzureConfig extends Config {
             AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = process.env.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH;
             AzureConfig.DES_SERVICE_APPKEY = 'undefined';
+            AzureConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
+            AzureConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
             Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST');
             Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST');
             Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST');
@@ -126,6 +128,10 @@ export class AzureConfig extends Config {
                     process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
                 FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
                     process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
+                FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
+                    process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+                CCM_SERVICE_URL: AzureConfig.CCM_SERVICE_URL,
+                CCM_TOKEN_SCOPE: AzureConfig.CCM_TOKEN_SCOPE
             });
 
             // initialize app insight

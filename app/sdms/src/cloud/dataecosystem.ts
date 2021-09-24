@@ -38,8 +38,9 @@ export interface IDataEcosystemCore {
     getEntitlementBaseUrlPath(): string;
     getComplianceBaseUrlPath(): string;
     getStorageBaseUrlPath(): string;
+    getUserAssociationSvcBaseUrlPath(): string;
     fixGroupMembersResponse(groupMembers: any): IDESEntitlementGroupMembersModel;
-    getUserAddBodyRequest(userEmail: string, role: string): {email: string, role: string} | string[];
+    getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string; } | string[];
     tenantNameAndDataPartitionIDShouldMatch(): boolean;
 }
 
@@ -49,13 +50,14 @@ export abstract class AbstractDataEcosystemCore implements IDataEcosystemCore {
     public abstract getEntitlementBaseUrlPath(): string;
     public abstract getComplianceBaseUrlPath(): string;
     public abstract getStorageBaseUrlPath(): string;
+    public abstract getUserAssociationSvcBaseUrlPath(): string;
     public abstract fixGroupMembersResponse(groupMembers: any): IDESEntitlementGroupMembersModel;
-    public abstract getUserAddBodyRequest(userEmail: string, role: string): {email: string, role: string} | string[];
+    public abstract getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string; } | string[];
     public abstract tenantNameAndDataPartitionIDShouldMatch(): boolean;
 }
 
 export class DataEcosystemCoreFactory extends CloudFactory {
-    public static build(providerLabel: string, args: { [key: string]: any } = {}): IDataEcosystemCore {
+    public static build(providerLabel: string, args: { [key: string]: any; } = {}): IDataEcosystemCore {
         return CloudFactory.build(providerLabel, AbstractDataEcosystemCore, args) as IDataEcosystemCore;
     }
 }

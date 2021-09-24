@@ -104,9 +104,10 @@ export class DatasetParser {
         }
     }
 
-    public static get(req: expRequest): [DatasetModel, boolean] {
+    public static get(req: expRequest): [DatasetModel, boolean, boolean] {
         return [this.createDatasetModelFromRequest(req),
-        req.query.seismicmeta === 'true'];
+        req.query.seismicmeta === 'true', req.query['subid-to-email'] === 'true'];
+
     }
 
     public static list(req: expRequest): any {

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Config, ConfigFactory } from '../../config';
-import {AWSSSMhelper} from './ssmhelper';
+import { AWSSSMhelper } from './ssmhelper';
 @ConfigFactory.register('aws')
 export class AWSConfig extends Config {
     // scopes
@@ -36,7 +36,7 @@ export class AWSConfig extends Config {
         AWSConfig.AWS_ENVIRONMENT = process.env.ENVIRONMENT;
 
         const awsSSMHelper = new AWSSSMhelper();
-        AWSConfig.AWS_BUCKET = await awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name');
+        AWSConfig.AWS_BUCKET = await awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/seismic-s3-bucket-name');
 
         // Logger
         AWSConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';
@@ -45,10 +45,10 @@ export class AWSConfig extends Config {
             SERVICE_ENV: process.env.SERVICE_ENV,
             SERVICE_PORT: +process.env.PORT || 5000,
             API_BASE_PATH: process.env.API_BASE_PATH,
-            IMP_SERVICE_ACCOUNT_SIGNER: process.env.IMP_SERVICE_ACCOUNT_SIGNER||'',
+            IMP_SERVICE_ACCOUNT_SIGNER: process.env.IMP_SERVICE_ACCOUNT_SIGNER || '',
             LOCKSMAP_REDIS_INSTANCE_ADDRESS: process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
             LOCKSMAP_REDIS_INSTANCE_PORT: +process.env.LOCKSMAP_REDIS_INSTANCE_PORT,
-            LOCKSMAP_REDIS_INSTANCE_KEY: process.env.LOCKSMAP_REDIS_INSTANCE_KEY||'',
+            LOCKSMAP_REDIS_INSTANCE_KEY: process.env.LOCKSMAP_REDIS_INSTANCE_KEY || '',
             DES_REDIS_INSTANCE_ADDRESS: process.env.DES_REDIS_INSTANCE_ADDRESS,
             DES_REDIS_INSTANCE_PORT: +process.env.DES_REDIS_INSTANCE_PORT,
             DES_REDIS_INSTANCE_KEY: process.env.DES_REDIS_INSTANCE_KEY,
@@ -56,11 +56,11 @@ export class AWSConfig extends Config {
             DES_SERVICE_HOST_ENTITLEMENT: process.env.ENTITLEMENTS_BASE_URL,
             DES_SERVICE_HOST_STORAGE: process.env.STORAGE_BASE_URL,
             DES_SERVICE_HOST_PARTITION: process.env.PARTITION_BASE_URL,
-            DES_SERVICE_APPKEY: process.env.DES_SERVICE_APPKEY||'',
+            DES_SERVICE_APPKEY: process.env.DES_SERVICE_APPKEY || '',
             DES_GROUP_CHAR_LIMIT: AWSConfig.DES_GROUP_CHAR_LIMIT,
             JWKS_URL: process.env.JWKS_URL,
-            JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS||'',
-            JWT_AUDIENCE: process.env.JWT_AUDIENCE||'',
+            JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS || '',
+            JWT_AUDIENCE: process.env.JWT_AUDIENCE || '',
             JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
             TENANT_JOURNAL_ON_DATA_PARTITION: true,
             SSL_ENABLED: process.env.SSL_ENABLED === 'true',
@@ -81,7 +81,11 @@ export class AWSConfig extends Config {
             FEATURE_FLAG_LOGGING: process.env.FEATURE_FLAG_LOGGING !== undefined ?
                 process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
             FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
-                process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true
+                process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
+            FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
+                process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+            CCM_SERVICE_URL: process.env.CCM_SERVICE_URL || '',
+            CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE || ''
         });
 
     }

@@ -14,25 +14,25 @@
 // limitations under the License.
 // ============================================================================
 
+import request from 'request-promise';
+import { Cache, Error } from '../../../shared';
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
     IDESEntitlementGroupMembersModel
 } from '../../dataecosystem';
-import { AzureCredentials } from './credentials';
-
 import { AzureConfig } from './config';
-import { Error, Cache } from '../../../shared';
+import { AzureCredentials } from './credentials';
 import { Keyvault } from './keyvault';
 
-import request from 'request-promise'
+
 
 @DataEcosystemCoreFactory.register('azure')
 export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
+    private static _storageConfigs: Cache<string>;
+    private static _cosmosConfigs: Cache<string>;
 
-    private static _storageConfigs: Cache<string>
-    private static _cosmosConfigs: Cache<string>
-
+    public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
     public getEntitlementBaseUrlPath(): string { return '/api/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
@@ -46,8 +46,8 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         return groupMembers as IDESEntitlementGroupMembersModel;
     }
 
-    public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string } | string[] {
-        return { email: userEmail, role }
+    public getUserAddBodyRequest(userEmail: string, role: string): { email: string, role: string; } | string[] {
+        return { email: userEmail, role };
     }
 
     public tenantNameAndDataPartitionIDShouldMatch() {
@@ -75,15 +75,15 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     public static async getStorageAccountName(dataPartitionID: string): Promise<string> {
 
         if (!this._storageConfigs) {
-            this._storageConfigs = new Cache<string>('storage')
+            this._storageConfigs = new Cache<string>('storage');
         }
 
         const res = await this._storageConfigs.get(dataPartitionID);
-        if (res !== undefined) { return res };
+        if (res !== undefined) { return res; };
 
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
         const storageConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_STORAGE_ACCOUNT_NAME] as {
-            sensitive: boolean, value: string
+            sensitive: boolean, value: string;
         });
         if (storageConfigs.sensitive) {
             storageConfigs.value = (await Keyvault.CreateSecretClient().getSecret(storageConfigs.value)).value;
@@ -93,10 +93,10 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     }
 
     public static async getCosmosConnectionParams(
-        dataPartitionID: string): Promise<{ endpoint: string, key: string }> {
+        dataPartitionID: string): Promise<{ endpoint: string, key: string; }> {
 
         if (!this._cosmosConfigs) {
-            this._cosmosConfigs = new Cache<string>('cosmos')
+            this._cosmosConfigs = new Cache<string>('cosmos');
         }
 
         const res = await this._cosmosConfigs.get(dataPartitionID);
@@ -105,7 +105,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
 
         const cosomsEndpointConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_ENDPOINT] as {
-            sensitive: boolean, value: string
+            sensitive: boolean, value: string;
         });
         if (cosomsEndpointConfigs.sensitive) {
             cosomsEndpointConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
@@ -113,7 +113,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         }
 
         const cosomsKeyConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_PRIMARY_KEY] as {
-            sensitive: boolean, value: string
+            sensitive: boolean, value: string;
         });
         if (cosomsKeyConfigs.sensitive) {
             cosomsKeyConfigs.value = (await Keyvault.CreateSecretClient().getSecret(

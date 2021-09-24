@@ -25,8 +25,8 @@ import { Feature, FeatureFlags } from '../shared';
 const errorCodeTagKey = { name: 'code' };
 
 if (FeatureFlags.isEnabled(Feature.STACKDRIVER_EXPORTER)) {
-   // this will be undefined for all other providers
-   const exporter = new StackdriverStatsExporter({ projectId: ConfigGoogle.SERVICE_CLOUD_PROJECT });
+    // this will be undefined for all other providers
+    const exporter = new StackdriverStatsExporter({ projectId: ConfigGoogle.SERVICE_CLOUD_PROJECT });
     globalStats.registerExporter(exporter);
 }
 
@@ -116,7 +116,7 @@ globalStats.registerView(storageViewLatency);
 
 // Record Functions
 
-export enum DESService { ENTITLEMENT, COMPLIANCE, STORAGE }
+export enum DESService { ENTITLEMENT, COMPLIANCE, STORAGE, CCM_USER_ASSOCIATION_SVC }
 
 export function recordError(code: number, service: DESService) {
     const tags = new TagMap();
