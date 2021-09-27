@@ -6,3 +6,6 @@ include:
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
+
+  # file metadata service
+  - local: "app/filemetadata/.gitlab-ci.yml"

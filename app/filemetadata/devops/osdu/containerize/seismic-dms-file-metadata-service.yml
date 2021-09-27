@@ -1,0 +1,27 @@
+filemetadata_push_runtime_image:
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  tags: ["osdu-medium"]
+  stage: containerize
+  variables:
+    SHA_IMAGE: ${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:latest
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    # Gitlab Container Registry
+    - cd app/filemetadata
+    - docker build -t $LOCAL_SERVICE_NAME --file Dockerfile .
+    - docker tag $LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$SHA_IMAGE
+    - docker push $CI_REGISTRY_IMAGE/$SHA_IMAGE
+    - docker tag $LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+    - docker push $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+  only:
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests

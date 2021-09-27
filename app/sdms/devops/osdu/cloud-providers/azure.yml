@@ -1,6 +1,6 @@
 variables:
   #azure variables
-  AZURE_SERVICE: seismic-store-service
+  SDMS_AZURE_SERVICE: seismic-store-service
   CHART_PATH: devops/azure/chart
   CLOUD_PROVIDER: azure
   E2E_ADMIN_EMAIL: integration.test@azureglobal1.onmicrosoft.com
@@ -54,7 +54,7 @@ sdms_azure_deploy:
     AZURE_KEYVAULT: osdu-svc-properties
     DES_URL: ${AZURE_DNS_NAME}
     IMAGE: ${AZURE_REGISTRY}.azurecr.io/${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
-    SERVICE_NAME: ${AZURE_SERVICE}
+    SDMS_SERVICE_NAME: ${SDMS_AZURE_SERVICE}
     TAG: ${CI_COMMIT_SHA}
   before_script:
     - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
@@ -76,10 +76,10 @@ sdms_azure_deploy:
     - sed -i 's/#{SDMS_MIN_REPLICAS}#/'$SDMS_MIN_REPLICAS'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MAX_REPLICAS}#/'$SDMS_MAX_REPLICAS'/' ${CHART_PATH}/values.yaml
     # Install helm chart
-    - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
-    - helm upgrade $SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
+    - helm upgrade $SDMS_SERVICE_NAME ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
+    - helm upgrade $SDMS_SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
     # Wait for service to be running to start
-    - kubectl rollout status deployment.v1.apps/$SERVICE_NAME -n osdu --timeout=900s
+    - kubectl rollout status deployment.v1.apps/$SDMS_SERVICE_NAME -n osdu --timeout=900s
     - pod=$(kubectl get pod -n osdu|grep $SDMS_PROJECT_NAME |tail -1 |awk '{print $1}')
     - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=600s)
     - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
@@ -110,7 +110,7 @@ sdms_azure_test:
     - apt-get install -y python
     - apt-get install -y python-pip
     - pip install msal
-    - svctoken=$(python devops/scripts/azure_jwt_client.py)
+    - svctoken=$(python ${CI_PROJECT_DIR}/devops/scripts/azure_jwt_client.py)
     - echo $svctoken
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh

@@ -1,0 +1,14 @@
+variables:
+  REPLICA: 1
+  MIN_REPLICA_COUNT: 1
+  MAX_REPLICA_COUNT: 5
+  LOCAL_SERVICE_NAME: seismic-dms-file-metadata-service
+
+include:
+  # containerize
+  - local: "app/filemetadata/devops/osdu/containerize/seismic-dms-file-metadata-service.yml"
+
+  # deploy
+
+  # azure
+  - local: "app/filemetadata/devops/osdu/cloud-providers/azure-file-metadata-service.yml"
