@@ -1,0 +1,8 @@
+parameters:
+  providerName: ""
+steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Pull Build Artifacts'
+    inputs:
+      artifactName: '${{ parameters.providerName }}_$(runtime_image)'
+      downloadPath: '$(System.DefaultWorkingDirectory)'

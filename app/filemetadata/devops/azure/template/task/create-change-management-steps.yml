@@ -1,0 +1,10 @@
+parameters:
+  createChangeManagement: false
+  providerName: ''
+  environment: ''
+steps:
+  - template: change-management.yml
+    parameters:
+      createChangeManagement: ${{ parameters.createChangeManagement }}
+      environment: ${{ parameters.environment }}
+      providerName: ${{ parameters.providerName }}

@@ -1,0 +1,16 @@
+#for fasapi and uvicorn
+fastapi==0.66.1
+uvicorn==0.14.0
+
+#for segy library
+segysdk-python==0.0.3918116
+
+#for static files
+aiofiles==0.5.0
+
+#for testing
+pytest==6.2.4
+requests==2.26.0
+
+#for .env
+python-dotenv==0.19.0

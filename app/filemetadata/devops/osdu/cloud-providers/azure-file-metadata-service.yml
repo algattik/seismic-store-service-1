@@ -1,0 +1,113 @@
+variables:
+  #azure variables
+  FILEMETADATA_AZURE_SERVICE: seismic-dms-file-metadata-service
+  CHART_PATH: devops/azure/chart
+  CLOUD_PROVIDER: azure
+  POD_IDENTITY: osdu-identity
+
+filemetadata_push_runtime_image_azure:
+  image: danielscholl/azure-build-image
+  tags: ["osdu-medium"]
+  stage: containerize
+  variables:
+    SHA_IMAGE: ${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:latest
+  before_script:
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az acr login -n $AZURE_REGISTRY
+  script:
+    # Azure Container Registry
+    - cd app/filemetadata
+    - docker build -t $LOCAL_SERVICE_NAME --file Dockerfile .
+    - docker tag $LOCAL_SERVICE_NAME ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
+    - docker tag $LOCAL_SERVICE_NAME ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+  only:
+    variables:
+      - $AZURE == 'true'
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+filemetadata_azure_deploy:
+  tags: ["osdu-medium"]
+  image: danielscholl/azure-build-image
+  stage: deploy
+  needs: ["filemetadata_push_runtime_image_azure"]
+  variables:
+    AZURE_KEYVAULT: osdu-svc-properties
+    DES_URL: ${AZURE_DNS_NAME}
+    IMAGE: ${AZURE_REGISTRY}.azurecr.io/${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}
+    FILEMETADATA_SERVICE_NAME: ${FILEMETADATA_AZURE_SERVICE}
+    TAG: ${CI_COMMIT_SHA}
+  before_script:
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
+  script:
+    # Replace values in config file
+    - cd app/filemetadata
+    - cp ${CHART_PATH}/helm-config.yaml ${CHART_PATH}/values.yaml
+    - sed -i 's,#{CONTAINER_REGISTRY_NAME}#,'$IMAGE',' ${CHART_PATH}/values.yaml
+    - sed -i 's,#{DNS_HOST}#,'$DES_URL',' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{ENVIRONMENT_NAME}#/'$ENVIRONMENT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{IMAGE_TAG}#/'$TAG'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{KEYVAULT_NAME}#/'$AZURE_KEYVAULT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{PROVIDER_NAME}#/'$CLOUD_PROVIDER'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{REPLICA_COUNT}#/'$REPLICA'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{MIN_REPLICA_COUNT}#/'$MIN_REPLICA_COUNT'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{MAX_REPLICA_COUNT}#/'$MAX_REPLICA_COUNT'/' ${CHART_PATH}/values.yaml
+    # Install helm chart
+    - helm upgrade $FILEMETADATA_AZURE_SERVICE ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
+    - helm upgrade $FILEMETADATA_AZURE_SERVICE ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
+    # Wait for service to be running to start
+    - kubectl rollout status deployment.v1.apps/$FILEMETADATA_SERVICE_NAME -n osdu --timeout=900s
+    - pod=$(kubectl get pod -n osdu|grep $LOCAL_SERVICE_NAME |tail -1 |awk '{print $1}')
+    - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=600s)
+    - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
+  only:
+    variables:
+      - $AZURE == 'true'
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+filemetadata_azure_test:
+  tags: ["osdu-medium"]
+  image: node
+  stage: integration
+  needs: ["filemetadata_azure_deploy"]
+  variables:
+    AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
+    AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
+    AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
+    INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
+    DNS: https://${AZURE_DNS_NAME}
+  script:
+    - cd app/filemetadata/app
+    - apt-get update
+    - apt-get install -y python3
+    - apt-get install -y python3-pip
+    - pip3 install pytest requests msal
+    - ls $CI_PROJECT_DIR
+    - export SVC_TOKEN=$(python ${CI_PROJECT_DIR}/devops/scripts/azure_jwt_client.py)
+    - echo $SVC_TOKEN
+    - python3 -m pytest --traceconfig tests/
+  only:
+    variables:
+      - $AZURE == 'true'
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
