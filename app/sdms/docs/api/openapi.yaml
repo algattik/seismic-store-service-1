@@ -1186,7 +1186,7 @@ paths:
 
     delete:
       summary: "Delete a subproject"
-      description: "<ul><li>Delete a subproject in seismic store.</li><li>Required roles: subproject.admin</li></ul>"
+      description: "<ul><li>Delete a subproject in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: subproject-delete
       tags:
         - SubProject

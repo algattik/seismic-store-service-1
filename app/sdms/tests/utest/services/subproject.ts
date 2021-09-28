@@ -253,7 +253,7 @@ export class TestSubProjectSVC {
             Config.CLOUDPROVIDER = 'google';
             this.sandbox.stub(SubProjectDAO, 'delete').resolves();
             this.sandbox.stub(DatasetDAO, 'deleteAll').resolves();
-            this.sandbox.stub(Auth, 'isWriteAuthorized').resolves();
+            this.sandbox.stub(Auth, 'isUserAuthorized').resolves();
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             const storage: IStorage = {
                 async deleteFiles() {
