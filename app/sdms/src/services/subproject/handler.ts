@@ -235,10 +235,12 @@ export class SubProjectHandler {
         // get the subproject metadata
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
 
-        // Only subproject admins are allowed to delete the subproject
+        // Only tenant admins are allowed to delete the subproject
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isWriteAuthorized(req.headers.authorization, subproject.acls.admins,
-                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY], undefined);
+            // Check if user is a tenant admin
+            await Auth.isUserAuthorized(
+                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
