@@ -20,7 +20,6 @@ import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
 import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESCompliance } from '../../../src/dataecosystem/compliance';
-import { RecordLatency } from '../../../src/metrics/metrics';
 import { Cache } from '../../../src/shared';
 import { Tx } from '../utils';
 
@@ -35,7 +34,6 @@ export class TestCompliance {
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
-            this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
             this.sandbox.stub(google.Credentials.prototype, 'getServiceCredentials').resolves('usertoken');
 
          });

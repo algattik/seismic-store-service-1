@@ -9,9 +9,7 @@ import { IbmConfig } from './config';
 import { logger } from './logger';
 import { IBMSTShelper } from './stshelper';
 import { DatastoreDAO } from './datastore';
-
-
-
+import { GrantTypes } from 'keycloak-admin/lib/utils/auth';
 
 @CredentialsFactory.register('ibm')
 export class Credentials extends AbstractCredentials {
@@ -104,7 +102,7 @@ export class Credentials extends AbstractCredentials {
             username: IbmConfig.KEYCLOAK_USERNAME,
             // pragma: allowlist nextline secret
             password: IbmConfig.KEYCLOAK_PASSWORD,
-            grantType: IbmConfig.KEYCLOAK_GRANTTYPE,
+            grantType: IbmConfig.KEYCLOAK_GRANTTYPE as GrantTypes,
             clientId: IbmConfig.KEYCLOAK_CLIENTID,
             clientSecret: IbmConfig.KEYCLOAK_CLIENTSECRET,
         };

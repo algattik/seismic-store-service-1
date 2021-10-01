@@ -18,7 +18,6 @@ import sinon from 'sinon';
 
 import { google } from '../../../src/cloud/providers';
 import { DESUtils } from '../../../src/dataecosystem';
-import { RecordLatency } from '../../../src/metrics/metrics';
 import { Tx } from '../utils';
 
 export class TestDESUtils {
@@ -29,7 +28,6 @@ export class TestDESUtils {
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
-            this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
             this.sandbox.stub(google.Credentials.prototype, 'getServiceCredentials').resolves('token');
 
          });

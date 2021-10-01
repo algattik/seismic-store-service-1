@@ -20,7 +20,6 @@ import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
 import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESStorage, DESUtils } from '../../../src/dataecosystem';
-import { RecordLatency } from '../../../src/metrics/metrics';
 import { Tx } from '../utils';
 
 
@@ -33,7 +32,6 @@ export class TestStorage {
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
-            this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
             this.sandbox.stub(google.Credentials.prototype, 'getServiceCredentials').resolves('usertoken');
             this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('tenant-a');
 

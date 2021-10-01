@@ -20,7 +20,6 @@ import { RunQueryResponse } from '@google-cloud/datastore/build/src/query';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
-import { RecordLatency } from '../../../src/metrics';
 import { DatasetModel } from '../../../src/services/dataset';
 import { DatasetDAO } from '../../../src/services/dataset/dao';
 import { Locker } from '../../../src/services/dataset/locker';
@@ -50,7 +49,6 @@ export class TestDataset {
 		describe(Tx.testInit('seismic store dao dataset test'), () => {
 			beforeEach(() => {
 				this.sandbox = sinon.createSandbox();
-				this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
 
 				this.journal = this.sandbox.createStubInstance(google.DatastoreDAO);
 				this.journal.createKey.callsFake((specs) => TestDataset.testDb.key(specs));

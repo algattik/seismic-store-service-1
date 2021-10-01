@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 import request from 'request-promise';
 
 import { Config, DataEcosystemCoreFactory } from '../cloud';
-import { DESService, recordError, RecordLatency } from '../metrics';
 import { Error } from '../shared';
 import { DESUtils } from './utils';
 
@@ -42,17 +41,12 @@ export class DESStorage {
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = DESUtils.getDataPartitionID(esd);
 
-        const storageLatency = new RecordLatency();
-
         try {
 
             await request.put(options);
-            storageLatency.record(DESService.STORAGE);
 
         } catch (error) {
 
-            storageLatency.record(DESService.STORAGE);
-            recordError(error.statusCode, DESService.STORAGE);
             throw (Error.makeForHTTPRequest(error, '[storage-service]'));
 
         }
@@ -77,17 +71,12 @@ export class DESStorage {
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = DESUtils.getDataPartitionID(esd);
 
-        const storageLatency = new RecordLatency();
-
         try {
 
             await request.post(options);
-            storageLatency.record(DESService.STORAGE);
 
         } catch (error) {
 
-            storageLatency.record(DESService.STORAGE);
-            recordError(error.statusCode, DESService.STORAGE);
             throw (Error.makeForHTTPRequest(error, '[storage-service]'));
 
         }
@@ -111,18 +100,14 @@ export class DESStorage {
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = DESUtils.getDataPartitionID(esd);
 
-        const storageLatency = new RecordLatency();
 
         try {
 
             const results = await request.get(options);
-            storageLatency.record(DESService.STORAGE);
             return JSON.parse(results)
 
         } catch (error) {
 
-            storageLatency.record(DESService.STORAGE);
-            recordError(error.statusCode, DESService.STORAGE);
             throw (Error.makeForHTTPRequest(error, '[storage-service]'));
 
         }
