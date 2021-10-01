@@ -19,3 +19,8 @@ export class AuthRoles {
     public static viewer = 'viewer';
     public static editor = 'editor';
 }
+
+export enum UserRoles {
+    Owner = 'OWNER',
+    Member = 'MEMBER'
+}

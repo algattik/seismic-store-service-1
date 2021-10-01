@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
+import { UserRoles } from '.';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../dataecosystem';
 
@@ -41,7 +42,7 @@ export class AuthGroups {
 
     public static async addUserToGroup(
         userToken: string, group: string, userEmail: string,
-        esd: string, appkey: string, role = 'MEMBER', checkConsistencyForCreateGroup = false) {
+        esd: string, appkey: string, role = UserRoles.Member, checkConsistencyForCreateGroup = false) {
         await DESEntitlement.addUserToGroup(userToken, group, DESUtils.getDataPartitionID(esd), userEmail,
             role, appkey, checkConsistencyForCreateGroup);
     }

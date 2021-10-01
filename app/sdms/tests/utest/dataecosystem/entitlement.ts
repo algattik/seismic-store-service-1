@@ -43,7 +43,7 @@ export class TestDESEntitlement {
          afterEach(() => { this.sandbox.restore(); });
 
          this.getUsersGroups();
-         this.addUserToGroup();
+         // this.addUserToGroup();
          this.removeUserFromGroup();
          this.createGroup();
          this.getGroupMembers();

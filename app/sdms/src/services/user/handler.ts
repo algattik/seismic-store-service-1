@@ -15,18 +15,20 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
-import { Auth, AuthGroups, AuthRoles } from '../../auth';
+import { Auth, AuthGroups, AuthRoles, UserRoles } from '../../auth';
 import { Config } from '../../cloud';
 import { JournalFactoryTenantClient } from '../../cloud/journal';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
+import { ISDPathModel } from '../../shared/sdpath';
 import { DatasetDAO, DatasetModel } from '../dataset';
 import { SubProjectDAO, SubprojectGroups } from '../subproject';
 import { ISubProjectModel } from '../subproject/model';
-import { TenantDAO, TenantGroups } from '../tenant';
+import { TenantDAO, TenantGroups, TenantModel } from '../tenant';
 import { ITenantModel } from '../tenant/model';
 import { UserOP } from './optype';
 import { UserParser } from './parser';
+
 
 export class UserHandler {
 
@@ -52,6 +54,47 @@ export class UserHandler {
             } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
 
         } catch (error) { Response.writeError(res, error); }
+
+    }
+
+    private static async addUserToGroups(groups: string[], tenantEsd: string,
+        userEmail: string, req: expRequest, role: UserRoles) {
+
+
+        await Promise.all(groups.map(async group => {
+            try {
+                await AuthGroups.addUserToGroup(
+                    req.headers.authorization, group, userEmail, tenantEsd,
+                    req[Config.DE_FORWARD_APPKEY], role);
+                return;
+            } catch (e) {
+                // If the error code is 400, retry adding the user as a member.
+                // This would aid in adding a group email to the admin group.
+                // Entitlements svc currently only allows one group to be added inside another
+                // if the role is member
+                if (e.error && e.error.code === 400) {
+                    await AuthGroups.addUserToGroup(req.headers.authorization,
+                        group, userEmail, tenantEsd, req[Config.DE_FORWARD_APPKEY], UserRoles.Member);
+                } else {
+                    throw e;
+                }
+            }
+
+        }));
+    }
+
+
+    private static async addUserAsAdmin(adminGroups: string[], viewerGroups: string[],
+        tenant: TenantModel, req: expRequest, userEmail: string) {
+
+        await this.addUserToGroups(adminGroups.concat(viewerGroups), tenant.esd, userEmail, req, UserRoles.Owner);
+
+    }
+
+    private static async addUserAsViewer(viewerGroups: string[], tenant: TenantModel,
+        req: expRequest, userEmail: string) {
+
+        await this.addUserToGroups(viewerGroups, tenant.esd, userEmail, req, UserRoles.Member);
 
     }
 
@@ -85,59 +128,7 @@ export class UserHandler {
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
         if (sdPath.dataset) {
-
-            if (subproject.access_policy !== Config.DATASET_ACCESS_POLICY) {
-                throw Error.make(Error.Status.BAD_REQUEST, 'User cannot be added to the dataset acls as the subproject access policy is not set to dataset ');
-            }
-
-            const datasetModel: DatasetModel = {
-                name: sdPath.dataset,
-                subproject: sdPath.subproject,
-                tenant: sdPath.tenant,
-                path: sdPath.path
-            } as DatasetModel;
-
-            const datasetOUT = subproject.enforce_key ?
-                await DatasetDAO.getByKey(journalClient, datasetModel) :
-                (await DatasetDAO.get(journalClient, datasetModel))[0];
-
-
-            if (userGroupRole === AuthRoles.admin || userGroupRole === AuthRoles.editor) {
-                if (datasetOUT.acls && 'admins' in datasetOUT.acls) {
-                    for (const adminGroup of datasetOUT.acls.admins) {
-                        try {
-                            await AuthGroups.addUserToGroup(
-                                req.headers.authorization, adminGroup, userEmail, tenant.esd,
-                                req[Config.DE_FORWARD_APPKEY],
-                                'OWNER');
-                        } catch (e) {
-                            // If the error code is 400, retry adding the user as a member.
-                            // This would aid in adding a group email to the admin group.
-                            // Entitlements svc currently only allows one group to be added inside another
-                            // if the role is member
-                            if (e.error && e.error.code === 400) {
-                                await AuthGroups.addUserToGroup(req.headers.authorization,
-                                    adminGroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
-                            }
-                        }
-                    }
-
-                } else {
-                    throw Error.make(Error.Status.BAD_REQUEST, 'Dataset has no acls so the user cannot be added.');
-                }
-            } else if (userGroupRole === AuthRoles.viewer) {
-                if (datasetOUT.acls && 'viewers' in datasetOUT.acls) {
-                    for (const viewerGroup of datasetOUT.acls.viewers) {
-                        await AuthGroups.addUserToGroup(
-                            req.headers.authorization, viewerGroup, userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    }
-
-                } else {
-                    throw Error.make(Error.Status.BAD_REQUEST, 'Dataset has no acls so the user cannot be added.');
-                }
-
-            }
+            await UserHandler.addUserToDatasetGroups(subproject, sdPath, userGroupRole, req, tenant, userEmail);
 
         } else if (sdPath.subproject) {
             await UserHandler.addUserToSubprojectGroups(tenant, subproject, userGroupRole, req, userEmail);
@@ -145,6 +136,50 @@ export class UserHandler {
 
     }
 
+    // ACLs at the level of dataset
+    private static async addUserToDatasetGroups(subproject: ISubProjectModel,
+        sdPath: ISDPathModel,
+        userGroupRole: string, req, tenant: ITenantModel, userEmail: string) {
+
+
+        if (subproject.access_policy !== Config.DATASET_ACCESS_POLICY) {
+            throw Error.make(Error.Status.BAD_REQUEST, 'User cannot be added to the dataset ACLs as the subproject access policy is not set to dataset ');
+        }
+
+        const datasetModel: DatasetModel = {
+            name: sdPath.dataset,
+            subproject: sdPath.subproject,
+            tenant: sdPath.tenant,
+            path: sdPath.path
+        } as DatasetModel;
+
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+
+        const datasetOUT = subproject.enforce_key ?
+            await DatasetDAO.getByKey(journalClient, datasetModel) :
+            (await DatasetDAO.get(journalClient, datasetModel))[0];
+
+
+        if (userGroupRole === AuthRoles.admin || userGroupRole === AuthRoles.editor) {
+            if (datasetOUT.acls && 'admins' in datasetOUT.acls) {
+                await this.addUserAsAdmin(datasetOUT.acls.admins, datasetOUT.acls.viewers,
+                    tenant, req, userEmail);
+            } else {
+                throw Error.make(Error.Status.BAD_REQUEST, 'Dataset has no ACLs so the user cannot be added.');
+            }
+        } else if (userGroupRole === AuthRoles.viewer) {
+            if (datasetOUT.acls && 'viewers' in datasetOUT.acls) {
+                await this.addUserAsViewer(datasetOUT.acls.viewers, tenant, req, userEmail);
+
+            } else {
+                throw Error.make(Error.Status.BAD_REQUEST, 'Dataset has no ACLs so the user cannot be added.');
+            }
+
+        }
+    }
+
+
+    // ACLs at the level of subproject
     private static async addUserToSubprojectGroups(tenant: ITenantModel, subproject: ISubProjectModel,
         userGroupRole: string, req, userEmail: string, skipPolicyCheck = false) {
 
@@ -153,106 +188,23 @@ export class UserHandler {
             .filter((group) => group.match(serviceGroupRegex));
         const subprojectViewerServiceGroups = subproject.acls.viewers
             .filter((group) => group.match(serviceGroupRegex));
-        const subprojectServiceGroups = subprojectAdminServiceGroups.concat(subprojectViewerServiceGroups);
 
         const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
         const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
         const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
-        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSuprojectDataGroups);
 
-        if (subprojectServiceGroups.length > 0) {
 
-            if (userGroupRole === AuthRoles.admin) {
+        const adminGroups = subprojectAdminServiceGroups.concat(adminSubprojectDataGroups);
+        const viewerGroups = subprojectViewerServiceGroups.concat(viewerSuprojectDataGroups);
 
-                // rm the user from the groups since the user can be OWNER or Member
-                for (const group of subprojectServiceGroups) {
-                    await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(
-                            req.headers.authorization, group, userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-                }
 
-                // add the user as OWNER for all service groups
-                for (const group of subprojectServiceGroups) {
-                    try {
-                        await AuthGroups.addUserToGroup(
-                            req.headers.authorization, group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
-                    } catch (e) {
-                        // If the error code is 400, retry adding the user as a member.
-                        // This would aid in adding a group email to the admin group.
-                        // Entitlements svc currently only allows one group to be added inside another
-                        // if the role is member
-                        if (e.error && e.error.code === 400) {
-                            await AuthGroups.addUserToGroup(req.headers.authorization,
-                                group, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
-                        }
-                    }
 
-                }
-
-            } else if (userGroupRole === AuthRoles.editor) {
-
-                // add the user as member for all editor service groups
-                for (const group of subprojectServiceGroups) {
-                    if (group.indexOf('.editor@') !== -1) {
-                        await AuthGroups.addUserToGroup(
-                            req.headers.authorization, group,
-                            userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    }
-                }
-
-            } else if (userGroupRole === AuthRoles.viewer) {
-
-                // add the user as member for all viewer service groups
-                for (const group of subprojectServiceGroups) {
-                    if (group.indexOf('.viewer@') !== -1) {
-                        await AuthGroups.addUserToGroup(
-                            req.headers.authorization, group,
-                            userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    }
-                }
-
-            } else { throw (Error.make(Error.Status.UNKNOWN, 'User role is not valid')); }
-
+        if (userGroupRole === AuthRoles.admin || userGroupRole === AuthRoles.editor) {
+            await this.addUserAsAdmin(adminGroups, viewerGroups, tenant, req, userEmail);
         }
 
-        if (subprojectDataGroups.length > 0) {
-
-            for (const datagroup of subprojectDataGroups) {
-
-                if (userGroupRole !== AuthRoles.viewer) {
-
-                    // First rm the user from the groups since the user can be exclus Owner or Member
-                    await this.doNotThrowIfNotMember(
-                        AuthGroups.removeUserFromGroup(
-                            req.headers.authorization, datagroup, userEmail,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]));
-
-                    try {
-                        // Add user as owner
-                        await AuthGroups.addUserToGroup(req.headers.authorization,
-                            datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER');
-                    } catch (e) {
-                        // If the error code is 400, retry adding the user as a member.
-                        // This would aid in adding a group email to the admin group.
-                        // Entitlements svc currently only allows one group to be added inside another
-                        // if the role is member
-                        if (e.error && e.error.code === 400) {
-                            await AuthGroups.addUserToGroup(req.headers.authorization,
-                                datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY], 'MEMBER');
-                        }
-                    }
-
-                } else {
-                    if (datagroup.indexOf('.viewer@') !== -1) {
-                        await AuthGroups.addUserToGroup(req.headers.authorization,
-                            datagroup, userEmail, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    }
-
-                }
-
-            }
-
+        if (userGroupRole === AuthRoles.viewer) {
+            await this.addUserAsViewer(viewerGroups, tenant, req, userEmail);
         }
 
     }
