@@ -20,7 +20,6 @@ import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
 import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESEntitlement } from '../../../src/dataecosystem';
-import { RecordLatency } from '../../../src/metrics/metrics';
 import { Error } from '../../../src/shared/error';
 import { Tx } from '../utils';
 
@@ -36,7 +35,6 @@ export class TestDESEntitlement {
 
          beforeEach(() => {
             this.sandbox = sinon.createSandbox();
-            this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
             this.sandbox.stub(google.Credentials.prototype, 'getServiceCredentials').resolves('token');
 
          });

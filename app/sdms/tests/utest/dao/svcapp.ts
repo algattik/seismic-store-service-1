@@ -20,7 +20,6 @@ import { Datastore } from '@google-cloud/datastore';
 import { JournalFactoryTenantClient } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
 import { Config } from '../../../src/cloud';
-import { RecordLatency } from '../../../src/metrics';
 import { DatasetModel } from '../../../src/services/dataset';
 import { AppsDAO } from '../../../src/services/svcapp/dao';
 import { IAppModel } from '../../../src/services/svcapp/model';
@@ -48,7 +47,6 @@ export class TestSvcApp {
 		describe(Tx.testInit('seismic store svcapp dao test'), () => {
 			beforeEach(() => {
 				this.sandbox = sinon.createSandbox();
-				this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
 
 				this.journal = this.sandbox.createStubInstance(google.DatastoreDAO);
 				this.journal.createKey.callsFake((specs) => TestSvcApp.testDb.key(specs));

@@ -19,7 +19,6 @@ import sinon from 'sinon';
 import { Datastore } from '@google-cloud/datastore';
 import { Entity } from '@google-cloud/datastore/build/src/entity';
 import { google, JournalFactoryServiceClient } from '../../../src/cloud';
-import { RecordLatency } from '../../../src/metrics';
 import { TenantDAO } from '../../../src/services/tenant/dao';
 import { ITenantModel } from '../../../src/services/tenant/model';
 import { Tx } from '../utils';
@@ -32,7 +31,6 @@ export class TestTenant {
       describe(Tx.testInit('seismic store dao tenant test'), () => {
          this.sandbox = sinon.createSandbox();
          beforeEach(() => {
-            this.sandbox.stub(RecordLatency.prototype, 'record').resolves();
 
             this.journal = this.sandbox.createStubInstance(google.DatastoreDAO);
             this.journal.createKey.callsFake((specs) => TestTenant.testDb.key(specs));

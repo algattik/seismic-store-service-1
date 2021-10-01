@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 import request from 'request-promise';
 
 import { Config, DataEcosystemCoreFactory } from '../cloud';
-import { DESService, recordError, RecordLatency } from '../metrics';
 import { Error, Cache } from '../shared';
 
 export class DESCompliance {
@@ -50,19 +49,14 @@ export class DESCompliance {
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const complianceLatency = new RecordLatency();
-
         try {
 
             const results = await request.post(options);
-            complianceLatency.record(DESService.COMPLIANCE);
             await this._cache.set(ltag, results.invalidLegalTags.length === 0);
             return results.invalidLegalTags.length === 0;
 
         } catch (error) {
 
-            complianceLatency.record(DESService.COMPLIANCE);
-            recordError(error.statusCode, DESService.COMPLIANCE);
             throw (Error.makeForHTTPRequest(error, '[compliance-service]'));
 
         }

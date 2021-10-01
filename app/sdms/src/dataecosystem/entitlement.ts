@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@
 import request from 'request-promise';
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
-import { DESService, recordError, RecordLatency } from '../metrics';
 import { Error } from '../shared';
-
 
 export class DESEntitlement {
 
@@ -43,21 +41,15 @@ export class DESEntitlement {
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const entitlementLatency = new RecordLatency();
-
         try {
 
             const res = dataecosystem.fixGroupMembersResponse(JSON.parse(await request.get(options)));
-            entitlementLatency.record(DESService.ENTITLEMENT);
-
             const members = res.members;
             const nextCursor = res.cursor;
             return { members, nextCursor };
 
         } catch (error) {
 
-            entitlementLatency.record(DESService.ENTITLEMENT);
-            recordError(error.statusCode, DESService.ENTITLEMENT);
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
 
         }
@@ -80,20 +72,12 @@ export class DESEntitlement {
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const entitlementLatency = new RecordLatency();
-
         try {
 
             const results = await request.get(options);
-
-            entitlementLatency.record(DESService.ENTITLEMENT);
-
             return JSON.parse(results).groups;
 
         } catch (error) {
-
-            entitlementLatency.record(DESService.ENTITLEMENT);
-            recordError(error.statusCode, DESService.ENTITLEMENT);
 
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
 
@@ -128,8 +112,6 @@ export class DESEntitlement {
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const entitlementLatency = new RecordLatency();
-
         try {
 
             // let's have a simple linear retry backoff with 1s wait time between iterations
@@ -138,7 +120,6 @@ export class DESEntitlement {
             while (counter < 10) {
                 try {
                     await request.post(options);
-                    entitlementLatency.record(DESService.ENTITLEMENT);
                     return;
                 } catch (error) { // check eventual consistency
                     if (!(checkConsistencyForCreateGroup && error && error.error &&
@@ -152,8 +133,6 @@ export class DESEntitlement {
             }
 
         } catch (error) {
-
-            entitlementLatency.record(DESService.ENTITLEMENT);
 
             if (error.statusCode === 409) {
 
@@ -170,16 +149,13 @@ export class DESEntitlement {
                 const existingUserRole = usersList.filter(user => user.email === userEmail)[0].role;
 
                 if (existingUserRole !== role) {
-                    recordError(error.statusCode, DESService.ENTITLEMENT);
                     throw (Error.make(Error.Status.ALREADY_EXISTS,
                         'User already exists but the role is not set to ' + role + ', so delete the user and re-add'));
                 }
                 return;
             }
 
-            recordError(error.statusCode, DESService.ENTITLEMENT);
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
-
 
         }
     }
@@ -202,18 +178,13 @@ export class DESEntitlement {
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const entitlementLatency = new RecordLatency();
-
         try {
 
             await request.delete(options);
-            entitlementLatency.record(DESService.ENTITLEMENT);
 
         } catch (error) {
 
-            entitlementLatency.record(DESService.ENTITLEMENT);
             if (error.statusCode !== 409) {
-                recordError(error.statusCode, DESService.ENTITLEMENT);
                 throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
             }
         }
@@ -241,17 +212,12 @@ export class DESEntitlement {
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const entitlementLatency = new RecordLatency();
-
         try {
 
             await request.post(options);
-            entitlementLatency.record(DESService.ENTITLEMENT);
 
         } catch (error) {
 
-            entitlementLatency.record(DESService.ENTITLEMENT);
-            recordError(error.statusCode, DESService.ENTITLEMENT);
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
 
         }
@@ -275,16 +241,12 @@ export class DESEntitlement {
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        const entitlementLatency = new RecordLatency();
         try {
 
             await request.delete(options);
-            entitlementLatency.record(DESService.ENTITLEMENT);
 
         } catch (error) {
 
-            entitlementLatency.record(DESService.ENTITLEMENT);
-            recordError(error.statusCode, DESService.ENTITLEMENT);
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
 
         }
