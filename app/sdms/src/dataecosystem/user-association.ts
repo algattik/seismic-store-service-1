@@ -55,6 +55,11 @@ export class DESUserAssociation {
 
       } catch (error) {
          ccmUserAssocSvcLatency.record(DESService.CCM_USER_ASSOCIATION_SVC);
+
+         if (error && error.statusCode === 404 && error.message.includes('User not found')) {
+            await this._cache.set(cacheKey, subId);
+            return subId;
+         }
          throw (Error.makeForHTTPRequest(error, '[ccm-user-association-service]'));
       }
    }

@@ -192,7 +192,8 @@ export class SubProjectHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const convertSubIdToEmail = (req.query['subid-to-email'] !== undefined) ? req.query['subid-to-email'] : 'true';
+        const convertSubIdToEmail = (req.query['subid-to-email'] !== undefined) ?
+            req.query['subid-to-email'] === 'true' : true;
 
         // get subproject
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
