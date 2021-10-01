@@ -117,7 +117,7 @@ export class DatasetHandler {
 
                 if (subprojectAccessPolicy === Config.UNIFORM_ACCESS_POLICY) {
                     throw Error.make(Error.Status.BAD_REQUEST,
-                        'Subproject access policy is set to uniform and so acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
+                        'Subproject access policy is set to uniform and so ACLs cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
                 }
             }
 
@@ -499,7 +499,7 @@ export class DatasetHandler {
 
             if (subprojectAccessPolicy === Config.UNIFORM_ACCESS_POLICY) {
                 throw Error.make(Error.Status.BAD_REQUEST,
-                    'Subproject access policy is set to uniform and so the dataset acls cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
+                    'Subproject access policy is set to uniform and so the dataset ACLs cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
             }
         }
 
@@ -539,7 +539,7 @@ export class DatasetHandler {
                 datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
         }
 
-        // If the input request has dataset acls then the subproject access policy is always dataset
+        // If the input request has dataset ACLs then the subproject access policy is always dataset
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             let authGroups = [];
             const accessPolicy = subproject.access_policy;
@@ -688,7 +688,7 @@ export class DatasetHandler {
             }
         }
 
-        // Update the acls if the input request has them
+        // Update the ACLs if the input request has them
         if (datasetIN.acls) {
             datasetOUT.acls = datasetIN.acls;
         }

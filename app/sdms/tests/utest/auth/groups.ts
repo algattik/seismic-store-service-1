@@ -15,7 +15,7 @@
 // ============================================================================
 
 import sinon from 'sinon';
-import { AuthGroups } from '../../../src/auth';
+import { AuthGroups, UserRoles } from '../../../src/auth';
 import { Config } from '../../../src/cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../../../src/cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../../../src/dataecosystem';
@@ -170,9 +170,9 @@ export class TestAuthGroups {
 
          this.spy.stub(DESUtils, 'getDataPartitionID').returns('data-partition-a');
 
-         await AuthGroups.addUserToGroup(undefined, 'group-a', 'useremail', 'esd', 'appkey', 'role-a');
+         await AuthGroups.addUserToGroup(undefined, 'group-a', 'useremail', 'esd', 'appkey', UserRoles.Member);
 
-         const calledWithResult = addUserToGroupStub.calledWith(undefined, 'group-a', 'data-partition-a', 'useremail', 'role-a', 'appkey');
+         const calledWithResult = addUserToGroupStub.calledWith(undefined, 'group-a', 'data-partition-a', 'useremail', UserRoles.Member, 'appkey');
 
          Tx.checkTrue(calledWithResult === true, done);
       });

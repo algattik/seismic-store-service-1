@@ -63,7 +63,7 @@ export class SubProjectDAO {
         if (entity.enforce_key === undefined) { entity.enforce_key = false; }
 
 
-        // Fix entities with no acls
+        // Fix entities with no ACLs
         if (!entity.acls) {
             entity.acls = await this.constructServiceGroupACLs(entity);
         }

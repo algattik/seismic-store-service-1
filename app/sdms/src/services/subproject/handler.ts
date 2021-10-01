@@ -17,7 +17,7 @@
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { SubProjectModel } from '.';
-import { Auth, AuthGroups } from '../../auth';
+import { Auth, AuthGroups, UserRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { DESUtils } from '../../dataecosystem';
@@ -169,9 +169,9 @@ export class SubProjectHandler {
 
                 await Promise.all([
                     AuthGroups.addUserToGroup(userToken, adminGroup, subprojectCreatorEmail,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true),
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true),
                     AuthGroups.addUserToGroup(userToken, viewerGroup, subprojectCreatorEmail,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY], 'OWNER', true)
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true)
                 ]);
 
             }

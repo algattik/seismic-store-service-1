@@ -154,10 +154,33 @@ export class DESEntitlement {
         } catch (error) {
 
             entitlementLatency.record(DESService.ENTITLEMENT);
-            if (error.statusCode !== 409) {
-                recordError(error.statusCode, DESService.ENTITLEMENT);
-                throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
+
+            if (error.statusCode === 409) {
+
+                let usersList = [];
+                let result = await DESEntitlement.listUsersInGroup(userToken, groupName, dataPartitionID, appkey);
+
+                usersList = result.members;
+
+                while (result.nextCursor) {
+                    result = await DESEntitlement.listUsersInGroup(userToken, groupName, dataPartitionID, appkey);
+                    usersList = [...usersList, ...result.members];
+                }
+
+                const existingUserRole = usersList.filter(user => user.email === userEmail)[0].role;
+
+                if (existingUserRole !== role) {
+                    recordError(error.statusCode, DESService.ENTITLEMENT);
+                    throw (Error.make(Error.Status.ALREADY_EXISTS,
+                        'User already exists but the role is not set to ' + role + ', so delete the user and re-add'));
+                }
+                return;
             }
+
+            recordError(error.statusCode, DESService.ENTITLEMENT);
+            throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
+
+
         }
     }
 
