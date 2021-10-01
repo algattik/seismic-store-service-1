@@ -28,13 +28,16 @@ export class DatasetDAO {
         await journalClient.save(datasetEntity);
     }
 
-    public static async getByKey(journalClient: IJournal, dataset: DatasetModel): Promise<DatasetModel> {
+    public static async getByKey(journalClient: IJournal, dataset: DatasetModel,
+        journalClientTransaction?:IJournalTransaction): Promise<DatasetModel> {
         const datasetEntityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
             path: [Config.DATASETS_KIND],
             enforcedKey: dataset.path.slice(0,-1) + '/' + dataset.name
         });
-        const [entity] = await journalClient.get(datasetEntityKey);
+        const [entity] = journalClientTransaction ?
+            await journalClientTransaction.get(datasetEntityKey) :
+            await journalClient.get(datasetEntityKey);
         return entity ? await this.fixOldModel(entity, dataset.tenant, dataset.subproject) : entity;
     }
 

@@ -124,7 +124,7 @@ The following software have components provided under the terms of this license:
 - continuation-local-storage (from https://www.npmjs.com/package/continuation-local-storage)
 - docutils (from http://docutils.sourceforge.net/)
 - dotenv (from https://www.npmjs.com/package/dotenv)
-- emitter-listener (from https://github.com/othiym23/emitter-listener)
+- emitter-listener (from https://www.npmjs.com/package/emitter-listener)
 - ieee754 (from https://www.npmjs.com/package/ieee754)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-forge (from https://www.npmjs.com/package/node-forge)
@@ -138,7 +138,7 @@ The following software have components provided under the terms of this license:
 - rc (from https://www.npmjs.com/package/rc)
 - shimmer (from https://www.npmjs.com/package/shimmer)
 - source-map (from https://www.npmjs.com/package/source-map)
-- sprintf-js (from https://github.com/alexei/sprintf.js#readme)
+- sprintf-js (from https://www.npmjs.com/package/sprintf-js)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
 - tslib (from https://www.npmjs.com/package/tslib)
@@ -188,7 +188,7 @@ The following software have components provided under the terms of this license:
 - qs (from https://www.npmjs.com/package/qs)
 - rc (from https://www.npmjs.com/package/rc)
 - source-map (from https://www.npmjs.com/package/source-map)
-- sprintf-js (from https://github.com/alexei/sprintf.js#readme)
+- sprintf-js (from https://www.npmjs.com/package/sprintf-js)
 - stack-chain (from https://www.npmjs.com/package/stack-chain)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
@@ -206,7 +206,7 @@ BSD-3-Clause-Clear
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- sprintf-js (from https://github.com/alexei/sprintf.js#readme)
+- sprintf-js (from https://www.npmjs.com/package/sprintf-js)
 
 ========================================================================
 CC-BY-4.0
@@ -271,7 +271,7 @@ The following software have components provided under the terms of this license:
 - har-schema (from https://www.npmjs.com/package/har-schema)
 - has-unicode (from https://www.npmjs.com/package/has-unicode)
 - ignore-walk (from https://www.npmjs.com/package/ignore-walk)
-- inflight (from https://github.com/isaacs/inflight)
+- inflight (from https://www.npmjs.com/package/inflight)
 - inherits (from https://www.npmjs.com/package/inherits)
 - inherits (from https://www.npmjs.com/package/inherits)
 - ini (from https://www.npmjs.com/package/ini)
@@ -573,7 +573,7 @@ The following software have components provided under the terms of this license:
 - iconv-lite (from https://www.npmjs.com/package/iconv-lite)
 - ignore-walk (from https://www.npmjs.com/package/ignore-walk)
 - imurmurhash (from https://www.npmjs.com/package/imurmurhash)
-- inflight (from https://github.com/isaacs/inflight)
+- inflight (from https://www.npmjs.com/package/inflight)
 - inherits (from https://www.npmjs.com/package/inherits)
 - inherits (from https://www.npmjs.com/package/inherits)
 - ini (from https://www.npmjs.com/package/ini)
@@ -644,7 +644,7 @@ The following software have components provided under the terms of this license:
 - lru-memoizer (from https://www.npmjs.com/package/lru-memoizer)
 - make-dir (from https://www.npmjs.com/package/make-dir)
 - map-obj (from https://www.npmjs.com/package/map-obj)
-- media-typer (from https://github.com/jshttp/media-typer)
+- media-typer (from https://www.npmjs.com/package/media-typer)
 - merge-descriptors (from https://www.npmjs.com/package/merge-descriptors)
 - methods (from https://www.npmjs.com/package/methods)
 - mime (from https://www.npmjs.com/package/mime)
@@ -684,7 +684,7 @@ The following software have components provided under the terms of this license:
 - npm-normalize-package-bin (from https://www.npmjs.com/package/npm-normalize-package-bin)
 - npm-packlist (from https://www.npmjs.com/package/npm-packlist)
 - npmlog (from https://www.npmjs.com/package/npmlog)
-- number-is-nan (from https://github.com/sindresorhus/number-is-nan#readme)
+- number-is-nan (from https://www.npmjs.com/package/number-is-nan)
 - object-assign (from https://www.npmjs.com/package/object-assign)
 - object-hash (from https://www.npmjs.com/package/object-hash)
 - object-inspect (from https://www.npmjs.com/package/object-inspect)
@@ -698,8 +698,8 @@ The following software have components provided under the terms of this license:
 - one-time (from https://www.npmjs.com/package/one-time)
 - onetime (from https://www.npmjs.com/package/onetime)
 - open (from https://www.npmjs.com/package/open)
-- os-homedir (from https://github.com/sindresorhus/os-homedir)
-- os-tmpdir (from https://github.com/sindresorhus/os-tmpdir)
+- os-homedir (from https://www.npmjs.com/package/os-homedir)
+- os-tmpdir (from https://www.npmjs.com/package/os-tmpdir)
 - osenv (from https://www.npmjs.com/package/osenv)
 - p-defer (from https://www.npmjs.com/package/p-defer)
 - p-finally (from https://www.npmjs.com/package/p-finally)
@@ -711,7 +711,7 @@ The following software have components provided under the terms of this license:
 - p-try (from https://www.npmjs.com/package/p-try)
 - parseurl (from https://www.npmjs.com/package/parseurl)
 - path-exists (from https://www.npmjs.com/package/path-exists)
-- path-is-absolute (from https://github.com/sindresorhus/path-is-absolute)
+- path-is-absolute (from https://www.npmjs.com/package/path-is-absolute)
 - path-parse (from https://www.npmjs.com/package/path-parse)
 - path-to-regexp (from https://www.npmjs.com/package/path-to-regexp)
 - performance-now (from https://www.npmjs.com/package/performance-now)
@@ -941,3 +941,5 @@ The following software have components provided under the terms of this license:
 - json-schema (from https://www.npmjs.com/package/json-schema)
 - querystring (from https://www.npmjs.com/package/querystring)
 - sax (from https://www.npmjs.com/package/sax)
+
+
