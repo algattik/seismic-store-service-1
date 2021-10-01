@@ -108,8 +108,11 @@ export class DatasetHandler {
         let writeLockSession: IWriteLockSession;
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const journalClientTransaction = journalClient.getTransaction();
 
         try {
+
+            await journalClientTransaction.run();
 
             if (dataset.acls) {
                 const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
@@ -130,8 +133,8 @@ export class DatasetHandler {
             // if the call is idempotent return the dataset value
             if (writeLockSession.idempotent) {
                 const alreadyRegisteredDataset = subproject.enforce_key ?
-                    await DatasetDAO.getByKey(journalClient, dataset) :
-                    (await DatasetDAO.get(journalClient, dataset))[0];
+                    await DatasetDAO.getByKey(journalClient, dataset, journalClientTransaction) :
+                    (await DatasetDAO.get(journalClientTransaction, dataset))[0];
                 if (alreadyRegisteredDataset) {
                     await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
                     return alreadyRegisteredDataset;
@@ -164,8 +167,8 @@ export class DatasetHandler {
             ]);
 
             const datasetAlreadyExist = subproject.enforce_key ?
-                await DatasetDAO.getByKey(journalClient, dataset) :
-                (await DatasetDAO.get(journalClient, dataset))[0];
+                await DatasetDAO.getByKey(journalClient, dataset, journalClientTransaction) :
+                (await DatasetDAO.get(journalClientTransaction, dataset))[0];
 
             // check if dataset already exist
             if (datasetAlreadyExist) {
@@ -222,12 +225,15 @@ export class DatasetHandler {
 
             // save the dataset entity
             await Promise.all([
-                DatasetDAO.register(journalClient, { key: datasetEntityKey, data: dataset }),
+                DatasetDAO.register(journalClientTransaction, { key: datasetEntityKey, data: dataset }),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
                         [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
+            // release the mutex and keep the lock session
+            await Locker.removeWriteLock(writeLockSession, true);
+            await journalClientTransaction.commit();
 
             // attach the gcpid for fast check
             dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
@@ -236,14 +242,13 @@ export class DatasetHandler {
             dataset.sbit = writeLockSession.wid;
             dataset.sbit_count = 1;
 
-            // release the mutex and keep the lock session
-            await Locker.removeWriteLock(writeLockSession, true);
             return dataset;
 
         } catch (err) {
 
             // release the mutex and unlock the resource
             await Locker.removeWriteLock(writeLockSession);
+            await journalClientTransaction.rollback();
             throw (err);
 
         }
@@ -615,8 +620,8 @@ export class DatasetHandler {
                     req.headers.authorization, datasetOUT.seismicmeta_guid,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
-                for (const keyx of Object.keys(seismicmeta)) {
-                    seismicmetaDE[keyx] = seismicmeta[keyx];
+                for (const keySeismicMeta of Object.keys(seismicmeta)) {
+                    seismicmetaDE[keySeismicMeta] = seismicmeta[keySeismicMeta];
                 }
 
                 datasetOUT.seismicmeta_guid = seismicmeta.id;
