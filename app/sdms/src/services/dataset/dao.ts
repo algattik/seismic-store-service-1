@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { DatasetModel, PaginationModel } from '.';
-import { Config, IJournal, IJournalTransaction } from '../../cloud';
+import { Config, IJournal } from '../../cloud';
 import { Utils } from '../../shared';
 import { Locker } from './locker';
 import { PaginatedDatasetList } from './model';
@@ -23,26 +23,23 @@ import { PaginatedDatasetList } from './model';
 export class DatasetDAO {
 
     public static async register(
-        journalClient: IJournal | IJournalTransaction, datasetEntity: {key: object, data: DatasetModel}) {
+        journalClient: IJournal, datasetEntity: {key: object, data: DatasetModel}) {
         datasetEntity.data.ctag = Utils.makeID(16);
         await journalClient.save(datasetEntity);
     }
 
-    public static async getByKey(journalClient: IJournal, dataset: DatasetModel,
-        journalClientTransaction?:IJournalTransaction): Promise<DatasetModel> {
+    public static async getByKey(journalClient: IJournal, dataset: DatasetModel): Promise<DatasetModel> {
         const datasetEntityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
             path: [Config.DATASETS_KIND],
             enforcedKey: dataset.path.slice(0,-1) + '/' + dataset.name
         });
-        const [entity] = journalClientTransaction ?
-            await journalClientTransaction.get(datasetEntityKey) :
-            await journalClient.get(datasetEntityKey);
+        const [entity] = await journalClient.get(datasetEntityKey);
         return entity ? await this.fixOldModel(entity, dataset.tenant, dataset.subproject) : entity;
     }
 
     public static async get(
-        journalClient: IJournal | IJournalTransaction,
+        journalClient: IJournal,
         dataset: DatasetModel): Promise<[DatasetModel, any]> {
         let query = journalClient.createQuery(
             Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND);
@@ -59,19 +56,19 @@ export class DatasetDAO {
     }
 
     public static async update(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel, datasetKey: any) {
+        journalClient: IJournal, dataset: DatasetModel, datasetKey: any) {
         dataset.ctag = Utils.makeID(16);
         await journalClient.save({ key: datasetKey, data: dataset });
     }
 
     public static async updateAll(
-        journalClient: IJournal | IJournalTransaction, datasets: {data: DatasetModel, key: any}[]) {
+        journalClient: IJournal, datasets: {data: DatasetModel, key: any}[]) {
         datasets.forEach(dataset => { dataset.data.ctag = Utils.makeID(16); });
         await journalClient.save(datasets);
     }
 
     public static async list(
-        journalClient: IJournal | IJournalTransaction,
+        journalClient: IJournal,
         dataset: DatasetModel, pagination: PaginationModel):
         Promise<any> {
 
@@ -113,7 +110,7 @@ export class DatasetDAO {
     }
 
     public static async deleteAll(
-        journalClient: IJournal | IJournalTransaction, tenantName: string, subprojectName: string) {
+        journalClient: IJournal, tenantName: string, subprojectName: string) {
 
         const query = journalClient.createQuery(
             Config.SEISMIC_STORE_NS + '-' + tenantName + '-' + subprojectName, Config.DATASETS_KIND);
@@ -128,12 +125,12 @@ export class DatasetDAO {
         await Promise.all(datasetsToDelete);
     }
 
-    public static async delete(journalClient: IJournal | IJournalTransaction, dataset: DatasetModel) {
+    public static async delete(journalClient: IJournal, dataset: DatasetModel) {
         await journalClient.delete(dataset[journalClient.KEY]);
     }
 
     public static async paginatedListContent(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
+        journalClient: IJournal, dataset: DatasetModel,
         wmode: string, pagination: PaginationModel):
         Promise<{ datasets: string[], nextPageCursor: string }> {
 
@@ -179,7 +176,7 @@ export class DatasetDAO {
     }
 
     public static async listDatasets(
-        journalClient: IJournal | IJournalTransaction,
+        journalClient: IJournal,
         tenant: string, subproject: string, pagination?: PaginationModel):
         Promise<{ datasets: {data: DatasetModel, key: any}[], nextPageCursor: string }> {
 
@@ -208,7 +205,7 @@ export class DatasetDAO {
     }
 
     public static async listContent(
-        journalClient: IJournal | IJournalTransaction, dataset: DatasetModel,
+        journalClient: IJournal, dataset: DatasetModel,
         wmode: string = Config.LS_MODE.ALL): Promise<{ datasets: string[], directories: string[] }> {
 
         const results = { datasets: [], directories: [] };

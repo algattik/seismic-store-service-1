@@ -140,7 +140,7 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_TRACE = true;
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
-    public static FEATURE_FLAG_CCM_INTERACTION = undefined;
+    public static FEATURE_FLAG_CCM_INTERACTION = false;
 
     // DataGroups prefix
     public static DATAGROUPS_PREFIX = 'data.sdms';

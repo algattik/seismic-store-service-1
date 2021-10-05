@@ -14,14 +14,13 @@
 // limitations under the License.
 // ============================================================================
 
-
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+
 import { DatasetModel } from '.';
 import { Auth } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
-import { DESStorage, DESUtils } from '../../dataecosystem';
-import { DESUserAssociation } from '../../dataecosystem/user-association';
+import { DESStorage, DESUtils, DESUserAssociation } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
 import { SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
@@ -103,6 +102,10 @@ export class DatasetHandler {
     // register a new dataset
     private static async register(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
+        // consistency flag
+        let datasetRegisteredConsistencyFlag = false;
+        let datasetEntityKey: object;
+
         // parse the user input and create the dataset metadata model
         const userInput = await DatasetParser.register(req);
         const dataset = userInput[0];
@@ -110,11 +113,8 @@ export class DatasetHandler {
         let writeLockSession: IWriteLockSession;
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const journalClientTransaction = journalClient.getTransaction();
 
         try {
-
-            await journalClientTransaction.run();
 
             if (dataset.acls) {
                 const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
@@ -135,8 +135,8 @@ export class DatasetHandler {
             // if the call is idempotent return the dataset value
             if (writeLockSession.idempotent) {
                 const alreadyRegisteredDataset = subproject.enforce_key ?
-                    await DatasetDAO.getByKey(journalClient, dataset, journalClientTransaction) :
-                    (await DatasetDAO.get(journalClientTransaction, dataset))[0];
+                    await DatasetDAO.getByKey(journalClient, dataset) :
+                    (await DatasetDAO.get(journalClient, dataset))[0];
                 if (alreadyRegisteredDataset) {
                     await Locker.removeWriteLock(writeLockSession, true); // Keep the lock session
                     return alreadyRegisteredDataset;
@@ -169,8 +169,8 @@ export class DatasetHandler {
             ]);
 
             const datasetAlreadyExist = subproject.enforce_key ?
-                await DatasetDAO.getByKey(journalClient, dataset, journalClientTransaction) :
-                (await DatasetDAO.get(journalClientTransaction, dataset))[0];
+                await DatasetDAO.getByKey(journalClient, dataset) :
+                (await DatasetDAO.get(journalClient, dataset))[0];
 
             // check if dataset already exist
             if (datasetAlreadyExist) {
@@ -217,25 +217,28 @@ export class DatasetHandler {
 
             }
 
-
             // prepare the keys
-            const datasetEntityKey = journalClient.createKey({
+            datasetEntityKey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
                 path: [Config.DATASETS_KIND],
                 enforcedKey: subproject.enforce_key ? (dataset.path.slice(0, -1) + '/' + dataset.name) : undefined
             });
 
+            // if the registration does not succeed because an error is thrown from the DB, storage svc or the locker,
+            // this flag will inform the service to check roll-back the registration in the error catch.
+            datasetRegisteredConsistencyFlag = true;
+
             // save the dataset entity
             await Promise.all([
-                DatasetDAO.register(journalClientTransaction, { key: datasetEntityKey, data: dataset }),
+                DatasetDAO.register(journalClient, { key: datasetEntityKey, data: dataset }),
                 (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
                         [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
+
             // release the mutex and keep the lock session
             await Locker.removeWriteLock(writeLockSession, true);
-            await journalClientTransaction.commit();
 
             // attach the gcpid for fast check
             dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
@@ -248,9 +251,23 @@ export class DatasetHandler {
 
         } catch (err) {
 
+            // rollback
+            if(datasetRegisteredConsistencyFlag) {
+                const datasetCheck = subproject.enforce_key ?
+                    await DatasetDAO.getByKey(journalClient, dataset) :
+                    (await DatasetDAO.get(journalClient, dataset))[0];
+                if(datasetCheck) {
+                    await DatasetDAO.delete(journalClient, datasetCheck);
+                    if(datasetCheck.seismicmeta_guid) {
+                        await DESStorage.deleteRecord(
+                            req.headers.authorization, datasetCheck.last_modified_date,
+                            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                    }
+                }
+            }
+
             // release the mutex and unlock the resource
             await Locker.removeWriteLock(writeLockSession);
-            await journalClientTransaction.rollback();
             throw (err);
 
         }
@@ -307,7 +324,7 @@ export class DatasetHandler {
                 req.headers['impersonation-token-context'] as string);
         }
 
-        // Convert subid to email if userinput query param subid_to_email is true
+        // Convert subid to email if user input query param subid_to_email is true
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
             if (!Utils.isEmail(datasetOUT.created_by)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
