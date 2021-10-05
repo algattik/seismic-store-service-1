@@ -7,7 +7,9 @@ import { Config } from '../../config';
 import { IbmConfig } from './config';
 import { logger } from './logger';
 
-let cosStorage;
+// [TODO] this should be typed! (all any type should have a type here)
+// [TODO] don't use any! use types
+let cosStorage: any;
 
 @StorageFactory.register('ibm')
 export class Cos extends AbstractStorage {
@@ -139,7 +141,7 @@ export class Cos extends AbstractStorage {
         /// used to delete CDO file
         logger.info('In Cos.deleteObject.');
         const params = {Bucket: bucketName, Key: objectName};
-        cosStorage.deleteObject(params, (err) => {
+        cosStorage.deleteObject(params, (err: any) => {
             if (err) {
                 logger.error('Unable to remove object');
                 logger.error(err.stack);
@@ -150,7 +152,7 @@ export class Cos extends AbstractStorage {
         logger.info('Returning from Cos.deleteObject.');
     }
 
-    // delete multiple objects
+    // [TODO] this must be implemented! essentially we are not removing bulk data here
     public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
         logger.info('This function deletes bulk data uploaded by SDAPI/SDUTIL. Not implemented yet.');
         logger.debug(bucketName);
@@ -159,8 +161,9 @@ export class Cos extends AbstractStorage {
         await Promise.resolve();
     }
 
+    // [TODO] Nothing is copied here! This method is not working
     // copy multiple objects (skip the dummy file)
-    /// implemention aws sdk copyObject to copy dataset
+    // implemention aws sdk copyObject to copy dataset
     public async copy(bucketIn: string, prefixIn: string,
          bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void> {
         logger.info('In Cos.copy.');
@@ -171,7 +174,7 @@ export class Cos extends AbstractStorage {
         logger.debug(prefixOut);
         logger.debug(ownerEmail);
 
-        cosStorage.listObjects({Bucket: bucketIn}, (err, data) => {
+        cosStorage.listObjects({Bucket: bucketIn}, (err: any, data: any) => {
             if (err) {
                 logger.error('Error in listing objects.');
                 logger.error(err.stack);
@@ -204,7 +207,7 @@ export class Cos extends AbstractStorage {
             Bucket: bucketName
         };
         try {
-            const result = await cosStorage.headBucket(bucketParams).promise();
+            await cosStorage.headBucket(bucketParams).promise();
             logger.info('Bucket exists. Returning from Cos.bucketExists.');
             return true;
         }

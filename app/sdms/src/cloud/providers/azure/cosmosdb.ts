@@ -165,7 +165,7 @@ export class AzureCosmosDbTransactionOperation {
 
 /**
  * A wrapper class for datastore transactions
- * ! Note: looks awefully close to datastore interface.
+ * ! Note: looks awfully close to datastore interface.
  */
 export class AzureCosmosDbTransactionDAO extends AbstractJournalTransaction {
 
@@ -250,7 +250,7 @@ class SqlStatementBuilder {
         let actualName = baseName;
         let paramIndex = 0;
 
-        // find the first variation of this paramname that is unused
+        // find the first variation of this param name that is unused
         while (this.parameterValues.find(p => p.name === `@${actualName}`)) {
             paramIndex++;
             actualName = `${actualName}${paramIndex}`;
@@ -362,7 +362,7 @@ class AzureCosmosDbFilter {
 
 /**
  * A shim for CosmosDB that provides compatibility with Google's SDK.
- * ! Note: looks awefully close to Google Query interface.
+ * ! Note: looks awfully close to Google Query interface.
  */
 export class AzureCosmosDbQuery implements IJournalQueryModel {
 

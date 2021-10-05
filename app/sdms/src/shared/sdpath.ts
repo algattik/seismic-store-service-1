@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ export class SDPath {
             sdPathRes.dataset = sdPathTokens.pop();
         }
 
-        // retrieve and build the hierarhcy path
+        // retrieve and build the hierarchy path
         if (sdPathTokens.length > 0) { sdPathRes.path = '/' + sdPathTokens.join('/') + '/'; }
 
         // dataset in root does not have a path, force it

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ import { Error } from '../shared';
 export class DESUtils {
 
     // subdomain must be be tenant.env.cloud.slb-ds.com
-    public static getDataPartitionID(sdomain: string, mustThrow: boolean = true): string {
-        const entitlemenTenant = sdomain === undefined ? undefined :
-            (sdomain.length > 0 && sdomain.split('.').length > 1) ?
-            sdomain.substr(0, sdomain.indexOf('.')) : undefined;
-        if (!entitlemenTenant && mustThrow) {
-            throw (Error.make(Error.Status.NOT_FOUND, 'The ' + sdomain + ' is not a valid tenant subdomain'));
+    public static getDataPartitionID(subdomain: string, mustThrow: boolean = true): string {
+        const entitlementTenant = subdomain === undefined ? undefined :
+            (subdomain.length > 0 && subdomain.split('.').length > 1) ?
+            subdomain.substr(0, subdomain.indexOf('.')) : undefined;
+        if (!entitlementTenant && mustThrow) {
+            throw (Error.make(Error.Status.NOT_FOUND, 'The ' + subdomain + ' is not a valid tenant subdomain'));
         }
-        return entitlemenTenant;
+        return entitlementTenant;
     }
 
 }

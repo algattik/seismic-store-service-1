@@ -16,6 +16,7 @@
 import { SubProjectModel } from '../../../services/subproject';
 import { Utils } from '../../../shared';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
+
 @SeistoreFactory.register('aws')
 export class AwsSeistore extends AbstractSeistore {
     public checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel) { return; }
@@ -26,6 +27,8 @@ export class AwsSeistore extends AbstractSeistore {
         const email = payload.username;
         return internalSwapForSauth ? Utils.checkSauthV1EmailDomainName(email) : email;
     }
+
+    // [TODO] Push an event when a subproject is created
     public async notifySubprojectCreationStatus(subproject: SubProjectModel,
         status: string): Promise<string> {
         return 'Not Implemented';

@@ -46,7 +46,7 @@ export class AWSStorage extends AbstractStorage {
         return AWSConfig.AWS_BUCKET+'$$'+suffix;
     }
 
-    // whenever ask for a bucket, we return bucketName$$folderName for that subprject
+    // whenever ask for a bucket, we return bucketName$$folderName for that subproject
     // this function return the real folderName by remove bucketName$$ at the front of folderName
     public getFolder(folderName:string): string {
         const start = AWSConfig.AWS_BUCKET.length+2;

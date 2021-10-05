@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ router.get('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid',
         await DatasetHandler.handler(req, res, DatasetOP.Get);
     });
 
-// list all datasets in a subporject
+// list all datasets in a subproject
 router.get('/tenant/:tenantid/subproject/:subprojectid',
     async (req: expRequest, res: expResponse) => {
         await DatasetHandler.handler(req, res, DatasetOP.List);
@@ -87,6 +87,7 @@ router.get('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/ctagch
     });
 
 // list a path content
+// [TODO] obsolete to remove in V4
 router.get('/tenant/:tenantid/subproject/:subprojectid/readdsdirfulllist',
     async (req: expRequest, res: expResponse) => {
         await DatasetHandler.handler(req, res, DatasetOP.ListContent);

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,9 +36,13 @@ export abstract class AbstractCredentials implements ICredentials {
     public abstract getStorageCredentials(
         tenant: string, subproject: string,
         bucket: string, readonly: boolean, partitionID: string, objectPrefix?: string): Promise<IAccessTokenModel>;
+    // [OBSOLETE] to remove with /imptoken
     public abstract getServiceAccountAccessToken(): Promise<IAccessTokenModel>;
+    // [OBSOLETE] to remove with /imptoken
     public abstract getIAMResourceUrl(serviceSigner: string): string;
+    // [OBSOLETE] to remove with /imptoken
     public abstract getAudienceForImpCredentials(): string;
+    // [OBSOLETE] to remove with /imptoken
     public abstract getPublicKeyCertificatesUrl(): string;
 }
 

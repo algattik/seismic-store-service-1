@@ -18,7 +18,6 @@ import * as tracer from '@google-cloud/trace-agent';
 import { AbstractTrace, TraceFactory } from '../../trace';
 import { ConfigGoogle } from './config';
 
-
 @TraceFactory.register('google')
 export class GoogleTrace extends AbstractTrace {
 

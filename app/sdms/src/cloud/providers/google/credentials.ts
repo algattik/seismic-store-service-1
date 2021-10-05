@@ -143,6 +143,7 @@ export class Credentials extends AbstractCredentials {
 
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public async getServiceAccountAccessToken(useCached = true): Promise<IAccessTokenModel> {
 
         const now = Math.floor(Date.now() / 1000);
@@ -208,15 +209,18 @@ export class Credentials extends AbstractCredentials {
         }
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getIAMResourceUrl(serviceSigner: string): string {
         return ConfigGoogle.GOOGLE_EP_IAM + '/projects/' + ConfigGoogle.SERVICE_CLOUD_PROJECT +
             '/serviceAccounts/' + serviceSigner + ':signJwt';
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getAudienceForImpCredentials(): string {
         return ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token';
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getPublicKeyCertificatesUrl(): string {
         return ConfigGoogle.GOOGLE_EP_ROBOT + '/metadata/x509/' + Config.IMP_SERVICE_ACCOUNT_SIGNER;
     }

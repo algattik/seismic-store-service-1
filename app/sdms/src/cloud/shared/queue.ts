@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 // ============================================================================
 
-import Bull from 'bull';
 import { JournalFactoryTenantClient, StorageFactory } from '..';
 import { DatasetDAO, DatasetModel } from '../../services/dataset';
 import { Locker } from '../../services/dataset/locker';
@@ -22,27 +21,30 @@ import { SubProjectModel } from '../../services/subproject';
 import { Config } from '../config';
 import { LoggerFactory } from '../logger';
 
+import Bull from 'bull';
+
+// [TODO] this file should be moved in the main shared folder (not under cloud/shared)
 export class StorageJobManager {
 
    public static copyJobsQueue: Bull.Queue;
 
    public static setup(cacheParams: { ADDRESS: string, PORT: number, KEY?: string, DISABLE_TLS?: boolean; }) {
 
-      const redisx = {
+      const redisOptions = {
          host: cacheParams.ADDRESS,
          port: cacheParams.PORT
       };
 
       if (cacheParams.KEY) {
          // pragma: allowlist nextline secret
-         redisx['password'] = cacheParams.KEY;
+         redisOptions['password'] = cacheParams.KEY;
          if (!cacheParams.DISABLE_TLS) {
-            redisx['tls'] = { servername: cacheParams.ADDRESS };
+            redisOptions['tls'] = { servername: cacheParams.ADDRESS };
          }
       }
 
       StorageJobManager.copyJobsQueue = new Bull('copyjobqueue', {
-         redis: redisx,
+         redis: redisOptions,
          limiter: {
             max: 100,
             duration: 600000,
@@ -76,7 +78,7 @@ export class StorageJobManager {
 
    }
 
-   public static async copy(input) {
+   public static async copy(input: any) {
 
       enum TransferStatus {
          Completed = 'Completed',

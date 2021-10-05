@@ -14,16 +14,16 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
-
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Error, Cache } from '../shared';
+
+import request from 'request-promise';
 
 export class DESCompliance {
 
     private static _cache: Cache<boolean>;
 
-    public static async isLegaTagValid(
+    public static async isLegalTagValid(
         userToken: string, ltag: string, dataPartitionID: string, appkey: string): Promise<boolean> {
 
         if (!this._cache) {

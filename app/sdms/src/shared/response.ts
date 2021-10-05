@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 // ============================================================================
 
 import { Response as expResponse } from 'express';
-import xssfilters from 'xss-filters';
 import { Config, LoggerFactory } from '../cloud';
 import { Feature, FeatureFlags } from './featureflags';
 
+import xssfilters from 'xss-filters';
 
 export class Response {
 

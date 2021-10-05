@@ -1,19 +1,27 @@
 /* Licensed Materials - Property of IBM              */
 /* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
 
-import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
+import {
+    AbstractJournal,
+    AbstractJournalTransaction,
+    IJournalQueryModel,
+    IJournalTransaction,
+    JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
-import cloudant from '@cloudant/cloudant';
 import { Config } from '../../config';
 import { Utils } from '../../../shared/utils'
 import { IbmConfig } from './config';
 import { logger } from './logger';
 
+import cloudant from '@cloudant/cloudant';
+
+// [TODO] all logger.info looks more DEBUG message should not be executed in production code
+// [TODO] don't use any! use types
 @JournalFactory.register('ibm')
 export class DatastoreDAO extends AbstractJournal {
     public KEY = Symbol('id');
     private dataPartition: string;
-    private docDb;
+    private docDb: any;
 
     public constructor(tenant: TenantModel) {
         super();
@@ -21,8 +29,7 @@ export class DatastoreDAO extends AbstractJournal {
         this.dataPartition = tenant.gcpid;
     }
 
-    public async initDb(dataPartition: string)
-    {
+    public async initDb(dataPartition: string) {
         logger.info('In datastore.initDb.');
         const dbUrl = IbmConfig.DOC_DB_URL;
         const cloudantOb = cloudant(dbUrl);
@@ -53,18 +60,18 @@ export class DatastoreDAO extends AbstractJournal {
     public async get(key: any): Promise<[any | any[]]> {
         logger.info('In datastore get.');
         logger.debug(key);
-        let entityDocument;
+        let entityDocument: any;
         await this.initDb(this.dataPartition);
-        /// using the field 'name' to fetch the document. Note: the get() is expecting the field _id
+        // using the field 'name' to fetch the document. Note: the get() is expecting the field _id
         entityDocument = await this.docDb.get(key.name).then(
-            result => {
+            (result: any) => {
                 result[this.KEY] = result[this.KEY.toString()];
                 delete result[this.KEY.toString()];
                 logger.info('Deleted field');
                 logger.debug(result[this.KEY.toString()]);
                 return [result];
             }
-        ).catch((error) => {
+        ).catch((error: any) => {
             logger.error('Get failed to fetch the document.');
             logger.error(error);
             return [undefined];
@@ -73,7 +80,6 @@ export class DatastoreDAO extends AbstractJournal {
         logger.info('returning from datastore');
         return entityDocument;
     }
-
 
     public async save(entity: any): Promise<void> {
         logger.info('In datastore.save.');
@@ -88,7 +94,7 @@ export class DatastoreDAO extends AbstractJournal {
             logger.info('Document exists in db.');
             const existingDoc = getResponse;
             const docTemp = JSON.parse(JSON.stringify(existingDoc));
-            /// have to add if condition. before that check the dataset object structure
+            // have to add if condition. before that check the dataset object structure
             docTemp.ltag = entity.ltag;
             if (entity.data.trusted)
                 docTemp.trusted = entity.data.trusted;
@@ -146,7 +152,7 @@ export class DatastoreDAO extends AbstractJournal {
         logger.info('In datastore.runQuery.');
         const queryObject = (query as IbmDocDbQuery);
         logger.debug(queryObject);
-        /// tablemane datasets??
+        // tableName datasets??
         const mangoQuery = queryObject.prepareStatement(Config.DATASETS_KIND, queryObject.namespace, queryObject.kind);
         logger.debug(mangoQuery);
 
@@ -184,7 +190,7 @@ export class DatastoreDAO extends AbstractJournal {
         if (kind === Config.DATASETS_KIND) {
             name = Utils.makeID(16);
         } else if (kind === Config.SEISMICMETA_KIND) {
-            name = specs.path[1].replace(/\W/g, '-');/// replaces path slashes into hyphen
+            name = specs.path[1].replace(/\W/g, '-');// replaces path slashes into hyphen
         } else {
             name = specs.path[1];
         }
@@ -338,7 +344,6 @@ enum ConditionalOperators {
     Contains = 'CONTAINS',
 }
 
-
 /**
  * implementation of IJournalQueryModel
  */
@@ -354,8 +359,6 @@ export class IbmDocDbQuery implements IJournalQueryModel {
         this.namespace = namespace;
         this.kind = kind;
     }
-
-
 
     filter(property: string, value: {}): IJournalQueryModel;
 
@@ -433,9 +436,9 @@ export class IbmDocDbQuery implements IJournalQueryModel {
         return this;
     }
 
-    /// field names added to query. Returned in the response if they exists.
+    // field names added to query. Returned in the response if they exists.
     select(fieldNames: string | string[]): IJournalQueryModel {
-        /// if you wondering, converts string to an array
+        // if you wondering, converts string to an array
         logger.info('In datastore.IbmDocDbQuery.select.');
         logger.debug(fieldNames);
         if (typeof fieldNames === 'string') {
@@ -467,7 +470,7 @@ export class IbmDocDbQuery implements IJournalQueryModel {
 
         builder.projectedFieldNames = this.projectedFieldNames;
         builder.pagingLimit = this.pagingLimit;
-        /*builder.groupByFieldNames = this.groupByFieldNames;*//// working on basic query
+        /*builder.groupByFieldNames = this.groupByFieldNames;*/ // working on basic query
 
         const spec = builder.build();
         logger.debug(spec);
@@ -540,7 +543,7 @@ class QueryStatementBuilder {
         andWrapper['$and'] = [];
 
         const keyQuery = {};
-        /// let filter = '';
+        // let filter = '';
         const fieldsOption = [];
 
         keyQuery['Symbol(id)'] = { partitionKey: { $eq: this.namespace + '-' + this.kind }, kind: { $eq: this.kind } };

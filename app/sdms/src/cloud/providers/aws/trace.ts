@@ -17,7 +17,7 @@ import { AbstractTrace, TraceFactory } from '../../trace';
 @TraceFactory.register('aws')
 export class AwsTrace extends AbstractTrace {
 
-    // Tracer not implemented in Aws yet
+    // [TODO] this method should start a call tracer using CSP SDK
     public start() { return; }
 
 }

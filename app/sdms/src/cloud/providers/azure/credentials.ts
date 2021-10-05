@@ -23,15 +23,10 @@ import {
     SASProtocol,
     UserDelegationKey
 } from '@azure/storage-blob';
-import { AzureConfig } from './config';
 import { DefaultAzureCredential, TokenCredential } from '@azure/identity';
-
-import request from 'request-promise';
 import { AzureDataEcosystemServices } from './dataecosystem';
 
-// interface IDTokenModel {
-//     id_token: string;
-// }
+import request from 'request-promise';
 
 const KExpiresMargin = 300; // 5 minutes
 const UserDelegationKeyValidityInMinutes = 60 * 4; // 4 hours
@@ -71,7 +66,6 @@ export class AzureCredentials extends AbstractCredentials {
 
         return new DefaultAzureCredential();
     }
-
 
     public static async getAzureServicePrincipalAccessToken(
         clientID: string, clientSecret: string, tenantID: string, appResourceID: string): Promise<IAccessTokenModel> {
@@ -177,18 +171,22 @@ export class AzureCredentials extends AbstractCredentials {
         return new Date(d.valueOf() + (minutes * 60 * 1000));
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public async getServiceAccountAccessToken(): Promise<IAccessTokenModel> {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getIAMResourceUrl(serviceSigner: string): string {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getAudienceForImpCredentials(): string {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getPublicKeyCertificatesUrl(): string {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
     }
