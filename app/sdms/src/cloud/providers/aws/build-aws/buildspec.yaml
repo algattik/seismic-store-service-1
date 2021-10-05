@@ -37,6 +37,8 @@ phases:
       - apt-get update -y
       - export AWS_ACCOUNT_ID=`aws sts get-caller-identity | grep Account | cut -d':' -f 2 | cut -d'"' -f 2`
       - aws codeartifact login --tool npm --domain osdu-dev --domain-owner ${AWS_ACCOUNT_ID} --repository osdu-npm
+      - export REPO_NAME=${PWD##*/}
+      - cd app/sdms
       - npm install
       - wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472.zip
       - unzip -q ./sonar-scanner-cli-4.6.2.2472.zip
@@ -47,7 +49,6 @@ phases:
       - $(aws ecr get-login --no-include-email --region $AWS_REGION) # authenticate with ECR via the AWS CLI
   build:
     commands:
-      - export REPO_NAME=${PWD##*/}
       - export OUTPUT_DIR="dist"
       - export BRANCH_NAME=`echo ${CODEBUILD_SOURCE_VERSION} | awk '{gsub("refs/heads/","");gsub("\\.","-");gsub("[[:space:]]","-")}1' | sed 's/\//-/g' | awk '{print tolower($0)}'`
       - export ECR_TAG_BUILDER=`echo build.builder.${BRANCH_NAME}.${CODEBUILD_BUILD_NUMBER}.${CODEBUILD_RESOLVED_SOURCE_VERSION} | cut -c 1-120`
@@ -68,6 +69,7 @@ phases:
       - npm run build
 
       - echo "Building integration testing assemblies and gathering artifacts..."
+      - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh
       - ./tests/aws-test/build-aws/prepare-dist.sh
 
       # using jar instead of executable since exe requires 32 bit image and doesn't work on codebuild 4.0
@@ -92,8 +94,9 @@ phases:
         python src/cloud/providers/aws/build-aws/build-info.py --branch ${CODEBUILD_SOURCE_VERSION} --commit ${CODEBUILD_RESOLVED_SOURCE_VERSION} \
           --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
           --artifact ${ECR_IMAGE_PROD}
+
 artifacts:
   files:
     - "**/*"
-  base-directory: "dist"
+  base-directory: "app/sdms/dist"
   name: ${REPO_NAME}_${BRANCH_NAME}_$(date +%F)_${CODEBUILD_BUILD_NUMBER}.zip
