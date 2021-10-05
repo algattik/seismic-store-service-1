@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,23 +24,23 @@ export class AppsDAO {
     public static async register(tenant: TenantModel, application: IAppModel) {
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const dskey = journalClient.createKey({
+        const entityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
             path: [Config.APPS_KIND, application.email],
         });
         delete application.email;
-        await journalClient.save({ key: dskey, data: application });
+        await journalClient.save({ key: entityKey, data: application });
 
     }
 
     public static async get(tenant: TenantModel, email: string): Promise<IAppModel> {
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const dskey = journalClient.createKey({
+        const entityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenant.name,
             path: [Config.APPS_KIND, email],
         });
-        const entity = await journalClient.get(dskey);
+        const entity = await journalClient.get(entityKey);
         return entity[0] ? {
             email: entity[0][journalClient.KEY],
             trusted: (entity[0] as IAppModel).trusted } : undefined;

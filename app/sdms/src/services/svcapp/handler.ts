@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import { AppsDAO } from './dao';
 import { IAppModel } from './model';
 import { AppOp } from './optype';
 import { AppParser } from './parser';
-
 
 export class AppHandler {
 
@@ -68,7 +67,7 @@ export class AppHandler {
         // Others service domain won't be affected by this call
         application.email = Utils.checkSauthV1EmailDomainName(application.email);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(userInput.sdPath.tenant);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
@@ -99,7 +98,7 @@ export class AppHandler {
         // Others service domain won't be affected by this call
         application.email = Utils.checkSauthV1EmailDomainName(application.email);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(userInput.sdPath.tenant);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
@@ -126,7 +125,7 @@ export class AppHandler {
         // parse user request
         const sdPath = AppParser.list(req);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
@@ -151,7 +150,7 @@ export class AppHandler {
         // parse user request
         const sdPath = AppParser.list(req);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {

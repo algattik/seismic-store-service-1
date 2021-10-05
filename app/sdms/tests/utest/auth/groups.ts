@@ -114,7 +114,7 @@ export class TestAuthGroups {
             },
          ];
          this.spy.stub(DESEntitlement, 'getUserGroups').resolves(groups);
-         const result = await AuthGroups.isMemberOfAtleastOneGroup('token', ['email-a'], 'esd', 'appkey');
+         const result = await AuthGroups.isMemberOfAtLeastOneGroup('token', ['email-a'], 'esd', 'appkey');
 
          Tx.checkTrue(result === true, done);
       });

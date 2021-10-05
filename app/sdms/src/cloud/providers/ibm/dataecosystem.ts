@@ -9,10 +9,13 @@ import {
 import { IbmConfig } from './config';
 import { logger } from './logger';
 
+// [TODO] all logger.info looks more DEBUG message should not be executed in production code
+// [TODO] don't use any! use types
 @DataEcosystemCoreFactory.register('ibm')
 export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
 
     public fixGroupMembersResponse(groupMembers: any): IDESEntitlementGroupMembersModel {
+
         logger.info('in IbmDataEcosystemServices.fixGroupMembersResponse. Returning..');
         logger.debug(groupMembers);
         groupMembers = groupMembers.members;

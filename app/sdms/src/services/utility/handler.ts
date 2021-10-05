@@ -125,16 +125,16 @@ export class UtilityHandler {
         const wmode = userInput.wmode;
         const pagination = userInput.pagination;
 
-        // list accessible tenants for sdpaths <sd://>
+        // list accessible tenants for sdPaths <sd://>
         if (!sdPath.tenant) {
             const tenants = await TenantDAO.getAll();
-            const parititons = tenants
+            const partitions = tenants
                 .map((t) => DESUtils.getDataPartitionID(t.esd))
                 .filter((val, index, self) => self.indexOf(val) === index);
 
             // Fetch all entitlements for each unique tenant that the user has access to
             const entitlementCalls = [];
-            for (const partition of parititons) {
+            for (const partition of partitions) {
                 try {
                     entitlementCalls.push(await DESEntitlement.getUserGroups(
                         req.headers.authorization, partition, req[Config.DE_FORWARD_APPKEY]));
@@ -153,7 +153,7 @@ export class UtilityHandler {
 
         }
 
-        // list the tenant subprojects for sdpaths <sd://tenant>
+        // list the tenant subprojects for sdPaths <sd://tenant>
         const tenant = await TenantDAO.get(sdPath.tenant);
 
         // Create  tenant journalClient client
@@ -186,7 +186,7 @@ export class UtilityHandler {
 
         }
 
-        // list the folder content for sdpaths <sd://tenant/subproject>
+        // list the folder content for sdPaths <sd://tenant/subproject>
         const dataset = {} as DatasetModel;
         dataset.tenant = sdPath.tenant;
         dataset.subproject = sdPath.subproject;

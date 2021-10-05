@@ -14,11 +14,11 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
-
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Error } from '../shared';
 import { DESUtils } from './utils';
+
+import request from 'request-promise';
 
 export class DESStorage {
 

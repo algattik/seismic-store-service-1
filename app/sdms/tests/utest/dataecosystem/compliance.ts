@@ -67,7 +67,7 @@ export class TestCompliance {
             invalidLegalTags: [],
          });
 
-         const result = await DESCompliance.isLegaTagValid('usertoken', 'ltag', 'tenant-a','appkey');
+         const result = await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a','appkey');
 
          requestStub.calledWith(this.options);
          Tx.checkTrue(result && requestStub.calledWith(this.options), done);
@@ -81,7 +81,7 @@ export class TestCompliance {
             invalidLegalTags: ['ltag'],
          });
 
-         const result = await DESCompliance.isLegaTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
+         const result = await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
          requestStub.calledWith(this.options);
          Tx.checkFalse(result && requestStub.calledWith(this.options), done);
 
@@ -92,7 +92,7 @@ export class TestCompliance {
          this.sandbox.stub(Cache.prototype, 'get').resolves();
 
          try {
-            await DESCompliance.isLegaTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
+            await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
          } catch (e) {
             Tx.check500(500, done);
          }

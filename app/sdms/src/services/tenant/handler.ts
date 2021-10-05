@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ export class TenantHandler {
         }
 
         // register the tenant metadata
-        // leave this registration at the end as last operation (mapping to do only if all previuos operation succed)
+        // leave this registration at the end as last operation (mapping to do only if all previuos operation succeed)
         await TenantDAO.register(tenant);
 
         return tenant;
@@ -95,7 +95,7 @@ export class TenantHandler {
     // get the tenant project metadata
     private static async get(req: expRequest): Promise<TenantModel> {
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(req.params.tenantid);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
@@ -110,11 +110,11 @@ export class TenantHandler {
     // delete the tenant project metadata
     private static async delete(req: expRequest): Promise<void> {
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(req.params.tenantid);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if who make the request is a data parititon admin admin
+            // check if who make the request is a data partition admin admin
             await Auth.isUserAuthorized(
                 req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);

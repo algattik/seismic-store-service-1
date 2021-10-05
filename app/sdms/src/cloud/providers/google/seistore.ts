@@ -21,11 +21,12 @@ import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 import { ConfigGoogle } from './config';
 
-// reference time zone and clss locations
+// reference time zone and class locations
 const KSTORAGE_CLASS = ['MULTI_REGIONAL', 'REGIONAL', 'NEARLINE', 'COLDLINE'];
 const KSTORAGE_LOCATION_MR = ['ASIA', 'EU', 'US'];
 const KSTORAGE_LOCATION_RG = [
     'NORTHAMERICA-NORTHEAST1',
+    'NORTHAMERICA-NORTHEAST2',
     'US-CENTRAL1',
     'US-EAST1',
     'US-EAST4',
@@ -34,6 +35,7 @@ const KSTORAGE_LOCATION_RG = [
     'US-WEST3',
     'US-WEST4',
     'SOUTHAMERICA-EAST1',
+    'EUROPE-CENTRAL2',
     'EUROPE-NORTH1',
     'EUROPE-WEST1',
     'EUROPE-WEST2',
@@ -46,9 +48,11 @@ const KSTORAGE_LOCATION_RG = [
     'ASIA-NORTHEAST2',
     'ASIA-NORTHEAST3',
     'ASIA-SOUTH1',
+    'ASIA-SOUTH2',
     'ASIA-SOUTHEAST1',
     'ASIA-SOUTHEAST2',
-    'AUSTRALIA-SOUTHEAST1'];
+    'AUSTRALIA-SOUTHEAST1',
+    'AUSTRALIA-SOUTHEAST2'];
 
 @SeistoreFactory.register('google')
 export class GoogleSeistore extends AbstractSeistore {
@@ -58,7 +62,6 @@ export class GoogleSeistore extends AbstractSeistore {
     constructor() {
         super();
         this.pubSubClient = new PubSub();
-
     }
 
     public checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel) {

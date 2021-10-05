@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Config } from '../../../cloud';
-import { Error, Utils } from '../../../shared';
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
 import { AWSConfig } from './config';
 import {AWSSSMhelper} from './ssmhelper';
@@ -29,18 +27,22 @@ export class AWSCredentials extends AbstractCredentials {
     private awsSSMHelper = new AWSSSMhelper();
     private awsSTSHelper = new AWSSTShelper();
 
+    // [OBSOLETE] to remove with /imptoken
     getAudienceForImpCredentials(): string {
         return '';
     }
 
+    // [OBSOLETE] to remove with /imptoken
     getIAMResourceUrl(serviceSigner: string): string {
         return '';
     }
 
+    // [OBSOLETE] to remove with /imptoken
     getPublicKeyCertificatesUrl(): string {
         return '';
     }
 
+    // [OBSOLETE] to remove with /imptoken
     async getServiceAccountAccessToken(): Promise<IAccessTokenModel> {
         return undefined;
     }
@@ -77,7 +79,7 @@ export class AWSCredentials extends AbstractCredentials {
 
             let flagUpload=true;
 
-            const keypath =  await this.getBucketFolder(tenant+':'+subproject);
+            const keyPath =  await this.getBucketFolder(tenant+':'+subproject);
 
             // tslint:disable-next-line:triple-equals
             if(readonly ) { // readOnly True
@@ -89,7 +91,7 @@ export class AWSCredentials extends AbstractCredentials {
                 flagUpload = true;
             }
 
-            credentials = await this.awsSTSHelper.getCredentials(s3bucket,keypath,roleArn,flagUpload,expDuration);
+            credentials = await this.awsSTSHelper.getCredentials(s3bucket, keyPath,roleArn,flagUpload,expDuration);
 
                 const result = {
                 access_token: credentials,
@@ -99,8 +101,4 @@ export class AWSCredentials extends AbstractCredentials {
             return result;
     }
 
-    // this will return serviceprincipal access token
-    public async getServiceCredentials(): Promise<string> {
-        return ''
-    }
 }

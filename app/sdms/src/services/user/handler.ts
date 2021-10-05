@@ -115,7 +115,7 @@ export class UserHandler {
         // Others service domain won't be affected by this call
         userEmail = Utils.checkSauthV1EmailDomainName(userEmail);
 
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
         if (!sdPath.subproject) {
@@ -231,7 +231,7 @@ export class UserHandler {
             Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true)) === userEmail) {
             throw (Error.make(Error.Status.BAD_REQUEST, 'A user cannot remove himself.'));
         }
-        // retrieve the tenant informations
+        // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
         const journalClient = JournalFactoryTenantClient.get(tenant);

@@ -16,8 +16,6 @@ import AWS from 'aws-sdk/global';
 import {AWSConfig} from './config';
 import {STS} from 'aws-sdk';
 
-
-
 export class AWSSTShelper {
 
     private sts: STS;
@@ -27,14 +25,14 @@ export class AWSSTShelper {
         this.sts = new STS({apiVersion: '2014-11-06'});
     }
 
-    public async getCredentials(bucketName: string, keypath: string,
+    public async getCredentials(bucketName: string, keyPath: string,
         roleArn: string, flagUpload: boolean, exp: string): Promise<string> {
-        let policy;
+        let policy: string;
 
         if(flagUpload === true)
-             policy = this.createUploadPolicy(bucketName,keypath);
+             policy = this.createUploadPolicy(bucketName, keyPath);
         else
-            policy = this.createDownloadPolicy(bucketName,keypath);
+            policy = this.createDownloadPolicy(bucketName, keyPath);
 
         const expDuration: number = +exp;
 
@@ -45,14 +43,16 @@ export class AWSSTShelper {
             RoleSessionName: 'OSDUAWSAssumeRoleSession',
             DurationSeconds: expDuration
         };
-        const roleCreds =  await this.sts.assumeRole(stsParams).promise();
-        const tempCreds= roleCreds.Credentials.AccessKeyId+':'+roleCreds.Credentials.SecretAccessKey
-        +':'+roleCreds.Credentials.SessionToken;
+        const roleCredentials =  await this.sts.assumeRole(stsParams).promise();
+        const tempCredentials = roleCredentials.Credentials.AccessKeyId +
+        ':' + roleCredentials.Credentials.SecretAccessKey +
+        ':' + roleCredentials.Credentials.SessionToken;
 
+      return tempCredentials;
 
-      return tempCreds;
     }
-    public  createUploadPolicy(bucketName: string, keypath: string): string {
+
+    public  createUploadPolicy(bucketName: string, keyPath: string): string {
 
         const UploadPolicy = {
             Version: '2012-10-17',
@@ -69,7 +69,7 @@ export class AWSSTShelper {
                     ],
                     Condition: {
                         StringEquals: {
-                            's3:prefix': keypath+'/'
+                            's3:prefix': keyPath+'/'
                         }
                     }
                 },
@@ -84,7 +84,7 @@ export class AWSSTShelper {
                     ],
                     Condition: {
                         StringLike: {
-                            's3:prefix': keypath+'/*'
+                            's3:prefix': keyPath+'/*'
                         }
                     }
 
@@ -103,7 +103,7 @@ export class AWSSTShelper {
                         's3:ListMultipartUploadParts'
                     ],
                     Resource: [
-                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/'
+                        'arn:aws:s3:::'+bucketName+'/'+keyPath+'/'
                     ]
                 },
                 {
@@ -120,7 +120,7 @@ export class AWSSTShelper {
                         's3:ListMultipartUploadParts'
                     ],
                     Resource: [
-                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/*'
+                        'arn:aws:s3:::'+bucketName+'/'+keyPath+'/*'
                     ]
                 }
             ]
@@ -131,7 +131,7 @@ export class AWSSTShelper {
         return policy;
     }
 
-    public  createDownloadPolicy(bucketName: string, keypath: string): string {
+    public  createDownloadPolicy(bucketName: string, keyPath: string): string {
 
         const downloadPolicy = {
             Version: '2012-10-17',
@@ -148,7 +148,7 @@ export class AWSSTShelper {
                     ],
                     Condition: {
                         StringEquals: {
-                            's3:prefix': keypath+'/'
+                            's3:prefix': keyPath+'/'
                         }
                     }
                 },
@@ -163,7 +163,7 @@ export class AWSSTShelper {
                     ],
                     Condition: {
                         StringLike: {
-                            's3:prefix': keypath+'/*'
+                            's3:prefix': keyPath+'/*'
                         }
                     }
 
@@ -178,7 +178,7 @@ export class AWSSTShelper {
                         's3:GetObjectVersion'
                     ],
                     Resource: [
-                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/'
+                        'arn:aws:s3:::'+bucketName+'/'+keyPath+'/'
                     ]
                 },
                 {
@@ -191,7 +191,7 @@ export class AWSSTShelper {
                         's3:GetObjectVersion'
                     ],
                     Resource: [
-                        'arn:aws:s3:::'+bucketName+'/'+keypath+'/*'
+                        'arn:aws:s3:::'+bucketName+'/'+keyPath+'/*'
                     ]
                 }
             ]
@@ -201,6 +201,5 @@ export class AWSSTShelper {
         const policy = JSON.stringify(downloadPolicy);
         return policy;
     }
-
 
 }

@@ -19,7 +19,7 @@ import { AbstractTrace, TraceFactory } from '../../trace';
 @TraceFactory.register('azure')
 export class AzureTrace extends AbstractTrace {
 
-    // Tracer not implemented in Azure yet
+    // [TODO] this method should start a call tracer using CSP SDK
     public start() { return; }
 
 }

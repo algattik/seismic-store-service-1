@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import { Config, ConfigFactory } from '../../config';
-import { AWSSSMhelper } from './ssmhelper';
+import {AWSSSMhelper} from './ssmhelper';
+
 @ConfigFactory.register('aws')
 export class AWSConfig extends Config {
     // scopes

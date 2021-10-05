@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import AWS from 'aws-sdk/global';
 import {AWSConfig} from './config';
+
+import AWS from 'aws-sdk/global';
 import SSM from 'aws-sdk/clients/ssm';
 
 export class AWSSSMhelper {
@@ -24,8 +25,6 @@ export class AWSSSMhelper {
         AWS.config.update({ region: AWSConfig.AWS_REGION });
         this.ssm = new SSM({apiVersion: '2014-11-06'});
     }
-
-
 
     public async getSSMParameter(paramName: string): Promise<string> {
 

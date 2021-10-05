@@ -22,7 +22,6 @@ import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubProjectDAO } from '../subproject';
 import { TenantDAO } from '../tenant';
-import { ITenantModel } from '../tenant/model';
 import { ImpTokenDAO } from './dao';
 import { ImpTokenOP } from './optype';
 import { ImpTokenParser } from './parser';
@@ -124,9 +123,9 @@ export class ImpTokenHandler {
         const index = results.indexOf(false);
         if (results.indexOf(false) !== -1) {
             const readMex = tokenBody.resources[index].readonly ? 'read' : 'write';
-            const sprojMex = Config.SDPATHPREFIX + tokenBody.resources[index].resource;
+            const subprojectMex = Config.SDPATHPREFIX + tokenBody.resources[index].resource;
             throw (Error.make(Error.Status.PERMISSION_DENIED,
-                'User is not ' + readMex + 'authorized in the ' + sprojMex + ' subproject resource.'));
+                'User is not ' + readMex + 'authorized in the ' + subprojectMex + ' subproject resource.'));
         }
 
         // generate the imp token
@@ -159,15 +158,15 @@ export class ImpTokenHandler {
         if (!FeatureFlags.isEnabled(Feature.IMPTOKEN)) return {} as ImpTokenModel;
 
         const result = await ImpTokenParser.patch(req);
-        const tokenToPach = result.tokenToPatch;
+        const tokenToPatch = result.tokenToPatch;
         const refreshUrl = result.refreshUrl;
 
         // validate the refresh token
-        const tokenToPachBody = await ImpTokenDAO.validate(tokenToPach);
+        const tokenToPatchBody = await ImpTokenDAO.validate(tokenToPatch);
 
         // generate a new impersonation token with a new refresh url
-        tokenToPachBody.refreshUrl = refreshUrl;
-        return await ImpTokenDAO.create(tokenToPachBody);
+        tokenToPatchBody.refreshUrl = refreshUrl;
+        return await ImpTokenDAO.create(tokenToPatchBody);
 
     }
 

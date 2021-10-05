@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,11 +64,11 @@ export class DatasetParser {
             Params.checkString(seismicmeta.kind, 'kind'); // mandatory string
             Params.checkObject(seismicmeta.data, 'data');
 
-            // {data-parititon(delfi)|auhtority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
+            // {data-partition(delfi)|authority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
             if ((seismicmeta.kind as string).split(':').length !== 4) {
                 throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
             }
-            // (recortdType == entityType)
+            // (recordType == entityType)
             seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
 
         }
@@ -90,7 +90,7 @@ export class DatasetParser {
 
             if (dataset.acls.admins.length === 0 || dataset.acls.viewers.length === 0) {
                 throw Error.make(Error.Status.BAD_REQUEST,
-                    'Admins and viewers groups must each have atleast one group email');
+                    'Admins and viewers groups must each have at least one group email');
             }
 
             for (const adminGroupEmail of dataset.acls.admins) {
@@ -140,9 +140,9 @@ export class DatasetParser {
 
     public static patch(req: expRequest): [DatasetModel, any, string, string] {
 
-        const closeid = req.query.close;
-        Params.checkString(closeid, 'close', false);
-        Params.checkBody(req.body, closeid === undefined); // body is required only if is not a closing request
+        const closeId = req.query.close;
+        Params.checkString(closeId, 'close', false);
+        Params.checkBody(req.body, closeId === undefined); // body is required only if is not a closing request
 
         const dataset = this.createDatasetModelFromRequest(req);
 
@@ -176,19 +176,19 @@ export class DatasetParser {
         dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
         DatasetParser.validateAcls(dataset);
 
-        return [dataset, seismicmeta, newName, closeid];
+        return [dataset, seismicmeta, newName, closeId];
     }
 
     public static lock(req: expRequest): { dataset: DatasetModel, open4write: boolean, wid: string; } {
-        let openmode = req.query.openmode;
+        let openMode = req.query.openmode;
         Params.checkString(req.query.openmode, 'openmode');
 
-        openmode = (req.query.openmode as string).toLowerCase();
-        if (openmode !== 'read' && openmode !== 'write') {
+        openMode = (req.query.openmode as string).toLowerCase();
+        if (openMode !== 'read' && openMode !== 'write') {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'openmode\' query parameter must be \'read\' or \'write\'.'));
         }
-        const open4write = openmode === 'write';
+        const open4write = openMode === 'write';
 
         const wid = req.query.wid;
         Params.checkString(req.query.wid, wid, false);

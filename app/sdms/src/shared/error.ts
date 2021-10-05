@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,24 +38,24 @@ export class Error {
     };
 
 
-    public static make(errorCode: number, message: string, mexprefix: string = '[seismic-store-service]'): ErrorModel {
+    public static make(errorCode: number, message: string, mexPrefix: string = '[seismic-store-service]'): ErrorModel {
         return {
             error: {
                 code: errorCode,
-                message: mexprefix + ' ' + message,
+                message: mexPrefix + ' ' + message,
                 status: this.getKeyByValue(errorCode) || 'UNKNOWN',
             },
         };
     }
 
-    public static makeForHTTPRequest(error: any, mexprefix: string = '[seismic-store-service]'): ErrorModel {
+    public static makeForHTTPRequest(error: any, mexPrefix: string = '[seismic-store-service]'): ErrorModel {
         if (typeof error === 'object' && error.name === 'StatusCodeError') {
             return this.make(
                 error.statusCode || 500,
                 typeof error.error === 'object' ? error.error.message || error.message : error.message || error,
-                mexprefix);
+                mexPrefix);
         } else {
-            return this.make(500, error, mexprefix);
+            return this.make(500, error, mexPrefix);
         }
     }
 

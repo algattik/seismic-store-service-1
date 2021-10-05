@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 // ============================================================================
 
 import { decode as jwtDecode, verify as jwtVerify } from 'jsonwebtoken';
-import request from 'request-promise';
 import { ImpTokenModel } from '.';
 import { Config, CredentialsFactory } from '../../cloud';
 import { Error } from '../../shared';
 import { IImpTokenBodyModel as ImpTokenBodyModel, IRefreshUrl } from './model';
 
+import request from 'request-promise';
 
 export class ImpTokenDAO {
 
@@ -119,16 +119,16 @@ export class ImpTokenDAO {
         }
 
         let pubkey: string;
-        let decodedtoken: any;
+        let decodedToken: any;
 
         try {
-            decodedtoken = jwtDecode(token, { complete: true });
-            if (!decodedtoken.header.kid) {
+            decodedToken = jwtDecode(token, { complete: true });
+            if (!decodedToken.header.kid) {
                 throw (Error.make(Error.Status.BAD_REQUEST,
                     'The impersonation token is not' +
                     ' a valid seismic store impersonation token. header kid not found'));
             }
-            pubkey = JSON.parse(result)[decodedtoken.header.kid];
+            pubkey = JSON.parse(result)[decodedToken.header.kid];
             if (!pubkey) {
                 throw (Error.make(Error.Status.BAD_REQUEST,
                     'The impersonation token is not' +
@@ -147,7 +147,7 @@ export class ImpTokenDAO {
                 throw (Error.make(Error.Status.BAD_REQUEST,
                     'The impersonation token is not a valid seismic store impersonation token.'));
             } else {
-                payload = decodedtoken.payload;
+                payload = decodedToken.payload;
             }
         }
 

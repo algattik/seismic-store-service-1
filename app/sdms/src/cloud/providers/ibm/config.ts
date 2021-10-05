@@ -15,7 +15,6 @@ export class IbmConfig extends Config {
     public static DES_GROUP_CHAR_LIMIT = 256;
 
     // env
-
     public static IBM_ENVIRONMENT: string;
     public static IBM_REGION: string;
 
@@ -29,7 +28,7 @@ export class IbmConfig extends Config {
     public static COS_SUBUSER_SECRET_ACCESS_KEY: string;
     public static COS_TEMP_CRED_EXPITY: string;
 
-    // IBM Keycloak
+	// IBM KeyCloak
     public static KEYCLOAK_BASEURL: string;
     public static KEYCLOAK_URL_TOKEN: string;
     public static KEYCLOAK_REALM: string;
@@ -47,12 +46,12 @@ export class IbmConfig extends Config {
     public static DOC_DB_QUERY_SELECT_FIELDS: string;
 
     // SERVICES
-    public static ENTITLEMENT_HOST;
-    public static LEGAL_HOST;
-    public static STORAGE_HOST;
+    public static ENTITLEMENT_HOST: string;
+    public static LEGAL_HOST: string;
+    public static STORAGE_HOST: string;
 
     // Logger
-    public static LOGGER_LEVEL;
+    public static LOGGER_LEVEL: string;
 
     // DES context path
     public static ENTITLEMENT_CONTEXT_PATH: string;
@@ -111,8 +110,8 @@ export class IbmConfig extends Config {
         IbmConfig.DOC_DB_QUERY_SELECT_FIELDS = process.env.DOC_DB_QUERY_SELECT_FIELDS;
         IbmConfig.DOC_DB_QUERY_RESULT_LIMIT = process.env.DOC_DB_QUERY_RESULT_LIMIT;
         IbmConfig.DOC_DB_QUERY_RESULT_LIMIT_VALUE = parseInt(process.env.DOC_DB_QUERY_RESULT_LIMIT_VALUE, 10);
-        ///////////////////////////////////////
-        IbmConfig.DES_SERVICE_APPKEY = 'na';
+
+        IbmConfig.DES_SERVICE_APPKEY = 'na'
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST_ENTITLEMENT');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');

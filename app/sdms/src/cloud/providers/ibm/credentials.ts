@@ -1,28 +1,27 @@
 /* Licensed Materials - Property of IBM              */
 /* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
 
-
-import KcAdminClient from 'keycloak-admin';
-import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
+import {
+    AbstractCredentials,
+    CredentialsFactory,
+    IAccessTokenModel } from '../../credentials';
 import { Config } from '../../config';
 import { IbmConfig } from './config';
 import { logger } from './logger';
 import { IBMSTShelper } from './stshelper';
 import { DatastoreDAO } from './datastore';
-import { GrantTypes } from 'keycloak-admin/lib/utils/auth';
 
+import { GrantTypes } from 'keycloak-admin/lib/utils/auth';
+import KcAdminClient from 'keycloak-admin';
+
+// [TODO] all logger.info looks more DEBUG message should not be executed in production code
+// [TODO] don't use any! use types
 @CredentialsFactory.register('ibm')
 export class Credentials extends AbstractCredentials {
-    private serviceAccountIdToken: string;
-    private serviceAccountIdTokenExpiresIn = 0;
-    private serviceAccountAccessToken: IAccessTokenModel;
-    private serviceAccountAccessTokenExpiresIn = 0;
-
 
     private ibmSTSHelper = new IBMSTShelper();
 
     async getBucketFolder(tenant: string, subproject: string): Promise<string> {
-
 
         const ibmDatastoreHelper = new DatastoreDAO(Config.TENANT_JOURNAL_ON_DATA_PARTITION ? {
             name: tenant,
@@ -31,22 +30,21 @@ export class Credentials extends AbstractCredentials {
             gcpid: tenant
         } : undefined);
 
-        const spkey = ibmDatastoreHelper.createKey({
+        const subprojectKey = ibmDatastoreHelper.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenant,
             path: [Config.SUBPROJECTS_KIND, subproject],
         });
 
-        logger.debug('Printing Key', spkey)
-        const [spentity] = await ibmDatastoreHelper.get(spkey);
-        logger.debug('Printing Key', spentity.gcs_bucket)
-        const bucket = spentity.gcs_bucket;
+        logger.debug('Printing Key', subprojectKey)
+        const [subprojectEntity] = await ibmDatastoreHelper.get(subprojectKey);
+        logger.debug('Printing Key', subprojectEntity.gcs_bucket)
+        const bucket = subprojectEntity.gcs_bucket;
         return bucket;
 
 
     }
 
     public async getStorageCredentials(
-
         tenant: string, subproject: string,
         bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
 
@@ -55,33 +53,30 @@ export class Credentials extends AbstractCredentials {
         let credentials = '';
 
         let flagUpload = true;
-        const keypath = await this.getBucketFolder(tenant, subproject);
+        const keyPath = await this.getBucketFolder(tenant, subproject);
         // this is temporary. Once dataset is being passed to get gcs token,
         // this can start getting folder from gcs url along with bucket
-        const s3bucket = keypath;
-
+        const s3bucket = keyPath;
 
         if (readonly) { // readOnly True
-
             roleArn = 'arn:123:456:789:1234';
             flagUpload = false;
-        } else   // readOnly False
-        {
+        } else {// readOnly False
             roleArn = 'arn:123:456:789:1234';
             flagUpload = true;
         }
 
-        credentials = await this.ibmSTSHelper.getCredentials(s3bucket, keypath, roleArn, flagUpload, expDuration);
+        credentials = await this.ibmSTSHelper.getCredentials(s3bucket, keyPath, roleArn, flagUpload, expDuration);
+
         const result = {
             access_token: credentials,
             expires_in: 7200,
             token_type: 'Bearer',
         };
+
         return result;
 
-
     }
-
 
     public async getServiceCredentials(): Promise<string> {
         logger.info('In Credentials.getServiceCredentials.');
@@ -98,7 +93,7 @@ export class Credentials extends AbstractCredentials {
                 },
             }
         );
-        const crdntls = {
+        const credentials = {
             username: IbmConfig.KEYCLOAK_USERNAME,
             // pragma: allowlist nextline secret
             password: IbmConfig.KEYCLOAK_PASSWORD,
@@ -109,7 +104,7 @@ export class Credentials extends AbstractCredentials {
 
         logger.info('Authenticating.');
         try {
-            await adminClient.auth(crdntls);
+            await adminClient.auth(credentials);
         } catch (error) {
             logger.error('Authentication failure.');
             throw new Error(error);
@@ -122,6 +117,7 @@ export class Credentials extends AbstractCredentials {
         return token;
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public async getServiceAccountAccessToken(): Promise<IAccessTokenModel> {
         // throw new Error("getServiceAccountAccessToken. Method not implemented.");
         /*
@@ -168,13 +164,15 @@ export class Credentials extends AbstractCredentials {
         throw new Error('Checking if user is sysadmin. Work in progress.');
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getServiceAccountEmail(): Promise<string> {
         logger.info('In Credentials.getServiceAccountEmail. Method not implemented.');
         throw new Error('getServiceAccountEmail. Method not implemented.');
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getIAMResourceUrl(serviceSigner: string): string {
-        /// not implemented
+        // not implemented
         logger.info('In Credentials.getIAMResourceUrl. Method not implemented.');
         return '';
     }
@@ -182,9 +180,10 @@ export class Credentials extends AbstractCredentials {
     public getAudienceForImpCredentials(): string {
         logger.info('In Credentials.getAudienceForImpCredentials.');
         return IbmConfig.KEYCLOAK_BASEURL + IbmConfig.KEYCLOAK_URL_TOKEN;
-        /// throw new Error("getAudienceForImpCredentials. Method not implemented.");
+        // throw new Error("getAudienceForImpCredentials. Method not implemented.");
     }
 
+    // [OBSOLETE] to remove with /imptoken
     public getPublicKeyCertificatesUrl(): string {
         logger.info('In Credentials.getPublicKeyCertificatesUrl. Method not implemented.');
         throw new Error('getPublicKeyCertificatesUrl. Method not implemented.');

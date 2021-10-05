@@ -111,7 +111,7 @@ export class Auth {
 
         let isAuthorized = await this._cache.get(cacheKey);
         if (isAuthorized === undefined) { // key not exist in cache -> call entitlement
-            isAuthorized = await AuthGroups.isMemberOfAtleastOneGroup(authToken, authGroupEmails, esd, appkey);
+            isAuthorized = await AuthGroups.isMemberOfAtLeastOneGroup(authToken, authGroupEmails, esd, appkey);
             await this._cache.set(cacheKey, isAuthorized, this._cacheItemTTL);
         }
 
@@ -171,7 +171,7 @@ export class Auth {
     public static async isLegalTagValid(
         userToken: string, ltag: string, esd: string, appkey: string, mustThrow: boolean = true): Promise<boolean> {
         const entitlementTenant = DESUtils.getDataPartitionID(esd);
-        const isValid = await DESCompliance.isLegaTagValid(userToken, ltag, entitlementTenant, appkey);
+        const isValid = await DESCompliance.isLegalTagValid(userToken, ltag, entitlementTenant, appkey);
         if (mustThrow && !isValid) {
             throw (Error.make(
                 Error.Status.NOT_FOUND, 'The legal tag \'' + ltag + '\' is not valid.'));

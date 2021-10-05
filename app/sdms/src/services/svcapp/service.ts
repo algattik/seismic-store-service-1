@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ router.post('/trusted', async (req: expRequest, res: expResponse) => {
     await AppHandler.handler(req, res, AppOp.RegisterTrusted);
 });
 
-// list the truested applications
+// list the trusted applications
 router.get('/trusted', async (req: expRequest, res: expResponse) => {
     await AppHandler.handler(req, res, AppOp.ListTrusted);
 });

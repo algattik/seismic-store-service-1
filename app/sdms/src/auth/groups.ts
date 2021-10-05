@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2020, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ export class AuthGroups {
         return await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
     }
 
-    public static async isMemberOfAtleastOneGroup(
+    public static async isMemberOfAtLeastOneGroup(
         userToken: string, groupEmails: string[], esd: string, appkey: string): Promise<boolean> {
         const entitlementTenant = DESUtils.getDataPartitionID(esd);
         const groups = await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);

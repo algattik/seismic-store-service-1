@@ -34,7 +34,8 @@ router.use(Config.API_BASE_PATH + '/dataset', DatasetRouter);
 // general
 router.use(Config.API_BASE_PATH + '/svcstatus', GeneralRouter);
 
-// impersonation token (obsolete)
+// impersonation token
+// [TODO] obsolete to remove in V4
 router.use(Config.API_BASE_PATH + '/imptoken', ImpTokenRouter);
 
 // impersonation token

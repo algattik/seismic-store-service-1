@@ -14,9 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import * as crypto from 'crypto';
 import { Config } from '../cloud';
 
+import * as crypto from 'crypto';
 
 export class Utils {
 
@@ -24,7 +24,6 @@ export class Utils {
         const payload = this.getPayloadFromStringToken(base64JwtPayload);
         return property in payload ? payload[property] : undefined;
     }
-
 
     // This method is temporary required by slb during the migration of sauth from v1 to v2
     // The method replace slb.com domain name with delfiserviceaccount.com.t

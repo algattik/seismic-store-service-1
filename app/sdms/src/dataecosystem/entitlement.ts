@@ -15,6 +15,7 @@
 // ============================================================================
 
 import request from 'request-promise';
+
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
 import { Error } from '../shared';
@@ -114,8 +115,8 @@ export class DESEntitlement {
 
         try {
 
-            // let's have a simple linear retry backoff with 1s wait time between iterations
-            // to ensure the gorup is created before add a user (if explicitly required)
+            // let's have a simple linear retry backOff with 1s wait time between iterations
+            // to ensure the group is created before add a user (if explicitly required)
             let counter = 0;
             while (counter < 10) {
                 try {
@@ -128,7 +129,7 @@ export class DESEntitlement {
                         throw (error);
                     }
                 }
-                await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s constant (no exp backoff required)
+                await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s constant (no exp backOff required)
                 counter = counter + 1;
             }
 

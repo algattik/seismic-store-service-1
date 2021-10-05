@@ -15,12 +15,12 @@
 import { TenantModel } from '../../../services/tenant';
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { AWSConfig } from './config';
+
 import AWS from 'aws-sdk/global';
 import DynamoDB, { ScanInput } from 'aws-sdk/clients/dynamodb';
-
 import aws from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
-import { Utils } from '../../../shared/utils';
+
 const converter = aws.DynamoDB.Converter;
 
 @JournalFactory.register('aws')
@@ -146,13 +146,13 @@ export class AWSDynamoDbDAO extends AbstractJournal {
 
         const strs = specs.namespace.split('-');
         if (tableKind === AWSConfig.SUBPROJECTS_KIND) {
-            partitionKey = strs[strs.length - 1] + ':' + partitionKey; // tenant:subprojet for id
+            partitionKey = strs[strs.length - 1] + ':' + partitionKey; // tenant:subproject for id
         }
         if (tableKind === AWSConfig.DATASETS_KIND) {
-            partitionKey = strs[strs.length - 2] + ':' + strs[strs.length - 1]; // tenant:subprojet for id
+            partitionKey = strs[strs.length - 2] + ':' + strs[strs.length - 1]; // tenant:subproject for id
         }
         if (tableKind === AWSConfig.APPS_KIND) {
-            partitionKey = strs[strs.length - 1] + ':' + name; // tenant:subprojet for id
+            partitionKey = strs[strs.length - 1] + ':' + name; // tenant:subproject for id
         }
 
         const tableName = AWSConfig.AWS_ENVIRONMENT + '-' + 'SeismicStore.' + specs.path[0];
@@ -325,9 +325,9 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
         if(property ==='path')
         {
             property='p';
-            const pathproperty='path';
+            const pathProperty='path';
             this.queryStatement.FilterExpression += '#' + property + operator + ':' + property;
-            this.queryStatement.ExpressionAttributeNames['#' + property] = pathproperty;
+            this.queryStatement.ExpressionAttributeNames['#' + property] = pathProperty;
             this.queryStatement.ExpressionAttributeValues[':' + property] = value;
         }
         else {
@@ -343,7 +343,7 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             throw new Error('Type \'Buffer\' is not supported for DynamoDB Continuation while paging.');
         }
         // tslint:disable-next-line:no-console
-        console.log('NOT SUPPOR aws start createQuery ' + start);
+        console.log('NOT SUPPORT aws start createQuery ' + start);
         return this;
     }
 
