@@ -9,3 +9,6 @@ include:
 
   # file metadata service
   - local: "app/filemetadata/.gitlab-ci.yml"
+  
+  # global
+  - local: "devops/osdu/cloud-providers/gcp-global.yml"

@@ -155,3 +155,5 @@
     PARTITION_BASE_URL: https://community.osdu-gcp.go3-nrg.projects.epam.com/
     # variables for backup tests
     BACKUP_SERVICE_HOST: $OSDU_GCP_BACKUP_HOST
+    OSDU_GCP_HELM_PACKAGE_CHARTS: "app/sdms/devops/gcp/deploy app/sdms/devops/gcp/configmap"
+    

@@ -1,0 +1,48 @@
+# Copyright 2020 Google LLC
+# Copyright 2017-2019, Schlumberger
+# Copyright 2020 EPAM
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Global Protected Variables:
+#
+# OSDU_GCP
+# OSDU_GCP_DEPLOY_FILE
+# OSDU_GCP_SERVICE_ACCOUNT
+# OSDU_GCP_INTEGRATION_TESTER
+# OSDU_GCP_NO_DATA_ACCESS_TESTER
+
+
+osdu-gcp-helm-charts:
+  stage: build
+  tags: ['osdu-small']
+  image:
+    name: alpine/helm:3.5.4
+    entrypoint: [""]
+  artifacts:
+    paths:
+      - helm-charts
+  script:
+    - mkdir -p helm-charts
+    - helm package $OSDU_GCP_HELM_PACKAGE_CHARTS --destination helm-charts
+    - helm repo index --url "${CI_SERVER_URL}/${CI_PROJECT_PATH}/-/jobs/${CI_JOB_ID}/artifacts/raw" .
+    - mv index.yaml helm-charts
+  only:
+    variables:
+      - $GCP == 'true'
+      - $OSDU_GCP == 'true'
+      - $OSDU_GCP_HELM_PACKAGE_CHARTS
+    refs:
+      - branches
+      - main
+      - merge_requests
