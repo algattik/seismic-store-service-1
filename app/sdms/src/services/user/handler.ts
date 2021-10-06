@@ -60,7 +60,6 @@ export class UserHandler {
     private static async addUserToGroups(groups: string[], tenantEsd: string,
         userEmail: string, req: expRequest, role: UserRoles) {
 
-
         await Promise.all(groups.map(async group => {
             try {
                 await AuthGroups.addUserToGroup(
@@ -75,6 +74,8 @@ export class UserHandler {
                 if (e.error && e.error.code === 400) {
                     await AuthGroups.addUserToGroup(req.headers.authorization,
                         group, userEmail, tenantEsd, req[Config.DE_FORWARD_APPKEY], UserRoles.Member);
+                } else if (e.error && e.error.code === 409) {
+                    return; // If the user already exist -> return 200 (making the call idempotent)
                 } else {
                     throw e;
                 }
