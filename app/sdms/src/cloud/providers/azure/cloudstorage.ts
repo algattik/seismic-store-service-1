@@ -85,7 +85,7 @@ export class AzureCloudStorage extends AbstractStorage {
         const container = (await this.getBlobServiceClient()).getContainerClient(bucketName);
         let blobs = null;
         if (prefix) {
-            blobs = container.listBlobsByHierarchy('/', { prefix });
+            blobs = container.listBlobsByHierarchy('/', { prefix: prefix + '/' });
         }
         else {
             blobs = container.listBlobsFlat();
@@ -142,7 +142,7 @@ export class AzureCloudStorage extends AbstractStorage {
             copyCalls.push(blobClientOut.beginCopyFromURL(blobClientIn.url));
             blobItem = await blobs.next();
         }
-        await Promise.all(copyCalls)
+        await Promise.all(copyCalls);
     }
 
     // check if a container exist
