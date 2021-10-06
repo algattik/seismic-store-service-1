@@ -16,11 +16,10 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-
 import { DatasetModel } from '.';
 import { Auth } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
-import { DESStorage, DESUtils, DESUserAssociation } from '../../dataecosystem';
+import { DESStorage, DESUserAssociation, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
 import { SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
@@ -28,6 +27,7 @@ import { DatasetDAO } from './dao';
 import { IWriteLockSession, Locker } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
+
 
 export class DatasetHandler {
 
@@ -252,13 +252,13 @@ export class DatasetHandler {
         } catch (err) {
 
             // rollback
-            if(datasetRegisteredConsistencyFlag) {
+            if (datasetRegisteredConsistencyFlag) {
                 const datasetCheck = subproject.enforce_key ?
                     await DatasetDAO.getByKey(journalClient, dataset) :
                     (await DatasetDAO.get(journalClient, dataset))[0];
-                if(datasetCheck) {
+                if (datasetCheck) {
                     await DatasetDAO.delete(journalClient, datasetCheck);
-                    if(datasetCheck.seismicmeta_guid) {
+                    if (datasetCheck.seismicmeta_guid) {
                         await DESStorage.deleteRecord(
                             req.headers.authorization, datasetCheck.last_modified_date,
                             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
@@ -328,8 +328,7 @@ export class DatasetHandler {
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
             if (!Utils.isEmail(datasetOUT.created_by)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-                const userEmail = await DESUserAssociation.convertSubIdToEmail
-                    (req[Config.DE_FORWARD_APPKEY], datasetOUT.created_by, dataPartition);
+                const userEmail = await DESUserAssociation.convertSubIdToEmail(datasetOUT.created_by, dataPartition);
                 datasetOUT.created_by = userEmail;
             }
 
