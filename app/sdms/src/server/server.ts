@@ -189,14 +189,15 @@ export class Server {
                     const logger = LoggerFactory.build(Config.CLOUDPROVIDER);
 
                     // track caller to the main log
-                    const key = req.headers['x-api-key'] as string;
-                    logger.info(
-                        ((key && key.length > 5) ? ('[***' + key.substr(key.length - 5) + '] ') : '')
-                        + '[' + req.method + '] ' + req.url);
+                    if (!req.url.endsWith('svcstatus')) {
+                        const key = req.headers['x-api-key'] as string;
+                        logger.info(
+                            ((key && key.length > 5) ? ('[***' + key.substr(key.length - 5) + '] ') : '')
+                            + '[' + req.method + '] ' + req.url);
 
-                    logger.metric('SeismicDMS Request Size',
-                        req.headers['content-length'] ? +req.headers['content-length'] : 0);
-
+                        logger.metric('SeismicDMS Request Size',
+                            req.headers['content-length'] ? +req.headers['content-length'] : 0);
+                    }
                 }
 
                 // forward the caller appkey if exist
