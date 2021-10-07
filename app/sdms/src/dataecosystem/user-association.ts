@@ -15,7 +15,6 @@
 // ============================================================================
 
 import request from 'request-promise';
-
 import { AuthProviderFactory } from '../auth';
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Cache, Error } from '../shared';
@@ -27,7 +26,7 @@ export class DESUserAssociation {
    // User association details cached for an hour
    private static _cacheEntryTTL = 3600;
 
-   public static async convertSubIdToEmail(appkey: string, subId: string, dataPartitionID: string): Promise<string> {
+   public static async convertSubIdToEmail(subId: string, dataPartitionID: string): Promise<string> {
 
       if (!this._cache) {
          this._cache = new Cache<string>('subid-to-email-mapping');
@@ -48,7 +47,7 @@ export class DESUserAssociation {
       const options = {
          headers: {
             'Accept': 'application/json',
-            'AppKey': appkey || Config.DES_SERVICE_APPKEY,
+            'AppKey': Config.DES_SERVICE_APPKEY,
             'Authorization': 'Bearer ' + credential.access_token,
             'Content-Type': 'application/json'
          },

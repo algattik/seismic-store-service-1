@@ -20,7 +20,7 @@ import { SubProjectModel } from '.';
 import { Auth, AuthGroups, UserRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
-import { DESUtils, DESUserAssociation } from '../../dataecosystem';
+import { DESUserAssociation, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
 import { TenantGroups, TenantModel } from '../tenant';
@@ -216,8 +216,7 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
             if (!Utils.isEmail(subproject.admin)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-                subproject.admin = await DESUserAssociation.convertSubIdToEmail
-                    (req[Config.DE_FORWARD_APPKEY], subproject.admin, dataPartition);
+                subproject.admin = await DESUserAssociation.convertSubIdToEmail(subproject.admin, dataPartition);
             }
         }
 
