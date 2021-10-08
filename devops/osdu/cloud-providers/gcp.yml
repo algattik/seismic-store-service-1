@@ -60,10 +60,9 @@
     OSDU_GCP_PARTITION_API: https://community.osdu-gcp.go3-nrg.projects.epam.com/api/partition/v1/
     OSDU_GCP_POLICY_API: https://community.osdu-gcp.go3-nrg.projects.epam.com/api/policy/v1/
     OSDU_GCP_LOCAL_IMAGE_TAG_SHA: $CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA
-    REDIS_GROUP_HOST: 10.234.198.27
-    REDIS_SEARCH_HOST: 10.99.138.107
-    REDIS_STORAGE_HOST: 10.16.59.203
-    REDIS_SYNC_HOST: 10.116.62.35
+    REDIS_GROUP_HOST: redis-cache-groups
+    REDIS_SEARCH_HOST: redis-cache-search
+    REDIS_STORAGE_HOST: redis-cache-storage
     OSDU_GCP_REDIS_SEARCH_PORT: 6379
     OSDU_GCP_SPRING_PROFILES_ACTIVE: dev
     OSDU_GCP_INDEXER_QUEUE_CLOUDTASK_NAME: os-indexer-queue-osdu
@@ -78,9 +77,9 @@
     OSDU_GCP_CLOUD_PROVIDER: google
     OSDU_GCP_IMP_SERVICE_ACCOUNT_SIGNER: unknown
     OSDU_GCP_SEISTORE_DES_APPKEY: na
-    OSDU_GCP_DES_REDIS_INSTANCE_ADDRESS: 10.93.210.3
+    OSDU_GCP_DES_REDIS_INSTANCE_ADDRESS: redis-cache-ddms
     OSDU_GCP_DES_REDIS_INSTANCE_PORT: 6379
-    OSDU_GCP_LOCKSMAP_REDIS_INSTANCE_ADDRESS: 10.93.210.3
+    OSDU_GCP_LOCKSMAP_REDIS_INSTANCE_ADDRESS: redis-cache-ddms
     OSDU_GCP_LOCKSMAP_REDIS_INSTANCE_PORT: 6379
     # variables for WKS service:
     OSDU_GCP_WKS_SEARCH_API: https://os-search-attcrcktoa-uc.a.run.app/api/search/v2
