@@ -1,0 +1,66 @@
+variables:
+  FILEMETADATA_OSDU_GCP_HELM_PACKAGE_CHARTS: "app/filemetadata/devops/gcp/deploy app/filemetadata/devops/gcp/configmap"
+  FILEMETADATA_OSDU_GCP_SERVICE: seismic-store-filemetadata
+  FILEMETADATA_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-filemetadata-configmap
+  FILEMETADATA_OSDU_GCP_HELM_CONFIG_DIR: "app/filemetadata/devops/gcp/configmap"
+  FILEMETADATA_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-filemetadata-deploy
+  FILEMETADATA_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/filemetadata/devops/gcp/deploy"
+  FILEMETADATA_OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.domain=$DOMAIN"
+  FILEMETADATA_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-filemetadata:$CI_COMMIT_SHORT_SHA"
+
+.common: &common
+  - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
+  - gcloud config set project $OSDU_GCP_PROJECT
+  - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT
+  - curl https://get.helm.sh/helm-v3.5.4-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+
+filemetadata_osdu-gcp-helm-charts:
+  stage: build
+  tags: ['osdu-small']
+  image:
+    name: alpine/helm:3.5.4
+    entrypoint: [""]
+  artifacts:
+    paths:
+      - helm-charts
+  script:
+    - mkdir -p helm-charts
+    - helm package $FILEMETADATA_OSDU_GCP_HELM_PACKAGE_CHARTS --destination helm-charts
+    - helm repo index --url "${CI_SERVER_URL}/${CI_PROJECT_PATH}/-/jobs/${CI_JOB_ID}/artifacts/raw" .
+    - mv index.yaml helm-charts
+  only:
+    variables:
+      - $GCP == 'true'
+      - $OSDU_GCP == 'true'
+      - $OSDU_GCP_HELM_PACKAGE_CHARTS
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+filemetadata_osdu-gcp-containerize-gitlab:
+  stage: containerize
+  tags: ["osdu-medium"]
+  extends: .osdu-gcp-variables
+  image: docker:19.03
+  cache: {}
+  allow_failure: true
+  script:
+    - cd app/$FILEMETADATA_SERVICE
+    - export EXTRA_DOCKER_TAG=""; if [ "$CI_COMMIT_TAG" != "" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp-filemetadata:$CI_COMMIT_TAG" ; elif [ "$CI_COMMIT_REF_NAME" = "master" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp-filemetadata:latest" ; fi
+    - docker build -t $CI_REGISTRY_IMAGE/osdu-gcp-filemetadata:$CI_COMMIT_SHORT_SHA $EXTRA_DOCKER_TAG --file Dockerfile .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/osdu-gcp-filemetadata
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
