@@ -5,10 +5,15 @@ variables:
   LOCAL_SERVICE_NAME: seismic-dms-file-metadata-service
 
 include:
+  # global
+  - local: "app/filemetadata/devops/osdu/global/gitlab.yml"
+
   # containerize
   - local: "app/filemetadata/devops/osdu/containerize/seismic-dms-file-metadata-service.yml"
 
   # deploy
-
   # azure
-  - local: "app/filemetadata/devops/osdu/cloud-providers/azure-file-metadata-service.yml"
+  - local: "app/filemetadata/devops/osdu/cloud-providers/azure.yml"
+  
+  # gcp
+  - local: "app/filemetadata/devops/osdu/cloud-providers/gcp.yml"

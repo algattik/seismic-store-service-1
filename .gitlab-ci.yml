@@ -3,12 +3,13 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
 
+  # global
+  # gcp
+  - local: "devops/osdu/cloud-providers/gcp.yml"
+
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
 
   # file metadata service
   - local: "app/filemetadata/.gitlab-ci.yml"
-  
-  # global
-  - local: "devops/osdu/cloud-providers/gcp-global.yml"
