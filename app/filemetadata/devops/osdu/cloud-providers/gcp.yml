@@ -64,3 +64,61 @@ filemetadata_osdu-gcp-containerize-gitlab:
       - branches
       - main
       - merge_requests
+      
+filemetadata_osdu-gcp-deploy-configmap:
+  extends: .osdu-gcp-variables
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  stage: deploy
+  script:
+    - *common
+    - >
+      helm upgrade $FILEMETADATA_OSDU_GCP_HELM_CONFIG_SERVICE $FILEMETADATA_OSDU_GCP_HELM_CONFIG_DIR
+      --install
+      --create-namespace
+      --namespace=$OSDU_GCP_HELM_NAMESPACE
+      --wait
+      --history-max=3
+      $FILEMETADATA_OSDU_GCP_HELM_CONFIG_SERVICE_VARS
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
+
+filemetadata_osdu-gcp-deployment:
+  extends: .osdu-gcp-variables
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  needs: ["filemetadata_osdu-gcp-containerize-gitlab", "filemetadata_osdu-gcp-deploy-configmap"]
+  stage: deploy  
+  cache: {}
+  script:
+    - *common
+    - >
+      helm upgrade $FILEMETADATA_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $FILEMETADATA_OSDU_GCP_HELM_DEPLOYMENT_DIR
+      --install
+      --create-namespace
+      --namespace=$OSDU_GCP_HELM_NAMESPACE
+      --wait
+      --history-max=3
+      $FILEMETADATA_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS
+    - echo ----- Verify Deployment -----
+    - kubectl rollout status deployment.v1.apps/$FILEMETADATA_OSDU_GCP_SERVICE -n $OSDU_GCP_HELM_NAMESPACE --timeout=900s
+    - POD=$(kubectl get pod --sort-by=.metadata.creationTimestamp -n $OSDU_GCP_HELM_NAMESPACE | grep $FILEMETADATA_OSDU_GCP_SERVICE | tail -1 | awk '{print $1}')
+    - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=300s)
+    - echo $STATUS
+    - if [[ "$STATUS" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    changes:
+      - devops/**/*
+      - app/filemetadata/**/*
+    refs:
+      - branches
+      - main
+      - merge_requests
