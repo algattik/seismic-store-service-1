@@ -190,13 +190,6 @@ The following software have components provided under the terms of this license:
 - yamljs (from https://www.npmjs.com/package/yamljs)
 
 ========================================================================
-BSD-3-Clause-Clear
-========================================================================
-The following software have components provided under the terms of this license:
-
-- sprintf-js (from https://www.npmjs.com/package/sprintf-js)
-
-========================================================================
 CC-BY-4.0
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -226,7 +219,6 @@ GPL-3.0-only
 The following software have components provided under the terms of this license:
 
 - docutils (from http://docutils.sourceforge.net/)
-- xmlrunner (from https://github.com/pycontribs/xmlrunner)
 
 ========================================================================
 GPL-3.0-or-later
@@ -902,10 +894,7 @@ unknown
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- deep-extend (from https://www.npmjs.com/package/deep-extend)
-- for-each (from https://www.npmjs.com/package/for-each)
 - jmespath (from https://www.npmjs.com/package/jmespath)
-- json-schema (from https://www.npmjs.com/package/json-schema)
 - querystring (from https://www.npmjs.com/package/querystring)
 - sax (from https://www.npmjs.com/package/sax)
 

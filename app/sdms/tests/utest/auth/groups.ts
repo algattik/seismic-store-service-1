@@ -19,6 +19,7 @@ import { AuthGroups, UserRoles } from '../../../src/auth';
 import { Config } from '../../../src/cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../../../src/cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../../../src/dataecosystem';
+import { TenantGroups } from '../../../src/services/tenant';
 import { Tx } from '../utils';
 
 
@@ -52,7 +53,7 @@ export class TestAuthGroups {
 
       Tx.sectionInit('get datalake user admin group name');
       Tx.test((done: any) => {
-         const result = AuthGroups.datalakeUserAdminGroupName();
+         const result = TenantGroups.datalakeUserAdminGroupName();
          Tx.checkTrue(result === 'users.datalake.admins', done);
 
       });

@@ -16,18 +16,19 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+
 import { DatasetModel } from '.';
-import { Auth } from '../../auth';
+import { Auth, AuthRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { DESStorage, DESUserAssociation, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
-import { SubProjectDAO, SubProjectModel } from '../subproject';
+import { SubprojectAuth, SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
+import { DatasetAuth } from './auth';
 import { DatasetDAO } from './dao';
 import { IWriteLockSession, Locker } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
-
 
 export class DatasetHandler {
 
@@ -73,6 +74,8 @@ export class DatasetHandler {
 
     }
 
+    // Validate the dataset coherency tag
+    // Required role: any
     private static async checkCTag(req: expRequest, subproject: SubProjectModel): Promise<boolean> {
 
         // parse user request
@@ -99,7 +102,8 @@ export class DatasetHandler {
         return datasetOUT.ctag === userInput.dataset.ctag;
     }
 
-    // register a new dataset
+    // Register a new dataset in the subproject data group
+    // Required role: subproject.admin
     private static async register(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // consistency flag
@@ -159,7 +163,7 @@ export class DatasetHandler {
             await Promise.all([
                 FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
                     Auth.isWriteAuthorized(req.headers.authorization,
-                        subproject.acls.admins,
+                        SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
                         tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
                         req.headers['impersonation-token-context'] as string) : undefined,
                 FeatureFlags.isEnabled(Feature.LEGALTAG) ?
@@ -274,7 +278,8 @@ export class DatasetHandler {
 
     }
 
-    // retrieve the dataset metadata
+    // Retrieve the dataset metadata
+    // Required role: subproject.viewer || dataset.viewer (dependents on applied access policy)
     private static async get(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // parse user request
@@ -309,17 +314,8 @@ export class DatasetHandler {
 
         // Use the access policy to determine which groups to fetch for read authorization
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            let authGroups = [];
-            if (subproject.access_policy === Config.UNIFORM_ACCESS_POLICY) {
-                authGroups = subproject.acls.viewers.concat(subproject.acls.admins);
-            } else if (subproject.access_policy === Config.DATASET_ACCESS_POLICY) {
-                authGroups = datasetOUT.acls ? datasetOUT.acls.viewers.concat(datasetOUT.acls.admins)
-                    : subproject.acls.viewers.concat(subproject.acls.admins);
-            } else {
-                throw (Error.make(Error.Status.PERMISSION_DENIED,
-                    'Access policy for the subproject is neither uniform nor dataset'));
-            }
-            await Auth.isReadAuthorized(req.headers.authorization, authGroups,
+            await Auth.isReadAuthorized(req.headers.authorization,
+                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.viewer),
                 tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -350,7 +346,8 @@ export class DatasetHandler {
 
     }
 
-    // list the datasets in a subproject
+    // List the datasets in a subproject
+    // Required role: subproject.viewer
     private static async list(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
@@ -365,7 +362,7 @@ export class DatasetHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                 tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -378,7 +375,6 @@ export class DatasetHandler {
             item.ctag = item.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
         }
 
-
         // Retrieve the list of datasets metadata
         if (output.nextPageCursor) {
             return output;
@@ -387,7 +383,8 @@ export class DatasetHandler {
         return output.datasets;
     }
 
-    // delete a dataset
+    // Delete a dataset from a subproject data group
+    // Required role: subproject.admin || dataset.admin (dependents on applied access policy)
     private static async delete(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
@@ -417,20 +414,9 @@ export class DatasetHandler {
 
         // check authorization (write)
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            let authGroups = [];
-            const accessPolicy = subproject.access_policy;
-
-            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                authGroups = subproject.acls.admins;
-            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                authGroups = dataset.acls ? dataset.acls.admins : subproject.acls.admins;
-            } else {
-                throw (Error.make(Error.Status.PERMISSION_DENIED,
-                    'Access policy for the subproject is neither uniform nor dataset'));
-            }
-
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
 
@@ -467,7 +453,11 @@ export class DatasetHandler {
 
     }
 
-    // patch the dataset metadata
+    // Patch the dataset metadata
+    // Required role:
+    //  - patch with a body request: subproject.admin || dataset.admin (dependents on applied access policy)
+    //  - write close only request: subproject.admin || dataset.admin (dependents on applied access policy)
+    //  - read close only request: subproject.viewer || dataset.viewer (dependents on applied access policy)
     private static async patch(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
@@ -480,21 +470,6 @@ export class DatasetHandler {
         // return immediately if it is a simple close with empty body (no patch to apply)
         if (Object.keys(req.body).length === 0 && req.body.constructor === Object && wid) {
 
-            // Check authorizations
-            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                if (wid.startsWith('W')) {
-                    await Auth.isWriteAuthorized(req.headers.authorization,
-                        subproject.acls.admins,
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                } else {
-                    await Auth.isReadAuthorized(req.headers.authorization,
-                        subproject.acls.viewers.concat(subproject.acls.admins),
-                        tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                }
-            }
-
             // Retrieve the dataset metadata
             const dataset = subproject.enforce_key ?
                 await DatasetDAO.getByKey(journalClient, datasetIN) :
@@ -505,6 +480,21 @@ export class DatasetHandler {
                 throw (Error.make(Error.Status.NOT_FOUND,
                     'The dataset ' + Config.SDPATHPREFIX + datasetIN.tenant + '/' +
                     datasetIN.subproject + datasetIN.path + datasetIN.name + ' does not exist'));
+            }
+
+            // Check authorizations
+            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+                if (wid.startsWith('W')) {
+                    await Auth.isWriteAuthorized(req.headers.authorization,
+                        DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
+                } else {
+                    await Auth.isReadAuthorized(req.headers.authorization,
+                        DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
+                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                        req.headers['impersonation-token-context'] as string);
+                }
             }
 
             // unlock the dataset
@@ -564,20 +554,9 @@ export class DatasetHandler {
 
         // If the input request has dataset ACLs then the subproject access policy is always dataset
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            let authGroups = [];
-            const accessPolicy = subproject.access_policy;
-
-            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                authGroups = subproject.acls.admins;
-            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                authGroups = datasetOUT.acls ? datasetOUT.acls.admins : subproject.acls.admins;
-            } else {
-                throw (Error.make(Error.Status.PERMISSION_DENIED, 'Access policy is neither uniform nor dataset.'
-                ));
-            }
-
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
+                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
 
@@ -757,7 +736,10 @@ export class DatasetHandler {
 
     }
 
-    // lock the dataset metadata for opening
+    // Lock the dataset
+    // Required role:
+    //  - write lock request: subproject.admin || dataset.admin (dependents on applied access policy)
+    //  - read lock request: subproject.viewer || dataset.viewer (dependents on applied access policy)
     private static async lock(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // parse user request
@@ -768,7 +750,6 @@ export class DatasetHandler {
 
         // retrieve datastore client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-
 
         // Retrieve the dataset metadata
         const datasetOUT = subproject.enforce_key ?
@@ -790,41 +771,17 @@ export class DatasetHandler {
 
         // Use the access policy to determine which groups to fetch for read authorization
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            let authGroups = [];
-            const accessPolicy = subproject.access_policy;
-
             if (open4write) {
-                if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                    authGroups = subproject.acls.admins;
-                } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                    authGroups = datasetOUT.acls ? datasetOUT.acls.admins : subproject.acls.admins;
-                } else {
-                    throw (Error.make(Error.Status.PERMISSION_DENIED,
-                        'Access policy is neither uniform nor dataset'));
-                }
-
                 await Auth.isWriteAuthorized(req.headers.authorization,
-                    authGroups, tenant, datasetIN.subproject,
-                    req[Config.DE_FORWARD_APPKEY],
+                    DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
+                    tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
                     req.headers['impersonation-token-context'] as string);
-
             } else {
-
-                if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                    authGroups = subproject.acls.viewers.concat(subproject.acls.admins);
-                } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                    authGroups = datasetOUT.acls ? datasetOUT.acls.viewers.concat(datasetOUT.acls.admins)
-                        : subproject.acls.viewers.concat(subproject.acls.admins);
-                } else {
-                    throw (Error.make(Error.Status.PERMISSION_DENIED,
-                        'Access policy is neither uniform nor dataset'));
-                }
-
-                await Auth.isReadAuthorized(req.headers.authorization, authGroups,
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.viewer),
                     tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
                     req.headers['impersonation-token-context'] as string);
             }
-
         }
 
         // managing read-only datasets
@@ -858,7 +815,8 @@ export class DatasetHandler {
 
     }
 
-    // unlock the dataset metadata for opening
+    // Unlock the dataset
+    // Required role: subproject.admin || dataset.admin (dependents on applied access policy)
     private static async unlock(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // parse user request
@@ -887,22 +845,10 @@ export class DatasetHandler {
             }
         }
 
-        // check if user is write authorized
-        let authGroups = [];
-        const accessPolicy = subproject.access_policy;
-
-        if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-            authGroups = subproject.acls.admins;
-        } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-            authGroups = dataset.acls ? dataset.acls.admins : subproject.acls.admins;
-        } else {
-            throw (Error.make(Error.Status.PERMISSION_DENIED,
-                'Access policy is neither uniform nor dataset'));
-        }
-
+        // check if the user is authorized
         await Auth.isWriteAuthorized(req.headers.authorization,
-            authGroups, tenant, dataset.subproject,
-            req[Config.DE_FORWARD_APPKEY],
+            DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+            tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
             req.headers['impersonation-token-context'] as string);
 
         // unlock
@@ -910,7 +856,8 @@ export class DatasetHandler {
 
     }
 
-    // check if a list of datasets exist in a subproject
+    // Check if a list of datasets exist in a subproject
+    // Required role: subproject.viewer
     private static async exists(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
@@ -919,10 +866,10 @@ export class DatasetHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
+        // check if the caller is authorized
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-
             await Auth.isReadAuthorized(req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                 tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -941,7 +888,8 @@ export class DatasetHandler {
         return results;
     }
 
-    // retrieve the dataset size for a list of datasets
+    // Retrieve the dataset size for a list of datasets
+    // Required role: subproject.viewer
     private static async sizes(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
@@ -950,9 +898,10 @@ export class DatasetHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
+        // check if the caller is authorized
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isReadAuthorized(req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                 tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -983,7 +932,8 @@ export class DatasetHandler {
 
     }
 
-    // list the path content
+    // List the content of a path folder sd://<tenant>/<subproject>/<path>/*
+    // Required role: subproject.viewer
     private static async listContent(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset information
@@ -992,10 +942,10 @@ export class DatasetHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
+        // Check authorizations
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check authorizations
             await Auth.isReadAuthorized(req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                 tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -1005,6 +955,8 @@ export class DatasetHandler {
 
     }
 
+    // Add a new tag to the dataset
+    // Required role: subproject.admin || dataset.admin (dependents on applied access policy)
     private static async putTags(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         const datasetIN = DatasetParser.putTags(req);
@@ -1063,21 +1015,9 @@ export class DatasetHandler {
         }
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-
-            let authGroups = [];
-            const accessPolicy = subproject.access_policy;
-
-            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                authGroups = subproject.acls.admins;
-            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                authGroups = datasetOUT.acls ? datasetOUT.acls.admins : subproject.acls.admins;
-            } else {
-                throw (Error.make(Error.Status.PERMISSION_DENIED,
-                    'Access policy is neither uniform nor dataset'));
-            }
-
             await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, datasetIN.subproject,
+                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
+                tenant, datasetIN.subproject,
                 req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -1086,7 +1026,8 @@ export class DatasetHandler {
 
     }
 
-    // check the permissions of a user on a dataset
+    // Check the permissions of a user on a dataset
+    // Required role: any
     private static async checkPermissions(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
@@ -1106,41 +1047,18 @@ export class DatasetHandler {
         }
 
         const res = { read: false, write: false, delete: false };
-
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            let authGroups = [];
-            const accessPolicy = subproject.access_policy;
-
-            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                authGroups = subproject.acls.admins;
-            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                authGroups = dataset.acls ? dataset.acls.admins : subproject.acls.admins;
-            } else {
-                throw (Error.make(Error.Status.PERMISSION_DENIED, 'Access policy is neither uniform nor dataset'
-                ));
-            }
-
+            // Check write authorization
             res.write = await Auth.isWriteAuthorized(req.headers.authorization,
-                authGroups, tenant, dataset.subproject,
+                DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+                tenant, dataset.subproject,
                 req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string, false);
-
-
-            // Check write authorization
-            if (accessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                authGroups = subproject.acls.viewers.concat(subproject.acls.admins);
-            } else if (accessPolicy === Config.DATASET_ACCESS_POLICY) {
-                authGroups = dataset.acls ? dataset.acls.viewers.concat(dataset.acls.admins)
-                    : subproject.acls.viewers.concat(subproject.acls.admins);
-            } else {
-                throw (Error.make(Error.Status.PERMISSION_DENIED,
-                    'Access policy is neither uniform nor dataset'));
-            }
-
-            res.read = await Auth.isReadAuthorized(req.headers.authorization, authGroups,
+            // Check read authorization
+            res.read = await Auth.isReadAuthorized(req.headers.authorization,
+                DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
                 tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string, false);
-
         } else {
             res.write = true;
             res.read = true;

@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { Request as expRequest } from 'express';
-import { TenantModel } from '.';
+import { TenantGroups, TenantModel } from '.';
 import { AuthGroups } from '../../auth';
 import { Config, DataEcosystemCoreFactory } from '../../cloud';
 import { DESUtils } from '../../dataecosystem';
@@ -32,7 +32,7 @@ export class TenantParser {
         tenant.name = req.params.tenantid;
         tenant.esd = req.body.esd;
         tenant.gcpid = req.body.gcpid;
-        tenant.default_acls = req.body.default_acls || AuthGroups.datalakeUserAdminGroupEmail(tenant.esd);
+        tenant.default_acls = req.body.default_acls || TenantGroups.datalakeUserAdminGroupEmail(tenant.esd);
 
         // check user input params
         Params.checkString(tenant.esd, 'esd');

@@ -18,16 +18,7 @@ import { UserRoles } from '.';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
 import { DESEntitlement, DESUtils } from '../dataecosystem';
 
-
 export class AuthGroups {
-
-    public static datalakeUserAdminGroupEmail(esd: string): string {
-        return AuthGroups.datalakeUserAdminGroupName() + '@' + esd;
-    }
-
-    public static datalakeUserAdminGroupName(): string {
-        return 'users.datalake.admins';
-    }
 
     public static async createGroup(
         userToken: string, groupName: string, groupDescription: string, esd: string, appkey: string) {

@@ -16,20 +16,19 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { SubProjectModel } from '.';
-import { Auth, AuthGroups, UserRoles } from '../../auth';
+import { SubprojectAuth, SubProjectModel } from '.';
+import { Auth, AuthGroups, AuthRoles, UserRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { DESUserAssociation, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
-import { TenantGroups, TenantModel } from '../tenant';
+import { TenantAuth, TenantModel } from '../tenant';
 import { TenantDAO } from '../tenant/dao';
 import { SubProjectDAO } from './dao';
 import { SubprojectGroups } from './groups';
 import { SubProjectOP } from './optype';
 import { SubProjectParser } from './parser';
-
 
 export class SubProjectHandler {
 
@@ -84,7 +83,8 @@ export class SubProjectHandler {
 
     }
 
-    // create a new subproject
+    // Create a new subproject data group
+    // Required role: tenant.admin
     private static async create(req: expRequest, tenant: TenantModel): Promise<SubProjectModel> {
 
         // Parse input parameters
@@ -102,7 +102,7 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
-                userToken, [TenantGroups.adminGroup(tenant)], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                userToken, TenantAuth.getAuthGroups(tenant), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
         if (FeatureFlags.isEnabled(Feature.LEGALTAG) && subproject.ltag) {
             // Check if the legal tag is valid
@@ -186,7 +186,8 @@ export class SubProjectHandler {
         return subproject;
     }
 
-    // retrieve the subproject metadata
+    // Get the subproject data group metadata
+    // Required role: subproject.admin
     private static async get(req: expRequest, tenant: TenantModel): Promise<SubProjectModel> {
 
         // init journalClient client
@@ -200,9 +201,8 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is member of any of the subproject acl admin groups
             await Auth.isUserAuthorized(req.headers.authorization,
-                subproject.acls.admins, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
-
 
         if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
             // Check if the legal tag is valid
@@ -220,12 +220,12 @@ export class SubProjectHandler {
             }
         }
 
-
         return subproject;
 
     }
 
-    // delete the subproject
+    // Delete the subproject data group
+    // Required role: tenant.admin
     private static async delete(req: expRequest, tenant: TenantModel) {
 
         // init journalClient client
@@ -238,7 +238,7 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -252,9 +252,6 @@ export class SubProjectHandler {
             // delete the subproject associated bucket. This operation will delete all subproject data in GCS.
             storage.deleteFiles(subproject.gcs_bucket),
         ]);
-
-        const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
-        const subprojectServiceGroups = subproject.acls.admins.filter((group) => group.match(serviceGroupRegex));
 
         const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
         const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
@@ -276,7 +273,8 @@ export class SubProjectHandler {
 
     }
 
-    // delete the subproject
+    // Patch the subproject
+    // Required role: subproject.admin
     private static async patch(req: expRequest, tenant: TenantModel) {
 
         const parsedUserInput = SubProjectParser.patch(req);
@@ -297,7 +295,7 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a subproject admin
             await Auth.isUserAuthorized(req.headers.authorization,
-                subproject.acls.admins, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         if (parsedUserInput.acls) {
@@ -362,13 +360,14 @@ export class SubProjectHandler {
 
     }
 
-    // list the subprojects in a tenant
+    // List the subprojects in a tenant
+    // Required role: tenant.admin
     private static async list(req: expRequest, tenant: TenantModel): Promise<SubProjectModel[]> {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // Check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -400,6 +399,7 @@ export class SubProjectHandler {
 
     }
 
+    // Randomly generate a name for a bucket (check if not already in use)
     private static async getBucketName(tenant: TenantModel): Promise<string> {
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
         for (let i = 0; i < 5; i++) {
@@ -413,7 +413,7 @@ export class SubProjectHandler {
         throw (Error.make(Error.Status.UNKNOWN, 'Unable to generate a bucket name'));
     }
 
-
+    // Ensure the group name respect CSP imposed length limits
     private static validateGroupNamesLength(adminGroupName: string, viewerGroupName: string,
         subproject: SubProjectModel): boolean {
 
@@ -431,10 +431,11 @@ export class SubProjectHandler {
 
     }
 
+    // Ensure the access policy is not changed if already set as 'dataset'
     private static validateAccessPolicy(userInputAccessPolicy: string, existingAccessPolicy: string) {
-
         if (existingAccessPolicy === 'dataset' && userInputAccessPolicy === 'uniform') {
-            throw (Error.make(Error.Status.BAD_REQUEST, 'Subproject access policy cannot be changed from dataset level to uniform level'));
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'Subproject access policy cannot be changed from dataset level to uniform level'));
         }
 
     }
