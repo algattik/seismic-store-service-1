@@ -15,11 +15,11 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
-import { Auth, AuthProviderFactory } from '../../auth';
+import { Auth, AuthProviderFactory, AuthRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
-import { SubProjectDAO } from '../subproject';
+import { SubprojectAuth, SubProjectDAO } from '../subproject';
 import { TenantDAO } from '../tenant';
 import { ImpersonationTokenModel, ImpersonationTokenContextModel } from './model';
 import { ImpersonationTokenOps } from './optype';
@@ -47,7 +47,8 @@ export class ImpersonationTokenHandler {
 
     }
 
-    // generate an impersonation token
+    // Generate an impersonation token
+    // Required role: app.trusted
     private static async generate(req: expRequest): Promise<ImpersonationTokenModel> {
 
         if (!FeatureFlags.isEnabled(Feature.IMPTOKEN)) return {} as ImpersonationTokenModel;
@@ -93,7 +94,7 @@ export class ImpersonationTokenHandler {
                         requestBody.userToken.startsWith('Bearer') ?
                             requestBody.userToken :
                             'Bearer ' + requestBody.userToken,
-                        subproject.acls.viewers.concat(subproject.acls.admins),
+                        SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                         tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                         req.headers['impersonation-token-context'] as string, false));
             } else {
@@ -102,11 +103,12 @@ export class ImpersonationTokenHandler {
                         requestBody.userToken.startsWith('Bearer') ?
                             requestBody.userToken :
                             'Bearer ' + requestBody.userToken,
-                        subproject.acls.admins,
+                        SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
                         tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                         req.headers['impersonation-token-context'] as string, false));
             }
         }
+
         const results = await Promise.all(authorizationCheckList);
         const index = results.indexOf(false); // error if find at least one not unauthorized
         if (results.indexOf(false) !== -1) {
@@ -142,7 +144,8 @@ export class ImpersonationTokenHandler {
         return impersonationToken;
     }
 
-    // refresh the impersonation token
+    // Refresh the impersonation token
+    // Required role: app.trusted
     private static async refresh(req: expRequest): Promise<ImpersonationTokenModel> {
 
         if (!FeatureFlags.isEnabled(Feature.IMPTOKEN)) return {} as ImpersonationTokenModel;

@@ -17,6 +17,7 @@
 import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+
 import { Auth, AuthRoles } from '../../auth';
 import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
@@ -24,13 +25,12 @@ import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
 import { DESEntitlement, DESStorage, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
-import { DatasetDAO, DatasetModel } from '../dataset';
+import { DatasetDAO, DatasetModel, DatasetAuth } from '../dataset';
 import { IWriteLockSession, Locker } from '../dataset/locker';
-import { SubProjectDAO } from '../subproject';
+import { SubprojectAuth, SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantGroups } from '../tenant';
 import { UtilityOP } from './optype';
 import { UtilityParser } from './parser';
-
 
 export class UtilityHandler {
 
@@ -50,7 +50,14 @@ export class UtilityHandler {
 
     }
 
-    // retrieve the gcs access token
+    // Generate the storage access token
+    // Required role:
+    //  - for subproject path request:
+    //    - read write access request: subproject.admin
+    //    - read only access request: subproject.viewer
+    //  - for dataset path request:
+    //    - read write request: subproject.viewer || dataset.viewer (dependents on applied access policy)
+    //    - read only request: subproject.admin || dataset.admin (dependents on applied access policy)
     private static async getGCSAccessToken(req: expRequest) {
 
         if (!FeatureFlags.isEnabled(Feature.STORAGE_CREDENTIALS)) return {};
@@ -61,53 +68,38 @@ export class UtilityHandler {
         const readOnly = inputParams.readOnly;
 
         const tenant = await TenantDAO.get(sdPath.tenant);
-
         const journalClient = JournalFactoryTenantClient.get(tenant);
-
         const subproject = await SubProjectDAO.get(journalClient, sdPath.tenant, sdPath.subproject);
 
+        // subproject access request
         if (Object.keys(inputParams.dataset).length === 0) {
-            if (readOnly) {
+
+            readOnly ?
                 await Auth.isReadAuthorized(req.headers.authorization,
-                    subproject.acls.viewers.concat(subproject.acls.admins),
+                    SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                     tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string);
-            } else {
+                    req.headers['impersonation-token-context'] as string) :
                 await Auth.isWriteAuthorized(req.headers.authorization,
-                    subproject.acls.admins,
+                    SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
                     tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                     req.headers['impersonation-token-context'] as string);
-            }
-        } else {
+
+        } else { // dataset access request
+
             const dataset = subproject.enforce_key ?
                 await DatasetDAO.getByKey(journalClient, inputParams.dataset) :
                 (await DatasetDAO.get(journalClient, inputParams.dataset))[0];
 
-            if (readOnly) {
-                if (dataset.acls) {
-                    await Auth.isReadAuthorized(req.headers.authorization,
-                        dataset.acls.viewers.concat(dataset.acls.admins),
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                } else {
-                    await Auth.isReadAuthorized(req.headers.authorization,
-                        subproject.acls.viewers.concat(subproject.acls.admins),
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                }
-            } else {
-                if (dataset.acls) {
-                    await Auth.isReadAuthorized(req.headers.authorization,
-                        dataset.acls.admins,
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                } else {
-                    await Auth.isReadAuthorized(req.headers.authorization,
-                        subproject.acls.admins,
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                }
-            }
+            readOnly ?
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string) :
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
+
             objectPrefix = dataset.gcsurl.split('/')[1];
         }
 
@@ -117,7 +109,11 @@ export class UtilityHandler {
 
     }
 
-    // list contents
+    // List SDMS uri content
+    // Required role:
+    //  - for list accessible tenants: any
+    //  - for list accessible subproject: any
+    //  - for list accessible subproject content: subproject.viewer
     private static async ls(req: expRequest) {
 
         const userInput = UtilityParser.ls(req);
@@ -197,7 +193,7 @@ export class UtilityHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             //  Check if user is authorized
             await Auth.isReadAuthorized(req.headers.authorization,
-                subproject.acls.viewers.concat(subproject.acls.admins),
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
                 tenant, sdPath.subproject, req[Config.DE_FORWARD_APPKEY],
                 req.headers['impersonation-token-context'] as string);
         }
@@ -216,12 +212,11 @@ export class UtilityHandler {
                         results.datasets : []);
     }
 
-    private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
-        return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
-            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor)
-                || el.name.endsWith(AuthRoles.viewer)));
-    }
-    // copy datasets (same tenancy required)
+
+    // Copy datasets (same tenancy required)
+    // Required role:
+    //   - source subproject.viewer || dataset.viewer (dependents on applied access policy)
+    //   - destination subproject.admin
     private static async cp(req: expRequest) {
 
         enum TransferStatus {
@@ -265,25 +260,15 @@ export class UtilityHandler {
         }
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-
-            if (datasetFrom.acls) {
-                await Auth.isReadAuthorized(req.headers.authorization,
-                    datasetFrom.acls.viewers.concat(datasetFrom.acls.admins),
-                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string);
-
-            } else {
-                await Auth.isReadAuthorized(req.headers.authorization,
-                    subproject.acls.viewers.concat(subproject.acls.admins),
-                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string);
-            }
-            // check if has write access on destination dataset and read access on the source subproject
+            await Promise.all([
+                Auth.isReadAuthorized(req.headers.authorization,
+                DatasetAuth.getAuthGroups(subproject, datasetFrom, AuthRoles.viewer),
+                tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string),
             await Auth.isWriteAuthorized(req.headers.authorization,
-                subproject.acls.admins,
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
                 tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-
+                req.headers['impersonation-token-context'] as string)]);
         }
 
         let seismicmeta: any;
@@ -463,4 +448,10 @@ export class UtilityHandler {
         }
     }
 
+    // validate if the entitlement object follow the SDMS conventions
+    private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
+        return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
+            (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor)
+                || el.name.endsWith(AuthRoles.viewer)));
+    }
 }

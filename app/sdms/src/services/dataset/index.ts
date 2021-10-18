@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,3 +19,5 @@ export {
   IDatasetModel as DatasetModel,
   IPaginationModel as PaginationModel,
 } from './model';
+export { DatasetAuth } from './auth'
+

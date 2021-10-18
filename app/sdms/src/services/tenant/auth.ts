@@ -14,7 +14,18 @@
 // limitations under the License.
 // ============================================================================
 
-export { TenantDAO } from './dao';
-export { ITenantModel as TenantModel } from './model';
-export { TenantGroups } from './groups';
-export { TenantAuth } from './auth';
+import { TenantGroups, TenantModel } from '.';
+
+export class TenantAuth {
+
+    // Return the tenants's authorization groups
+    public static getAuthGroups(
+        tenant: TenantModel): string[] {
+        return [TenantGroups.adminGroup(tenant)]
+    }
+
+    public static datalakeAdminGroups(tenant: TenantModel): string[] {
+        return [TenantGroups.datalakeUserAdminGroupEmail(tenant.esd)];
+    }
+
+}

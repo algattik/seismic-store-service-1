@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
-import { TenantModel } from '.';
+import { TenantAuth, TenantModel } from '.';
 import { Auth, AuthGroups } from '../../auth';
 import { Config, JournalFactoryTenantClient } from '../../cloud';
 import { Error, ErrorModel, Feature, FeatureFlags, Response } from '../../shared';
@@ -61,7 +61,8 @@ export class TenantHandler {
 
     }
 
-    // create a new tenant
+    // Create a new tenant
+    // Required role: tenant admin
     private static async create(req: expRequest): Promise<TenantModel> {
 
         // Parse input parameters
@@ -74,7 +75,7 @@ export class TenantHandler {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
+                req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -92,7 +93,8 @@ export class TenantHandler {
 
     }
 
-    // get the tenant project metadata
+    // Get the tenant project metadata
+    // Required role: tenant.admin
     private static async get(req: expRequest): Promise<TenantModel> {
 
         // retrieve the tenant information
@@ -100,14 +102,15 @@ export class TenantHandler {
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
+                req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         return tenant;
     }
 
-    // delete the tenant project metadata
+    // Delete the tenant project metadata
+    // Required role: tenant.admin
     private static async delete(req: expRequest): Promise<void> {
 
         // retrieve the tenant information
@@ -116,7 +119,7 @@ export class TenantHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if who make the request is a data partition admin admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [AuthGroups.datalakeUserAdminGroupEmail(tenant.esd)],
+                req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -137,7 +140,9 @@ export class TenantHandler {
                 TenantGroups.adminGroup(tenant), tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
     }
 
-    // get tenant path from data partition information
+    // [DEPRECATED]
+    // Get tenant path from data partition information
+    // Required role: any
     public static async getTenantSDPath(req: expRequest): Promise<string> {
 
         const dataPartition = TenantParser.dataPartition(req);

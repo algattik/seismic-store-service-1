@@ -14,7 +14,16 @@
 // limitations under the License.
 // ============================================================================
 
-export { TenantDAO } from './dao';
-export { ITenantModel as TenantModel } from './model';
-export { TenantGroups } from './groups';
-export { TenantAuth } from './auth';
+import { AuthRoles } from '../../auth';
+import { SubProjectModel } from '../subproject';
+
+export class SubprojectAuth {
+
+    // Return the subproject's authorization groups
+    public static getAuthGroups(
+        subproject: SubProjectModel, role: AuthRoles): string[] {
+        return role === AuthRoles.viewer ? subproject.acls.viewers.concat(
+            subproject.acls.admins) : subproject.acls.admins;
+    }
+
+}

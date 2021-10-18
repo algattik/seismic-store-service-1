@@ -15,10 +15,11 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
+
 import { Auth } from '../../auth';
 import { Config } from '../../cloud';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
-import { TenantDAO, TenantGroups } from '../tenant';
+import { TenantAuth, TenantDAO, TenantGroups } from '../tenant';
 import { AppsDAO } from './dao';
 import { IAppModel } from './model';
 import { AppOp } from './optype';
@@ -85,7 +86,8 @@ export class AppHandler {
 
     }
 
-    // register an application in a seismic store tenant as trusted (it must be previously registered)
+    // Register an application in a seismic store tenant as trusted (it must be previously registered)
+    // Required role: tenant.admin
     private static async registerAppTrusted(req: expRequest) {
 
         // parse user request
@@ -104,7 +106,7 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -119,7 +121,8 @@ export class AppHandler {
 
     }
 
-    // list register application in a seismic store tenant
+    // List register application in a seismic store tenant
+    // Required role: tenant.admin
     private static async listApps(req: expRequest): Promise<string[]> {
 
         // parse user request
@@ -131,7 +134,7 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
@@ -144,7 +147,8 @@ export class AppHandler {
         return (await AppsDAO.list(tenant)).map((e) => Utils.checkSauthV1EmailDomainName(e.email));
     }
 
-    // list trusted application in a seismic store tenant
+    // List trusted application in a seismic store tenant
+    // Required role: tenant.admin
     private static async listAppsTrusted(req: expRequest) {
 
         // parse user request
@@ -156,7 +160,7 @@ export class AppHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             // check if user is a tenant admin
             await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 

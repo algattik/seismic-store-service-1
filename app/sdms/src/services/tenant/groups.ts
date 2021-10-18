@@ -35,4 +35,12 @@ export class TenantGroups {
         return tenant.default_acls;
     }
 
+    public static datalakeUserAdminGroupEmail(esd: string): string {
+        return TenantGroups.datalakeUserAdminGroupName() + '@' + esd;
+    }
+
+    public static datalakeUserAdminGroupName(): string {
+        return 'users.datalake.admins';
+    }
+
 }
