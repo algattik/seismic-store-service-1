@@ -8,7 +8,7 @@ data:
   des_service_host_compliance: "http://legal/api/legal/v1"
   seistore_des_target_audience: ""
   service_cloud_project: ""
-  app_environment_identifier: "osdu"
+  app_environment_identifier: ""
   imp_service_account_signer: ""
   des_service_host_entitlement: "http://entitlements/api"
   seistore_des_appkey: ""

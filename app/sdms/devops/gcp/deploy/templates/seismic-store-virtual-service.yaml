@@ -12,6 +12,8 @@ spec:
     - match:
         - uri:
             prefix: "/api/seismic-store"
+      rewrite:
+        uri: /api/v3
       route:
         - destination:
             port:
