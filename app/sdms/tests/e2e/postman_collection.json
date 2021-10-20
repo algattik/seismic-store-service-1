@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "29c4591d-57e6-4a83-855f-bfbbd4a09f70",
-		"name": "SDMS-E2E ver.xxx",
+		"_postman_id": "b0d6991c-18ce-4fbf-a5d1-fa1a117f995b",
+		"name": "SDMS-E2E ver.M9-0.12",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -297,6 +297,89 @@
 			"name": "subproject",
 			"item": [
 				{
+					"name": "SUBPROJECT REGISTER NEGATIVE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 400\", function () {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function makeID_dataset(length) {\r",
+									"   var result           = '';\r",
+									"   var characters       = 'abcdefghijklmnopqrstuvwxyz';\r",
+									"   var charactersLength = characters.length;\r",
+									"   for ( var i = 0; i < length - 1; i++ ) {\r",
+									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"   }\r",
+									"   return result;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable(\"subprojectLongName\", makeID_dataset(200));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "ltag",
+								"value": "{{legaltag01}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subprojectLongName}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"subproject",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subprojectLongName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "SUBPROJECT GET",
 					"event": [
 						{
@@ -307,11 +390,11 @@
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404 or 403\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404,403]);",
+									"    pm.test(\"Status code is 200 or 404\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
 									"",
-									"    // check if subproject is exist with VCS_Provider = \"gitlab\" variable and skip its creation if true",
+									"    // check if subproject exists with VCS_Provider = \"gitlab\" variable and skip its creation if true",
 									"    if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
 									"        if (responseCode.code === 200) {",
 									"            var jsonData = pm.response.json();",
@@ -386,8 +469,8 @@
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404 or 403\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404,403]);",
+									"    pm.test(\"Status code is 200 or 404\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
 									"",
 									"    if (pm.response.headers.get('service-provider') !== 'google') {",
@@ -431,110 +514,6 @@
 								"{{tenant}}",
 								"subproject",
 								"{{subproject}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SUBPROJECT REGISTER NEGATIVE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// ------------------------ RETRY ON FAILURE ----------------------------------------",
-									"",
-									"function retryOnFailure(failureCode, numberOfRetrys) {",
-									"    var key = request.name + '_counter';",
-									"    var execCounter = postman.getEnvironmentVariable(key) || 1;",
-									"",
-									"    var sleepDuration = 1000;",
-									"    var waitUntilTime = new Date().getTime() + sleepDuration;",
-									"    if (responseCode.code >= failureCode && execCounter <= numberOfRetrys) {",
-									"        while (new Date().getTime() < waitUntilTime) {",
-									"            // Do Nothing -> Wait",
-									"        }",
-									"        console.log('Retrying: ' + request.name + '\\nGot: ' + responseCode.code + '\\nWaiting: ' + sleepDuration / 1000 + 'sec  \\nRetry Number: ' + execCounter + ' of max ' + numberOfRetrys);",
-									"        execCounter++;",
-									"        postman.setEnvironmentVariable(key, execCounter);",
-									"        postman.setNextRequest(request.name);",
-									"    }",
-									"}",
-									"",
-									"if (responseCode.code >= 500) {",
-									"    retryOnFailure(500, pm.environment.get('maxAmountOfRetries'));",
-									"} else {",
-									"",
-									"// -------------------------------------------------------------------------------------",
-									" ",
-									"    pm.test(\"Status code is 400\", function () {",
-									"        pm.response.to.have.status(400);",
-									"    });",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function makeID_dataset(length) {\r",
-									"   var result           = '';\r",
-									"   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
-									"   var charactersLength = characters.length;\r",
-									"   for ( var i = 0; i < length - 1; i++ ) {\r",
-									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
-									"   }\r",
-									"   return 'W' + result;\r",
-									"}\r",
-									"\r",
-									"postman.setEnvironmentVariable(\"subprojectLongName\", makeID_dataset(100));"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "ltag",
-								"value": "{{legaltag01}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
-						},
-						"url": {
-							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subprojectLongName}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"subproject",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subprojectLongName}}"
 							]
 						}
 					},
@@ -7945,30 +7924,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// ------------------------ RETRY ON FAILURE ----------------------------------------",
-									"",
-									"function retryOnFailure(failureCode, numberOfRetrys) {",
-									"    var key = request.name + '_counter';",
-									"    var execCounter = postman.getEnvironmentVariable(key) || 1;",
-									"",
-									"    var sleepDuration = 1000;",
-									"    var waitUntilTime = new Date().getTime() + sleepDuration;",
-									"    if (responseCode.code >= failureCode && execCounter <= numberOfRetrys) {",
-									"        while (new Date().getTime() < waitUntilTime) {",
-									"            // Do Nothing -> Wait",
-									"        }",
-									"        console.log('Retrying: ' + request.name + '\\nGot: ' + responseCode.code + '\\nWaiting: ' + sleepDuration / 1000 + 'sec  \\nRetry Number: ' + execCounter + ' of max ' + numberOfRetrys);",
-									"        execCounter++;",
-									"        postman.setEnvironmentVariable(key, execCounter);",
-									"        postman.setNextRequest(request.name);",
-									"    }",
-									"}",
-									"",
 									"if (responseCode.code >= 500) {",
-									"    retryOnFailure(500, pm.environment.get('maxAmountOfRetries'));",
-									"} else {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
-									"// -------------------------------------------------------------------------------------",
+									"} else {",
 									"    var jsonData = pm.response.json();",
 									"",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -13950,6 +13909,7 @@
 									"    pm.environment.unset('subproject');",
 									"    pm.environment.unset('appAdminEmail');",
 									"    pm.environment.unset('maxAmountOfRetries');",
+									"    pm.environment.unset('subprojectLongName');",
 									"}"
 								],
 								"type": "text/javascript"

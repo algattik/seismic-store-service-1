@@ -145,7 +145,6 @@ cp ./tests/e2e/postman_env.json ./tests/e2e/postman_env_original.json
 sed -i "s,#{SVC_URL}#,${seistore_svc_url},g" ./tests/e2e/postman_env.json
 sed -i "s/#{SVC_API_KEY}#/${seistore_svc_api_key}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{STOKEN}#/${user_idtoken}/g" ./tests/e2e/postman_env.json
-sed -i "s/#{STOKEN1}#/${user1_idtoken}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{TENANT}#/${working_tenant}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{ADMINEMAIL}#/${admin_email}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DATAPARTITION}#/${datapartition}/g" ./tests/e2e/postman_env.json
@@ -156,7 +155,7 @@ sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 
 # install requied packages
-npm ci
+npm ci 
 
 # run parallel tests
 ./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \
