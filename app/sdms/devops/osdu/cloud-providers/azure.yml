@@ -7,8 +7,6 @@ variables:
   E2E_DATA_PARTITION: opendes
   E2E_LEGALTAG01: opendes-public-usa-dataset-7643990
   E2E_LEGALTAG02: opendes-dps-integration-test-valid2-legal-tag
-  E2E_SUBPROJECT: demosandbox02
-  E2E_SUBPROJECT_LONG_NAME: looooooooooooooooooooooooooooooooooooooooooooooooooooongnaaaaaaaaaaaaaaaaaaaameeeeeee
   E2E_TENANT: opendes
   POD_IDENTITY: osdu-identity
   REDIS_INSTANCE_PORT: 6380
@@ -111,10 +109,10 @@ sdms_azure_test:
     - apt-get install -y python-pip
     - pip install msal
     - svctoken=$(python ${CI_PROJECT_DIR}/devops/scripts/azure_jwt_client.py)
-    - echo $svctoken
+    - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
-    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}/seistore-svc/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user1-idtoken="$svctoken" --tenant="${E2E_TENANT}" --subproject="${E2E_SUBPROJECT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --subproject-long-name="${E2E_SUBPROJECT_LONG_NAME}" --VCS-Provider="${ISGITLAB}"
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}/seistore-svc/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
   only:
     variables:
       - $AZURE == 'true'

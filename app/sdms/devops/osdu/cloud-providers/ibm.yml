@@ -62,10 +62,10 @@ sdms_ibm-test:
     - apt-get install -y python-pip
     - pip install requests
     - svctoken=$(python devops/scripts/ibm_jwt_client.py)
-    - echo $svctoken
+    - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
-    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${SEISMIC_HOST}/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user1-idtoken="$svctoken" --tenant="${IBM_SEISMIC_E2E_TENANT}" --subproject="${IBM_SEISMIC_E2E_SUBPROJECT}" --admin-email="${IBM_SEISMIC_E2E_ADMIN_EMAIL}" --datapartition="${IBM_SEISMIC_E2E_DATA_PARTITION}" --legaltag01="${IBM_SEISMIC_E2E_LEGALTAG01}" --legaltag02="${IBM_SEISMIC_E2E_LEGALTAG02}" --subproject-long-name="${IBM_SEISMIC_E2E_SUBPROJECT_LONG_NAME}" --newuser="${IBM_SEISMIC_E2E_NEWUSER}" --VCS-Provider="gitlab"
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${SEISMIC_HOST}/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${IBM_SEISMIC_E2E_TENANT}" --admin-email="${IBM_SEISMIC_E2E_ADMIN_EMAIL}" --datapartition="${IBM_SEISMIC_E2E_DATA_PARTITION}" --legaltag01="${IBM_SEISMIC_E2E_LEGALTAG01}" --legaltag02="${IBM_SEISMIC_E2E_LEGALTAG02}" --newuser="${IBM_SEISMIC_E2E_NEWUSER}" --VCS-Provider="gitlab"
   only:
     variables:
       - $IBM == 'true'
