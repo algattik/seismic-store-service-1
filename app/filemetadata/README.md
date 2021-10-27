@@ -45,14 +45,14 @@ This project will provide restful APIs to access SEGY file headers.
 
 2. `python main.py`
 
-3. Open `http://localhost:8000/seismic-file-metadata/api/v1/docs` in web browser
+3. Open `http://localhost:8000/seismic-file-metadata/api/v1/swagger-ui.html` in web browser
     - Enter bearer token and appkey for authorization
     - Enter sdpath i.e. `sd://slb/sandbox/l10f1.sgy`
 
 # Docker image
 1. Build the docker image. `docker build -t segyimage . `
 2. Run the docker image. `docker run -d -it --rm --name segycontainer -p 8080:8000 segyimage`
-3. Launch the web site. `http://localhost:8000/seismic-file-metadata/api/v1/docs`
+3. Launch the web site. `http://localhost:8000/seismic-file-metadata/api/v1/swagger-ui.html`
 4. Note: the personal access token in pip.conf only lasts for 90 days. It started on 7/26/2021.
 
 

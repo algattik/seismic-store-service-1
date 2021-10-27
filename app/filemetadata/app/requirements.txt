@@ -3,7 +3,7 @@ fastapi==0.66.1
 uvicorn==0.14.0
 
 #for segy library
-segysdk-python==0.0.3918116
+segysdk-python==0.0.4028456
 
 #for static files
 aiofiles==0.5.0
