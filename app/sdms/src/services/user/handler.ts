@@ -22,7 +22,7 @@ import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { ISDPathModel } from '../../shared/sdpath';
 import { DatasetDAO, DatasetModel } from '../dataset';
-import { SubProjectDAO, SubprojectGroups } from '../subproject';
+import { SubProjectDAO, SubprojectGroups, SubProjectModel } from '../subproject';
 import { ISubProjectModel } from '../subproject/model';
 import { TenantDAO, TenantGroups, TenantModel } from '../tenant';
 import { ITenantModel } from '../tenant/model';
@@ -252,21 +252,55 @@ export class UserHandler {
                 (await DatasetDAO.get(journalClient, datasetModel))[0];
 
             if (datasetOUT.acls) {
-                await UserHandler.removeUserFromAuthGroups(datasetOUT.acls.admins, datasetOUT.acls.viewers,
-                    tenant, req, userEmail);
+
+                const result = await UserHandler.listUsersInAuthGroups(datasetOUT.acls.admins, datasetOUT.acls.viewers,
+                    req, tenant);
+
+                await UserHandler.findAndRemoveUser(result, userEmail, datasetOUT, tenant, req);
             }
+
 
         } else if (sdPath.subproject) {
 
-            await UserHandler.removeUserFromAuthGroups(subproject.acls.admins, subproject.acls.viewers,
-                tenant, req, userEmail);
+            const result = await UserHandler.listUsersInAuthGroups(subproject.acls.admins, subproject.acls.viewers,
+                req, tenant);
 
+            await UserHandler.findAndRemoveUser(result, userEmail, subproject, tenant, req);
 
         } else {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'Please use Delfi portal to remove users from ' + tenant.name + ' tenant'));
         }
 
+    }
+
+    private static async findAndRemoveUser(userListInAuthGroups: any[], userEmail: string,
+        datastoreEntity: DatasetModel | SubProjectModel, tenant: TenantModel, req) {
+        const admins = new Set();
+        const viewers = new Set();
+
+        userListInAuthGroups.map(lst => {
+            for (const ele of lst) {
+                if (ele === 'admin' || ele === 'editor') {
+                    admins.add(lst[0]);
+                } else {
+                    viewers.add(lst[0]);
+                }
+
+            }
+
+        });
+
+        if (admins.has(userEmail)) {
+            await UserHandler.removeUserFromAuthGroups(datastoreEntity.acls.admins,
+                datastoreEntity.acls.viewers, tenant, req, userEmail);
+
+        } else if (viewers.has(userEmail)) {
+            await UserHandler.removeUserFromAuthGroups([],
+                datastoreEntity.acls.viewers, tenant, req, userEmail);
+
+        }
+        return;
     }
 
     private static async removeUserFromAuthGroups(adminGroups: string[], viewerGroups: string[],
@@ -325,9 +359,8 @@ export class UserHandler {
             return await UserHandler.listUsersInAuthGroups(subproject.acls.admins,
                 subproject.acls.viewers, req, tenant);
 
-        } else {
-            throw Error.make(Error.Status.BAD_REQUEST, 'Bad Request');
         }
+        return;
     }
 
     private static async listUsersInAuthGroups(admins: string[], viewers: string[], req, tenant: ITenantModel,) {
