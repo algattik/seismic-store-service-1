@@ -69,7 +69,11 @@ export class Server {
             'Referer',
             'X-Requested-With',
             'Access-Control-Allow-Origin',
-            'x-traffic-manager'
+            'x-traffic-manager',
+            'ltag',
+            'impersonation-token',
+            'impersonation-token-context',
+            'user-token'
         ]
     };
 
