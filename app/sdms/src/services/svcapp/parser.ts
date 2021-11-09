@@ -24,8 +24,8 @@ export class AppParser {
         Params.checkString(req.query.email, 'email');
         Params.checkString(req.query.sdpath, 'sdpath');
 
-        const email = req.query.email;
-        const sdPath = SDPath.getFromString(req.query.sdpath);
+        const email = req.query.email as string;
+        const sdPath = SDPath.getFromString(req.query.sdpath as string);
         if (!sdPath) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'path\' body parameter is not a valid seismic store path.'));
@@ -44,7 +44,7 @@ export class AppParser {
 
         Params.checkString(req.query.sdpath, 'sdpath');
 
-        const sdPath = SDPath.getFromString(req.query.sdpath);
+        const sdPath = SDPath.getFromString(req.query.sdpath as string);
         if (!sdPath) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'path\' body parameter is not a valid seismic store path.'));

@@ -80,7 +80,7 @@ export class UserParser {
     public static listUsers(req: expRequest): SDPathModel {
 
         Params.checkString(req.query.sdpath, 'sdpath');
-        const sdPath = SDPath.getFromString(req.query.sdpath);
+        const sdPath = SDPath.getFromString(req.query.sdpath as string);
         if (!sdPath) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'sdpath\' query parameter is not a valid seismic store path.'));
@@ -98,7 +98,7 @@ export class UserParser {
     public static rolesUser(req: expRequest): SDPathModel {
 
         Params.checkString(req.query.sdpath, 'sdpath');
-        const sdPath = SDPath.getFromString(req.query.sdpath);
+        const sdPath = SDPath.getFromString(req.query.sdpath as string);
         if (!sdPath) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'sdpath\' query parameter is not a valid seismic store path.'));

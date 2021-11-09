@@ -26,7 +26,7 @@ export class UtilityParser {
         Params.checkString(req.query.sdpath_from, 'sdpath_from');
         Params.checkString(req.query.sdpath_to, 'sdpath_to');
 
-        const sdPathFrom = SDPath.getFromString(req.query.sdpath_from);
+        const sdPathFrom = SDPath.getFromString(req.query.sdpath_from as string);
         if (!sdPathFrom) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'sdpath_from\' query parameter is not a valid seismic store path.'));
@@ -36,7 +36,7 @@ export class UtilityParser {
                 'The \'sdpath_from\' query parameter is not a valid seismic store dataset path.'));
         }
 
-        const sdPathTo = SDPath.getFromString(req.query.sdpath_to);
+        const sdPathTo = SDPath.getFromString(req.query.sdpath_to as string);
         if (!sdPathTo) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'sdpath_to\' query parameter is not a valid seismic store path.'));
@@ -63,7 +63,7 @@ export class UtilityParser {
         Params.checkString(req.query.limit, 'limit', false);
         Params.checkString(req.query.cursor, 'cursor', false);
 
-        const sdPath = SDPath.getFromString(req.query.sdpath, false); // partial path
+        const sdPath = SDPath.getFromString(req.query.sdpath as string, false); // partial path
         if (!sdPath) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'sdpath\' query parameter is not a valid seismic store path.'));
@@ -76,7 +76,7 @@ export class UtilityParser {
                 'or \'datasets\'. The \'' + wmode + '\' value is not valid'));
         }
 
-        const limit = parseInt(req.query.limit, 10);
+        const limit = parseInt(req.query.limit as string, 10);
         if (limit < 0) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'limit\' query parameter can not be less than zero.'));
@@ -101,7 +101,7 @@ export class UtilityParser {
         Params.checkString(req.query.sdpath, 'sdpath');
 
         // extract the subproject path and ensure that is at least a subproject path
-        const sdPath = SDPath.getFromString(req.query.sdpath);
+        const sdPath = SDPath.getFromString(req.query.sdpath as string);
         if (!sdPath) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'sdpath\' query parameter is not a valid seismic store path.'));
@@ -118,7 +118,7 @@ export class UtilityParser {
         }
 
         Params.checkString(req.query.readonly, 'readonly', false);
-        let readOnlyStr = req.query.readonly;
+        let readOnlyStr = req.query.readonly as string;
         if (readOnlyStr) {
             readOnlyStr = readOnlyStr.toLowerCase();
             if (readOnlyStr !== 'false' && readOnlyStr !== 'true') {
@@ -137,7 +137,7 @@ export class UtilityParser {
         dataset.tenant = sdPath.tenant;
         dataset.subproject = sdPath.subproject;
 
-        const path = req.query.path ? '/' + decodeURIComponent(req.query.path) + '/' : '/';
+        const path = req.query.path ? '/' + decodeURIComponent(req.query.path as string) + '/' : '/';
         Params.checkDatasetPath(path, 'path', true);
         dataset.path = path;
 

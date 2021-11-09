@@ -777,7 +777,7 @@ export class TestDatasetSVC {
 
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.query.close = false;
+            expReq.query.close = 'false';
             expReq.params.datasetid = 'dataset-01';
             expReq.params.tenantid = 'tenant-01';
             expReq.params.subprojectid = 'subproject-01';
@@ -795,7 +795,7 @@ export class TestDatasetSVC {
         });
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.query.close = false;
+            expReq.query.close = 'false';
             expReq.params.datasetid = 'dataset-01';
             expReq.params.tenantid = 'tenant-01';
             expReq.params.subprojectid = 'subproject-01';
