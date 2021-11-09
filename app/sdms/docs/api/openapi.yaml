@@ -2099,7 +2099,7 @@ definitions:
         description: Storage location for the bucket
       admin:
         type: string
-        description: Administrator for the subproject
+        description: Administrator for the subproject. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       ltag:
         type: string
         description: Legal tag for the subproject
@@ -2172,7 +2172,7 @@ definitions:
     properties:
       email:
         type: string
-        description: Email address of the user
+        description: Email address of the user. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       path:
         type: string
         description: Seismic store path in the format sd://tenant/subproject
@@ -2191,7 +2191,7 @@ definitions:
     properties:
       email:
         type: string
-        description: Email address of the user
+        description: Email address of the user. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       path:
         type: string
         description: Seismic store path in the format sd://tenant/subproject

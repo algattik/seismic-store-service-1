@@ -30,16 +30,15 @@ export class SubProjectParser {
         subproject.tenant = req.params.tenantid;
         subproject.ltag = req.headers.ltag as string;
         // optional parameters
-        subproject.admin = (req.body && req.body.admin) ?
-            req.body.admin : (await SeistoreFactory.build(
-                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true));
-
         subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] };
         subproject.access_policy = (req.body && req.body.access_policy) ? req.body.access_policy : 'uniform';
 
         // check user input params
         Params.checkString(subproject.admin, 'admin', false);
         Params.checkString(subproject.ltag, 'ltag', false);
+
+        subproject.admin = Utils.getPropertyFromTokenPayload(req.headers.authorization,
+            Config.USER_ID_CLAIM_FOR_SDMS) || Utils.getSubFromPayload(req.headers.authorization) || undefined;
 
         // This method is temporary required by slb during the migration of sauth from v1 to v2
         // The method replace slb.com domain name with delfiserviceaccount.com

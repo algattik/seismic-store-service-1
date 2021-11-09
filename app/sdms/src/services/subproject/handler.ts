@@ -20,7 +20,8 @@ import { SubprojectAuth, SubProjectModel } from '.';
 import { Auth, AuthGroups, AuthRoles, UserRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
-import { DESUserAssociation, DESUtils } from '../../dataecosystem';
+import { DESUtils } from '../../dataecosystem';
+import { UserAssocationServiceFactory } from '../../dataecosystem/user-association';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
 import { TenantAuth, TenantModel } from '../tenant';
@@ -90,10 +91,8 @@ export class SubProjectHandler {
         // Parse input parameters
         const subproject = await SubProjectParser.create(req);
         const userToken = req.headers.authorization;
-        const userEmail = await SeistoreFactory.build(
-            Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
 
-        // enforce the datasets schema by key for newly create subproject.
+        // enforce the datasets schema by key for newly create subproject
         // this will mainly affect google for which the initial implementation
         // of the journal was query-based (lack in performance)
         // other cloud providers already implement ref by key.
@@ -154,22 +153,19 @@ export class SubProjectHandler {
             subproject.gcs_bucket,
             subproject.storage_location, subproject.storage_class);
 
-        const subprojectCreatorEmail = subproject.admin || userEmail;
-
-        subproject.admin = Utils.getSubIDFromPayload(req.headers.authorization) ||
-            Utils.getSubFromPayload(req.headers.authorization) || undefined;
 
         // Register the subproject
         await SubProjectDAO.register(journalClient, subproject);
 
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // if admin is not the requestor, assign the admin and rm the requestor, has to be a sequential op
-            if (subprojectCreatorEmail !== userEmail) {
-
+            // if additional admin user is passed in the request body
+            if (req.body && req.body.admin && req.body.admin !==
+                Utils.getPropertyFromTokenPayload(req.headers.authorization,
+                    Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC)) {
                 await Promise.all([
-                    AuthGroups.addUserToGroup(userToken, adminGroup, subprojectCreatorEmail,
+                    AuthGroups.addUserToGroup(userToken, adminGroup, req.body.admin,
                         tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true),
-                    AuthGroups.addUserToGroup(userToken, viewerGroup, subprojectCreatorEmail,
+                    AuthGroups.addUserToGroup(userToken, viewerGroup, req.body.admin,
                         tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true)
                 ]);
 
@@ -216,7 +212,8 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
             if (!Utils.isEmail(subproject.admin)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-                subproject.admin = await DESUserAssociation.convertSubIdToEmail(subproject.admin, dataPartition);
+                subproject.admin = await UserAssocationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER)
+                    .convertPrincipalIdentifierToEmail(subproject.admin, dataPartition);
             }
         }
 

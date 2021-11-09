@@ -14,64 +14,48 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
-import { AuthProviderFactory } from '../auth';
-import { Config, DataEcosystemCoreFactory } from '../cloud';
-import { Cache, Error } from '../shared';
+import { Error } from '../shared';
 
-export class DESUserAssociation {
+export interface IUserAssociationSvcProvider {
+   convertPrincipalIdentifierToEmail(principalIdentifier: string, dataPartitionID: string): Promise<string>;
+}
 
-   private static _cache: Cache<string>;
+export abstract class AbstractUserAssociationSvcProvider implements IUserAssociationSvcProvider {
+   public abstract convertPrincipalIdentifierToEmail(principalIdentifier: string,
+      dataPartitionID: string): Promise<string>;
+}
 
-   // User association details cached for an hour
-   private static _cacheEntryTTL = 3600;
-
-   public static async convertSubIdToEmail(subId: string, dataPartitionID: string): Promise<string> {
-
-      if (!this._cache) {
-         this._cache = new Cache<string>('subid-to-email-mapping');
-      }
-
-      const cacheKey = subId;
-      const cacheLookupResult = await this._cache.get(cacheKey);
-      if (cacheLookupResult) {
-         return cacheLookupResult;
-      }
-
-      const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
-
-      const credential = await AuthProviderFactory
-         .build(Config.SERVICE_AUTH_PROVIDER)
-         .generateScopedAuthCredential([Config.CCM_TOKEN_SCOPE]);
-
-      const options = {
-         headers: {
-            'Accept': 'application/json',
-            'AppKey': Config.DES_SERVICE_APPKEY,
-            'Authorization': 'Bearer ' + credential.access_token,
-            'Content-Type': 'application/json'
-         },
-         url: Config.CCM_SERVICE_URL + '/' + dataecosystem.getUserAssociationSvcBaseUrlPath()
-            + '/users/' + subId + '/information',
-      };
-
-      options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
-
-      try {
-         const results = await request.get(options);
-         const userEmail = JSON.parse(results)['email'];
-
-         await this._cache.set(cacheKey, userEmail);
-
-         return userEmail;
-
-      } catch (error) {
-
-         if (error && error.statusCode === 404 && error.message.includes('User not found')) {
-            await this._cache.set(cacheKey, subId);
-            return subId;
+export class UserAssociationFactoryBuilder {
+   public static register(identifer: string) {
+      return (target: any) => {
+         if (UserAssociationFactoryBuilder.providers[identifer]) {
+            UserAssociationFactoryBuilder.providers[identifer].push(target);
+         } else {
+            UserAssociationFactoryBuilder.providers[identifer] = [target];
          }
-         throw (Error.makeForHTTPRequest(error, '[ccm-user-association-service]'));
+      };
+   }
+
+   public static build(identifer: string, referenceAbstraction: any, args: { [key: string]: any; } = {}) {
+      if (identifer === undefined || identifer === 'unknown') {
+         throw (Error.make(Error.Status.UNKNOWN,
+            `Unrecognized user assocation service provider: ${identifer}`));
       }
+      for (const provider of UserAssociationFactoryBuilder.providers[identifer]) {
+         if (provider.prototype instanceof referenceAbstraction) {
+            return new provider(args);
+         }
+      }
+      throw (Error.make(Error.Status.UNKNOWN,
+         `The user-association-service-provider builder that extend ${referenceAbstraction} has not been found`));
+   }
+
+   private static providers: { [key: string]: any[]; } = {};
+}
+
+
+export class UserAssocationServiceFactory extends UserAssociationFactoryBuilder {
+   public static build(identifier: string): AbstractUserAssociationSvcProvider {
+      return UserAssociationFactoryBuilder.build(identifier, AbstractUserAssociationSvcProvider);
    }
 }
