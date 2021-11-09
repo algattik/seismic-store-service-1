@@ -39,7 +39,7 @@ export class AWSStorage extends AbstractStorage {
     }
 
     // generate a random bucket name, for aws, a random folder name
-    public randomBucketName(): string {
+    public async randomBucketName(): Promise<string> {
         let suffix = Math.random().toString(36).substring(2, 16);
         suffix = suffix + Math.random().toString(36).substring(2, 16);
         suffix = suffix.substr(0, 16);

@@ -51,8 +51,9 @@ export class TestGCSCore {
 
       Tx.sectionInit('random bucket name');
 
-      Tx.testExp((done: any) => {
-         Tx.checkTrue(this.gcsStorage.randomBucketName().length > 0, done);
+      Tx.testExp(async (done: any) => {
+         const name= await this.gcsStorage.randomBucketName();
+         Tx.checkTrue(name.length > 0, done);
       });
    }
 
