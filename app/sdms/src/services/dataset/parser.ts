@@ -31,8 +31,8 @@ export class DatasetParser {
             throw (Error.make(Error.Status.BAD_REQUEST, 'The \'ctag\' query parameter is in a wrong format.'));
         }
 
-        dataset.ctag = req.query.ctag.substr(0, 16);
-        const tmp = req.query.ctag.substr(16) as string;
+        dataset.ctag = (req.query.ctag as string).substr(0, 16);
+        const tmp = (req.query.ctag as string).substr(16) as string;
         const tenantID = tmp.split(';')[0];
         const dataPartitionID = tmp.split(';')[1];
 
@@ -115,9 +115,9 @@ export class DatasetParser {
 
     public static list(req: expRequest): any {
         const dataset = this.createDatasetModelFromRequest(req);
-        dataset.gtags = req.query.gtag;
+        dataset.gtags = req.query.gtag as string[];
 
-        const limit = parseInt(req.query.limit, 10);
+        const limit = parseInt(req.query.limit as string, 10);
         if (limit < 0) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'limit\' query parameter can not be less than zero.'));
@@ -143,7 +143,7 @@ export class DatasetParser {
 
     public static patch(req: expRequest): [DatasetModel, any, string, string] {
 
-        const closeId = req.query.close;
+        const closeId = req.query.close as string;
         Params.checkString(closeId, 'close', false);
         Params.checkBody(req.body, closeId === undefined); // body is required only if is not a closing request
 
@@ -193,7 +193,7 @@ export class DatasetParser {
         }
         const open4write = openMode === 'write';
 
-        const wid = req.query.wid;
+        const wid = req.query.wid as string;
         Params.checkString(req.query.wid, wid, false);
 
         const dataset = this.createDatasetModelFromRequest(req);
@@ -252,7 +252,7 @@ export class DatasetParser {
 
     public static putTags(req: expRequest): DatasetModel {
         const dataset = this.createDatasetModelFromRequest(req);
-        dataset.gtags = req.query.gtag;
+        dataset.gtags = req.query.gtag as string[];
         return dataset;
     }
 
@@ -267,7 +267,7 @@ export class DatasetParser {
         dataset.tenant = req.params.tenantid;
         dataset.subproject = req.params.subprojectid;
 
-        const path = req.query.path ? '/' + decodeURIComponent(req.query.path) + '/' : '/';
+        const path = req.query.path ? '/' + decodeURIComponent(req.query.path as string) + '/' : '/';
         Params.checkDatasetPath(path, 'path', true);
         dataset.path = path;
 

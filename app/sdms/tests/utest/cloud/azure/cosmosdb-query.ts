@@ -145,7 +145,7 @@ export class TestAzureCosmosDbQuery {
                 return;
             }
             // failure expected for this test case
-            assert.fail(new Error('HAS_ANCESTOR operation shouldn\'t be processed for CosmosDB queries.'));
+            assert.fail('HAS_ANCESTOR operation shouldn\'t be processed for CosmosDB queries.');
         });
     }
 
@@ -255,7 +255,7 @@ export class TestAzureCosmosDbQuery {
             try {
                 query.start(Buffer.from('data'));
                 // failure expected for this test case
-                assert.fail(new Error('runQuery() operation should fail for CosmosDB queries if a Buffer is used for pagination continuation.'));
+                assert.fail('runQuery() operation should fail for CosmosDB queries if a Buffer is used for pagination continuation.');
             }
             catch (err) {
                 assert.equal(err.message, 'Type \'Buffer\' is not supported for CosmosDB Continuation while paging.');

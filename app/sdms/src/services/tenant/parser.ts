@@ -50,7 +50,7 @@ export class TenantParser {
 
     public static dataPartition(req: expRequest): string {
         Params.checkString(req.query.datapartition, 'datapartition');
-        return req.query.datapartition;
+        return req.query.datapartition as string;
     }
 
 }
