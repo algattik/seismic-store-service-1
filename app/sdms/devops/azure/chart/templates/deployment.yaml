@@ -32,7 +32,7 @@ spec:
               memory: "2Gi"
           livenessProbe:
             httpGet:
-              path: /seistore-svc/api/v3/svcstatus
+              path: {{ .Values.configEnv.sdmsPrefix }}/svcstatus
               port: 80
               httpHeaders:
                 - name: X-Api-Key
@@ -42,7 +42,7 @@ spec:
             periodSeconds: 60
           readinessProbe:
             httpGet:
-              path: /seistore-svc/api/v3/svcstatus
+              path: {{ .Values.configEnv.sdmsPrefix }}/svcstatus
               port: 80
               httpHeaders:
                 - name: X-Api-Key

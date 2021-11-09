@@ -1,6 +1,8 @@
 data:
   log_level: "INFO"
-  cloudprovider: "google"
+  cloudProvider: "google"
+  port: 80
+  des_service_host: https://des
   des_service_host_partition: "http://partition/api/partition/v1/"
   entitlement_base_url_path: "/entitlements/v2"
   data_partition_rest_header_key: ""
@@ -8,7 +10,7 @@ data:
   des_service_host_compliance: "http://legal/api/legal/v1"
   seistore_des_target_audience: ""
   service_cloud_project: ""
-  app_environment_identifier: ""
+  app_environment_identifier: "dev"
   imp_service_account_signer: ""
   des_service_host_entitlement: "http://entitlements/api"
   seistore_des_appkey: ""
@@ -16,6 +18,7 @@ data:
   des_redis_instance_port: "6379"
   locksmap_redis_instance_address: ""
   locksmap_redis_instance_port: "6379"
+  url_prefix: #{SDMS_PREFIX}#
 conf:
   configmap: "seismic-store-config"
   app_name: "seismic-store"

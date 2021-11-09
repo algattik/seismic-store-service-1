@@ -9,3 +9,4 @@ data:
 conf:
   configmap: "seismic-store-config"
   app_name: "seismic-store"
+  url_prefix: #{SDMS_PREFIX}#

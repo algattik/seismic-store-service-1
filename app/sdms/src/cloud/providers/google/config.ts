@@ -163,7 +163,8 @@ export class ConfigGoogle extends Config {
                     process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
                 USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER ?
                     process.env.USER_ASSOCIATION_SVC_PROVIDER
-                    : 'ccm-internal'
+                    : 'ccm-internal',
+                SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3'
             });
 
         }

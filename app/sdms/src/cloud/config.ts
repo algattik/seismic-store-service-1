@@ -70,6 +70,7 @@ export interface ConfigModel {
     USER_ID_CLAIM_FOR_SDMS: string;
     USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: string;
     USER_ASSOCIATION_SVC_PROVIDER: string;
+	SDMS_PREFIX: string;
 }
 
 export abstract class Config implements IConfig {
@@ -209,6 +210,9 @@ export abstract class Config implements IConfig {
     // Function to convert principal identifier to user using CCM
     public static USER_ASSOCIATION_SVC_PROVIDER: string;
 
+    // SDMS URL prefix
+    public static SDMS_PREFIX : string;
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -279,6 +283,9 @@ export abstract class Config implements IConfig {
         Config.ENABLE_SDMS_ID_AUDIENCE_CHECK = model.ENABLE_SDMS_ID_AUDIENCE_CHECK || false;
         Config.ENABLE_DE_TOKEN_EXCHANGE = model.ENABLE_DE_TOKEN_EXCHANGE || false;
         Config.DES_TARGET_AUDIENCE = model.DES_TARGET_AUDIENCE;
+
+        // Set the URL prefix correctly
+        Config.SDMS_PREFIX = model.SDMS_PREFIX;
 
         Config.checkRequiredConfig(Config.CLOUDPROVIDER, 'CLOUDPROVIDER');
         Config.checkRequiredConfig(Config.SERVICE_ENV, 'SERVICE_ENV');

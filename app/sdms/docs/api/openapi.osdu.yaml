@@ -39,7 +39,7 @@ schemes:
 # Endpoints Paths Section
 # ===========================================================================
 
-basePath: /seistore-svc/api/v3
+basePath: #{SDMS_PREFIX}#
 
 paths:
   /svcstatus:

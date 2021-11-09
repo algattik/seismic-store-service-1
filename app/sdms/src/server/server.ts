@@ -115,7 +115,7 @@ export class Server {
         this.app.disable('x-powered-by');
         this.app.use(cors(this.corsOptions));
         this.app.options('*', cors());
-        this.app.use('/seistore-svc/api/v3/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+        this.app.use(Config.SDMS_PREFIX + '/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
             customCss: '.swagger-ui .topbar { display: none }'
         }));
         this.app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
