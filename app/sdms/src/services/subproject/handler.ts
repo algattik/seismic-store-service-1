@@ -419,9 +419,11 @@ export class SubProjectHandler {
         );
 
         if (allowedSubprojectLen < 0) {
+            const maxChar = subproject.name.length - Math.abs(allowedSubprojectLen)
             throw (Error.make(Error.Status.BAD_REQUEST,
-                subproject.name + ' subproject name is too long, for tenant ' + subproject.tenant +
-                '. The subproject name must not more than ' + Math.abs(allowedSubprojectLen) + ' characters'));
+                subproject.name + ' subproject name is too long (' +
+                subproject.name.length + ' characters), for the ' + subproject.tenant + ' tenant. ' +
+                'The subproject name must not be longer than ' + maxChar + ' characters'));
         }
 
         return true;
