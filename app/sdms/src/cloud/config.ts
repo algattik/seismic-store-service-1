@@ -66,6 +66,7 @@ export interface ConfigModel {
     FEATURE_FLAG_CCM_INTERACTION: boolean;
     CCM_SERVICE_URL: string;
     CCM_TOKEN_SCOPE: string;
+    CALLER_FORWARD_HEADERS: string;
     USER_ID_CLAIM_FOR_SDMS: string;
     USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: string;
     USER_ASSOCIATION_SVC_PROVIDER: string;
@@ -196,11 +197,16 @@ export abstract class Config implements IConfig {
     public static CCM_SERVICE_URL = undefined;
     public static CCM_TOKEN_SCOPE = undefined;
 
+    // list of caller headers to forward to downstream service call (DE Core Service like entitlement/storage...)
+    // if specified the default forwarded headers list will be override. (ref, https://www.npmjs.com/package/hpropagate)
+    // provided as comma separated strings
+    public static CALLER_FORWARD_HEADERS:string = undefined;
+
     // Principal Identifier for Seismic DMS and Entitlements Svc
     public static USER_ID_CLAIM_FOR_SDMS: string;
     public static USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: string;
 
-    // Function to convert principal identiifer to user using CCM
+    // Function to convert principal identifier to user using CCM
     public static USER_ASSOCIATION_SVC_PROVIDER: string;
 
     public static setCloudProvider(cloudProvider: string) {
@@ -308,6 +314,9 @@ export abstract class Config implements IConfig {
         // auto generated configurations
         Config.ORGANIZATION_NS = Config.ORGANIZATION_NS + '-' + Config.SERVICE_ENV;
         Config.SEISMIC_STORE_NS = Config.SEISMIC_STORE_NS + '-' + Config.SERVICE_ENV;
+
+        // caller headers to forward to the downstream services
+        Config.CALLER_FORWARD_HEADERS = model.CALLER_FORWARD_HEADERS
 
     }
 

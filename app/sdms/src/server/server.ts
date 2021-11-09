@@ -23,12 +23,12 @@ import replaceInFile from 'replace-in-file';
 import swaggerUi from 'swagger-ui-express';
 import { v4 as uuidv4 } from 'uuid';
 import YAML from 'yamljs';
+import hpropagate from 'hpropagate'
+
 import { AuthProviderFactory } from '../auth';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
 import { Cache, Error, Feature, FeatureFlags, Response, Utils } from '../shared';
-
-
 
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -98,6 +98,15 @@ export class Server {
         }
         catch (error) {
             console.error('Error occurred:', error);
+        }
+
+        // set the caller headers to forward to the downstream services
+        if (Config.CALLER_FORWARD_HEADERS) {
+            hpropagate({
+                headersToPropagate: Config.CALLER_FORWARD_HEADERS.split(',')
+            });
+        } else {
+            hpropagate()
         }
 
         this.app = express();
