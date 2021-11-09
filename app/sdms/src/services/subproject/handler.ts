@@ -400,7 +400,7 @@ export class SubProjectHandler {
     private static async getBucketName(tenant: TenantModel): Promise<string> {
         const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
         for (let i = 0; i < 5; i++) {
-            const bucketName = storage.randomBucketName();
+            const bucketName = await storage.randomBucketName();
             const bucketExists = await storage.bucketExists(bucketName);
 
             if (!bucketExists) {

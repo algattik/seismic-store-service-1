@@ -29,7 +29,7 @@ export class Cos extends AbstractStorage {
     }
 
     // generate a random bucket name
-    public randomBucketName(): string {
+    public async randomBucketName(): Promise<string> {
         logger.info('In Cos.randomBucketName.');
         let suffix = Math.random().toString(36).substring(2, 16);
         suffix = suffix + Math.random().toString(36).substring(2, 16);

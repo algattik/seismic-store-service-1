@@ -268,7 +268,7 @@ export class TestSubProjectSVC {
                 async deleteObjects() { return; },
                 async saveObject() { return; },
                 async copy() { return; },
-                randomBucketName() { return ''; }
+                async randomBucketName() { return ''; }
             };
             this.sandbox.stub(StorageFactory, 'build').returns(storage);
             this.sandbox.stub(SubprojectGroups, 'serviceAdminGroup').returns('adminGroup');

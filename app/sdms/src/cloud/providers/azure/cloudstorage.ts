@@ -50,7 +50,7 @@ export class AzureCloudStorage extends AbstractStorage {
     }
 
     // generate a random container name
-    public randomBucketName(): string {
+    public async randomBucketName(): Promise<string> {
         let suffix = Math.random().toString(36).substring(2, 15);
         suffix = suffix + Math.random().toString(36).substring(2, 15);
         suffix = suffix.substr(0, 15);

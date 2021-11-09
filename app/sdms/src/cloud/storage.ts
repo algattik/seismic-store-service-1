@@ -27,7 +27,7 @@ export interface IStorage {
     deleteObjects(bucketName: string, prefix: string): Promise<void>;
     saveObject(bucketName: string, objectName: string, data: string): Promise<void>;
     copy(bucketIn: string, prefixIn: string, bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void>;
-    randomBucketName(): string;
+    randomBucketName(): Promise<string>;
 }
 
 export abstract class AbstractStorage implements IStorage {
@@ -42,7 +42,7 @@ export abstract class AbstractStorage implements IStorage {
     public abstract copy(
         bucketIn: string, prefixIn: string, bucketOut: string,
         prefixOut: string, ownerEmail: string): Promise<void>;
-    public abstract randomBucketName(): string;
+    public abstract randomBucketName(): Promise<string>;
 }
 
 export class StorageFactory extends CloudFactory {
