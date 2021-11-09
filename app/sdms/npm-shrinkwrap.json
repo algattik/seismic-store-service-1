@@ -5443,6 +5443,14 @@
             "lru-cache": "^6.0.0"
          }
       },
+      "hpropagate": {
+         "version": "1.0.1",
+         "resolved": "https://registry.npmjs.org/hpropagate/-/hpropagate-1.0.1.tgz",
+         "integrity": "sha512-Xly46CxtBodZzlZVGyNTRwq9YhW8RZvsTTcCa8EjxlVEfGdcy9z2Oh6bVQgfXiJg6LY6+iS88RW3FDTJbMYPOA==",
+         "requires": {
+            "uuid": "^8.3.2"
+         }
+      },
       "href-content": {
          "version": "2.0.0",
          "resolved": "https://registry.npmjs.org/href-content/-/href-content-2.0.0.tgz",

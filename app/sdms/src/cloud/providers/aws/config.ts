@@ -24,7 +24,7 @@ export class AWSConfig extends Config {
     public static AWS_ENVIRONMENT: string;
     public static AWS_BUCKET: string;
     // Logger
-    public static LOGGER_LEVEL;
+    public static LOGGER_LEVEL: string;
     // max len for a group name in DE
     public static DES_GROUP_CHAR_LIMIT = 256;
 
@@ -87,6 +87,7 @@ export class AWSConfig extends Config {
                 process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
             CCM_SERVICE_URL: process.env.CCM_SERVICE_URL || '',
             CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE || '',
+            CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
             USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
             USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
                 process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',

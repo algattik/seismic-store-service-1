@@ -73,6 +73,7 @@
     "dotenv": "^10.0.0",
     "express": "4.17.1",
     "extend": "^3.0.2",
+    "hpropagate": "^1.0.1",
     "ioredis": "^4.28.0",
     "jsonwebtoken": "8.5.1",
     "jwtproxy": "^1.6.8",

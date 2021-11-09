@@ -59,6 +59,11 @@ export class IbmConfig extends Config {
     public static STORAGE_CONTEXT_PATH: string;
     public static CCM_USER_ASSOC_CONTEXT_PATH: string;
 
+    // list of caller headers to forward to downstream service call (DE Core Service like entitlement/storage...)
+    // if specified the default forwarded headers list will be override. (ref, https://www.npmjs.com/package/hpropagate)
+    // provided as comma separated strings
+    public static CALLER_FORWARD_HEADERS: string;
+
     public async init(): Promise<void> {
 
         // data ecosystem host url and appkey
@@ -67,6 +72,9 @@ export class IbmConfig extends Config {
         IbmConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST_STORAGE;
         IbmConfig.IMP_SERVICE_ACCOUNT_SIGNER = process.env.IMP_SERVICE_ACCOUNT_SIGNER;
         IbmConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
+
+        // caller forwarded headers to the downstream service
+        IbmConfig.CALLER_FORWARD_HEADERS = process.env.CALLER_FORWARD_HEADERS;
 
         // DES service context path
         IbmConfig.ENTITLEMENT_CONTEXT_PATH = process.env.ENTITLEMENT_CONTEXT_PATH;
@@ -179,6 +187,7 @@ export class IbmConfig extends Config {
                 process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
             CCM_SERVICE_URL: IbmConfig.CCM_SERVICE_URL,
             CCM_TOKEN_SCOPE: IbmConfig.CCM_TOKEN_SCOPE,
+            CALLER_FORWARD_HEADERS: IbmConfig.CALLER_FORWARD_HEADERS,
             USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
             USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
                 process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
