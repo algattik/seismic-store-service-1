@@ -12,6 +12,7 @@ variables:
   REDIS_INSTANCE_PORT: 6380
   SDMS_MIN_REPLICAS: 1
   SDMS_MAX_REPLICAS: 5
+  AZURE_SDMS_PREFIX: /seistore-svc/api/v3
   
 sdms_push_runtime_image_azure:
   image: danielscholl/azure-build-image
@@ -26,6 +27,7 @@ sdms_push_runtime_image_azure:
   script:
     # Azure Container Registry
     - cd app/$SDMS_SERVICE
+    - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
     - docker build -t builder_sdms:latest --file docker/builder.Dockerfile .
     - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
@@ -73,6 +75,7 @@ sdms_azure_deploy:
     - sed -i 's/#{REPLICA_COUNT}#/'$SDMS_REPLICA'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MIN_REPLICAS}#/'$SDMS_MIN_REPLICAS'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MAX_REPLICAS}#/'$SDMS_MAX_REPLICAS'/' ${CHART_PATH}/values.yaml
+    - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ${CHART_PATH}/values.yaml
     # Install helm chart
     - helm upgrade $SDMS_SERVICE_NAME ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
     - helm upgrade $SDMS_SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
@@ -112,7 +115,7 @@ sdms_azure_test:
     - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
-    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}/seistore-svc/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
   only:
     variables:
       - $AZURE == 'true'

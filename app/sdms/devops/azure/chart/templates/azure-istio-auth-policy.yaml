@@ -18,4 +18,4 @@ spec:
                        "*/v2/api-docs",
                        "*/actuator/health", "*/health",
                        "*/configuration/ui","*/configuration/security",
-                       "/seistore-svc/api/v3/swagger-ui.html*"]
+                       "{{ .Values.configEnv.sdmsPrefix }}/swagger-ui.html*"]

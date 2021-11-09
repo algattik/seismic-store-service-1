@@ -11,9 +11,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: "/api/seismic-store"
-      rewrite:
-        uri: /api/v3
+            prefix: "{{ .Values.conf.url_prefix }}"
       route:
         - destination:
             port:

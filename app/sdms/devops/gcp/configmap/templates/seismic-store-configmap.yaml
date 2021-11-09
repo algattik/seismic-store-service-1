@@ -6,8 +6,13 @@ metadata:
   name: "{{ .Values.conf.configmap }}"
   namespace: "{{ .Release.Namespace }}"
 data:
+  CLOUDPROVIDER: {{ .Values.data.cloudProvider }}
+  DES_SERVICE_HOST: https://{{ .Values.data.des_service_host }}
+  REDIS_INSTANCE_PORT: "{{ .Values.data.des_redis_instance_address }}"
+  APP_ENVIRONMENT_IDENTIFIER: "{{ .Values.data.app_environment_identifier }}"
+  PORT: "{{ .Values.data.port }}"
+  SDMS_PREFIX: "{{ .Values.data.url_prefix }}"
   LOG_LEVEL: "{{ .Values.data.log_level }}"
-  CLOUDPROVIDER: "{{ .Values.data.cloudprovider }}"
   DES_SERVICE_HOST_PARTITION: "{{ .Values.data.des_service_host_partition }}"
   ENTITLEMENT_BASE_URL_PATH: "{{ .Values.data.entitlement_base_url_path }}"
   DATA_PARTITION_REST_HEADER_KEY: "{{ .Values.data.data_partition_rest_header_key }}"
@@ -15,7 +20,6 @@ data:
   DES_SERVICE_HOST_COMPLIANCE: "{{ .Values.data.des_service_host_compliance }}"
   SEISTORE_DES_TARGET_AUDIENCE: "{{ .Values.data.seistore_des_target_audience }}"
   SERVICE_CLOUD_PROJECT: "{{ .Values.data.service_cloud_project }}"
-  APP_ENVIRONMENT_IDENTIFIER: "{{ .Values.data.app_environment_identifier }}"
   IMP_SERVICE_ACCOUNT_SIGNER: "{{ .Values.data.imp_service_account_signer }}"
   DES_SERVICE_HOST_ENTITLEMENT: "{{ .Values.data.des_service_host_entitlement }}"
   SEISTORE_DES_APPKEY: "{{ .Values.data.seistore_des_appkey }}"
