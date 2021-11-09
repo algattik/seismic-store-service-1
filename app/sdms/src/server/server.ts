@@ -139,6 +139,10 @@ export class Server {
                     }
                 }
 
+                // disable silent error logs
+                res.locals['disabled_error_logs'] = req.query['silent'] ?
+                    req.query['silent'] === 'silent_for_errors' : false;
+
                 // If required, exchange the caller credentials to include the DE target audience
                 if (Config.ENABLE_DE_TOKEN_EXCHANGE) {
                     if (Config.DES_TARGET_AUDIENCE) {

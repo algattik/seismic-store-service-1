@@ -32,12 +32,12 @@ export class Response {
                 err.error.code : typeof (err.code) === 'number' ? err.code : 500;
             const message = typeof (err.error) === 'object' && typeof (err.error.message) === 'string' ?
                 err.error.message : typeof (err.message) === 'string' ? err.message : err;
-            if (FeatureFlags.isEnabled(Feature.LOGGING)) {
+            if (FeatureFlags.isEnabled(Feature.LOGGING) && res.locals['disabled_error_logs'] !== true ) {
                 LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(err));
             }
             this.write(res, code < 100 ? 500 : code, message);
         } else {
-            if (FeatureFlags.isEnabled(Feature.LOGGING)) {
+            if (FeatureFlags.isEnabled(Feature.LOGGING) && res.locals['disabled_error_logs'] !== true) {
                 LoggerFactory.build(Config.CLOUDPROVIDER).error('Unexpected Error');
             }
             this.write(res, 500, 'Internal Server Error');
