@@ -41,6 +41,10 @@ export class AzureConfig extends Config {
     // max len for a group name in DE
     public static DES_GROUP_CHAR_LIMIT = 256;
 
+    // cosmo throughput settings
+    public static COSMO_THROUGHPUT: number;
+    public static COSMO_MAX_THROUGHPUT: number;
+
     public async init(): Promise<void> {
 
 
@@ -79,6 +83,10 @@ export class AzureConfig extends Config {
             AzureConfig.SERVICE_AUTH_PROVIDER = process.env.SERVICE_AUTH_PROVIDER;
             AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL = // If not set as secret try to load from envs
                 AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL || process.env.SERVICE_AUTH_PROVIDER_CREDENTIAL;
+
+            // cosmo throughput settings
+            AzureConfig.COSMO_THROUGHPUT = +process.env.COSMO_THROUGHPUT || 2500;
+            AzureConfig.COSMO_MAX_THROUGHPUT = +process.env.COSMO_MAX_THROUGHPUT || 25000;
 
             // init generic configurations
             await Config.initServiceConfiguration({

@@ -42,7 +42,12 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 key: connectionParams.key
             });
             const { database } =  await cosmosClient.databases.createIfNotExists({id: 'seistore-' + this.dataPartition + '-db'});
-            const { container } = await database.containers.createIfNotExists({ id: 'seistore-' + this.dataPartition + '-container', partitionKey: '/key' });
+            const { container } = await database.containers.createIfNotExists({
+                id: 'seistore-' + this.dataPartition + '-container',
+                throughput: AzureConfig.COSMO_THROUGHPUT,
+                maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
+                partitionKey: '/key'
+            });
             AzureCosmosDbDAO.containerCache[containerId] = container;
             return AzureCosmosDbDAO.containerCache[containerId];
         }
