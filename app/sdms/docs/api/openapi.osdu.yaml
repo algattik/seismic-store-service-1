@@ -1287,12 +1287,12 @@ paths:
   /tenant/{tenantid}:
     post:
       summary: "Register a seismic-dms tenant."
-      description: "<ul><li>Register a seismic-dms tenant in a data partition.</li><li>Required roles: seistore.system.admin</li></ul>"
+      description: "<ul><li>Register a data partition in seismic-dms.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: tenant-create
       tags:
         - Tenant
       parameters:
-        - description: "Name of the tenant."
+        - description: "Name of the tenant. It should match the name of the data partition."
           in: path
           name: tenantid
           type: string
@@ -2124,36 +2124,43 @@ definitions:
 
   # OK
   TenantCreateBody:
-    required: ["gcpid", "des", "default_acl"]
+    required: ["gcpid", "esd", "default_acls"]
     properties:
       gcpid:
         type: string
-        description: Google cloud project id associated with the tenant.
-      des:
+        description: Google cloud project id associated with the tenant. For other providers, name of the data partition.
+      esd:
         type: string
-        description: Entitlements group sub domain. For instance, if the entitlements group is group-a.slb.env.cloud.com, the esd value is slb.env.cloud.com.
-      default_acl:
+        description: Entitlements group Sub Domain (ESD). For instance, if the entitlements group is users.datalake.viewers@{datapartition}.{domain}.com, the esd value is {datapartition}.{domain}.com. It must start with the name of the data partition.
+      default_acls:
         type: string
         description: Entitlements authorization group to manage tenant administrators.
     example:
-      gcpid: "google_project_id"
-      esd: "slb.env.cloud.slb-ds.com"
-      default_acl: "authgroup@data_partition.com"
+      gcpid: "datapartition"
+      esd: "{datapartition}.{domain}.com"
+      default_acls: "users.datalake.admins@{datapartition}.{domain}.com"
 
   # OK
   Tenant:
-    required: ["name", "esd", "gcpid"]
+    required: ["name", "esd", "gcpid", "default_acls"]
     properties:
       name:
         type: string
+        description: Name of the tenant.
       esd:
         type: string
+        description: Entitlements group Sub Domain (ESD). For instance, if the entitlements group is users.datalake.viewers@{datapartition}.{domain}.com, the esd value is {datapartition}.{domain}.com. It has to start with the name of the data partition.
       gcpid:
         type: string
+        description: Google cloud project id associated with the tenant. For other providers, name of the data partition.
+      default_acls:
+        type: string
+        description: Entitlements authorization group to manage tenant administrators.
     example:
-      name: "tnx01"
-      esd: "slb.env.cloud.slb-ds.com"
-      gcpid: "google_project_id"
+      name: "datapartition"
+      esd: "{datapartition}.{domain}.com"
+      gcpid: "datapartition"
+      default_acls: "users.datalake.admins@{datapartition}.{domain}.com"
 
   # OK
   UserAddRequest:
