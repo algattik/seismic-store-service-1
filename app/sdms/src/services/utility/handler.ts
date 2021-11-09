@@ -17,20 +17,19 @@
 import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-
 import { Auth, AuthRoles } from '../../auth';
 import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
-import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
 import { DESEntitlement, DESStorage, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
-import { DatasetDAO, DatasetModel, DatasetAuth } from '../dataset';
+import { DatasetAuth, DatasetDAO, DatasetModel } from '../dataset';
 import { IWriteLockSession, Locker } from '../dataset/locker';
 import { SubprojectAuth, SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantGroups } from '../tenant';
 import { UtilityOP } from './optype';
 import { UtilityParser } from './parser';
+
 
 export class UtilityHandler {
 
@@ -262,13 +261,13 @@ export class UtilityHandler {
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Promise.all([
                 Auth.isReadAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, datasetFrom, AuthRoles.viewer),
-                tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string),
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
-                tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string)]);
+                    DatasetAuth.getAuthGroups(subproject, datasetFrom, AuthRoles.viewer),
+                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string),
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
+                    tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string)]);
         }
 
         let seismicmeta: any;
@@ -409,8 +408,6 @@ export class UtilityHandler {
             const prefixTo = datasetTo.gcsurl.split('/')[1];
 
             // copy the objects
-            const usermail = await SeistoreFactory.build(
-                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, true);
             const RETRY_MAX_ATTEMPTS = 10;
 
             copyJob = await StorageJobManager.copyJobsQueue.add({
@@ -420,7 +417,6 @@ export class UtilityHandler {
                 datasetTo,
                 prefixFrom,
                 prefixTo,
-                usermail,
                 tenant,
                 subproject,
                 readlockId: readlock ? readlock.id : null

@@ -14,8 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-export { DESEntitlement } from './entitlement';
 export { DESCompliance } from './compliance';
+export { DESEntitlement } from './entitlement';
 export { DESStorage } from './storage';
+export { DESUserAssociation } from './user-association-svc/ccm-internal';
 export { DESUtils } from './utils';
-export { DESUserAssociation } from './user-association';
+

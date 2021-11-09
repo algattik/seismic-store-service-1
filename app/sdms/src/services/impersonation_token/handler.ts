@@ -21,7 +21,7 @@ import { SeistoreFactory } from '../../cloud/seistore';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubprojectAuth, SubProjectDAO } from '../subproject';
 import { TenantDAO } from '../tenant';
-import { ImpersonationTokenModel, ImpersonationTokenContextModel } from './model';
+import { ImpersonationTokenContextModel, ImpersonationTokenModel } from './model';
 import { ImpersonationTokenOps } from './optype';
 import { ImpersonationTokenParser } from './parser';
 
@@ -29,7 +29,7 @@ export class ImpersonationTokenHandler {
 
     // handler for the [ /impersonation-token ] endpoints
     public static async handler(req: expRequest, res: expResponse, op: ImpersonationTokenOps) {
-        try{
+        try {
 
             // the impersonation token endpoints are not available with impersonation tokens
             if (Auth.isImpersonationToken(req.headers.authorization)) {
@@ -73,7 +73,7 @@ export class ImpersonationTokenHandler {
                 if (appEmailV2 !== appEmail) {
                     await Auth.isAppAuthorized(tenant, appEmailV2);
                 } else {
-                    throw(error);
+                    throw (error);
                 }
             }
         }
@@ -121,8 +121,8 @@ export class ImpersonationTokenHandler {
         // generate the impersonation token credential token (the auth credential)
         const authProvider = AuthProviderFactory.build(Config.SERVICE_AUTH_PROVIDER);
         const scopes = [authProvider.getClientID()];
-        if(Config.DES_TARGET_AUDIENCE) {
-            scopes.push(Config.DES_TARGET_AUDIENCE)
+        if (Config.DES_TARGET_AUDIENCE) {
+            scopes.push(Config.DES_TARGET_AUDIENCE);
         }
         const impersonationToken = authProvider.convertToImpersonationTokenModel(
             await authProvider.generateScopedAuthCredential(scopes));
@@ -170,8 +170,8 @@ export class ImpersonationTokenHandler {
         try {
             await Auth.isAppAuthorized(tenant, subject);
         } catch (error) {
-            const appEmail = await SeistoreFactory.build(
-                Config.CLOUDPROVIDER).getEmailFromTokenPayload(req.headers.authorization, false);
+            const appEmail = Utils.getPropertyFromTokenPayload(req.headers.authorization,
+                Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC);
             try {
                 await Auth.isAppAuthorized(tenant, appEmail);
             } catch (error) {
@@ -179,7 +179,7 @@ export class ImpersonationTokenHandler {
                 if (appEmailV2 !== appEmail) {
                     await Auth.isAppAuthorized(tenant, appEmailV2);
                 } else {
-                    throw(error);
+                    throw (error);
                 }
             }
         }

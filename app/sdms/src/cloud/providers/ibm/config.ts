@@ -28,7 +28,7 @@ export class IbmConfig extends Config {
     public static COS_SUBUSER_SECRET_ACCESS_KEY: string;
     public static COS_TEMP_CRED_EXPITY: string;
 
-	// IBM KeyCloak
+    // IBM KeyCloak
     public static KEYCLOAK_BASEURL: string;
     public static KEYCLOAK_URL_TOKEN: string;
     public static KEYCLOAK_REALM: string;
@@ -111,7 +111,7 @@ export class IbmConfig extends Config {
         IbmConfig.DOC_DB_QUERY_RESULT_LIMIT = process.env.DOC_DB_QUERY_RESULT_LIMIT;
         IbmConfig.DOC_DB_QUERY_RESULT_LIMIT_VALUE = parseInt(process.env.DOC_DB_QUERY_RESULT_LIMIT_VALUE, 10);
 
-        IbmConfig.DES_SERVICE_APPKEY = 'na'
+        IbmConfig.DES_SERVICE_APPKEY = 'na';
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST_ENTITLEMENT');
         Config.checkRequiredConfig(IbmConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');
@@ -178,7 +178,11 @@ export class IbmConfig extends Config {
             FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
                 process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
             CCM_SERVICE_URL: IbmConfig.CCM_SERVICE_URL,
-            CCM_TOKEN_SCOPE: IbmConfig.CCM_TOKEN_SCOPE
+            CCM_TOKEN_SCOPE: IbmConfig.CCM_TOKEN_SCOPE,
+            USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
+            USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
+                process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
+            USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER
 
         });
 

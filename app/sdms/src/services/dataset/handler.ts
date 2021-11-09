@@ -16,11 +16,11 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-
 import { DatasetModel } from '.';
 import { Auth, AuthRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
-import { DESStorage, DESUserAssociation, DESUtils } from '../../dataecosystem';
+import { DESStorage, DESUtils } from '../../dataecosystem';
+import { UserAssocationServiceFactory } from '../../dataecosystem/user-association';
 import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
 import { SubprojectAuth, SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
@@ -29,6 +29,7 @@ import { DatasetDAO } from './dao';
 import { IWriteLockSession, Locker } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
+
 
 export class DatasetHandler {
 
@@ -324,7 +325,8 @@ export class DatasetHandler {
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
             if (!Utils.isEmail(datasetOUT.created_by)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-                const userEmail = await DESUserAssociation.convertSubIdToEmail(datasetOUT.created_by, dataPartition);
+                const userEmail = await UserAssocationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER).
+                    convertPrincipalIdentifierToEmail(datasetOUT.created_by, dataPartition);
                 datasetOUT.created_by = userEmail;
             }
 

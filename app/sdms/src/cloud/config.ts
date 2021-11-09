@@ -66,6 +66,9 @@ export interface ConfigModel {
     FEATURE_FLAG_CCM_INTERACTION: boolean;
     CCM_SERVICE_URL: string;
     CCM_TOKEN_SCOPE: string;
+    USER_ID_CLAIM_FOR_SDMS: string;
+    USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: string;
+    USER_ASSOCIATION_SVC_PROVIDER: string;
 }
 
 export abstract class Config implements IConfig {
@@ -193,6 +196,13 @@ export abstract class Config implements IConfig {
     public static CCM_SERVICE_URL = undefined;
     public static CCM_TOKEN_SCOPE = undefined;
 
+    // Principal Identifier for Seismic DMS and Entitlements Svc
+    public static USER_ID_CLAIM_FOR_SDMS: string;
+    public static USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: string;
+
+    // Function to convert principal identiifer to user using CCM
+    public static USER_ASSOCIATION_SVC_PROVIDER: string;
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -288,6 +298,12 @@ export abstract class Config implements IConfig {
             Config.checkRequiredConfig(Config.JWT_EXCLUDE_PATHS, 'JWT_EXCLUDE_PATHS');
             Config.checkRequiredConfig(Config.JWT_AUDIENCE, 'JWT_AUDIENCE');
         }
+
+        // Subject identifiers for
+        Config.USER_ID_CLAIM_FOR_SDMS = model.USER_ID_CLAIM_FOR_SDMS;
+        Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC = model.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC;
+        Config.USER_ASSOCIATION_SVC_PROVIDER = model.USER_ASSOCIATION_SVC_PROVIDER;
+
 
         // auto generated configurations
         Config.ORGANIZATION_NS = Config.ORGANIZATION_NS + '-' + Config.SERVICE_ENV;

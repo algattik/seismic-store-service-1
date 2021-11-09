@@ -16,6 +16,7 @@
 
 import { Request as expRequest } from 'express';
 import { DatasetModel } from '.';
+import { Config } from '../../cloud';
 import { Error, Params, Utils } from '../../shared';
 
 export class DatasetParser {
@@ -45,7 +46,8 @@ export class DatasetParser {
         const dataset = this.createDatasetModelFromRequest(req);
         dataset.ltag = (req.headers.ltag) as string;
         dataset.type = req.body ? req.body.type : undefined;
-        dataset.created_by = Utils.getSubIDFromPayload(req.headers.authorization) ||
+        dataset.created_by = Utils.getPropertyFromTokenPayload
+            (req.headers.authorization, Config.USER_ID_CLAIM_FOR_SDMS) ||
             Utils.getSubFromPayload(req.headers.authorization) ||
             undefined;
 

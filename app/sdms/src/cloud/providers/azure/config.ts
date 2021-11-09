@@ -131,7 +131,11 @@ export class AzureConfig extends Config {
                 FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
                     process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
                 CCM_SERVICE_URL: AzureConfig.CCM_SERVICE_URL,
-                CCM_TOKEN_SCOPE: AzureConfig.CCM_TOKEN_SCOPE
+                CCM_TOKEN_SCOPE: AzureConfig.CCM_TOKEN_SCOPE,
+                USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
+                USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
+                    process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
+                USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER
             });
 
             // initialize app insight
