@@ -7,7 +7,7 @@ variables:
   SDMS_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
   SDMS_OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.domain=$DOMAIN"
   SDMS_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-sdms:$CI_COMMIT_SHORT_SHA"
-  GCP_SDMS_PREFIX: /api/seismic-store
+  GCP_SDMS_PREFIX: /api/seismic-store/v3
 
 .common: &common
   - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
@@ -77,6 +77,7 @@ sdms_osdu-gcp-deploy-configmap:
   needs: ["sdms_compile-and-unit-test"]
   script:
     - *common
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SDMS_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
     - >
       helm upgrade $SDMS_OSDU_GCP_HELM_CONFIG_SERVICE $SDMS_OSDU_GCP_HELM_CONFIG_DIR
       --install
@@ -104,6 +105,7 @@ sdms_osdu-gcp-deployment:
   cache: {}
   script:
     - *common
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SDMS_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
     - >
       helm upgrade $SDMS_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $SDMS_OSDU_GCP_HELM_DEPLOYMENT_DIR
       --install
@@ -128,4 +130,3 @@ sdms_osdu-gcp-deployment:
       - branches
       - main
       - merge_requests
-      
