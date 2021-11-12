@@ -2064,8 +2064,7 @@
       "@types/bluebird": {
          "version": "3.5.36",
          "resolved": "https://registry.npmjs.org/@types/bluebird/-/bluebird-3.5.36.tgz",
-         "integrity": "sha512-HBNx4lhkxN7bx6P0++W8E289foSu8kO8GCk2unhuVggO+cE7rh9DhZUyPhUxNRG9m+5B5BTKxZQ5ZP92x/mx9Q==",
-         "dev": true
+         "integrity": "sha512-HBNx4lhkxN7bx6P0++W8E289foSu8kO8GCk2unhuVggO+cE7rh9DhZUyPhUxNRG9m+5B5BTKxZQ5ZP92x/mx9Q=="
       },
       "@types/body-parser": {
          "version": "1.19.1",
@@ -2169,6 +2168,15 @@
             "@types/node": "*"
          }
       },
+      "@types/ioredis-mock": {
+         "version": "5.6.0",
+         "resolved": "https://registry.npmjs.org/@types/ioredis-mock/-/ioredis-mock-5.6.0.tgz",
+         "integrity": "sha512-2L20NMYTzNlCeLbi7aXQ/VlFTBu7qYoGefwB0NIDYN5TWzOslzvfl7ttoIN9IVO2LEeY+MBpSWO8oJQklL/o4Q==",
+         "dev": true,
+         "requires": {
+            "@types/ioredis": "*"
+         }
+      },
       "@types/jsonwebtoken": {
          "version": "8.5.5",
          "resolved": "https://registry.npmjs.org/@types/jsonwebtoken/-/jsonwebtoken-8.5.5.tgz",
@@ -2257,13 +2265,12 @@
             "@types/node": "*"
          }
       },
-      "@types/redis-mock": {
-         "version": "0.17.0",
-         "resolved": "https://registry.npmjs.org/@types/redis-mock/-/redis-mock-0.17.0.tgz",
-         "integrity": "sha512-UDKHu9otOSE1fPjgn0H7UoggqVyuRYfo3WJpdXdVmzgGmr1XIM/dTk/gRYf/bLjIK5mxpV8inA5uNBS2sVOilA==",
-         "dev": true,
+      "@types/redlock": {
+         "version": "4.0.2",
+         "resolved": "https://registry.npmjs.org/@types/redlock/-/redlock-4.0.2.tgz",
+         "integrity": "sha512-3MMTCWOXrfQFU8dLAbQWDOsftnFagQxmUkfR5KK/DB/zKPUh0ZzPFkNV84nfw1yMFYLfd4MgITGT+XolYd8d1w==",
          "requires": {
-            "@types/redis": "*"
+            "@types/bluebird": "*"
          }
       },
       "@types/request": {
@@ -4690,6 +4697,31 @@
          "resolved": "https://registry.npmjs.org/fecha/-/fecha-4.2.1.tgz",
          "integrity": "sha512-MMMQ0ludy/nBs1/o0zVOiKTpG7qMbonKUzjJgQFEuvq6INZ1OraKPRAWkBq5vlKLOUMpmNYG1JoN3oDPUQ9m3Q=="
       },
+      "fengari": {
+         "version": "0.1.4",
+         "resolved": "https://registry.npmjs.org/fengari/-/fengari-0.1.4.tgz",
+         "integrity": "sha512-6ujqUuiIYmcgkGz8MGAdERU57EIluGGPSUgGPTsco657EHa+srq0S3/YUl/r9kx1+D+d4rGfYObd+m8K22gB1g==",
+         "dev": true,
+         "requires": {
+            "readline-sync": "^1.4.9",
+            "sprintf-js": "^1.1.1",
+            "tmp": "^0.0.33"
+         },
+         "dependencies": {
+            "sprintf-js": {
+               "version": "1.1.2",
+               "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.1.2.tgz",
+               "integrity": "sha512-VE0SOVEHCk7Qc8ulkWw3ntAzXuqf7S2lvwQaDLRnUeIEaKNQJzV6BwmLKhOqT61aGhfUMrXeaBk+oDGCzvhcug==",
+               "dev": true
+            }
+         }
+      },
+      "fengari-interop": {
+         "version": "0.1.2",
+         "resolved": "https://registry.npmjs.org/fengari-interop/-/fengari-interop-0.1.2.tgz",
+         "integrity": "sha512-8iTvaByZVoi+lQJhHH9vC+c/Yaok9CwOqNQZN6JrVpjmWwW4dDkeblBXhnHC+BoI6eF4Cy5NKW3z6ICEjvgywQ==",
+         "dev": true
+      },
       "figures": {
          "version": "2.0.0",
          "resolved": "https://registry.npmjs.org/figures/-/figures-2.0.0.tgz",
@@ -5844,6 +5876,18 @@
                   "ms": "2.1.2"
                }
             }
+         }
+      },
+      "ioredis-mock": {
+         "version": "5.7.0",
+         "resolved": "https://registry.npmjs.org/ioredis-mock/-/ioredis-mock-5.7.0.tgz",
+         "integrity": "sha512-Z3U7SoDoLP+LeljcNWWGuldbZKzjzbyBrVa1/j0+GurFIgZlT4Ij+/6IqQlTDwZZkss/Prp3UaOdvr5e0Iow5g==",
+         "dev": true,
+         "requires": {
+            "fengari": "^0.1.4",
+            "fengari-interop": "^0.1.2",
+            "lodash": "^4.17.21",
+            "standard-as-callback": "^2.1.0"
          }
       },
       "ip": {
@@ -8644,6 +8688,12 @@
             "picomatch": "^2.2.1"
          }
       },
+      "readline-sync": {
+         "version": "1.4.10",
+         "resolved": "https://registry.npmjs.org/readline-sync/-/readline-sync-1.4.10.tgz",
+         "integrity": "sha512-gNva8/6UAe8QYepIQH/jQ2qn91Qj0B9sYjMBBs3QOB8F2CXcKgLxQaJRP76sWVRQt+QU+8fAkCbCvjjMFu7Ycw==",
+         "dev": true
+      },
       "redent": {
          "version": "3.0.0",
          "resolved": "https://registry.npmjs.org/redent/-/redent-3.0.0.tgz",
@@ -8664,12 +8714,6 @@
          "resolved": "https://registry.npmjs.org/redis-errors/-/redis-errors-1.2.0.tgz",
          "integrity": "sha1-62LSrbFeTq9GEMBK/hUpOEJQq60="
       },
-      "redis-mock": {
-         "version": "0.56.3",
-         "resolved": "https://registry.npmjs.org/redis-mock/-/redis-mock-0.56.3.tgz",
-         "integrity": "sha512-ynaJhqk0Qf3Qajnwvy4aOjS4Mdf9IBkELWtjd+NYhpiqu4QCNq6Vf3Q7c++XRPGiKiwRj9HWr0crcwy7EiPjYQ==",
-         "dev": true
-      },
       "redis-parser": {
          "version": "3.0.0",
          "resolved": "https://registry.npmjs.org/redis-parser/-/redis-parser-3.0.0.tgz",
@@ -8685,11 +8729,6 @@
          "requires": {
             "bluebird": "^3.7.2"
          }
-      },
-      "redlock-async": {
-         "version": "3.1.2-fix.3",
-         "resolved": "https://registry.npmjs.org/redlock-async/-/redlock-async-3.1.2-fix.3.tgz",
-         "integrity": "sha512-/MTGzBzOnqom7MTncZ/lyRYpJcFGxLg5Pplluq0nmCVDpifjE8d6qNxo5SHcNoliJ1Kh/UshcDV1Hb1aWriAfQ=="
       },
       "release-zalgo": {
          "version": "1.0.0",

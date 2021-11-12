@@ -54,6 +54,10 @@ async function ServerStart() {
             TraceFactory.build(Config.CLOUDPROVIDER).start();
         }
 
+        process.on('unhandledRejection', (reason, promise) => {
+            LoggerFactory.build(Config.CLOUDPROVIDER).error('Unhandled rejection caught at ' + promise + ' due to reason ' + reason);
+        });
+
         await new (await import('./server')).Server().start();
 
     } catch (error) {
