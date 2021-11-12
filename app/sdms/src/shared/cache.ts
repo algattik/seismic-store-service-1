@@ -60,10 +60,10 @@ class CacheCore {
     };
 
     constructor() {
-
+        const redis = Config.UTEST ? require('ioredis-mock') : undefined;
         this._redisClient =
             Config.UTEST ?
-                require('redis-mock').createClient() :
+                new redis() :
                 Config.DES_REDIS_INSTANCE_KEY ? Config.DES_REDIS_INSTANCE_TLS_DISABLE ?
                     new Redis({
                         host: Config.DES_REDIS_INSTANCE_ADDRESS,

@@ -14,8 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
-import Redis from 'ioredis';
-import Redlock from 'redlock-async';
+import IORedis from 'ioredis';
+import Redlock from 'redlock';
 import { Config, LoggerFactory } from '../../cloud';
 import { Error, Utils } from '../../shared';
 
@@ -32,9 +32,9 @@ export class Locker {
     private static EXP_READLOCK = 3600; // after 1h  readlock entry will be removed
     private static TIME_5MIN = 300; // exp time margin to use in the main read locks
 
-    private static redisClient;
-    private static redisSubscriptionClient;
-    private static redlock;
+    private static redisClient: IORedis.Redis;
+    private static redisSubscriptionClient: IORedis.Redis;
+    private static redlock: Redlock;
 
     public static getWriteLockTTL(): number { return this.EXP_WRITELOCK; };
     public static getReadLockTTL(): number { return this.EXP_READLOCK; };
@@ -48,65 +48,67 @@ export class Locker {
     public static async init() {
 
         if (Config.UTEST) {
-            const redis = require('redis-mock');
-            this.redisClient = redis.createClient();
-            this.redisSubscriptionClient = redis.createClient();
+            const redis = require('ioredis-mock');
+            this.redisClient = new redis();
+            this.redisSubscriptionClient = new redis();
         } else {
 
             if (Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
                 Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE ?
-                    this.redisClient = new Redis({
+                    this.redisClient = new IORedis({
                         host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                         port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                         password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
 
                         /* Retry failed requests only once*/
-                        maxRetriesPerRequest: 5,
+                        maxRetriesPerRequest: 10,
 
                         /* Exponential backOff retry strategy */
                         retryStrategy: this.retryStrategy,
 
                         /* Max time for a single command after which a timeout occurs.
                         Without this the client waits indefinitely*/
-                        commandTimeout: 2000 //
+                        commandTimeout: 60000,
+
 
                     }) :
-                    this.redisClient = new Redis({
+                    this.redisClient = new IORedis({
                         host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                         port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                         password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
                         tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
                         maxRetriesPerRequest: 5,
                         retryStrategy: this.retryStrategy,
-                        commandTimeout: 2000
+                        commandTimeout: 60000
                     }
                     );
-                this.redisSubscriptionClient = new Redis({
+                this.redisSubscriptionClient = new IORedis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                     password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
                     tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
                     maxRetriesPerRequest: 5,
                     retryStrategy: this.retryStrategy,
-                    commandTimeout: 2000
+                    commandTimeout: 60000
                 });
 
             }
             else {
 
-                this.redisClient = new Redis({
+                this.redisClient = new IORedis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                     maxRetriesPerRequest: 5,
                     retryStrategy: this.retryStrategy,
-                    commandTimeout: 2000
+                    commandTimeout: 60000
                 });
-                this.redisSubscriptionClient = new Redis({
+                this.redisSubscriptionClient = new IORedis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                     maxRetriesPerRequest: 5,
                     retryStrategy: this.retryStrategy,
-                    commandTimeout: 2000
+                    commandTimeout: 60000,
+
                 });
             }
 
@@ -123,6 +125,7 @@ export class Locker {
             this.redisClient.on('error', (error) => {
                 LoggerFactory.build(Config.CLOUDPROVIDER).error(error);
             });
+
 
         }
 
@@ -361,7 +364,8 @@ export class Locker {
             await Locker.setLock(lockKey + '/' + lockID, lockID, this.EXP_READLOCK);
             await Locker.setLock(lockKey, [lockID], this.EXP_READLOCK + this.TIME_5MIN);
             // when the session key expired i have to remove the wid/lockid from the main read lock
-            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID);
+            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID)
+                .catch((error) => LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)));
 
             await this.releaseMutex(cacheLock, lockKey);
             return { id: lockID, cnt: 1 };
@@ -379,7 +383,8 @@ export class Locker {
             await Locker.setLock(lockKey, lockValue, this.EXP_READLOCK + this.TIME_5MIN);
             await this.releaseMutex(cacheLock, lockKey);
             // when the session key expired i have to remove the wid/lockid from the main read lock
-            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID);
+            this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID)
+                .catch((error) => LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)));
             return { id: lockID, cnt: (lockValue as string[]).length };
         }
 
