@@ -21,7 +21,7 @@ import { Auth, AuthGroups, AuthRoles, UserRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { DESUtils } from '../../dataecosystem';
-import { UserAssocationServiceFactory } from '../../dataecosystem/user-association';
+import { UserAssociationServiceFactory } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetDAO, PaginationModel } from '../dataset';
 import { TenantAuth, TenantModel } from '../tenant';
@@ -212,7 +212,7 @@ export class SubProjectHandler {
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
             if (!Utils.isEmail(subproject.admin)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-                subproject.admin = await UserAssocationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER)
+                subproject.admin = await UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER)
                     .convertPrincipalIdentifierToEmail(subproject.admin, dataPartition);
             }
         }

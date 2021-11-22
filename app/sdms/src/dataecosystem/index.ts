@@ -17,6 +17,6 @@
 export { DESCompliance } from './compliance';
 export { DESEntitlement } from './entitlement';
 export { DESStorage } from './storage';
-export { DESUserAssociation } from './user-association-svc/ccm-internal';
+export { UserAssociationServiceFactory } from './user-association';
 export { DESUtils } from './utils';
 
