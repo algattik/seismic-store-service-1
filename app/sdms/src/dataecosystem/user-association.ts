@@ -26,22 +26,22 @@ export abstract class AbstractUserAssociationSvcProvider implements IUserAssocia
 }
 
 export class UserAssociationFactoryBuilder {
-   public static register(identifer: string) {
+   public static register(identifier: string) {
       return (target: any) => {
-         if (UserAssociationFactoryBuilder.providers[identifer]) {
-            UserAssociationFactoryBuilder.providers[identifer].push(target);
+         if (UserAssociationFactoryBuilder.providers[identifier]) {
+            UserAssociationFactoryBuilder.providers[identifier].push(target);
          } else {
-            UserAssociationFactoryBuilder.providers[identifer] = [target];
+            UserAssociationFactoryBuilder.providers[identifier] = [target];
          }
       };
    }
 
-   public static build(identifer: string, referenceAbstraction: any, args: { [key: string]: any; } = {}) {
-      if (identifer === undefined || identifer === 'unknown') {
+   public static build(identifier: string, referenceAbstraction: any, args: { [key: string]: any; } = {}) {
+      if (identifier === undefined || identifier === 'unknown') {
          throw (Error.make(Error.Status.UNKNOWN,
-            `Unrecognized user assocation service provider: ${identifer}`));
+            `Unrecognized user association service provider: ${identifier}`));
       }
-      for (const provider of UserAssociationFactoryBuilder.providers[identifer]) {
+      for (const provider of UserAssociationFactoryBuilder.providers[identifier]) {
          if (provider.prototype instanceof referenceAbstraction) {
             return new provider(args);
          }
@@ -54,7 +54,7 @@ export class UserAssociationFactoryBuilder {
 }
 
 
-export class UserAssocationServiceFactory extends UserAssociationFactoryBuilder {
+export class UserAssociationServiceFactory extends UserAssociationFactoryBuilder {
    public static build(identifier: string): AbstractUserAssociationSvcProvider {
       return UserAssociationFactoryBuilder.build(identifier, AbstractUserAssociationSvcProvider);
    }

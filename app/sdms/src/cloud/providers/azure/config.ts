@@ -60,7 +60,7 @@ export class AzureConfig extends Config {
             AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = process.env.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH;
-            AzureConfig.DES_SERVICE_APPKEY = 'undefined';
+            AzureConfig.DES_SERVICE_APPKEY = process.env.SEISTORE_DES_APPKEY || 'undefined';
             AzureConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
             AzureConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
             Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST');
@@ -139,10 +139,9 @@ export class AzureConfig extends Config {
                 CCM_SERVICE_URL: AzureConfig.CCM_SERVICE_URL,
                 CCM_TOKEN_SCOPE: AzureConfig.CCM_TOKEN_SCOPE,
                 CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
-                USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
-                USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
-                    process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
-                USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER,
+                USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS || 'subid',
+                USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC || 'email',
+                USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER || 'ccm-internal',
                 SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3'
             });
 

@@ -2,10 +2,10 @@ import request from 'request-promise';
 import { AuthProviderFactory } from '../../auth';
 import { Config, DataEcosystemCoreFactory } from '../../cloud';
 import { Cache, Error } from '../../shared';
-import { AbstractUserAssociationSvcProvider, UserAssocationServiceFactory } from '../user-association';
+import { AbstractUserAssociationSvcProvider, UserAssociationServiceFactory } from '../user-association';
 
 // this impl is used when the USER_ASSOCIATION_SVC_PROVIDER env variable is set to decorator identifier ccm-internal
-@UserAssocationServiceFactory.register('ccm-internal')
+@UserAssociationServiceFactory.register('ccm-internal')
 export class DESUserAssociation extends AbstractUserAssociationSvcProvider {
 
    private static _cache: Cache<string>;
