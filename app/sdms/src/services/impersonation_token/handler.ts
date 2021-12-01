@@ -185,10 +185,13 @@ export class ImpersonationTokenHandler {
         }
 
         // generate the impersonation token credential token (the auth credential)
-        const impersonationToken = AuthProviderFactory.build(
-            Config.SERVICE_AUTH_PROVIDER).convertToImpersonationTokenModel(
-                await AuthProviderFactory.build(
-                    Config.SERVICE_AUTH_PROVIDER).generateAuthCredential());
+        const authProvider = AuthProviderFactory.build(Config.SERVICE_AUTH_PROVIDER);
+        const scopes = [authProvider.getClientID()];
+        if (Config.DES_TARGET_AUDIENCE) {
+            scopes.push(Config.DES_TARGET_AUDIENCE);
+        }
+        const impersonationToken = authProvider.convertToImpersonationTokenModel(
+            await authProvider.generateScopedAuthCredential(scopes));
 
         impersonationToken.context = requestParams.tokenContext;
 
