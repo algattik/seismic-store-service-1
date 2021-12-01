@@ -106,11 +106,11 @@ export class DatasetParser {
         }
     }
 
+    // [TODO-V4] dismiss subid-to-email in favor of translate-user-info
     public static get(req: expRequest): [DatasetModel, boolean, boolean] {
-        return [this.createDatasetModelFromRequest(req),
-        req.query.seismicmeta === 'true', (req.query['subid-to-email'] !== undefined) ?
-            req.query['subid-to-email'] === 'true' : true];
-
+        const userInfo = req.query['translate-user-info'] ? !(req.query['translate-user-info'] === 'false') :
+            req.query['translate-user-info'] ? !(req.query['subid-to-email'] === 'false') : true;
+        return [ this.createDatasetModelFromRequest(req), req.query.seismicmeta === 'true', userInfo ]
     }
 
     public static list(req: expRequest): any {
@@ -132,8 +132,11 @@ export class DatasetParser {
             pagination = { limit, cursor };
         }
 
+        const userInfo = req.query['translate-user-info'] ? !(req.query['translate-user-info'] === 'false') :
+        req.query['translate-user-info'] ? !(req.query['subid-to-email'] === 'false') : true;;
+
         // Retrieve the list of datasets metadata
-        return { dataset, pagination };
+        return { dataset, pagination, userInfo };
 
     }
 

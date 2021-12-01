@@ -10,7 +10,7 @@ export class DESUserAssociation extends AbstractUserAssociationSvcProvider {
 
    private static _cache: Cache<string>;
 
-   public async convertPrincipalIdentifierToEmail(principalIdentifier: string,
+   public async convertPrincipalIdentifierToUserInfo(principalIdentifier: string,
       dataPartitionID: string): Promise<string> {
 
       if (!DESUserAssociation._cache) {

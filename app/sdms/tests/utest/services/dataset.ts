@@ -14,12 +14,13 @@
 // limitations under the License.
 // ============================================================================
 
+import sinon from 'sinon';
+
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
-import sinon from 'sinon';
 import { Auth } from '../../../src/auth';
 import { Config, google, JournalFactoryTenantClient } from '../../../src/cloud';
-import { DESStorage, DESUtils } from '../../../src/dataecosystem';
+import { DESStorage, DESUtils, DESUserAssociation } from '../../../src/dataecosystem';
 import { DatasetDAO, DatasetModel } from '../../../src/services/dataset';
 import { DatasetHandler } from '../../../src/services/dataset/handler';
 import { Locker } from '../../../src/services/dataset/locker';
@@ -442,12 +443,14 @@ export class TestDatasetSVC {
         Tx.sectionInit('list');
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            Config.USER_ASSOCIATION_SVC_PROVIDER = 'ccm-internal';
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isReadAuthorized').resolves(undefined);
             this.sandbox.stub(DatasetDAO, 'list').resolves({ datasets: [{} as DatasetModel], nextPageCursor: null });
             this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
             this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
             this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('datapartition');
+            this.sandbox.stub(DESUserAssociation.prototype, 'convertPrincipalIdentifierToUserInfo').resolves();
             await DatasetHandler.handler(expReq, expRes, DatasetOP.List);
             Tx.check200(expRes.statusCode, done);
         });

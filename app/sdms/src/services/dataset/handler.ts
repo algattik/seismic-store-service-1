@@ -285,7 +285,7 @@ export class DatasetHandler {
         // parse user request
         const userInput = DatasetParser.get(req);
         const datasetIN = userInput[0];
-        const convertSubIdToEmail = (userInput[2] !== undefined) ? userInput[2] : true;
+        const convertUserInfo = userInput[2];
 
         // retrieve journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -321,11 +321,11 @@ export class DatasetHandler {
         }
 
         // Convert subid to email if user input query param subid_to_email is true
-        if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertSubIdToEmail) {
+        if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertUserInfo) {
             if (!Utils.isEmail(datasetOUT.created_by)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
                 const userEmail = await UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER).
-                    convertPrincipalIdentifierToEmail(datasetOUT.created_by, dataPartition);
+                convertPrincipalIdentifierToUserInfo(datasetOUT.created_by, dataPartition);
                 datasetOUT.created_by = userEmail;
             }
 
@@ -356,6 +356,7 @@ export class DatasetHandler {
 
         const dataset = userInput.dataset;
         const pagination = userInput.pagination;
+        const userInfo = userInput.userInfo;
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -372,8 +373,14 @@ export class DatasetHandler {
         const output = await DatasetDAO.list(journalClient, dataset, pagination) as any;
 
         // attach the gcpid for fast check
+        const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
+        const userAssociationService = UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER);
         for (const item of output.datasets) {
-            item.ctag = item.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+            item.ctag = item.ctag + tenant.gcpid + ';' + dataPartition;
+            if (userInfo && !Utils.isEmail(item.created_by)) {
+                item.created_by = await userAssociationService.convertPrincipalIdentifierToUserInfo(
+                    item.created_by, dataPartition);
+            }
         }
 
         // Retrieve the list of datasets metadata

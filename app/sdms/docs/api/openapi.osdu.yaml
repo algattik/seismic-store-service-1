@@ -179,8 +179,8 @@ paths:
           name: seismicmeta
           required: false
           type: boolean
-        - description: 'If the dataset creator value is a subid, then enable conversion of it to email'
-          name: subid-to-email
+        - description: 'translate the user-id to a more human readable user info'
+          name: translate-user-info
           in: query
           type: boolean
           default: true
@@ -678,6 +678,14 @@ paths:
           in: query
           name: cursor
           type: string 
+        - description: 'translate the user-id to a more human readable user info'
+          name: translate-user-info
+          in: query
+          type: boolean
+          default: true
+          enum:
+            - true
+            - false
       responses:
         200:
           description: "The list of all datasets in the subproject if no gtags are in the request parameters. If gtags exist in the request parameters, then list all datasets that have the same list of gtags."
@@ -1158,8 +1166,8 @@ paths:
           name: tenantid
           required: true
           type: string
-        - description: 'Convert subid value of subproject admin to email'
-          name: subid-to-email
+        - description: 'translate the user-id to a more human readable user info'
+          name: translate-user-info
           in: query
           type: boolean
           default: true
