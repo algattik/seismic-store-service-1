@@ -213,7 +213,7 @@ export class SubProjectHandler {
             if (!Utils.isEmail(subproject.admin)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
                 subproject.admin = await UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER)
-                    .convertPrincipalIdentifierToEmail(subproject.admin, dataPartition);
+                    .convertPrincipalIdentifierToUserInfo(subproject.admin, dataPartition);
             }
         }
 

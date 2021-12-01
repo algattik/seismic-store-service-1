@@ -17,11 +17,11 @@
 import { Error } from '../shared';
 
 export interface IUserAssociationSvcProvider {
-   convertPrincipalIdentifierToEmail(principalIdentifier: string, dataPartitionID: string): Promise<string>;
+   convertPrincipalIdentifierToUserInfo(principalIdentifier: string, dataPartitionID: string): Promise<string>;
 }
 
 export abstract class AbstractUserAssociationSvcProvider implements IUserAssociationSvcProvider {
-   public abstract convertPrincipalIdentifierToEmail(principalIdentifier: string,
+   public abstract convertPrincipalIdentifierToUserInfo(principalIdentifier: string,
       dataPartitionID: string): Promise<string>;
 }
 
