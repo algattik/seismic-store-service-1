@@ -7,7 +7,7 @@ AFL-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- json-schema (from https://www.npmjs.com/package/json-schema)
+- json-schema (from )
 
 ========================================================================
 Apache-2.0
@@ -94,7 +94,6 @@ BSD-2-Clause
 The following software have components provided under the terms of this license:
 
 - @mapbox/node-pre-gyp (from https://www.npmjs.com/package/@mapbox/node-pre-gyp)
-- @mapbox/node-pre-gyp (from https://www.npmjs.com/package/@mapbox/node-pre-gyp)
 - ajv (from https://www.npmjs.com/package/ajv)
 - async-listener (from https://www.npmjs.com/package/async-listener)
 - bcrypt-pbkdf (from https://www.npmjs.com/package/bcrypt-pbkdf)
@@ -113,7 +112,7 @@ The following software have components provided under the terms of this license:
 - qs (from https://www.npmjs.com/package/qs)
 - shimmer (from https://www.npmjs.com/package/shimmer)
 - source-map (from https://www.npmjs.com/package/source-map)
-- sprintf-js (from https://www.npmjs.com/package/sprintf-js)
+- sprintf-js (from )
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
 - tslib (from https://www.npmjs.com/package/tslib)
@@ -126,7 +125,6 @@ BSD-3-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- @mapbox/node-pre-gyp (from https://www.npmjs.com/package/@mapbox/node-pre-gyp)
 - @mapbox/node-pre-gyp (from https://www.npmjs.com/package/@mapbox/node-pre-gyp)
 - @protobufjs/aspromise (from https://www.npmjs.com/package/@protobufjs/aspromise)
 - @protobufjs/base64 (from https://www.npmjs.com/package/@protobufjs/base64)
@@ -151,7 +149,7 @@ The following software have components provided under the terms of this license:
 - google-gax (from https://www.npmjs.com/package/google-gax)
 - idna (from https://github.com/kjd/idna)
 - ieee754 (from https://www.npmjs.com/package/ieee754)
-- json-schema (from https://www.npmjs.com/package/json-schema)
+- json-schema (from )
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
 - pycparser (from https://github.com/eliben/pycparser)
@@ -159,7 +157,7 @@ The following software have components provided under the terms of this license:
 - qs (from https://www.npmjs.com/package/qs)
 - qs (from https://www.npmjs.com/package/qs)
 - source-map (from https://www.npmjs.com/package/source-map)
-- sprintf-js (from https://www.npmjs.com/package/sprintf-js)
+- sprintf-js (from )
 - stack-chain (from https://www.npmjs.com/package/stack-chain)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
 - tough-cookie (from https://www.npmjs.com/package/tough-cookie)
@@ -218,7 +216,6 @@ The following software have components provided under the terms of this license:
 - abbrev (from https://www.npmjs.com/package/abbrev)
 - aproba (from https://www.npmjs.com/package/aproba)
 - are-we-there-yet (from https://www.npmjs.com/package/are-we-there-yet)
-- are-we-there-yet (from https://www.npmjs.com/package/are-we-there-yet)
 - chownr (from https://www.npmjs.com/package/chownr)
 - cliui (from https://www.npmjs.com/package/cliui)
 - color-support (from https://www.npmjs.com/package/color-support)
@@ -226,7 +223,6 @@ The following software have components provided under the terms of this license:
 - flatted (from https://www.npmjs.com/package/flatted)
 - fs-minipass (from https://www.npmjs.com/package/fs-minipass)
 - fs.realpath (from https://github.com/isaacs/fs.realpath#readme)
-- gauge (from https://www.npmjs.com/package/gauge)
 - gauge (from https://www.npmjs.com/package/gauge)
 - get-caller-file (from https://www.npmjs.com/package/get-caller-file)
 - glob (from https://www.npmjs.com/package/glob)
@@ -266,7 +262,7 @@ The following software have components provided under the terms of this license:
 - tar (from https://www.npmjs.com/package/tar)
 - universal-user-agent (from https://www.npmjs.com/package/universal-user-agent)
 - wide-align (from https://www.npmjs.com/package/wide-align)
-- wrappy (from https://github.com/npm/wrappy)
+- wrappy (from https://www.npmjs.com/package/wrappy)
 - write-file-atomic (from https://www.npmjs.com/package/write-file-atomic)
 - y18n (from https://www.npmjs.com/package/y18n)
 - yallist (from https://www.npmjs.com/package/yallist)
@@ -279,7 +275,7 @@ LGPL-2.1-only
 The following software have components provided under the terms of this license:
 
 - chardet (from https://github.com/chardet/chardet)
-- xmlrunner (from https://github.com/pycontribs/xmlrunner)
+- xmlrunner (from )
 
 ========================================================================
 LGPL-2.1-or-later
@@ -363,7 +359,6 @@ The following software have components provided under the terms of this license:
 - applicationinsights-native-metrics (from https://www.npmjs.com/package/applicationinsights-native-metrics)
 - aproba (from https://www.npmjs.com/package/aproba)
 - are-we-there-yet (from https://www.npmjs.com/package/are-we-there-yet)
-- are-we-there-yet (from https://www.npmjs.com/package/are-we-there-yet)
 - argparse (from https://www.npmjs.com/package/argparse)
 - array-flatten (from https://www.npmjs.com/package/array-flatten)
 - arrify (from https://www.npmjs.com/package/arrify)
@@ -393,7 +388,7 @@ The following software have components provided under the terms of this license:
 - bytes (from https://www.npmjs.com/package/bytes)
 - call-bind (from https://www.npmjs.com/package/call-bind)
 - camelize (from https://www.npmjs.com/package/camelize)
-- cffi (from http://cffi.readthedocs.org)
+- cffi (from )
 - chalk (from https://www.npmjs.com/package/chalk)
 - chownr (from https://www.npmjs.com/package/chownr)
 - cliui (from https://www.npmjs.com/package/cliui)
@@ -475,7 +470,7 @@ The following software have components provided under the terms of this license:
 - flatted (from https://www.npmjs.com/package/flatted)
 - fn.name (from https://www.npmjs.com/package/fn.name)
 - follow-redirects (from https://www.npmjs.com/package/follow-redirects)
-- for-each (from https://www.npmjs.com/package/for-each)
+- for-each (from )
 - form-data (from https://www.npmjs.com/package/form-data)
 - form-data (from https://www.npmjs.com/package/form-data)
 - form-data (from https://www.npmjs.com/package/form-data)
@@ -487,7 +482,6 @@ The following software have components provided under the terms of this license:
 - fs-minipass (from https://www.npmjs.com/package/fs-minipass)
 - fs.realpath (from https://github.com/isaacs/fs.realpath#readme)
 - function-bind (from https://www.npmjs.com/package/function-bind)
-- gauge (from https://www.npmjs.com/package/gauge)
 - gauge (from https://www.npmjs.com/package/gauge)
 - gcp-metadata (from https://www.npmjs.com/package/gcp-metadata)
 - gcs-resumable-upload (from https://www.npmjs.com/package/gcs-resumable-upload)
@@ -558,7 +552,7 @@ The following software have components provided under the terms of this license:
 - js-sha256 (from https://www.npmjs.com/package/js-sha256)
 - jsbn (from https://www.npmjs.com/package/jsbn)
 - json-bigint (from https://www.npmjs.com/package/json-bigint)
-- json-schema (from https://www.npmjs.com/package/json-schema)
+- json-schema (from )
 - json-schema-traverse (from https://www.npmjs.com/package/json-schema-traverse)
 - json-stringify-safe (from https://www.npmjs.com/package/json-stringify-safe)
 - jsonfile (from https://www.npmjs.com/package/jsonfile)
@@ -618,6 +612,7 @@ The following software have components provided under the terms of this license:
 - nan (from https://www.npmjs.com/package/nan)
 - negotiator (from https://www.npmjs.com/package/negotiator)
 - node-abort-controller (from https://www.npmjs.com/package/node-abort-controller)
+- node-fetch (from https://www.npmjs.com/package/node-fetch)
 - node-fetch (from https://www.npmjs.com/package/node-fetch)
 - node-fetch (from https://www.npmjs.com/package/node-fetch)
 - node-forge (from https://www.npmjs.com/package/node-forge)
@@ -765,7 +760,7 @@ The following software have components provided under the terms of this license:
 - winston (from https://www.npmjs.com/package/winston)
 - winston-transport (from https://www.npmjs.com/package/winston-transport)
 - wrap-ansi (from https://www.npmjs.com/package/wrap-ansi)
-- wrappy (from https://github.com/npm/wrappy)
+- wrappy (from https://www.npmjs.com/package/wrappy)
 - write-file-atomic (from https://www.npmjs.com/package/write-file-atomic)
 - xdg-basedir (from https://www.npmjs.com/package/xdg-basedir)
 - xml2js (from https://www.npmjs.com/package/xml2js)
