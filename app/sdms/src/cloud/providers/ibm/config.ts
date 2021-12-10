@@ -57,7 +57,6 @@ export class IbmConfig extends Config {
     public static ENTITLEMENT_CONTEXT_PATH: string;
     public static COMPLIANCE_CONTEXT_PATH: string;
     public static STORAGE_CONTEXT_PATH: string;
-    public static CCM_USER_ASSOC_CONTEXT_PATH: string;
 
     // list of caller headers to forward to downstream service call (DE Core Service like entitlement/storage...)
     // if specified the default forwarded headers list will be override. (ref, https://www.npmjs.com/package/hpropagate)
@@ -81,11 +80,6 @@ export class IbmConfig extends Config {
         IbmConfig.COMPLIANCE_CONTEXT_PATH = process.env.COMPLIANCE_CONTEXT_PATH;
         IbmConfig.STORAGE_CONTEXT_PATH = process.env.STORAGE_CONTEXT_PATH;
         IbmConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = '/groups/';
-
-        // CCM values
-        IbmConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
-        IbmConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
-        IbmConfig.CCM_USER_ASSOC_CONTEXT_PATH = process.env.CCM_USER_ASSOC_CONTEXT_PATH;
 
         // DES_SERVICE_HOST replaced by new variable ENTITLEMENT_HOST
         IbmConfig.ENTITLEMENT_HOST = process.env.ENTITLEMENT_HOST;
@@ -183,11 +177,10 @@ export class IbmConfig extends Config {
                 process.env.FEATURE_FLAG_LOGGING !== 'false' : true,
             FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
                 process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
-            FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
-                process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
-            CCM_SERVICE_URL: IbmConfig.CCM_SERVICE_URL,
-            CCM_TOKEN_SCOPE: IbmConfig.CCM_TOKEN_SCOPE,
-            CALLER_FORWARD_HEADERS: IbmConfig.CALLER_FORWARD_HEADERS,
+            FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION === 'true',
+            CCM_SERVICE_URL: process.env.CCM_SERVICE_URL,
+            CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE,
+            CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
             USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
             USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
                 process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
