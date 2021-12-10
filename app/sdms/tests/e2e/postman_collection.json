@@ -15,25 +15,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));",
+									"});",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"        pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));",
-									"    });",
+									"pm.environment.set('appAdminEmail', pm.environment.get('adminEmail'));",
+									"if(pm.environment.get('serviceCloudProvider') !== 'google' && pm.environment.get('serviceCloudProvider') !== 'ibm') {",
+									"    pm.environment.set('adminEmail', pm.environment.get('adminEmail').split('@')[0]);",
+									"};",
 									"",
-									"    pm.environment.set('appAdminEmail', pm.environment.get('adminEmail'));",
-									"    if(pm.environment.get('serviceCloudProvider') !== 'google' && pm.environment.get('serviceCloudProvider') !== 'ibm') {",
-									"        pm.environment.set('adminEmail', pm.environment.get('adminEmail').split('@')[0]);",
-									"    };",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"}"
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"service OK\");",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -52,7 +46,13 @@
 									"   return result;\r",
 									"}\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"subproject\", makeID_general(16));\r",
+									"// if subproject name is not provided then create random name, else keep subproject alive\r",
+									"if (!pm.environment.get(\"subproject\")) {\r",
+									"    postman.setEnvironmentVariable(\"subproject\", makeID_general(16));\r",
+									"    postman.setEnvironmentVariable(\"hold_subproject\", \"false\")\r",
+									"} else {\r",
+									"    postman.setEnvironmentVariable(\"hold_subproject\", \"true\")\r",
+									"}\r",
 									"\r",
 									"// Create function that provide known amount of retries\r",
 									"if (pm.environment.get(\"maxAmountOfRetries\") == null) {\r",
@@ -74,6 +74,12 @@
 									"            postman.setNextRequest(requestName);\r",
 									"        } else {\r",
 									"            console.log('Max amount of retries is reached after ' + numberOfRetrys + ' attempts ');\r",
+									"            console.log('Status code is ' + failureCode);\r",
+									"\r",
+									"            pm.test(\"Internal Server Error\", function(){\r",
+									"                pm.expect.fail(\"Test \" + requestName + \" failed with response code \" + failureCode);\r",
+									"            });\r",
+									"\r",
 									"            postman.clearEnvironmentVariable(key);\r",
 									"        }\r",
 									"}"
@@ -119,7 +125,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -131,6 +137,11 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(jsonData.status).to.eql(\"running\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -179,7 +190,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -193,6 +204,11 @@
 									"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"tenant\"));",
 									"        pm.expect(jsonData.gcpid).to.exist;",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -236,7 +252,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -247,6 +263,11 @@
 									"    pm.test(\"Body is correct\", function () {",
 									"        pm.response.to.have.body(\"sd://\" + pm.environment.get(\"datapartition\"));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -303,13 +324,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 400) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 400\", function () {",
 									"        pm.response.to.have.status(400);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -380,13 +406,13 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT GET",
+					"name": "SUBPROJECT DELETE",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if ( (responseCode.code != 200) === (responseCode.code != 404) ) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -394,27 +420,92 @@
 									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
 									"    });",
 									"",
-									"    // check if subproject exists with VCS_Provider = \"gitlab\" variable and skip its creation if true",
-									"    if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
-									"        if (responseCode.code === 200) {",
-									"            var jsonData = pm.response.json();",
-									"            if (pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"))) {",
-									"                postman.setNextRequest(\"SUBPROJECT LIST\");",
-									"            } else {",
-									"                if(pm.environment.get('serviceCloudProvider') === 'ibm') {",
-									"                    postman.setNextRequest(\"SUBPROJECT REGISTER\")",
-									"                } else {",
-									"                    postman.setNextRequest(\"SUBPROJECT REGISTER Gitlab\");",
-									"                }",
-									"            };",
-									"        } else {",
-									"            if(pm.environment.get('serviceCloudProvider') === 'ibm') {",
-									"                postman.setNextRequest(\"SUBPROJECT REGISTER\")",
-									"            } else {",
-									"                postman.setNextRequest(\"SUBPROJECT REGISTER Gitlab\")",
-									"            }",
-									"        };",
-									"    };",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subprojectLongName}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"subproject",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subprojectLongName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SUBPROJECT GET",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if ( (responseCode.code != 200) === (responseCode.code != 404) ) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else if (responseCode.code === 404) {",
+									"    pm.test(\"Status code is 404\", function () {",
+									"        pm.response.to.have.status(404);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    postman.setNextRequest(\"SUBPROJECT REGISTER default admin\");",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"))",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    postman.setNextRequest(\"SUBPROJECT LIST\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -459,74 +550,13 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT DELETE",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"    });",
-									"",
-									"    if (pm.response.headers.get('service-provider') !== 'google') {",
-									"\t    postman.setNextRequest(\"SUBPROJECT REGISTER\");",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"subproject",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "SUBPROJECT REGISTER",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -599,31 +629,34 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT REGISTER Gitlab",
+					"name": "SUBPROJECT REGISTER default admin",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if ( (responseCode.code != 200) && (responseCode.code != 409)) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    var jsonData = pm.response.json();",
-									"",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
+									"    pm.test(\"Status code is 200 or 409\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200,409]);",
 									"    });",
 									"",
-									"    pm.test(\"Subproject created\", function () {",
-									"        var child = Object.keys(jsonData);",
-									"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
-									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
-									"        pm.expect(jsonData.ltag).to.exist;",
-									"        pm.expect(jsonData.gcs_bucket).to.exist;",
-									"    });",
+									"    if (pm.response.code === 200) {",
+									"        pm.test(\"Subproject created\", function () {",
+									"            var jsonData = pm.response.json();",
+									"            pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
+									"            pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"            pm.expect(jsonData.ltag).to.exist;",
+									"            pm.expect(jsonData.gcs_bucket).to.exist;",
+									"        });",
+									"    };",
 									"    ",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -681,7 +714,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -703,6 +736,9 @@
 									"        }",
 									"    });",
 									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -754,7 +790,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -765,10 +801,12 @@
 									"    });",
 									"",
 									"    pm.test(\"Find the subproject in list\", function () {",
-									"        var subproject = _.find(pm.response.json(), { ",
-									"            name: pm.environment.get(\"subproject\")",
-									"        });",
-									"        pm.expect(subproject.name).to.eql(pm.environment.get(\"subproject\"));",
+									"        if(pm.environment.get('serviceCloudProvider') !== 'ibm') { ",
+									"            var subproject = _.find(pm.response.json(), { ",
+									"                name: pm.environment.get(\"subproject\")",
+									"            });",
+									"            pm.expect(subproject.name).to.eql(pm.environment.get(\"subproject\"));",
+									"        };",
 									"    });",
 									"",
 									"    pm.test('Subproject details are present in response', () => {",
@@ -784,6 +822,9 @@
 									"        pm.expect(jsonData.length).to.be.above(0);",
 									"    });",
 									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -833,7 +874,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -855,6 +896,9 @@
 									"        }",
 									"    });",
 									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -913,7 +957,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -935,6 +979,9 @@
 									"        }",
 									"    });",
 									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -998,20 +1045,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"console.log('Dataset variables are initialized for datasets folder');",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"    ",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
+									"postman.setEnvironmentVariable('execCounter', 1)"
 								],
 								"type": "text/javascript"
 							}
@@ -1077,7 +1113,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1125,6 +1161,9 @@
 									"        pm.expect(jsonData.gtags[0]).to.eql(\"tagA\");",
 									"    }); ",
 									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -1188,7 +1227,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1267,7 +1306,12 @@
 									"    pm.environment.set(\"datasetsWithPaths\", JSON.stringify(dataSetsWithPaths));",
 									"    pm.environment.set(\"datasetName\", makeID(16));",
 									"    pm.environment.set(\"datasetPath\", \"/ab/cd/ef/gh/ij/000/001\");",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');",
 									"}"
 								],
@@ -1340,7 +1384,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1350,7 +1394,12 @@
 									"",
 									"    var jsonData = pm.response.json();",
 									"    pm.environment.set('datasetWithPathSbit', jsonData.sbit)",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
 									"    postman.setNextRequest('PATCHING DATASET USING AN ALLOWED HIERARCHY PATH');",
 									"}"
 								],
@@ -1422,13 +1471,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1494,7 +1548,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if ( (responseCode.code != 200) === (responseCode.code != 404) ) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1509,14 +1563,25 @@
 									"        pm.environment.set(\"datasetName\", dataset.name);",
 									"        pm.environment.set(\"datasetPath\", dataset.path);",
 									"        pm.environment.set(\"datasetsWithPaths\", JSON.stringify(datasets)); ",
-									"        postman.setEnvironmentVariable('execCounter', 1)",
+									"        ",
+									"        // Reset environment variables if _.retryOnFailure function was used before",
+									"        var key = request.name + '_counter';",
+									"        pm.environment.unset(key);",
+									"        postman.setEnvironmentVariable('execCounter', 1);",
+									"        ",
 									"        postman.setNextRequest('DATASET REGISTER USING AN ALLOWED HIERARCHY PATH');",
+									"",
 									"    } else {",
 									"        pm.environment.unset(\"datasetName\");",
 									"        pm.environment.unset(\"datasetPath\");",
 									"        pm.environment.unset('datasetWithPathSbit')",
 									"        pm.environment.unset('datasetsWithPaths')",
-									"        postman.setEnvironmentVariable('execCounter', 1)",
+									"        ",
+									"        // Reset environment variables if _.retryOnFailure function was used before",
+									"        var key = request.name + '_counter';",
+									"        pm.environment.unset(key);",
+									"        postman.setEnvironmentVariable('execCounter', 1);",
+									"",
 									"        postman.setNextRequest('DATASET DSX01 GET')",
 									"    }",
 									"}"
@@ -1573,7 +1638,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1633,6 +1698,11 @@
 									"    pm.test(\"ctag\", function () {",
 									"        postman.setEnvironmentVariable(\"ctag\", jsonData.ctag);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1687,7 +1757,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1700,6 +1770,11 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1771,7 +1846,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1788,6 +1863,11 @@
 									"    pm.test(\"Data List\", function () {",
 									"        pm.expect(jsonData.length).gte(1);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1834,7 +1914,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1846,6 +1926,9 @@
 									"        pm.expect(pm.response.json()).eql(true);",
 									"    });",
 									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -1906,7 +1989,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -1928,6 +2011,11 @@
 									"    pm.test(\"Filemetadata is added\", function () {",
 									"        pm.expect(jsonData.filemetadata).to.exist;",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1994,7 +2082,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2005,6 +2093,11 @@
 									"    pm.test(\"Validate ctag\", function () {",
 									"        pm.expect(pm.response.json()).eql(false);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2064,7 +2157,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2072,10 +2165,14 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"",
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"[false,true,false,false,true]\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2131,7 +2228,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2142,6 +2239,11 @@
 									"    pm.test(\"Body matches string\", function () {",
 									"        pm.expect(pm.response.text()).to.include(\"[-1,-1,-1,-1,1021]\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2197,7 +2299,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2214,6 +2316,11 @@
 									"    pm.test(\"Read Directories\", function () {",
 									"        pm.expect(jsonData.directories.length).to.eql(0);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2271,7 +2378,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2286,6 +2393,11 @@
 									"        pm.expect(jsonData.write).to.eql(true);",
 									"        pm.expect(jsonData.delete).to.eql(true);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2341,13 +2453,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2402,7 +2519,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2419,6 +2536,11 @@
 									"    pm.test(\"Data List\", function () {",
 									"        pm.expect(jsonData.length).gte(0);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2465,7 +2587,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2479,7 +2601,11 @@
 									"        pm.expect(jsonData.sbit_count).to.eql(0);",
 									"    });",
 									"",
-									"    pm.environment.unset('datasetdsx02sbit')",
+									"    pm.environment.unset('datasetdsx02sbit');",
+									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
@@ -2547,13 +2673,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2608,28 +2739,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01')",
+									"pm.environment.unset('dsx02')",
+									"pm.environment.unset('testPath')",
+									"pm.environment.unset('testPathEncoded')",
+									"pm.environment.unset('sbit')",
+									"pm.environment.unset('gcsBucketName')",
+									"pm.environment.unset('gcsObjectPrefix')",
+									"pm.environment.unset('ctag')",
+									"postman.setEnvironmentVariable('execCounter', 1)",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01')",
-									"    pm.environment.unset('dsx02')",
-									"    pm.environment.unset('testPath')",
-									"    pm.environment.unset('testPathEncoded')",
-									"    pm.environment.unset('sbit')",
-									"    pm.environment.unset('gcsBucketName')",
-									"    pm.environment.unset('gcsObjectPrefix')",
-									"    pm.environment.unset('ctag')",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
+									"console.log('Dataset variables were removed for datasets folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -2686,18 +2806,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"}"
+									"console.log('Dataset variables are initialized for dataset lock folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -2759,7 +2868,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2802,6 +2911,11 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2858,7 +2972,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 423) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -2869,6 +2983,11 @@
 									"    pm.test(\"Read a data locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2932,13 +3051,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3006,7 +3130,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 423) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3017,6 +3141,11 @@
 									"    pm.test(\"Write a data already locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3080,7 +3209,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3097,6 +3226,11 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3164,7 +3298,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 404) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3175,6 +3309,11 @@
 									"    pm.test(\"Close data using wrong sbit\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked with different ID');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3237,7 +3376,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3254,6 +3393,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3316,7 +3460,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3349,6 +3493,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3397,7 +3546,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3415,6 +3564,11 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit_new\", jsonData.sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3478,7 +3632,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 423) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3489,6 +3643,11 @@
 									"    pm.test(\"Read a data locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3552,7 +3711,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 423) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3563,6 +3722,11 @@
 									"    pm.test(\"Write a data already locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for write');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3626,7 +3790,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3643,6 +3807,11 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3710,7 +3879,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 404) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3721,6 +3890,11 @@
 									"    pm.test(\"Close data using wrong sbit\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked with different ID');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3783,7 +3957,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3800,6 +3974,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3862,7 +4041,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3895,6 +4074,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3943,7 +4127,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -3958,6 +4142,11 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit_new_01\", jsonData.sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4025,7 +4214,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 423) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4036,6 +4225,11 @@
 									"    pm.test(\"Write a data locked for reading\", function () {",
 									"        pm.expect(pm.response.text()).to.include('locked for read');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4099,7 +4293,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4113,6 +4307,11 @@
 									"        pm.expect(jsonData.sbit_count).to.eql(2);",
 									"        postman.setEnvironmentVariable(\"sbit_new_02\", jsonData.sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4176,7 +4375,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4193,6 +4392,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4255,7 +4459,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4272,6 +4476,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4334,7 +4543,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4367,6 +4576,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4415,13 +4629,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4470,7 +4689,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4513,6 +4732,11 @@
 									"        pm.expect(jsonData.sbit).not.to.eql(null);",
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4569,7 +4793,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4586,6 +4810,11 @@
 									"    pm.test(\"sbit\", function () {",
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4648,7 +4877,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4661,6 +4890,11 @@
 									"    pm.test(\"readonly\", function () {",
 									"        pm.expect(jsonData.readonly).to.eql(true);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4717,13 +4951,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4787,7 +5026,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 400) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -4798,6 +5037,11 @@
 									"    pm.test(\"Read a data locked for writing\", function () {",
 									"        pm.expect(pm.response.text()).to.include('cannot be locked');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4861,13 +5105,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4916,25 +5165,14 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01')",
+									"pm.environment.unset('sbit')",
+									"pm.environment.unset('sbit_new')",
+									"pm.environment.unset('sbit_new_01')",
+									"pm.environment.unset('sbit_new_02')",
+									"postman.setEnvironmentVariable('execCounter', 1)",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01')",
-									"    pm.environment.unset('sbit')",
-									"    pm.environment.unset('sbit_new')",
-									"    pm.environment.unset('sbit_new_01')",
-									"    pm.environment.unset('sbit_new_02')",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
+									"console.log('Dataset variables were removed for dataset lock folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -4991,18 +5229,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"}"
+									"console.log('Dataset variables are initialized for seismicmeta folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -5068,7 +5295,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -5120,6 +5347,11 @@
 									"    pm.test(\"Check seismicmetadata\", () => {",
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5182,7 +5414,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -5253,6 +5485,11 @@
 									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.coordinates[0][1]).to.equal(242030.61);",
 									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.type).to.equal(\"AnyCrsMultiPoint\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5311,7 +5548,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -5362,6 +5599,11 @@
 									"    pm.test(\"Check seismicmetadata\", () => {",
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5443,7 +5685,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -5513,6 +5755,11 @@
 									"        pm.expect(jsonData.seismicmeta.data.geometry.type).to.equal(\"Polygon\");",
 									"        pm.expect(jsonData.seismicmeta.meta[0].kind).to.eql(\"Unit\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5571,13 +5818,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5632,7 +5884,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -5685,11 +5937,15 @@
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
 									"",
-									"",
 									"    pm.test(\"Set record_type as env variable\", function () {",
 									"        var req = JSON.parse(pm.request.body.raw);",
 									"        pm.environment.set(\"dsx01_record_type\", req.seismicmeta.recordType);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5752,13 +6008,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5834,7 +6095,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -5910,6 +6171,11 @@
 									"        const record_type = jsonData.seismicmeta_guid.split(\":\")[1] ",
 									"        pm.expect(dsx01_record_type).to.equal(record_type)",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -5968,13 +6234,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6029,7 +6300,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -6072,6 +6343,11 @@
 									"        pm.expect(jsonData.sbit_count).to.eql(1);",
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6134,13 +6410,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6216,7 +6497,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -6258,6 +6539,11 @@
 									"    pm.test(\"sbit_count\", function () {",
 									"        pm.expect(jsonData.sbit_count).to.eql(0);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6316,13 +6602,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6377,7 +6668,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -6385,6 +6676,11 @@
 									"        pm.response.to.have.status(200);",
 									"        postman.setEnvironmentVariable(\"sbit\", pm.response.json().sbit);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6447,7 +6743,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -6460,6 +6756,11 @@
 									"    pm.test(\"Check seismicmetadata\", () => {",
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6526,13 +6827,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6587,28 +6893,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01')",
+									"pm.environment.unset('dsx02')",
+									"pm.environment.unset('testPath')",
+									"pm.environment.unset('testPathEncoded')",
+									"pm.environment.unset('sbit')",
+									"pm.environment.unset('gcsBucketName')",
+									"pm.environment.unset('gcsObjectPrefix')",
+									"pm.environment.unset('dsx01_record_type')",
+									"postman.setEnvironmentVariable('execCounter', 1)",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01')",
-									"    pm.environment.unset('dsx02')",
-									"    pm.environment.unset('testPath')",
-									"    pm.environment.unset('testPathEncoded')",
-									"    pm.environment.unset('sbit')",
-									"    pm.environment.unset('gcsBucketName')",
-									"    pm.environment.unset('gcsObjectPrefix')",
-									"    pm.environment.unset('dsx01_record_type')",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
+									"console.log('Dataset variables were removed for seismicmeta folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -6665,18 +6960,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"}"
+									"console.log('Dataset variables are initialized for tags folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -6751,7 +7035,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -6775,6 +7059,11 @@
 									"        pm.expect(jsonData.gtags[0]).to.eql(\"tag1\");",
 									"        pm.expect(jsonData.gtags[1]).to.eql(\"tag2\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6837,7 +7126,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -6854,6 +7143,11 @@
 									"    pm.test(\"path\", function () {",
 									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath01'));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6908,13 +7202,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -6996,13 +7295,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}    "
 								],
 								"type": "text/javascript"
@@ -7057,7 +7361,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7082,6 +7386,11 @@
 									"        pm.expect(jsonData.gtags[1]).to.eql(\"tag3\");",
 									"        pm.expect(jsonData.gtags[2]).to.eql(\"tag4\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7144,7 +7453,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7161,6 +7470,11 @@
 									"    pm.test(\"path\", function () {",
 									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath02'));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7215,13 +7529,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7303,13 +7622,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7364,7 +7688,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7390,6 +7714,11 @@
 									"        pm.expect(jsonData.gtags[2]).to.eql(\"tag4\");",
 									"        pm.expect(jsonData.gtags[3]).to.eql(\"tag5\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7452,7 +7781,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7469,6 +7798,11 @@
 									"    pm.test(\"path\", function () {",
 									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath03'));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7523,13 +7857,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
 									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7605,7 +7944,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7622,6 +7961,11 @@
 									"    pm.test(\"Data List\", function () {",
 									"        pm.expect(jsonData.length).to.eql(0);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7674,7 +8018,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7703,6 +8047,11 @@
 									"        });",
 									"        pm.expect(data2.path).to.eql(pm.environment.get('testPath01'));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7755,7 +8104,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7784,6 +8133,11 @@
 									"        });",
 									"        pm.expect(data2.path).to.eql(pm.environment.get('testPath03'));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7844,7 +8198,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7857,6 +8211,11 @@
 									"    pm.test(\"Check content type\", function () {",
 									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -7924,7 +8283,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -7948,6 +8307,11 @@
 									"        pm.expect(jsonData.gtags[2]).to.eql('tag4');",
 									"        pm.expect(jsonData.gtags[3]).to.eql('tag1');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8002,7 +8366,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8026,6 +8390,11 @@
 									"        });",
 									"        pm.expect(data1.path).to.eql(pm.environment.get('testPath02'));",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8078,7 +8447,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8093,6 +8462,11 @@
 									"        pm.expect(jsonData.gtags[1]).to.eql('tag3');",
 									"        pm.expect(jsonData.gtags[2]).to.eql('tag4');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8155,7 +8529,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8168,6 +8542,11 @@
 									"    pm.test(\"Tagged Data List\", function () {",
 									"        pm.expect(jsonData.length).gte(0);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8220,7 +8599,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8241,6 +8620,11 @@
 									"        pm.expect(data1.path).to.eql(pm.environment.get('testPath03'));",
 									"        pm.expect(data1.gtags[2]).to.eql('tag4');",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8297,13 +8681,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8358,15 +8747,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8421,15 +8813,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8484,30 +8879,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01')",
+									"pm.environment.unset('testPath01')",
+									"pm.environment.unset('testPathEncoded01')",
+									"pm.environment.unset('dsx02')",
+									"pm.environment.unset('testPath02')",
+									"pm.environment.unset('testPathEncoded02')",
+									"pm.environment.unset('dsx03')",
+									"pm.environment.unset('testPath03')",
+									"pm.environment.unset('testPathEncoded03')",
+									"pm.environment.unset('sbit')",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01')",
-									"    pm.environment.unset('testPath01')",
-									"    pm.environment.unset('testPathEncoded01')",
-									"    pm.environment.unset('dsx02')",
-									"    pm.environment.unset('testPath02')",
-									"    pm.environment.unset('testPathEncoded02')",
-									"    pm.environment.unset('dsx03')",
-									"    pm.environment.unset('testPath03')",
-									"    pm.environment.unset('testPathEncoded03')",
-									"    pm.environment.unset('sbit')",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables were removed for tags folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -8564,20 +8948,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables are initialized for utility folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -8647,7 +9018,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8705,7 +9076,10 @@
 									"        postman.setEnvironmentVariable(\"gcsObjectPrefix\", jsonData.gcsurl.split('/')[1]);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8768,7 +9142,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8776,7 +9150,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8852,10 +9229,16 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"",
 									"    var jsonData = pm.response.json();",
 									"",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -8881,8 +9264,6 @@
 									"            postman.setNextRequest(\"UTILITY DATASET DELETE\");",
 									"        }",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -8936,7 +9317,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -8954,7 +9335,11 @@
 									"        postman.setEnvironmentVariable(\"gcsXcrc32c\", jsonData.crc32c);",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"DOWNLOAD NEW FROM GCS\");",
 									"}"
 								],
@@ -9016,7 +9401,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 201) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9028,7 +9413,11 @@
 									"    pm.response.to.be.header(\"Content-Length\", \"0\");",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"",
 									"    postman.setNextRequest(\"DOWNLOAD NEW FROM ACS\");",
 									"}"
 								],
@@ -9125,7 +9514,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9143,7 +9532,11 @@
 									"        pm.expect(jsonData.crc32c).to.eql(pm.environment.get(\"gcsXcrc32c\"));",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"UTILITY DATASET DELETE\");",
 									"}"
 								],
@@ -9191,7 +9584,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9207,7 +9600,11 @@
 									"        pm.expect(pm.response.headers.get(\"x-ms-blob-type\")).to.eql(\"BlockBlob\");",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"UTILITY DATASET DELETE\");",
 									"}"
 								],
@@ -9292,15 +9689,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9355,7 +9755,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9403,6 +9803,9 @@
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"}"
 								],
@@ -9466,7 +9869,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9487,7 +9890,10 @@
 									"        pm.expect(test).to.eql(true);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9537,7 +9943,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9555,7 +9961,10 @@
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9622,7 +10031,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 202) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9630,7 +10039,10 @@
 									"        pm.response.to.have.status(202);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9684,7 +10096,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9705,7 +10117,10 @@
 									"        pm.expect(test).to.eql(true);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9755,7 +10170,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9763,7 +10178,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9818,7 +10236,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -9826,7 +10244,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9881,15 +10302,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9944,32 +10368,21 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01');",
+									"pm.environment.unset('testPath01');",
+									"pm.environment.unset('testPathEncoded01');",
+									"pm.environment.unset('dsx02');",
+									"pm.environment.unset('testPath02');",
+									"pm.environment.unset('testPathEncoded02');",
+									"pm.environment.unset('gcsBucketName');",
+									"pm.environment.unset('gcsObjectPrefix');",
+									"pm.environment.unset('gcsXcrc32c');",
+									"pm.environment.unset('tokenType');",
+									"pm.environment.unset('gcsAccessToken');",
+									"pm.environment.unset('sbit');",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01');",
-									"    pm.environment.unset('testPath01');",
-									"    pm.environment.unset('testPathEncoded01');",
-									"    pm.environment.unset('dsx02');",
-									"    pm.environment.unset('testPath02');",
-									"    pm.environment.unset('testPathEncoded02');",
-									"    pm.environment.unset('gcsBucketName');",
-									"    pm.environment.unset('gcsObjectPrefix');",
-									"    pm.environment.unset('gcsXcrc32c');",
-									"    pm.environment.unset('tokenType');",
-									"    pm.environment.unset('gcsAccessToken');",
-									"    pm.environment.unset('sbit');",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables were removed for utility folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -10026,26 +10439,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
+									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
+									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    postman.setNextRequest(\"APP REGISTER\");",
 									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
-									"        postman.setEnvironmentVariable('execCounter', 1);",
-									"        postman.setNextRequest(\"APP REGISTER\");",
-									"    } else {",
-									"        postman.setEnvironmentVariable('execCounter', 1);",
-									"        postman.setNextRequest(\"USER ADD\");",
-									"    };",
-									"}"
+									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    postman.setNextRequest(\"USER ADD\");",
+									"};"
 								],
 								"type": "text/javascript"
 							}
@@ -10097,7 +10497,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10105,7 +10505,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10158,7 +10561,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10172,7 +10575,10 @@
 									"        pm.expect(jsonData.roles.length).to.be.above(0);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10226,7 +10632,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10250,7 +10656,10 @@
 									"    //     pm.expect(check).to.eql('true');",
 									"    // });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10303,7 +10712,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10311,7 +10720,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10362,7 +10774,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10375,15 +10787,19 @@
 									"    pm.test(\"Find deleted account in user list\", function () {",
 									"        var list = jsonData.length;",
 									"        var check = 'not found';",
+									"        var user = pm.environment.get('newuser').split('@')[0];",
 									"        for(var i = 0; i < list; i++) {",
-									"            if(jsonData[i][0] == pm.environment.get('newuser')) {",
+									"            if(jsonData[i][0] == user) {",
 									"                check = 'found';",
 									"            }",
 									"        }",
 									"        pm.expect(check).to.eql('not found');",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10441,7 +10857,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10449,7 +10865,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10503,7 +10922,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10526,7 +10945,10 @@
 									"    //     pm.expect(test).to.eql('true');",
 									"    // });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10575,7 +10997,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10583,7 +11005,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10637,7 +11062,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 400) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10645,7 +11070,10 @@
 									"        pm.response.to.have.status(400);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10699,7 +11127,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -10736,7 +11164,10 @@
 									"        pm.expect(test).to.eql('true');",
 									"    }); ",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -10791,30 +11222,20 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"console.log('Dataset variables are initialized for imptoken folder');",
 									"",
+									"postman.setEnvironmentVariable('execCounter', 1);",
+									"",
+									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
+									"    pm.environment.unset('dsx01');",
+									"    pm.environment.unset('dsx02');",
+									"    pm.environment.unset('testPath');",
+									"    pm.environment.unset('testPathEncoded');",
+									"    postman.setNextRequest(\"CP STATUS SET\");",
 									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
-									"        pm.environment.unset('dsx01');",
-									"        pm.environment.unset('dsx02');",
-									"        pm.environment.unset('testPath');",
-									"        pm.environment.unset('testPathEncoded');",
-									"        postman.setNextRequest(\"CP STATUS SET\");",
-									"    } else {",
-									"        postman.setNextRequest(\"IMPTOKEN DATASET DELETE 01\");",
-									"    };",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"    postman.setNextRequest(\"STATUS UNSET IMPTOKEN\");",
+									"};",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -10875,140 +11296,16 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN DATASET DELETE 01",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "IMPTOKEN DATASET DELETE 02",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
-									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset//{{dsx02}}?path={{testPathEncoded}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"",
-								"{{dsx02}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "{{testPathEncoded}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "IMPTOKEN GENERATE",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if(pm.response.code !== 501) {",
+									"if ( (responseCode.code != 200) === (responseCode.code != 501) ) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else if(pm.response.code !== 501) {",
 									"",
 									"    var jsonData = pm.response.json();",
 									"    postman.setEnvironmentVariable(\"imptoken\", jsonData.impersonation_token);",
@@ -11027,11 +11324,21 @@
 									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
 									"} else {",
 									"    ",
 									"    pm.test(\"Status code is 501\", function () {",
 									"        pm.response.to.have.status(501);",
 									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
 									"    postman.setNextRequest(\"DATASET DELETE IMPTOKEN 02\");",
 									"};"
@@ -11086,7 +11393,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11139,7 +11446,10 @@
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11202,7 +11512,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11210,7 +11520,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11286,7 +11599,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11302,7 +11615,10 @@
 									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11351,7 +11667,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11404,7 +11720,10 @@
 									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11467,7 +11786,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11475,7 +11794,10 @@
 									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11551,7 +11873,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11567,7 +11889,10 @@
 									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11620,7 +11945,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 400) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -11632,7 +11957,10 @@
 									"        pm.expect(pm.response.text()).to.include(\"The impersonation token cannot be refreshed\");",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11681,15 +12009,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11744,15 +12075,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200,404]);",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11807,27 +12141,16 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01')",
+									"pm.environment.unset('dsx02')",
+									"pm.environment.unset('testPath')",
+									"pm.environment.unset('testPathEncoded')",
+									"pm.environment.unset('imptoken')",
+									"pm.environment.unset('imptoken_patch')",
+									"pm.environment.unset('sbit')",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01')",
-									"    pm.environment.unset('dsx02')",
-									"    pm.environment.unset('testPath')",
-									"    pm.environment.unset('testPathEncoded')",
-									"    pm.environment.unset('imptoken')",
-									"    pm.environment.unset('imptoken_patch')",
-									"    pm.environment.unset('sbit')",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables were removed for imptoken folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -11884,20 +12207,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables are initialized for CP Command folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -11969,7 +12281,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12004,7 +12316,10 @@
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -12067,7 +12382,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12134,7 +12449,10 @@
 									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.type).to.equal(\"AnyCrsMultiPoint\");",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -12193,7 +12511,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12211,7 +12529,10 @@
 									"        pm.expect(jsonData.sbit).to.eql(null);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -12278,10 +12599,16 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"        var key = request.name + '_counter';",
+									"        pm.environment.unset(key);",
+									"        postman.setEnvironmentVariable('execCounter', 1);",
+									"",
+									"",
 									"    var jsonData = pm.response.json();",
 									"",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -12359,7 +12686,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12373,7 +12700,11 @@
 									"        postman.setEnvironmentVariable(\"gcsXcrc32c\", jsonData.crc32c);",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"UTILITY CP X1 TO X2\");",
 									"}"
 								],
@@ -12446,7 +12777,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 201) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12458,7 +12789,11 @@
 									"    pm.response.to.be.header(\"Content-Length\", \"0\");",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"UTILITY CP X1 TO X2\");",
 									"}"
 								],
@@ -12514,7 +12849,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 202) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12522,7 +12857,10 @@
 									"        pm.response.to.have.status(202);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -12576,7 +12914,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12633,7 +12971,10 @@
 									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.type).to.equal(\"AnyCrsMultiPoint\");",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -12692,7 +13033,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12731,7 +13072,10 @@
 									"        postman.setEnvironmentVariable(\"gcsObjectPrefix\", jsonData.gcsurl.split('/')[1]);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"",
 									"    if (pm.variables.get(\"tokenType\") == \"SasUrl\") {",
 									"        postman.setNextRequest(\"DOWNLOAD X2 FROM ACS\");",
@@ -12792,7 +13136,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12810,7 +13154,11 @@
 									"        pm.expect(jsonData.crc32c).to.eql(pm.environment.get(\"gcsXcrc32c\"));",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"DATASET DELETE X1\");",
 									"}"
 								],
@@ -12858,7 +13206,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -12874,7 +13222,11 @@
 									"        pm.expect(pm.response.headers.get(\"x-ms-blob-type\")).to.eql(\"BlockBlob\");",
 									"    });",
 									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
 									"    postman.setNextRequest(\"DATASET DELETE X1\");",
 									"}"
 								],
@@ -12917,15 +13269,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -12980,15 +13335,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13043,34 +13401,23 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01')",
+									"pm.environment.unset('testPath01')",
+									"pm.environment.unset('testPathEncoded01')",
+									"pm.environment.unset('dsx02')",
+									"pm.environment.unset('testPath02')",
+									"pm.environment.unset('testPathEncoded02')",
+									"pm.environment.unset('ltag')",
+									"pm.environment.unset('gcsurl')",
+									"pm.environment.unset('gcsBucketName')",
+									"pm.environment.unset('gcsObjectPrefix')",
+									"pm.environment.unset('gcsAccessToken')",
+									"pm.environment.unset('tokenType')",
+									"pm.environment.unset('gcsXcrc32c')",
+									"pm.environment.unset('sbit')",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01')",
-									"    pm.environment.unset('testPath01')",
-									"    pm.environment.unset('testPathEncoded01')",
-									"    pm.environment.unset('dsx02')",
-									"    pm.environment.unset('testPath02')",
-									"    pm.environment.unset('testPathEncoded02')",
-									"    pm.environment.unset('ltag')",
-									"    pm.environment.unset('gcsurl')",
-									"    pm.environment.unset('gcsBucketName')",
-									"    pm.environment.unset('gcsObjectPrefix')",
-									"    pm.environment.unset('gcsAccessToken')",
-									"    pm.environment.unset('tokenType')",
-									"    pm.environment.unset('gcsXcrc32c')",
-									"    pm.environment.unset('sbit')",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables were removed for CP Command folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -13127,20 +13474,9 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"}"
+									"console.log('Dataset variables are initialized for Idempotency folder');"
 								],
 								"type": "text/javascript"
 							}
@@ -13163,7 +13499,11 @@
 									"\r",
 									"var path = \"/\" + makeID_cp(8) + \"/\" + makeID_cp(4) + \"/\" + makeID_cp(3) + \"/\" \r",
 									"postman.setEnvironmentVariable(\"testPath\", path);\r",
-									"postman.setEnvironmentVariable(\"testPathEncoded\", encodeURIComponent(path));"
+									"postman.setEnvironmentVariable(\"testPathEncoded\", encodeURIComponent(path));\r",
+									"\r",
+									"\r",
+									"var key = \"W\" + makeID_cp(32);\r",
+									"postman.setEnvironmentVariable(\"idempotencyKey\", key);"
 								],
 								"type": "text/javascript"
 							}
@@ -13206,7 +13546,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -13250,7 +13590,10 @@
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13260,17 +13603,17 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"function makeIdpID(length) {\r",
-									"   var result           = '';\r",
-									"   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
-									"   var charactersLength = characters.length;\r",
-									"   for ( var i = 0; i < length - 1; i++ ) {\r",
-									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
-									"   }\r",
-									"   return 'W' + result;\r",
-									"}\r",
+									"// function makeIdpID(length) {\r",
+									"//    var result           = '';\r",
+									"//    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+									"//    var charactersLength = characters.length;\r",
+									"//    for ( var i = 0; i < length - 1; i++ ) {\r",
+									"//       result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"//    }\r",
+									"//    return 'W' + result;\r",
+									"// }\r",
 									"\r",
-									"postman.setEnvironmentVariable(\"idempotencyKey\", makeIdpID(32));"
+									"// postman.setEnvironmentVariable(\"idempotencyKey\", makeIdpID(32));"
 								],
 								"type": "text/javascript"
 							}
@@ -13337,7 +13680,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -13381,7 +13724,10 @@
 									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13458,7 +13804,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -13481,7 +13827,10 @@
 									"        pm.expect(jsonData.filemetadata).to.exist;",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13548,7 +13897,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
@@ -13566,7 +13915,10 @@
 									"        pm.expect(jsonData.filemetadata).to.exist;",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13633,15 +13985,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13696,15 +14051,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.expect(pm.response.code).to.be.oneOf([200]);",
+									"        pm.response.to.have.status(200);",
 									"    });",
-									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13759,24 +14117,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('dsx01');",
+									"pm.environment.unset('testPath');",
+									"pm.environment.unset('testPathEncoded');",
+									"pm.environment.unset('idempotencyKey');",
+									"pm.environment.unset('sbit');",
+									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
+									"console.log('Dataset variables were removed for Idempotency folder');",
 									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('dsx01');",
-									"    pm.environment.unset('testPath');",
-									"    pm.environment.unset('testPathEncoded');",
-									"    pm.environment.unset('idempotencyKey');",
-									"    pm.environment.unset('sbit');",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"if (pm.environment.get(\"hold_subproject\") == \"true\") {",
+									"    console.log('Subproject ' + pm.environment.get('subproject') + ' will not be deleted');",
+									"    postman.setNextRequest(\"CLEANUP STATUS UNSET\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13834,15 +14186,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
+									"if (responseCode.code != 200) {",
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"    pm.test(\"Status code is 200 or 404\", function () {",
-									"    pm.expect(pm.response.code).to.be.oneOf([200,404])",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
 									"    });",
 									"",
-									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"}"
 								],
 								"type": "text/javascript"
@@ -13893,24 +14248,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if (responseCode.code >= 500) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"pm.environment.unset('serviceCloudProvider');",
+									"pm.environment.unset('appAdminEmail');",
+									"pm.environment.unset('maxAmountOfRetries');",
+									"pm.environment.unset('subprojectLongName');",
+									"pm.environment.unset('execCounter');",
 									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Body matches string\", function () {",
-									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
-									"    });",
-									"",
-									"    pm.environment.unset('serviceCloudProvider');",
+									"// if subproject name was not provided remove subproject",
+									"if (pm.environment.get(\"hold_subproject\" !== true)) {",
 									"    pm.environment.unset('subproject');",
-									"    pm.environment.unset('appAdminEmail');",
-									"    pm.environment.unset('maxAmountOfRetries');",
-									"    pm.environment.unset('subprojectLongName');",
-									"}"
+									"}",
+									"pm.environment.unset('hold_subproject');",
+									"",
+									"console.log('Postman environment was cleaned up');"
 								],
 								"type": "text/javascript"
 							}

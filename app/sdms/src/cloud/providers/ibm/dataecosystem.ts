@@ -93,8 +93,6 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
         return true;
     }
 
-    public getUserAssociationSvcBaseUrlPath(): string {
-        return IbmConfig.CCM_USER_ASSOC_CONTEXT_PATH;
-    }
+    public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
 
 }

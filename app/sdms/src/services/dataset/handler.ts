@@ -324,8 +324,9 @@ export class DatasetHandler {
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertUserInfo) {
             if (!Utils.isEmail(datasetOUT.created_by)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-                const userEmail = await UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER).
-                convertPrincipalIdentifierToUserInfo(datasetOUT.created_by, dataPartition);
+                const userEmail = await UserAssociationServiceFactory.build(
+                    Config.USER_ASSOCIATION_SVC_PROVIDER).convertPrincipalIdentifierToUserInfo(
+                        datasetOUT.created_by, dataPartition);
                 datasetOUT.created_by = userEmail;
             }
 
@@ -372,12 +373,13 @@ export class DatasetHandler {
         // Retrieve the list of datasets metadata
         const output = await DatasetDAO.list(journalClient, dataset, pagination) as any;
 
-        // attach the gcpid for fast check
+        // attach the gcpid for fast check and exchange user-info if requested
+        const userAssociationService = FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && userInfo ?
+            UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER) : undefined;
         const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
-        const userAssociationService = UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER);
         for (const item of output.datasets) {
             item.ctag = item.ctag + tenant.gcpid + ';' + dataPartition;
-            if (userInfo && !Utils.isEmail(item.created_by)) {
+            if (userAssociationService && !Utils.isEmail(item.created_by)) {
                 item.created_by = await userAssociationService.convertPrincipalIdentifierToUserInfo(
                     item.created_by, dataPartition);
             }

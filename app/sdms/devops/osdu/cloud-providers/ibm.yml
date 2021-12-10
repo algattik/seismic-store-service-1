@@ -16,7 +16,7 @@ sdms_ibm-deploy:
     - echo "In IBM deploy"
     - oc project $IBM_OPENSHIFT_PROJECT
     - oc get bc/$SDMS_PROJECT_NAME 2> /dev/null || oc new-build --name $SDMS_PROJECT_NAME --binary --strategy source --image-stream openshift/ubi8-nodejs-14
-    - oc start-build $SDMS_PROJECT_NAME --commit=$SDMS_COMMIT_SHA --follow
+    - oc start-build $SDMS_PROJECT_NAME --commit=$CI_COMMIT_SHA  --follow
     - oc get service $SDMS_PROJECT_NAME 2> /dev/null || oc new-app $SDMS_PROJECT_NAME
   only:
     variables:
@@ -65,7 +65,7 @@ sdms_ibm-test:
     - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
-    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${SEISMIC_HOST}/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${IBM_SEISMIC_E2E_TENANT}" --admin-email="${IBM_SEISMIC_E2E_ADMIN_EMAIL}" --datapartition="${IBM_SEISMIC_E2E_DATA_PARTITION}" --legaltag01="${IBM_SEISMIC_E2E_LEGALTAG01}" --legaltag02="${IBM_SEISMIC_E2E_LEGALTAG02}" --newuser="${IBM_SEISMIC_E2E_NEWUSER}" --VCS-Provider="gitlab"
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${SEISMIC_HOST}/api/v3" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${IBM_SEISMIC_E2E_TENANT}" --admin-email="${IBM_SEISMIC_E2E_ADMIN_EMAIL}" --datapartition="${IBM_SEISMIC_E2E_DATA_PARTITION}" --legaltag01="${IBM_SEISMIC_E2E_LEGALTAG01}" --legaltag02="${IBM_SEISMIC_E2E_LEGALTAG02}" --newuser="${IBM_SEISMIC_E2E_NEWUSER}" --VCS-Provider="gitlab"  --subproject="${IBM_SEISMIC_E2E_SUBPROJECT}"
   only:
     variables:
       - $IBM == 'true'

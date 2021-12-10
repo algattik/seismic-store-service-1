@@ -19,8 +19,9 @@
 usage() {
     printf  "\n[USAGE] ./e2e/tests/run_e2e_tests.sh --seistore-svc-url=... " \
             "--seistore-svc-api-key=... --user-idtoken=... --tenant=..." \
-            "--admin-email=... --datapartition=... --legaltag01=... --legaltag02=... " \
-            "--newuser(optional)=... --VCS-provider(optional)=... --de-app-key(optional)=... \n "
+            "--datapartition=... --legaltag01=... --legaltag02=... " \
+            "--newuser(optional)=... --VCS-provider(optional)=... --de-app-key(optional)=... " \
+            "--admin-email(optional)=... --subproject(optional)=... \n "
     printf "\n[ERROR] %s\n" "$1"
 }
 
@@ -35,13 +36,14 @@ usage() {
 # argument [seistore-svc-api-key] seismic store service api key - required
 # argument [user-idtoken] user credentail token - required
 # argument [tenant] seismic store working tenant name - required
-# argument [admin-email] user credentail email - required
 # argument [datapartition] data partition id - required
 # argument [legaltag01] test legal tag - required
 # argument [legaltag02] test legal tag  - required
 # argument [newuser] user email for a new user to add partition id - required
 # argument [VCS-Provider] version control system provider - optional
-# argument [de-app-key] DELFI application key - optional for authorization
+# argument [de-app-key] DELFI application key - optional
+# argument [admin-email] user credentail email - optional
+# argument [subproject] Subproject name to use in e2e tests - optional
 
 for i in "$@"; do
 case $i in
@@ -59,10 +61,6 @@ case $i in
   ;;
   --tenant=*)
   working_tenant="${i#*=}"
-  shift
-  ;;
-  --admin-email=*)
-  admin_email="${i#*=}"
   shift
   ;;
   --datapartition=*)
@@ -89,6 +87,14 @@ case $i in
   VCS_Provider="${i#*=}"
   shift
   ;;
+  --admin-email=*)
+  admin_email="${i#*=}"
+  shift
+  ;;
+  --subproject=*)
+  subproject="${i#*=}"
+  shift
+  ;;
   *)
   usage "unknown option $i"
   ;;
@@ -100,7 +106,6 @@ if [ -z "${seistore_svc_api_key}" ]; then usage "seistore-svc-api-key not define
 if [ -z "${seistore_svc_url}" ]; then usage "seistore-svc-url not defined" && exit 1; fi
 if [ -z "${user_idtoken}" ]; then usage "user-idtoken not defined" && exit 1; fi
 if [ -z "${working_tenant}" ]; then usage "tenant not defined" && exit 1; fi
-if [ -z "${admin_email}" ]; then usage "admin-email not defined" && exit 1; fi
 if [ -z "${datapartition}" ]; then usage "datapartition not defined" && exit 1; fi
 if [ -z "${legaltag01}" ]; then usage "legaltag01 not defined" && exit 1; fi
 if [ -z "${legaltag02}" ]; then usage "legaltag02 not defined" && exit 1; fi
@@ -125,6 +130,14 @@ else
    VCS_Provider="any"
 fi
 
+if [ -z "${subproject}" ]; then
+   sed -i "s/#{SUBPROJECT}#//g" ./tests/e2e/postman_env.json
+fi
+
+if [ -z "${admin_email}" ]; then
+ sed -i "s/#{ADMINEMAIL}#//g" ./tests/e2e/postman_env.json 
+fi
+
 # print logs
 printf "\n%s\n" "--------------------------------------------"
 printf "%s\n" "seismic store regression tests"
@@ -138,6 +151,7 @@ printf "%s\n" "legaltag01 = ${legaltag01}"
 printf "%s\n" "legaltag02 = ${legaltag02}"
 printf "%s\n" "newuser = ${newuser}"
 printf "%s\n" "VCS_Provider = ${VCS_Provider}"
+printf "%s\n" "subproject = ${subproject}"
 printf "%s\n" "--------------------------------------------"
 
 # replace values in the main env
@@ -153,11 +167,12 @@ sed -i "s/#{LEGALTAG02}#/${legaltag02}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{NEWUSEREMAIL}#/${newuser}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
+sed -i "s/#{SUBPROJECT}#/${subproject}/g" ./tests/e2e/postman_env.json
 
 # install requied packages
 npm ci 
 
-# run parallel tests
+# run tests
 ./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \
     -e ./tests/e2e/postman_env.json \
     --insecure \
