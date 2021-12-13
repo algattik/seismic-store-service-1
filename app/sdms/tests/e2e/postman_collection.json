@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "b0d6991c-18ce-4fbf-a5d1-fa1a117f995b",
-		"name": "SDMS-E2E ver.M9-0.12",
+		"name": "SDMS-E2E ver.M10 - Release 0.13",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -6960,7 +6960,11 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"console.log('Dataset variables are initialized for tags folder');"
+									"console.log('Dataset variables are initialized for tags folder');\r",
+									"\r",
+									"if(pm.environment.get('serviceCloudProvider') === 'ibm') { \r",
+									"    postman.setNextRequest(\"STATUS UNSET TAGS\");\r",
+									"}"
 								],
 								"type": "text/javascript"
 							}
@@ -10439,13 +10443,18 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"// BUG WORKAROUND",
+									"",
 									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    postman.setNextRequest(\"APP REGISTER\");",
 									"} else {",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"    postman.setNextRequest(\"USER ADD\");",
-									"};"
+									"    postman.setNextRequest(\"USER ROLES\");",
+									"    // postman.setNextRequest(\"USER ADD\");",
+									"};",
+									"",
+									""
 								],
 								"type": "text/javascript"
 							}
