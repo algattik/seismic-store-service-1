@@ -61,12 +61,14 @@ phases:
       - mkdir -p ${OUTPUT_DIR}/bin
       - mkdir -p ${OUTPUT_DIR}/testing && mkdir -p ${INTEGRATION_TEST_OUTPUT}  && mkdir -p ${INTEGRATION_TEST_OUTPUT}/bin
       - echo "Placeholder" >> ${OUTPUT_DIR}/build-info.json # touched so that the output directory has some content incase the build fails so that testing reports are uploaded
-      - printenv
-      - node_modules/.bin/tslint -c tslint.json 'src/cloud/providers/aws/**/*.ts'
+
+      - node_modules/.bin/tslint -c tslint.json 'src/cloud/providers/aws/**/*.ts'  
       - echo "Building seismic-store-service"
-
-
       - npm run build
+
+      # copy to tests folder for generating token for integration tests
+      - cp devops/scripts/aws_jwt_client.py tests/aws-test/build-aws/aws_jwt_client.py
+      - cp devops/aws/requirements.txt tests/aws-test/build-aws/requirements.txt   
 
       - echo "Building integration testing assemblies and gathering artifacts..."
       - chmod +x ./tests/aws-test/build-aws/prepare-dist.sh

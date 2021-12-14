@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+import request from 'request-promise';
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
     IDESEntitlementGroupMembersModel
 } from '../../dataecosystem';
-
+import { AWSCredentials } from './credentials';
+import { AWSConfig } from './config';
 @DataEcosystemCoreFactory.register('aws')
 export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
 
@@ -26,6 +27,7 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
     public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
+    public static getPartitionBaseUrlPath(): string { return '/api/partition/v1/partitions/'; };
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;
@@ -43,4 +45,27 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
         return false;
     }
 
+    public static async getTenantIdFromPartitionID(dataPartitionID: string): Promise<string> {
+        const token = await AWSCredentials.getServiceCredentials();
+        const options = {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            url: AWSConfig.DES_SERVICE_HOST_PARTITION +
+                AWSDataEcosystemServices.getPartitionBaseUrlPath()+ dataPartitionID
+            // url: 'https://kogliny.dev.osdu.aws/api/partition/v1/partitions/' + dataPartitionID
+        };
+
+        try {
+            const response = JSON.parse(await request.get(options));
+            const tenantId = response['tenantId']['value'];
+            return tenantId;
+        }
+        catch (err) {
+            // tslint:disable-next-line:no-console
+            console.log(err.code + ': ' + err.message);
+        }
+    }
 }
