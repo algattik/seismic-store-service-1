@@ -16,16 +16,23 @@ import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../.
 import { AWSConfig } from './config';
 import {AWSSSMhelper} from './ssmhelper';
 import {AWSSTShelper} from './stshelper';
-
 import DynamoDB from 'aws-sdk/clients/dynamodb';
-
+import request from 'request-promise';
 import aws from 'aws-sdk';
+import {AWSDataEcosystemServices} from './dataecosystem';
+
+const KExpiresMargin = 300; // 5 minutes
 
 @CredentialsFactory.register('aws')
 export class AWSCredentials extends AbstractCredentials {
 
-    private awsSSMHelper = new AWSSSMhelper();
+    private static awsSSMHelper = new AWSSSMhelper();
     private awsSTSHelper = new AWSSTShelper();
+    private static servicePrincipalCredential: IAccessTokenModel = {
+        access_token: undefined,
+        expires_in: 0,
+        token_type: undefined
+    };
 
     // [OBSOLETE] to remove with /imptoken
     getAudienceForImpCredentials(): string {
@@ -47,8 +54,8 @@ export class AWSCredentials extends AbstractCredentials {
         return undefined;
     }
 
-    async getBucketFolder(folder:string): Promise<string> {
-        const tableName = AWSConfig.AWS_ENVIRONMENT+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
+    async getBucketFolder(folder:string, tenantId:string): Promise<string> {
+        const tableName = AWSConfig.AWS_ENVIRONMENT+'-'+tenantId+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
         const params = {
             TableName: tableName,
             Key: {
@@ -60,7 +67,7 @@ export class AWSCredentials extends AbstractCredentials {
         const ret = aws.DynamoDB.Converter.unmarshall(data.Item);
         if (Object.keys(ret).length === 0){
             // tslint:disable-next-line:no-console
-            console.log('error to get folder: '+folder+'\n');
+            console.log('error to get Bucket folder: '+folder+'\n');
             return undefined;
         }
         else{
@@ -72,22 +79,25 @@ export class AWSCredentials extends AbstractCredentials {
     public async getStorageCredentials(
         tenant: string, subproject: string,
         bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
-            const s3bucket = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/seismic-s3-bucket-name')
-            const expDuration = await this.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/seismic-store/temp-cred-expiration-duration')
+            const dataPartition = tenant;
+            const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(dataPartition);
+
+            const s3bucket = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/tenants/'+tenantId+ '/seismic-store/SeismicDDMSBucket/name');
+            const expDuration = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/tenants/'+tenantId+'/seismic-store/temp-cred-expiration-duration')
             let roleArn='';
             let credentials='';
 
             let flagUpload=true;
 
-            const keyPath =  await this.getBucketFolder(tenant+':'+subproject);
+            const keyPath =  await this.getBucketFolder(tenant+':'+subproject, tenantId);
 
             // tslint:disable-next-line:triple-equals
             if(readonly ) { // readOnly True
-                 roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
+                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
                 flagUpload = false;
             } else   // readOnly False
             {
-                roleArn = await this.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
+                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
                 flagUpload = true;
             }
 
@@ -99,6 +109,71 @@ export class AWSCredentials extends AbstractCredentials {
                 token_type: 'Bearer',
             };
             return result;
+    }
+
+    // this will return serviceprincipal access token
+    public static async getServiceCredentials(): Promise<string> {
+        if (AWSCredentials.servicePrincipalCredential &&
+            AWSCredentials.servicePrincipalCredential.expires_in > Math.floor(Date.now() / 1000)){
+            return AWSCredentials.servicePrincipalCredential.access_token;
+        }
+
+        const tokenUrlSsmPath = '/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/oauth-token-uri';
+        const oauthCustomScopeSsmPath='/osdu/'+ AWSConfig.AWS_ENVIRONMENT+'/oauth-custom-scope';
+        const clientIdSsmPath='/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/client-credentials-client-id';
+        const clientSecretName='/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/client_credentials_secret';
+        // pragma: allowlist nextline secret
+        const clientSecretDictKey='client_credentials_client_secret'
+
+        const clientId = await AWSCredentials.awsSSMHelper.getSSMParameter(clientIdSsmPath);
+        const clientSecret = await AWSCredentials.getSecrets(clientSecretName, clientSecretDictKey);
+        const tokenUrl = await AWSCredentials.awsSSMHelper.getSSMParameter(tokenUrlSsmPath);
+        const oauthCustomScope = await AWSCredentials.awsSSMHelper.getSSMParameter(oauthCustomScopeSsmPath);
+        const auth = clientId+':'+clientSecret;
+
+        const encoded= (str: string):string => Buffer.from(str, 'binary').toString('base64');
+        const decoded = (str: string):string => Buffer.from(str, 'base64').toString('binary');
+        const encodedAuth = encoded(auth);
+
+        const options = {
+            form: {
+                grant_type: 'client_credentials'
+            },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic '+encodedAuth
+            },
+            url: tokenUrl+'?client_id='+clientId+'&scope='+ oauthCustomScope,
+        };
+        const response = JSON.parse(await request.post(options));
+        AWSCredentials.servicePrincipalCredential = response as IAccessTokenModel;
+        AWSCredentials.servicePrincipalCredential.expires_in = Math.floor(Date.now() / 1000) +
+            +AWSCredentials.servicePrincipalCredential.expires_in - KExpiresMargin;
+        const val = response['access_token'];
+        return (Promise.resolve(val.toString()));
+    }
+
+    public static async getSecrets(clientSecretName: string, clientSecretDictKey: string): Promise<string> {
+        const params = {
+            SecretId: clientSecretName
+        };
+        const secretsManager = new aws.SecretsManager({ region: AWSConfig.AWS_REGION});
+        try {
+            const data = await secretsManager.getSecretValue(params).promise();
+            if (data.SecretString) {
+                const secretValue = JSON.parse(data.SecretString);
+                const val = Object.values(secretValue)[0];
+                return (Promise.resolve(val.toString()));
+            }  else {
+                // tslint:disable-next-line:no-console
+                console.log('get binary');
+                const decodedBinarySecret = Buffer.from(data.SecretBinary.toString(), 'base64').toString('ascii');
+                return (Promise.resolve(decodedBinarySecret));
+            }
+        } catch (err) {
+            // tslint:disable-next-line:no-console
+            console.log(err.code + ': ' + err.message);
+        }
     }
 
 }

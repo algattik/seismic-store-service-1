@@ -4,25 +4,28 @@
     - |
       if [ $AWS_DEPLOY_TARGET == 'EKS' ]; then
 
-        echo "##### DEPLOYING TO EKS/GREEN ######"
+        echo "##### DEPLOYING TO EKS ######"
 
-        export AWS_INFRA_STACK_NAME="$AWS_GREEN_INFRA_STACK_NAME";
-        export AWS_REGION="$AWS_GREEN_REGION";
-        export AWS_DOMAIN="${AWS_GREEN_SUBDOMAIN}.${AWS_BASE_DOMAIN}";        
-        export RESOURCE_PREFIX="$AWS_GREEN_RESOURCE_PREFIX";        
-        
-      else
+        # echo "##### USING GREEN DEPLOYMENT ######"
+        # export AWS_INFRA_STACK_NAME="$AWS_GREEN_INFRA_STACK_NAME";
+        # export AWS_REGION="$AWS_GREEN_REGION";
+        # export AWS_DOMAIN="${AWS_GREEN_SUBDOMAIN}.${AWS_BASE_DOMAIN}";        
+        # export RESOURCE_PREFIX="$AWS_GREEN_RESOURCE_PREFIX";      
 
-        echo "##### DEPLOYING TO ECS/BLUE ######"
+        echo "##### USING BLUE DEPLOYMENT ######"
 
-        echo "FAILED>>>BLUE ENVIRONMENT DOES NOT EXIST"
-
-        exit 1
-        
         export AWS_INFRA_STACK_NAME="$AWS_BLUE_INFRA_STACK_NAME";
         export AWS_REGION="$AWS_BLUE_REGION";
         export AWS_DOMAIN="${AWS_BLUE_SUBDOMAIN}.${AWS_BASE_DOMAIN}";        
-        export RESOURCE_PREFIX="$AWS_BLUE_RESOURCE_PREFIX";        
+        export RESOURCE_PREFIX="$AWS_BLUE_RESOURCE_PREFIX";       
+        
+      else
+
+        echo "##### DEPLOYING TO ECS ######"
+
+        echo "FAILED>>>ECS ENVIRONMENT DOES NOT EXIST"
+
+        exit 1
         
       fi      
 

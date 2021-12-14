@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import { Config, ConfigFactory } from '../../config';
-import { AWSSSMhelper } from './ssmhelper';
 
 @ConfigFactory.register('aws')
 export class AWSConfig extends Config {
@@ -22,7 +21,6 @@ export class AWSConfig extends Config {
     public static AWS_EP_IAM: string;
     public static AWS_REGION: string;
     public static AWS_ENVIRONMENT: string;
-    public static AWS_BUCKET: string;
     // Logger
     public static LOGGER_LEVEL: string;
     // max len for a group name in DE
@@ -35,9 +33,6 @@ export class AWSConfig extends Config {
         AWSConfig.AWS_EP_IAM = process.env.AWS_EP_IAM;
         AWSConfig.AWS_REGION = process.env.AWS_REGION;
         AWSConfig.AWS_ENVIRONMENT = process.env.ENVIRONMENT;
-
-        const awsSSMHelper = new AWSSSMhelper();
-        AWSConfig.AWS_BUCKET = await awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/seismic-s3-bucket-name');
 
         // Logger
         AWSConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';

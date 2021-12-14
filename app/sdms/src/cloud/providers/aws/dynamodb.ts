@@ -20,6 +20,7 @@ import AWS from 'aws-sdk/global';
 import DynamoDB, { ScanInput } from 'aws-sdk/clients/dynamodb';
 import aws from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
+import { AWSDataEcosystemServices } from './dataecosystem';
 
 const converter = aws.DynamoDB.Converter;
 
@@ -27,15 +28,31 @@ const converter = aws.DynamoDB.Converter;
 export class AWSDynamoDbDAO extends AbstractJournal {
 
     public KEY = Symbol('id');
-    private dataPartition: string; // tenant name
+    private dataPartition: string;
     private tenant: TenantModel;
+    private tenantTablePrefix: string;
     public constructor(tenant: TenantModel) {
         super();
         this.tenant = tenant;
         this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
         AWS.config.update({ region: AWSConfig.AWS_REGION });
+        this.tenantTablePrefix='';
     }
 
+    public async getPartitionTenant()
+    {
+        if(this.tenantTablePrefix === ''){
+            const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(this.dataPartition);
+            this.tenantTablePrefix = tenantId;
+        }
+    }
+
+    public async getTableName(table:string): Promise<string>{
+        await this.getPartitionTenant();
+        const lastIndex = table.lastIndexOf('-');
+        const ret = table.substring(0, lastIndex)+'-'+this.tenantTablePrefix+table.substring(lastIndex);
+        return ret;
+    }
     public async save(datasetEntity: any): Promise<void> {
         if (!(datasetEntity instanceof Array)) {
             datasetEntity = [datasetEntity];
@@ -60,11 +77,12 @@ export class AWSDynamoDbDAO extends AbstractJournal {
             // save extra info as this property will be consumed by the service to identify a data record
             item[this.KEY.toString()] = entity.key;
 
+            const tenantTable = await this.getTableName(entity.key.tableName);
             const itemMarshall = converter.marshall(item);
             // tslint:disable-next-line:no-console
-            console.log('from table ' + entity.key.tableName + ' save ' + JSON.stringify(itemMarshall));
+            console.log('from table ' + tenantTable + ' save ' + JSON.stringify(itemMarshall));
             const para = {
-                TableName: entity.key.tableName,
+                TableName: tenantTable,
                 Item: itemMarshall
             };
             const db = new DynamoDB({});
@@ -73,13 +91,13 @@ export class AWSDynamoDbDAO extends AbstractJournal {
     }
 
     public async get(key: any): Promise<[any | any[]]> {
-
+        const tenantTable = await this.getTableName(key.tableName);
         const item = { 'id': key.partitionKey };
         const itemMarshall = converter.marshall(item);
         // tslint:disable-next-line:no-console
-        console.log('from table ' + key.tableName + ' get ' + JSON.stringify(itemMarshall));
+        console.log('from table ' + tenantTable + ' get ' + JSON.stringify(itemMarshall));
         const params = {
-            TableName: key.tableName,
+            TableName: tenantTable,
             Key: itemMarshall
         };
         const db = new DynamoDB({});
@@ -97,12 +115,13 @@ export class AWSDynamoDbDAO extends AbstractJournal {
     }
 
     public async delete(key: any): Promise<void> {
+        const tenantTable = await this.getTableName(key.tableName);
         const item = { 'id': key.partitionKey };
         const itemMarshall = converter.marshall(item);
         // tslint:disable-next-line:no-console
-        console.log('from table ' + key.tableName + ' delete ' + JSON.stringify(itemMarshall));
+        console.log('from table ' + tenantTable + ' delete ' + JSON.stringify(itemMarshall));
         const params = {
-            TableName: key.tableName,
+            TableName: tenantTable,
             Key: itemMarshall
         };
         const db = new DynamoDB({});
@@ -114,8 +133,9 @@ export class AWSDynamoDbDAO extends AbstractJournal {
     }
 
     public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {
+        await this.getPartitionTenant();
         const dbQuery = (query as AWSDynamoDbQuery);
-        const statement = dbQuery.getQueryStatement(dbQuery.kind);
+        const statement = dbQuery.getQueryStatement(dbQuery.kind, this.tenantTablePrefix);
 
         // tslint:disable-next-line:no-console
         console.log('query ' + JSON.stringify(statement));
@@ -371,7 +391,7 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
         }
         return this;
     }
-    public getQueryStatement(tableName: string): ScanInput {
+    public getQueryStatement(tableName: string, tenantTablePrefix: string): ScanInput {
 
         // since we have one table for all datasets, we need to
         // add more filters to return dataset specific for that tenant/subproject
@@ -420,7 +440,8 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             delete this.queryStatement.ExpressionAttributeValues;
         }
 
-        this.queryStatement.TableName = AWSConfig.AWS_ENVIRONMENT + '-SeismicStore.' + tableName;
+        this.queryStatement.TableName = AWSConfig.AWS_ENVIRONMENT+'-'+tenantTablePrefix
+        + '-' + 'SeismicStore.'+ tableName;
         return this.queryStatement;
     }
 }

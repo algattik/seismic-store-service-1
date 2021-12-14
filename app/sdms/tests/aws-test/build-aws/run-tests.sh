@@ -18,36 +18,7 @@
 echo '****Running SeimsicStore Service integration tests*****************'
 
 SCRIPT_SOURCE_DIR=$(dirname "$0")
-echo "Script source location"
-echo "$SCRIPT_SOURCE_DIR"
-#echo "Script source location absolute"
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-echo $SCRIPTPATH
-
-
-
-AWS_COGNITO_PWD=$ADMIN_PASSWORD
-AWS_COGNITO_USER=$ADMIN_USER
-client_id=$AWS_COGNITO_CLIENT_ID
-svc_url=$SEISMIC_DMS_URL
-tenant='opendes'
-legaltag='opendes-sdmstestlegaltag'
-subproject='subproject'
-RANDOM=$$
-subproject+=$RANDOM
-newuser='newuser'
-newuser+=$RANDOM
-newuser+='@testing.com'
-echo $subproject
-echo $newuser
-
-#### RUN INTEGRATION TEST #########################################################################
-
-
-token=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id $client_id --auth-parameters USERNAME=$AWS_COGNITO_USER,PASSWORD=$AWS_COGNITO_PWD --output=text --query AuthenticationResult.{AccessToken:AccessToken})
-echo '****Generating token*****************'
-echo $token
-
 
 pushd "$SCRIPT_SOURCE_DIR"/../
 
@@ -66,11 +37,72 @@ cp -R /tmp/sdmsawstest/node_modules $SCRIPTPATH/../../
 popd
 cd ..
 echo $(pwd)
+
+export AWS_COGNITO_AUTH_PARAMS_USER=${ADMIN_USER} #set by env script
+export AWS_COGNITO_AUTH_PARAMS_PASSWORD=${ADMIN_PASSWORD} #set by codebuild 
+
+pip3 install -r aws-test/build-aws/requirements.txt
+token=$(python3 aws-test/build-aws/aws_jwt_client.py)
+echo '****Generating token*****************'
+# echo $token
+# printenv
+echo 'Register Legal tag before Integration Tests ...'
+curl --location --request POST "$LEGAL_URL"'legaltags' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer '"$token" \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+        "name": "sdmstestlegaltag",
+        "description": "test legal for Seismic DMS Service",
+        "properties": {
+            "countryOfOrigin":["US"],
+            "contractId":"A1234",
+            "expirationDate":"2099-01-25",
+            "dataType":"Public Domain Data", 
+            "originator":"MyCompany",
+            "securityClassification":"Public",
+            "exportClassification":"EAR99",
+            "personalData":"No Personal Data"
+        }
+}'
+echo 'Register SeismicStore.tenants before Integration Tests ...'
+curl --location --request POST "$SEISMIC_DMS_URL"'/tenant/opendes' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer '"$token" \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+        "default_acls": "users.datalake.admins@opendes.example.com",
+        "esd": "opendes.example.com",
+        "gcpid": "aws_project_id"
+}'
+
 chmod +x ./tests/e2e/run_e2e_tests.sh
 echo Running Seimic-Store Service Integration Tests...
-./tests/e2e/run_e2e_tests.sh --seistore-svc-url=$svc_url --seistore-svc-api-key='xx' --user-idtoken=$token --tenant=$tenant --subproject=$subproject --admin-email=$ADMIN_USER --datapartition=$tenant --legaltag01=$legaltag --legaltag02=$legaltag --newuser=$newuser
+
+tenant='opendes'
+legaltag='opendes-sdmstestlegaltag'
+subproject='subproject'
+RANDOM=$$
+subproject+=$RANDOM
+newuser='newuser'
+newuser+=$RANDOM
+newuser+='@testing.com'
+echo $subproject
+echo $newuser
+
+
+./tests/e2e/run_e2e_tests.sh --seistore-svc-url=$SEISMIC_DMS_URL --seistore-svc-api-key='xx' --user-idtoken=$token --tenant=$tenant --subproject=$subproject --admin-email=$ADMIN_USER --datapartition=$tenant --legaltag01=$legaltag --legaltag02=$legaltag --newuser=$newuser
 TEST_EXIT_CODE=$?
 mv newman newman_test_reports
 popd
+
+echo Delete legaltag after Integration Tests...
+curl --location --request DELETE "$LEGAL_URL"'legaltags/opendes-sdmstestlegaltag' \
+--header 'Authorization: Bearer '"$token" \
+--header 'data-partition-id: opendes' \
+--header 'Content-Type: application/json'
+
 
 exit $TEST_EXIT_CODE
