@@ -10443,15 +10443,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// BUG WORKAROUND",
-									"",
 									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    postman.setNextRequest(\"APP REGISTER\");",
 									"} else {",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    postman.setNextRequest(\"USER ROLES\");",
-									"    // postman.setNextRequest(\"USER ADD\");",
 									"};",
 									"",
 									""
@@ -10494,70 +10491,6 @@
 							],
 							"path": [
 								"svcstatus"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "USER ADD",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code != 200) {",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    // Reset environment variables if _.retryOnFailure function was used before",
-									"    var key = request.name + '_counter';",
-									"    pm.environment.unset(key);",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"email\": \"{{newuser}}\",\n\t\"path\": \"sd://{{tenant}}/{{subproject}}\",\n\t\"group\": \"viewer\"\n}"
-						},
-						"url": {
-							"raw": "{{SVC_URL}}/user",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"user"
 							]
 						}
 					},
@@ -10849,6 +10782,73 @@
 									"key": "sdpath",
 									"value": "sd://{{tenant}}/{{subproject}}"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "USER ADD",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// wokaround. line 2 should be removed in normal life",
+									"if (pm.environment.get(\"serviceCloudProvider\") === 'azure') {",
+									"    if (responseCode.code != 200) {",
+									"        _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"    } else {",
+									"        pm.test(\"Status code is 200\", function () {",
+									"            pm.response.to.have.status(200);",
+									"        });",
+									"",
+									"        // Reset environment variables if _.retryOnFailure function was used before",
+									"        var key = request.name + '_counter';",
+									"        pm.environment.unset(key);",
+									"        postman.setEnvironmentVariable('execCounter', 1)",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{newuser}}\",\n\t\"path\": \"sd://{{tenant}}/{{subproject}}\",\n\t\"group\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/user",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"user"
 							]
 						}
 					},
