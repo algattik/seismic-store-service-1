@@ -70,7 +70,7 @@ export interface ConfigModel {
     USER_ID_CLAIM_FOR_SDMS: string;
     USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: string;
     USER_ASSOCIATION_SVC_PROVIDER: string;
-	SDMS_PREFIX: string;
+    SDMS_PREFIX: string;
 }
 
 export abstract class Config implements IConfig {
@@ -201,7 +201,7 @@ export abstract class Config implements IConfig {
     // list of caller headers to forward to downstream service call (DE Core Service like entitlement/storage...)
     // if specified the default forwarded headers list will be override. (ref, https://www.npmjs.com/package/hpropagate)
     // provided as comma separated strings
-    public static CALLER_FORWARD_HEADERS:string = undefined;
+    public static CALLER_FORWARD_HEADERS: string = undefined;
 
     // Principal Identifier for Seismic DMS and Entitlements Svc
     public static USER_ID_CLAIM_FOR_SDMS: string;
@@ -211,7 +211,7 @@ export abstract class Config implements IConfig {
     public static USER_ASSOCIATION_SVC_PROVIDER: string;
 
     // SDMS URL prefix
-    public static SDMS_PREFIX : string;
+    public static SDMS_PREFIX: string;
 
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
@@ -323,7 +323,7 @@ export abstract class Config implements IConfig {
         Config.SEISMIC_STORE_NS = Config.SEISMIC_STORE_NS + '-' + Config.SERVICE_ENV;
 
         // caller headers to forward to the downstream services
-        Config.CALLER_FORWARD_HEADERS = model.CALLER_FORWARD_HEADERS
+        Config.CALLER_FORWARD_HEADERS = model.CALLER_FORWARD_HEADERS;
 
     }
 

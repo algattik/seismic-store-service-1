@@ -14,11 +14,11 @@
 // limitations under the License.
 // ============================================================================
 
+import request from 'request-promise';
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Error } from '../shared';
 import { DESUtils } from './utils';
 
-import request from 'request-promise';
 
 export class DESStorage {
 
@@ -84,16 +84,19 @@ export class DESStorage {
 
 
     public static async getRecord(
-        userToken: string, seismicUid: string, esd: string, appkey: string): Promise<any> {
+        userToken: string, seismicUid: string, esd: string, appkey: string, recordVersion?: string): Promise<any> {
 
         const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
+
+        const httpUrl: string = Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records/'
+            + seismicUid;
 
         const options = {
             headers: {
                 'Accept': 'application/json',
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
             },
-            url: Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid,
+            url: recordVersion ? httpUrl + '/' + recordVersion : httpUrl
         };
 
         // tslint:disable-next-line: no-string-literal
@@ -104,7 +107,7 @@ export class DESStorage {
         try {
 
             const results = await request.get(options);
-            return JSON.parse(results)
+            return JSON.parse(results);
 
         } catch (error) {
 

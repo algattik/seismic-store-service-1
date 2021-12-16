@@ -20,7 +20,7 @@ import { DatasetModel } from '.';
 import { Auth, AuthRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { DESStorage, DESUtils, UserAssociationServiceFactory } from '../../dataecosystem';
-import { Error, Feature, FeatureFlags, Params, Response, Utils } from '../../shared';
+import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubprojectAuth, SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
 import { DatasetAuth } from './auth';
@@ -28,7 +28,7 @@ import { DatasetDAO } from './dao';
 import { IWriteLockSession, Locker } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
-
+import { SchemaManagerFactory } from './schema-manager';
 
 export class DatasetHandler {
 
@@ -111,9 +111,7 @@ export class DatasetHandler {
         let datasetEntityKey: object;
 
         // parse the user input and create the dataset metadata model
-        const userInput = await DatasetParser.register(req);
-        const dataset = userInput[0];
-        const seismicmeta = userInput[1];
+        const dataset = await DatasetParser.register(req);
         let writeLockSession: IWriteLockSession;
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -184,43 +182,11 @@ export class DatasetHandler {
                     ' already exists'));
             }
 
-            // Populate the storage record with other mandatory field if not supplied.
-            if (seismicmeta) {
-
-                // if id is given, take it. otherwise generate
-                if (!seismicmeta.id) {
-                    dataset.seismicmeta_guid = DESUtils.getDataPartitionID(tenant.esd) + seismicmeta.recordType
-                        + Utils.makeID(16);
-                    seismicmeta.id = dataset.seismicmeta_guid;
-                } else {
-                    dataset.seismicmeta_guid = seismicmeta.id;
-                }
-
-                // remove the recordType attribute as guid is now computed
-                delete seismicmeta.recordType;
-
-                // if acl is given, take it. otherwise generate
-                if (!seismicmeta.acl) {
-                    seismicmeta.acl = {
-                        owners: ['data.default.owners@' + tenant.esd],
-                        viewers: ['data.default.viewers@' + tenant.esd],
-                    };
-                }
-
-                // [TO REVIEW]
-                // wrt legaltags, there is a field 'otherRelevantDataCountries' that will have to considered
-                // for now force it to US, if does not exist. To review before complete PR
-
-                // this could be included as default in the request
-                if (!seismicmeta.legal) {
-                    seismicmeta.legal = {
-                        legaltags: [dataset.ltag],
-                        otherRelevantDataCountries: ['US'],
-                    };
-                }
-
+            if (dataset.storageSchemaRecordType) {
+                SchemaManagerFactory
+                    .build(dataset.storageSchemaRecordType)
+                    .addStorageRecordDefaults(dataset.storageSchemaRecord, dataset, tenant);
             }
-
             // prepare the keys
             datasetEntityKey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
@@ -232,12 +198,16 @@ export class DatasetHandler {
             // this flag will inform the service to check roll-back the registration in the error catch.
             datasetRegisteredConsistencyFlag = true;
 
+            // storageschemarecord is not persisted in the dataset metadata
+            const storageSchemaRecord = dataset.storageSchemaRecord;
+            delete dataset.storageSchemaRecord;
+
             // save the dataset entity
             await Promise.all([
                 DatasetDAO.register(journalClient, { key: datasetEntityKey, data: dataset }),
-                (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
+                (storageSchemaRecord && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
                     DESStorage.insertRecord(req.headers.authorization,
-                        [seismicmeta], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
+                        [storageSchemaRecord], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
 
@@ -250,6 +220,10 @@ export class DatasetHandler {
             // attach locking information
             dataset.sbit = writeLockSession.wid;
             dataset.sbit_count = 1;
+
+            if (storageSchemaRecord) {
+                delete dataset.storageSchemaRecordType;
+            }
 
             return dataset;
 
@@ -286,6 +260,7 @@ export class DatasetHandler {
         const userInput = DatasetParser.get(req);
         const datasetIN = userInput[0];
         const convertUserInfo = userInput[2];
+        const seismicMetaRecordVersion = userInput[3];
 
         // retrieve journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -303,7 +278,7 @@ export class DatasetHandler {
         }
 
         // Check if retrieve the seismic metadata storage record
-        const getSeismicMeta = datasetOUT.seismicmeta_guid !== undefined && userInput[1];
+        const retrieveStorageRecord = datasetOUT.seismicmeta_guid !== undefined && userInput[1];
 
         // Check if legal tag is valid
         if (FeatureFlags.isEnabled(Feature.LEGALTAG) && datasetOUT.ltag) {
@@ -332,15 +307,29 @@ export class DatasetHandler {
 
         }
 
-        // return the seismicmetadata (if exist)
-        if (getSeismicMeta) {
-            const seismicMeta = await DESStorage.getRecord(req.headers.authorization, datasetOUT.seismicmeta_guid,
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            if (seismicMeta) {
-                (datasetOUT as any).seismicmeta = seismicMeta;
-            }
-        }
+        // Apply transforms for openzgy_V1 and segy_v1 is required
+        if (retrieveStorageRecord) {
+            const storageSchemaRecord = await DESStorage.getRecord(req.headers.authorization,
+                datasetOUT.seismicmeta_guid,
+                tenant.esd,
+                req[Config.DE_FORWARD_APPKEY],
+                seismicMetaRecordVersion);
 
+            // For all datasets with storage record, the default storage schema type is seismicmeta
+            if (storageSchemaRecord && !datasetOUT.storageSchemaRecordType) {
+                datasetOUT.storageSchemaRecordType = 'seismicmeta';
+            }
+
+            SchemaManagerFactory.build(datasetOUT.storageSchemaRecordType).applySchemaTransforms({
+                data: storageSchemaRecord,
+                transformFuncID: storageSchemaRecord['kind'],
+                nextTransformFuncID: undefined
+            });
+
+            (datasetOUT as any)[datasetOUT.storageSchemaRecordType] = storageSchemaRecord;
+            delete datasetOUT.storageSchemaRecordType;
+
+        }
         // attach the gcpid for fast check
         datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
 
@@ -471,7 +460,7 @@ export class DatasetHandler {
     private static async patch(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
 
         // Retrieve the dataset path information
-        const [datasetIN, seismicmeta, newName, wid] = DatasetParser.patch(req);
+        const [datasetIN, newName, wid] = DatasetParser.patch(req);
         const lockKey = datasetIN.tenant + '/' + datasetIN.subproject + datasetIN.path + datasetIN.name;
 
         // retrieve datastore client
@@ -615,89 +604,22 @@ export class DatasetHandler {
             datasetOUT.name = newName;
         }
 
-        // Populate the storage record with other mandatory field if not supplied.
-        let seismicmetaDE: any;
-        if (seismicmeta) {
+        const inputStorageSchemaRecord = datasetIN.storageSchemaRecord;
 
-            // return the seismicmetadata (if exists)
-            if (datasetOUT.seismicmeta_guid) {
+        if (inputStorageSchemaRecord) {
 
-                // seismicmeta is already there, need to patch
-                seismicmetaDE = await DESStorage.getRecord(
-                    req.headers.authorization, datasetOUT.seismicmeta_guid,
-                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            SchemaManagerFactory.build(datasetIN.storageSchemaRecordType)
+                .addStorageRecordDefaults(inputStorageSchemaRecord, datasetIN, tenant);
 
-                for (const keySeismicMeta of Object.keys(seismicmeta)) {
-                    seismicmetaDE[keySeismicMeta] = seismicmeta[keySeismicMeta];
-                }
+            SchemaManagerFactory.build(datasetIN.storageSchemaRecordType)
+                .applySchemaTransforms({
+                    data: inputStorageSchemaRecord,
+                    transformFuncID: datasetIN.storageSchemaRecord['kind'],
+                    nextTransformFuncID: undefined
+                });
 
-                datasetOUT.seismicmeta_guid = seismicmeta.id;
-
-            } else {
-
-                // mandatory field required if a new seismic metadata record is ingested (kind/data required)
-                Params.checkString(seismicmeta.kind, 'kind');
-                Params.checkObject(seismicmeta.data, 'data');
-
-                // {data-partition(delfi)|authority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
-                if ((seismicmeta.kind as string).split(':').length !== 4) {
-                    throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
-                }
-
-                // (recordType == entityType)
-                seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
-
-                // if id is given, take it. otherwise generate
-                if (!seismicmeta.id) {
-                    datasetOUT.seismicmeta_guid = DESUtils.getDataPartitionID(tenant.esd)
-                        + seismicmeta.recordType + Utils.makeID(16);
-                    seismicmeta.id = datasetOUT.seismicmeta_guid;
-                } else {
-                    datasetOUT.seismicmeta_guid = seismicmeta.id;
-                }
-
-                // remove the recordType attribute as guid is now computed
-                delete seismicmeta.recordType;
-
-                // if acl is given, take it. otherwise generate
-                if (!seismicmeta.acl) {
-                    seismicmeta.acl = {
-                        owners: ['data.default.owners@' + tenant.esd],
-                        viewers: ['data.default.viewers@' + tenant.esd],
-                    };
-                }
-
-                // [TO REVIEW]
-                // wrt legaltags, there is a field 'otherRelevantDataCountries' that will have to considered
-                // for now force it to US, if does not exist. To review before complete PR
-
-                // this could be included as default in the request
-                if (!seismicmeta.legal) {
-
-                    // ensure that a legal tag exist
-                    if (!datasetOUT.ltag) {
-
-                        throw (!subproject.ltag ?
-                            Error.make(Error.Status.NOT_FOUND,
-                                'No legal-tag has been found for the subproject resource ' +
-                                Config.SDPATHPREFIX + datasetIN.tenant + '/' + datasetIN.subproject +
-                                ' the storage metadata cannot be updated without a valid legal-tag') :
-                            Error.make(Error.Status.NOT_FOUND,
-                                'No legal-tag has been found on the dataset resource ' +
-                                Config.SDPATHPREFIX + datasetIN.tenant + '/' + datasetIN.subproject +
-                                datasetIN.path + datasetIN.name +
-                                ' the storage metadata cannot be updated without a valid legal-tag'));
-                    }
-
-                    // insert legal tag
-                    seismicmeta.legal = {
-                        legaltags: [datasetOUT.ltag],
-                        otherRelevantDataCountries: ['US'],
-                    };
-                }
-
-                seismicmetaDE = seismicmeta;
-            }
+            datasetOUT.storageSchemaRecordType = datasetIN.storageSchemaRecordType;
+            datasetOUT.seismicmeta_guid = datasetIN.seismicmeta_guid;
         }
 
         // Update the ACLs if the input request has them
@@ -705,20 +627,19 @@ export class DatasetHandler {
             datasetOUT.acls = datasetIN.acls;
         }
 
+        if (datasetIN.storageSchemaRecord && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) {
+            await DESStorage.insertRecord(
+                req.headers.authorization, [inputStorageSchemaRecord], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
         if (newName) {
             await Promise.all([
                 DatasetDAO.delete(journalClient, datasetOUT),
-                DatasetDAO.register(journalClient, { key: datasetOUTKey, data: datasetOUT }),
-                (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
-                    ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
+                DatasetDAO.register(journalClient, { key: datasetOUTKey, data: datasetOUT })]);
         } else {
-            await Promise.all([
-                DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey),
-                (seismicmeta && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE)))
-                    ? DESStorage.insertRecord(req.headers.authorization, [seismicmetaDE],
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined]);
+            await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
         }
+
 
         // attach lock information
         if (wid) {
@@ -741,6 +662,8 @@ export class DatasetHandler {
 
         // attach the gcpid for fast check
         datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+
+        delete datasetOUT.storageSchemaRecordType;
 
         return datasetOUT;
 

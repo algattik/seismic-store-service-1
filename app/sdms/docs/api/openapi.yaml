@@ -159,7 +159,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -189,7 +189,7 @@ paths:
           name: seismicmeta
           required: false
           type: boolean
-        - description: 'translate the user-id to a more human readable user info'
+        - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
           default: true
           in: query
@@ -197,6 +197,11 @@ paths:
           enum:
             - true
             - false
+        - description: "Retrieve a specific version of the seismic storage metadata record"
+          in: query
+          name: record-version
+          type: string
+          required: false
       responses:
         200:
           description: "Metadata of the dataset"
@@ -223,7 +228,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -272,7 +277,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -338,7 +343,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -402,7 +407,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -454,7 +459,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -506,7 +511,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -565,7 +570,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -625,7 +630,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "The tenant project name"
           in: path
           name: tenantid
@@ -660,7 +665,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -680,15 +685,15 @@ paths:
           items:
             type: string
           collectionFormat: multi
-        - description: 'Limit the number of datasets in the response'
+        - description: "Limit the number of datasets in the response"
           in: query
           name: limit
-          type: string 
-        - description: 'Cursor for pagination on the datasets list'
+          type: string
+        - description: "Cursor for pagination on the datasets list"
           in: query
           name: cursor
-          type: string 
-        - description: 'translate the user-id to a more human readable user info'
+          type: string
+        - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
           in: query
           type: boolean
@@ -703,7 +708,7 @@ paths:
             type: array
             items:
               $ref: "#/definitions/Dataset"
-              
+
         201:
           description: "Paginated dataset list with nextPageCursor. For documentation purposes, if limit or cursor is given, status code here is 200."
           schema:
@@ -730,7 +735,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -779,7 +784,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant"
           in: path
           name: tenantid
@@ -828,7 +833,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Seismic store path, sd://tenant/sub-project/path"
           in: query
           name: sdpath
@@ -880,7 +885,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Seismic store source dataset path"
           in: query
           name: sdpath_from
@@ -929,7 +934,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Seismic store path in the format sd://tenant/sub-project"
           in: query
           name: sdpath
@@ -1037,7 +1042,7 @@ paths:
           description: "Forbidden"
         404:
           description: "Not found"
-          
+
   /api/v3/impersonation-token:
     post:
       summary: "Create an impersonation token credential."
@@ -1169,7 +1174,7 @@ paths:
           required: true
           type: string
           default: common
-        - description: 'translate the user-id to a more human readable user info'
+        - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
           default: true
           in: query
@@ -1626,7 +1631,6 @@ paths:
 # ===========================================================================
 
 definitions:
-
   # OK
   Status:
     required: ["status"]
@@ -1968,7 +1972,7 @@ definitions:
       resources:
         [
           { "resource": "sd://tnx01/spx01", "readonly": true },
-          { "resource": "sd://tnx01/spx02", "readonly": false }
+          { "resource": "sd://tnx01/spx02", "readonly": false },
         ]
       metadata: { "jobId": 1234 }
 
@@ -2241,16 +2245,16 @@ definitions:
         type: string
         description: Next cursor for pagination
     example: { datasets: ["folderA/", "folderB/", "dataset01"], nextPageCursor: "abc1234" }
-    
-   # PaginatedDatasets
+
+    # PaginatedDatasets
   PaginatedDatasets:
     properties:
-        datasets:
-          type: array
-          items:
-            $ref: '#/definitions/Dataset'
-        nextPageCursor:
-            type: string 
+      datasets:
+        type: array
+        items:
+          $ref: "#/definitions/Dataset"
+      nextPageCursor:
+        type: string
 
 # ===========================================================================
 # Endpoints Security Section

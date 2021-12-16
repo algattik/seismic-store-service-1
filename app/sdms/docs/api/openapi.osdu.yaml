@@ -88,7 +88,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Legal tag of the dataset."
           in: header
           name: ltag
@@ -136,11 +136,12 @@ paths:
         409:
           description: "Conflict."
         423:
-          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
-          <li>WL (Write Locked).</li>
-          <li>RL (Read Locked).</li>
-          <li>CL (Cannot be Locked).</li>
-          <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds."
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are:
+            <li> WL (Write Locked). </li>
+            <li> RL (Read Locked). </li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
     get:
       summary: "Retrieve a dataset."
       description: "<ul><li>Return the dataset metadata from the seismic store.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
@@ -153,7 +154,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -179,7 +180,7 @@ paths:
           name: seismicmeta
           required: false
           type: boolean
-        - description: 'translate the user-id to a more human readable user info'
+        - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
           in: query
           type: boolean
@@ -187,6 +188,11 @@ paths:
           enum:
             - true
             - false
+        - description: "Retrieve a specific version of the seismic storage metadata record"
+          in: query
+          name: record-version
+          type: string
+          required: false
       responses:
         200:
           description: "Metadata of the dataset."
@@ -213,7 +219,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -248,17 +254,17 @@ paths:
 
     patch:
       summary: "Patch the dataset metadata."
-      description: "<ul>
-      <li>Update the dataset meta information in the seismic store or close (unlock) the dataset. If the endpoint is used without the close parameter, at least one body field is required or the endpoint will return an error.</li>
-      <li>Required roles: subproject.admin, subproject.editor</li>
-      <li>Patchable fields: <ul>
-      <li><b>dataset_new_name:</b> new name to use for the dataset (rename).</li>
-      <li><b>filemetadata:</b> This is a seismic store specific field and describes how the physical data is stored in the cloud storage system (GCS/AzureContainer etc.). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nObject: N, totalSize: 1024, objsize: 64, sizeUnit: MB}”.</li>
-      <li><b>last_modified_date:</b> Mark this field as true to update the dataset last modified date.</li>
-      <li><b>gtags:</b> Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then new gtags are appended to this list.</li>
-      <li><b>ltag:</b> Update the existing legalTag value.</b></li>
-      <li><b>readonly:</b> Update the dataset mode to readonly (true) or to read/write (false).</li>
-      <li><b>seismicmeta:</b> Update the Data Ecosystem storage metadata. (Refer to the Data Ecosystem storage service tutorial for more information.)</b></li></ul></li></ul>"
+      description: |
+        <ul>
+        <li>Update the dataset meta information in the seismic store or close (unlock) the dataset. If the endpoint is used without the close parameter, at least one body field is required or the endpoint will return an error.</li>
+        <li>Required roles: subproject.admin, subproject.editor</li>
+        <li>Patchable fields: <ul>
+        <li><b>dataset_new_name:</b> new name to use for the dataset (rename).</li>
+        <li><b>filemetadata:</b> This is a seismic store specific field and describes how the physical data is stored in the cloud storage system (GCS/AzureContainer etc.). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nObject: N, totalSize: 1024, objsize: 64, sizeUnit: MB}”.</li>
+        <li><b>last_modified_date:</b> Mark this field as true to update the dataset last modified date.</li>
+        <li><b>gtags:</b> Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then new gtags are appended to this list.</li>
+        <li><b>ltag:</b> Update the existing legalTag value.</b></li>
+        <li><b>readonly:</b> Update the dataset mode to readonly (true) or to read/write (false).</li></ul></li></ul>
       operationId: dataset-patch
       tags:
         - Dataset
@@ -268,7 +274,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -315,19 +321,21 @@ paths:
         409:
           description: "Conflict."
         423:
-          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
-          <li>WL (Write Locked).</li>
-          <li>RL (Read Locked).</li>
-          <li>CL (Cannot be Locked).</li>
-          <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds."
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked).</li>
+            <li>RL (Read Locked).</li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/lock:
     put:
       summary: "Acquire a lock for a dataset id."
-      description: "<ul>
-      <li>Open a dataset for read or write and lock its state.</li>
-      <li>Required roles open lock for write: subproject.admin, subproject.editor</li>
-      <li>Required roles open lock for read: subproject.admin, subproject.editor, subproject.viewer</ul>"
+      description: |
+        <ul>
+        <li>Open a dataset for read or write and lock its state.</li>
+        <li>Required roles open lock for write: subproject.admin, subproject.editor</li>
+        <li>Required roles open lock for read: subproject.admin, subproject.editor, subproject.viewer</ul>
       operationId: dataset-lock
       tags:
         - Dataset
@@ -337,7 +345,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -382,11 +390,12 @@ paths:
         404:
           description: "Not found."
         423:
-          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
-          <li>WL (Write Locked).</li>
-          <li>RL (Read Locked).</li>
-          <li>CL (Cannot be Locked).</li>
-          <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds."
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked).</li>
+            <li>RL (Read Locked).</li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/unlock:
     put:
@@ -401,7 +410,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -434,11 +443,12 @@ paths:
         404:
           description: "Not found."
         423:
-          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
-          <li>WL (Write Locked).</li>
-          <li>RL (Read Locked).</li>
-          <li>CL (Cannot be Locked).</li>
-          <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds."
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked).</li>
+            <li>RL (Read Locked).</li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/permission:
     get:
@@ -453,7 +463,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -501,7 +511,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -545,9 +555,10 @@ paths:
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/gtags:
     put:
       summary: "Upsert tags to a dataset."
-      description: "<ul>
-      <li>Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then  new gtags are appended to this list.</li>
-      <li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      description: |
+        <ul>
+        <li>Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then  new gtags are appended to this list.</li>
+        <li>Required roles: subproject.admin, subproject.editor</li></ul>
       operationId: add-tag
       tags:
         - Dataset
@@ -557,7 +568,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -603,9 +614,10 @@ paths:
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
     get:
       summary: "Content list."
-      description: "<ul>
-      <li>List datasets and sub-directories for a directory path.</li>
-      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+        <li>List datasets and sub-directories for a directory path.</li>
+        <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>
       operationId: dataset-read-directory
       tags:
         - Dataset
@@ -615,7 +627,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "The tenant project name."
           in: path
           name: tenantid
@@ -640,9 +652,10 @@ paths:
   /dataset/tenant/{tenantid}/subproject/{subprojectid}:
     get:
       summary: "Get the list of datasets in a subproject."
-      description: "<ul>
-      <li>Return the list of datasets in a sub-project. If gtags are in the request parameters, then get only those datasets that have the exact list of gtags.</li>
-      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+        <li>Return the list of datasets in a sub-project. If gtags are in the request parameters, then get only those datasets that have the exact list of gtags.</li>
+        <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>
       operationId: dataset-list
       tags:
         - Dataset
@@ -652,7 +665,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -670,15 +683,15 @@ paths:
           items:
             type: string
           collectionFormat: multi
-        - description: 'Limit the number of datasets in the response'
+        - description: "Limit the number of datasets in the response"
           in: query
           name: limit
-          type: string 
-        - description: 'Cursor for pagination on the datasets list'
+          type: string
+        - description: "Cursor for pagination on the datasets list"
           in: query
           name: cursor
-          type: string 
-        - description: 'translate the user-id to a more human readable user info'
+          type: string
+        - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
           in: query
           type: boolean
@@ -709,9 +722,10 @@ paths:
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/exist:
     post:
       summary: "Check to see if a list of datasets exists in the subproject."
-      description: "<ul>
-      <li>Check if the dataset exists.</li>
-      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+        <li>Check if the dataset exists.</li>
+        <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>
       operationId: dataset-exist
       tags:
         - Dataset
@@ -721,7 +735,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -758,9 +772,10 @@ paths:
   /dataset/tenant/{tenantid}/subproject/{subprojectid}/sizes:
     post:
       summary: "Retrieve the size of datasets."
-      description: "<ul>
-      <li>Return a list with the sizes of the requested datasets.</li>
-      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+        <li>Return a list with the sizes of the requested datasets.</li>
+        <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>
       operationId: dataset-sizes
       tags:
         - Dataset
@@ -770,7 +785,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Name of the tenant."
           in: path
           name: tenantid
@@ -807,9 +822,10 @@ paths:
   /utility/ls:
     get:
       summary: "Retrieve the list of datasets and sub-directories inside a seismic store path."
-      description: "<ul>
-      <li>Return the list of datasets and sub-directories of a seismic store path.</li>
-      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+        <li>Return the list of datasets and sub-directories of a seismic store path.</li>
+        <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>
       operationId: ls
       tags:
         - Utility
@@ -819,7 +835,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Seismic store path, sd://tenant/sub-project/path."
           in: query
           name: sdpath
@@ -862,9 +878,10 @@ paths:
   /utility/cp:
     post:
       summary: "Copy dataset."
-      description: "<ul>
-      <li>Copy a seismic store dataset. The source and destination dataset must be in the same sub-project.</li>
-      <li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      description: |
+        <ul>
+        <li>Copy a seismic store dataset. The source and destination dataset must be in the same sub-project.</li>
+        <li>Required roles: subproject.admin, subproject.editor</li></ul>
       operationId: cp
       tags:
         - Utility
@@ -874,7 +891,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Seismic store source dataset path."
           in: query
           name: sdpath_from
@@ -906,11 +923,12 @@ paths:
         409:
           description: "Conflict."
         423:
-          description: "Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
-          <li>WL (Write Locked)</li>
-          <li>RL (Read Locked)</li>
-          <li>CL (Cannot be Locked)</li>
-          <li>UL (Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds."
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked)</li>
+            <li>RL (Read Locked)</li>
+            <li>CL (Cannot be Locked)</li>
+            <li>UL (Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /utility/gcs-access-token:
     get:
@@ -925,7 +943,7 @@ paths:
           name: impersonation-token-context
           type: string
           required: false
-          default: ""      
+          default: ""
         - description: "Seismic store path in the format sd://tenant/sub-project."
           in: query
           name: sdpath
@@ -953,9 +971,10 @@ paths:
   /imptoken:
     post:
       summary: "Generate impersonation credentials token."
-      description: "<ul>
-      <li>Generate an impersonation credential token of a user for a set of subproject resources.</li>
-      <li>Required roles: app.trusted</li></ul>"
+      description: |
+        <ul>
+        <li>Generate an impersonation credential token of a user for a set of subproject resources.</li>
+        <li>Required roles: app.trusted</li></ul>
       operationId: imp-token
       tags:
         - Impersonation Token (Obsolete)
@@ -1011,9 +1030,10 @@ paths:
 
     patch:
       summary: "Patch an impersonation credential token's refresh url and generate a new impersonation token."
-      description: "<ul>
-      <li>Patch an impersonation credential token's refresh url and generate a new impersonation token.</li>
-      <li>Required roles: none</li></ul>"
+      description: |
+        <ul>
+        <li>Patch an impersonation credential token's refresh url and generate a new impersonation token.</li>
+        <li>Required roles: none</li></ul>
       operationId: imp-token-patch
       tags:
         - Impersonation Token (Obsolete)
@@ -1107,9 +1127,10 @@ paths:
   /subproject/tenant/{tenantid}/subproject/{subprojectid}:
     post:
       summary: "Create a new subproject."
-      description: "<ul>
-      <li>Creates a new sub-project resource in seismic store.</li>
-      <li>Required roles: users.datalake.admin</li></ul>"
+      description: |
+        <ul>
+        <li>Creates a new sub-project resource in seismic store.</li>
+        <li>Required roles: users.datalake.admin</li></ul>
       operationId: subproject-create
       tags:
         - SubProject
@@ -1166,7 +1187,7 @@ paths:
           name: tenantid
           required: true
           type: string
-        - description: 'translate the user-id to a more human readable user info'
+        - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
           in: query
           type: boolean
@@ -1522,9 +1543,10 @@ paths:
 
     get:
       summary: "Retrieve the list of registered applications."
-      description: "<ul>
-      <li>Retrieve the list of the registered applications in the seismic store.</li>
-      <li>Required roles: users.datalake.admin</li></ul>"
+      description: |
+        <ul>
+        <li>Retrieve the list of the registered applications in the seismic store.</li>
+        <li>Required roles: users.datalake.admin</li></ul>
       operationId: app-list
       tags:
         - Apps
@@ -1555,9 +1577,10 @@ paths:
   /app/trusted:
     post:
       summary: "Set a registered application as a trusted application."
-      description: "<ul>
-      <li>Set a registered application as a trusted application in the seismic store.</li>
-      <li>Required roles: users.datalake.admin</li></ul>"
+      description: |
+        <ul>
+        <li>Set a registered application as a trusted application in the seismic store.</li>
+        <li>Required roles: users.datalake.admin</li></ul>
       operationId: trustedapp-register
       tags:
         - Apps
@@ -1585,9 +1608,10 @@ paths:
           description: "Not found."
     get:
       summary: "List the trusted applications in a seismic store tenant."
-      description: "<ul>
-      <li>Return the list of the trusted application in seismic store tenant.
-      </li><li>Required roles: users.datalake.admin</li></ul>"
+      description: |
+        <ul>
+        <li>Return the list of the trusted application in seismic store tenant.
+        </li><li>Required roles: users.datalake.admin</li></ul>
       operationId: trustedapp-list
       tags:
         - Apps
@@ -1619,7 +1643,6 @@ paths:
 # ===========================================================================
 
 definitions:
-
   # OK
   Status:
     required: ["status"]
@@ -1629,27 +1652,41 @@ definitions:
     example:
       status: "running"
 
-  # OK
+    # OK
   DatasetRegisterBody:
+    type: object
     properties:
       type:
         type: string
       gtags:
         type: array
+        description: Array of global tags associated with the dataset metadata.
+          Once assigned, they can be used to filter datasets.
         items:
           type: string
-        description: Array of global tags associated with the dataset metadata. Once assigned, they can be used to filter datasets.
       seismicmeta:
         type: object
-        description: Seismic metadata to be stored as dataecosystem storage record.
         properties:
           kind:
             type: string
           data:
             type: object
+            properties: {}
+        description: Seismic metadata to be stored as dataecosystem storage record.
+      openzgy_v1:
+        $ref: "../schemas/openzgy/FileCollection.Slb.OpenZGY.1.0.0.json"
+        description: |
+          <b> This attribute can be used only in OSDU environments</b>
+          openzgy_v1 value to be stored as a record in dataecosystem storage
+      segy_v1:
+        $ref: "../schemas/segy/FileCollection.SEGY.1.0.0.json"
+        example:
+          $ref: "../schemas/segy/example.json"
+        description: |
+          <b> This attribute can be used only in OSDU environments </b>
+          segy_v1 value to be stored as a record in dataecosystem storage.
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the dataset.
         properties:
           admins:
             type: array
@@ -1658,27 +1695,31 @@ definitions:
           viewers:
             type: array
             items:
-              type: string  
+              type: string
+        description: ACLs with admin groups and viewer groups for the dataset.
     example:
-      type: "segy"
-      gtags: ["tagA", "tagB", "tagC"]
+      gtags:
+        - tagA
+        - tagB
+        - tagC
       seismicmeta:
-        {
-          "kind": "osdu:sdms:seismic3d:1.0.0",
-          "legal": { "legaltags": ["legal-tag"], "otherRelevantDataCountries": ["US"] },
-          "data": { "msg": "sample data" },
-        }
+        kind: osdu:sdms:seismic3d:1.0.0
+        legal:
+          legaltags:
+            - legal-tag
+          otherRelevantDataCountries:
+            - US
+        data:
+          msg: sample data
+      openzgy_v1:
+        $ref: "../schemas/openzgy/example.json"
+      segy_v1:
+        $ref: "../schemas/segy/example.json"
       acls:
-        {
-          "admins":
-            [
-              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com",
-            ],
-          "viewers":
-            [
-              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com",
-            ],
-        }
+        admins:
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
+        viewers:
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
   # OK
   Dataset:
     required:
@@ -1750,6 +1791,10 @@ definitions:
             type: string
           data:
             type: object
+      openzgy_v1:
+        $ref: "../schemas/openzgy/FileCollection.Slb.OpenZGY.1.0.0.json"
+      segy_v1:
+        $ref: "../schemas/segy/FileCollection.SEGY.1.0.0.json"
     example:
       name: "dsx01"
       tenant: "geosolution"
@@ -1774,6 +1819,10 @@ definitions:
           "legal": { "legaltags": ["legal-tag"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
         }
+      openzgy_v1:
+        $ref: "../schemas/openzgy/example.json"
+      segy_v1:
+        $ref: "../schemas/segy/example.json"
 
   # OK
   DatasetPatch:
@@ -1810,6 +1859,18 @@ definitions:
             type: string
           data:
             type: object
+      openzgy_v1:
+        $ref: "../schemas/openzgy/FileCollection.Slb.OpenZGY.1.0.0.json"
+        description: |
+          <b> This attribute can be used only in OSDU environments</b>
+          openzgy_v1 value to be stored as a record in dataecosystem storage
+      segy_v1:
+        $ref: "../schemas/segy/FileCollection.SEGY.1.0.0.json"
+        example:
+          $ref: "../schemas/segy/example.json"
+        description: |
+          <b> This attribute can be used only in OSDU environments </b>
+          segy_v1 value to be stored as a record in dataecosystem storage.
       acls:
         type: object
         description: ACLs with admin groups and viewer groups for the dataset.
@@ -1821,7 +1882,7 @@ definitions:
           viewers:
             type: array
             items:
-              type: string      
+              type: string
     example:
       dataset_new_name: "dsx02"
       metadata: { "f1": "v1", "f2": "v2", "f3": "v3" }
@@ -1836,6 +1897,10 @@ definitions:
           "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
           "data": { "msg": "sample data" },
         }
+      openzgy_v1:
+        $ref: "../schemas/openzgy/example.json"
+      segy_v1:
+        $ref: "../schemas/segy/example.json"
       acls:
         {
           "admins":
@@ -1960,7 +2025,7 @@ definitions:
       resources:
         [
           { "resource": "sd://tnx01/spx01", "readonly": true },
-          { "resource": "sd://tnx01/spx02", "readonly": false }
+          { "resource": "sd://tnx01/spx02", "readonly": false },
         ]
       metadata: { "jobId": 1234 }
   # OK
@@ -2010,7 +2075,7 @@ definitions:
         description: Impersonation token
     example:
       token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
-  
+
   # OK
   SubProjectCreateBody:
     required: ["admin", "storage_class", "storage_location", "access_policy"]
@@ -2238,16 +2303,16 @@ definitions:
         type: string
         description: Next cursor for pagination.
     example: { datasets: ["folderA/", "folderB/", "dataset01"], nextPageCursor: "abc1234" }
-    
- # PaginatedDatasets
+
+  # PaginatedDatasets
   PaginatedDatasets:
     properties:
-        datasets:
-          type: array
-          items:
-            $ref: '#/definitions/Dataset'
-        nextPageCursor:
-            type: string 
+      datasets:
+        type: array
+        items:
+          $ref: "#/definitions/Dataset"
+      nextPageCursor:
+        type: string
 
 # ===========================================================================
 # Endpoints Security Section

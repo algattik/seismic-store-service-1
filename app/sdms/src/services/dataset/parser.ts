@@ -18,6 +18,7 @@ import { Request as expRequest } from 'express';
 import { DatasetModel } from '.';
 import { Config } from '../../cloud';
 import { Error, Params, Utils } from '../../shared';
+import { SchemaManagerFactory } from './schema-manager';
 
 export class DatasetParser {
 
@@ -40,7 +41,7 @@ export class DatasetParser {
 
     }
 
-    public static async register(req: expRequest): Promise<[DatasetModel, any]> {
+    public static async register(req: expRequest): Promise<DatasetModel> {
 
         // Init the dataset model from user input parameters
         const dataset = this.createDatasetModelFromRequest(req);
@@ -54,30 +55,17 @@ export class DatasetParser {
         dataset.created_date = dataset.last_modified_date = new Date().toString();
         dataset.gtags = req.body ? req.body.gtags : undefined;
 
-
         // Check the parameters
         Params.checkString(dataset.type, 'type', false);
         Params.checkString(dataset.ltag, 'ltag', false);
-        const seismicmeta = req.body ? req.body.seismicmeta : undefined;
-        Params.checkObject(seismicmeta, 'seismicmeta', false);
 
-        // Check seismic meta mandatory field  if present
-        if (seismicmeta) {
-            Params.checkString(seismicmeta.kind, 'kind'); // mandatory string
-            Params.checkObject(seismicmeta.data, 'data');
+        DatasetParser.validateStorageSchemaRecord(req, dataset);
 
-            // {data-partition(delfi)|authority(osdu)}.{source}.{entityType}.{semanticSchemaVersion}
-            if ((seismicmeta.kind as string).split(':').length !== 4) {
-                throw (Error.make(Error.Status.BAD_REQUEST, 'The seismicmeta kind is in a wrong format'));
-            }
-            // (recordType == entityType)
-            seismicmeta.recordType = ':' + (seismicmeta.kind as string).split(':')[2] + ':';
-
-        }
         dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
+
         DatasetParser.validateAcls(dataset);
 
-        return [dataset, seismicmeta];
+        return dataset;
 
     }
 
@@ -106,12 +94,13 @@ export class DatasetParser {
         }
     }
 
-    // [TODO-V4] dismiss subid-to-email in favor of translate-user-info
-    public static get(req: expRequest): [DatasetModel, boolean, boolean] {
-
+    public static get(req: expRequest): [DatasetModel, boolean, boolean, string] {
         const userInfo = req.query['translate-user-info'] !== 'false' || req.query['subid-to-email'] !== 'false';
+        const seismicMetaRecordVersion = req.query['record-version'] ?
+            req.query['record-version'] as string : undefined;
+        return [this.createDatasetModelFromRequest(req),
+        req.query.seismicmeta === 'true', userInfo, seismicMetaRecordVersion];
 
-        return [this.createDatasetModelFromRequest(req), req.query.seismicmeta === 'true', userInfo]
     }
 
     public static list(req: expRequest): any {
@@ -144,7 +133,7 @@ export class DatasetParser {
         return this.createDatasetModelFromRequest(req);
     }
 
-    public static patch(req: expRequest): [DatasetModel, any, string, string] {
+    public static patch(req: expRequest): [DatasetModel, string, string] {
 
         const closeId = req.query.close as string;
         Params.checkString(closeId, 'close', false);
@@ -175,14 +164,12 @@ export class DatasetParser {
         const newName = req.body.dataset_new_name;
         Params.checkString(newName, 'dataset_new_name', false);
 
-        // Patch seismicmeta
-        const seismicmeta = req.body.seismicmeta;
-        Params.checkObject(seismicmeta, 'seismicmeta', false);
-
         dataset.acls = req.body && 'acls' in req.body ? req.body.acls : undefined;
         DatasetParser.validateAcls(dataset);
 
-        return [dataset, seismicmeta, newName, closeId];
+        DatasetParser.validateStorageSchemaRecord(req, dataset);
+
+        return [dataset, newName, closeId];
     }
 
     public static lock(req: expRequest): { dataset: DatasetModel, open4write: boolean, wid: string; } {
@@ -275,6 +262,37 @@ export class DatasetParser {
         dataset.path = path;
 
         while (dataset.path.indexOf('//') !== -1) { dataset.path = dataset.path.replace('//', '/'); }
+    }
+
+    private static validateStorageSchemaRecord(req: expRequest, dataset: DatasetModel) {
+        const supportedStorageRecordSchemaTypes = SchemaManagerFactory.getSupportedSchemaTypes();
+
+        const payloadStorageRecordSchemaTypes = supportedStorageRecordSchemaTypes
+            .filter(storageRecordSchema => storageRecordSchema in req.body);
+
+        if (payloadStorageRecordSchemaTypes.length > 1) {
+
+            const supportedSchemaTypesStr = supportedStorageRecordSchemaTypes.join(',');
+            throw Error.make(Error.Status.BAD_REQUEST, 'Only one of ' + supportedSchemaTypesStr + ' is allowed in the request payload body.');
+        }
+
+        const payloadStorageRecordSchemaType = payloadStorageRecordSchemaTypes[0];
+
+        Params.checkObject(req.body[payloadStorageRecordSchemaType], payloadStorageRecordSchemaTypes[0], false);
+
+
+        if (payloadStorageRecordSchemaType) {
+            const validationResult = SchemaManagerFactory
+                .build(payloadStorageRecordSchemaType)
+                .validate(req.body[payloadStorageRecordSchemaType]);
+
+            if (validationResult.err) {
+                throw Error.make(Error.Status.BAD_REQUEST, validationResult.err);
+            }
+
+            dataset.storageSchemaRecordType = payloadStorageRecordSchemaType;
+            dataset.storageSchemaRecord = req.body[payloadStorageRecordSchemaType];
+        }
     }
 
 }

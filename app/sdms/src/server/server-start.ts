@@ -17,7 +17,9 @@
 import { Config, ConfigFactory, LoggerFactory, TraceFactory } from '../cloud';
 import { StorageJobManager } from '../cloud/shared/queue';
 import { Locker } from '../services/dataset/locker';
+import { SchemaManagerFactory } from '../services/dataset/schema-manager';
 import { Feature, FeatureFlags, initSharedCache } from '../shared';
+import { SwaggerManager } from './swagger-manager';
 
 async function ServerStart() {
 
@@ -57,6 +59,14 @@ async function ServerStart() {
         process.on('unhandledRejection', (reason, promise) => {
             LoggerFactory.build(Config.CLOUDPROVIDER).error('Unhandled rejection caught at ' + promise + ' due to reason ' + reason);
         });
+
+        // tslint:disable-next-line
+        console.log('- Initializing schema managers');
+        await SchemaManagerFactory.initialize();
+
+        // tslint:disable-next-line
+        console.log('- Initializing swagger-doc manager');
+        await SwaggerManager.init();
 
         await new (await import('./server')).Server().start();
 

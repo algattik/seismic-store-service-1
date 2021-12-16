@@ -14,14 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
-export { DatasetAuth } from './auth';
-export { DatasetDAO } from './dao';
-export {
-  IDatasetModel as DatasetModel,
-  IPaginationModel as PaginationModel,
-  SchemaTransformModel
-} from './model';
-export * as schemamanagement from './schema-manager';
-
-
+export { OpenZgyV1SchemaManager as OpenZgyManager } from './openzgy-v1-manager';
+export { AbstractSchemaManager, SchemaManagerFactory, SchemaManagerFactoryBuilder } from './schema-manager';
+export { SegyManager } from './segy-v1-manager';
+export { SeismicMetaManager } from './seismicmeta-manager';
 

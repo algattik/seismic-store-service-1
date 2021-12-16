@@ -36,6 +36,8 @@ export interface IDatasetModel {
     seismicmeta_guid: string;
     transfer_status: string;
     acls?: IDatasetAcl;
+    storageSchemaRecordType?: string;
+    storageSchemaRecord?: any;
 
 }
 
@@ -52,4 +54,10 @@ export interface IDatasetAcl {
 export interface PaginatedDatasetList {
     datasets: IDatasetModel[];
     nextPageCursor: string;
+}
+
+export interface SchemaTransformModel {
+    transformFuncID: string,
+    data: any,
+    nextTransformFuncID: string;
 }

@@ -14,11 +14,28 @@
 // limitations under the License.
 // ============================================================================
 
+import * as crypto from 'crypto';
+import * as JsYaml from 'js-yaml';
+import * as JsonRefs from 'json-refs';
 import { Config } from '../cloud';
 
-import * as crypto from 'crypto';
-
 export class Utils {
+
+    public static async resolveJsonRefs(filepath: string) {
+        JsonRefs.clearCache();
+        const result = await JsonRefs.resolveRefsAt(
+            filepath, {
+            filter: ['relative', 'remote'],
+            loaderOptions: {
+                processContent(res: any, callback: any) {
+                    callback(null, JsYaml.load(res.text));
+                }
+            },
+            resolveCirculars: true
+        });
+
+        return result.resolved;
+    }
 
     public static getPropertyFromTokenPayload(base64JwtPayload: string, property: string): string {
         const payload = this.getPayloadFromStringToken(base64JwtPayload);
