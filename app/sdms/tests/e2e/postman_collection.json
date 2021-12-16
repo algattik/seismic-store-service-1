@@ -6951,6 +6951,1519 @@
 			]
 		},
 		{
+			"name": "domain-api-schema-management",
+			"item": [
+				{
+					"name": "CHECK IF DOMAIN API TESTS ARE ENABLED Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Body matches string\", function () {",
+									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
+									"    });",
+									"",
+									"    if(pm.environment.get(\"runDomainAPITests\") == 'false' || pm.environment.get(\"runDomainAPITests\") == undefined  ){",
+									"        postman.setNextRequest(\"STATUS SET TAGS\")",
+									"    }",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "INITIALIZE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Body matches string\", function () {",
+									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function makeID_seismicmeta(length) {\r",
+									"   var result           = '';\r",
+									"   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+									"   var charactersLength = characters.length;\r",
+									"   for ( var i = 0; i < length; i++ ) {\r",
+									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"   }\r",
+									"   return result;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable(\"dsx01\", makeID_seismicmeta(16));\r",
+									"postman.setEnvironmentVariable(\"dsx02\", makeID_seismicmeta(16));\r",
+									"postman.setEnvironmentVariable(\"dsx03\", makeID_seismicmeta(16));\r",
+									"var path = \"/\" + makeID_seismicmeta(8) + \"/\" + makeID_seismicmeta(4) + \"/\" + makeID_seismicmeta(4) + \"/\"\r",
+									"postman.setEnvironmentVariable(\"testPath\", path);\r",
+									"postman.setEnvironmentVariable(\"testPathEncoded\", encodeURIComponent(path));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER WITH MORE THAN ONE STORAGE SCHEMA RECORD",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 400 as the request has more than one storage schema record type\", function () {",
+									"        pm.response.to.have.status(400);",
+									"    }) ",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"seismicmeta\": {},\r\n  \"openzgy_v1\": {}\r\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER + SEISMICMETA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx01'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"path\", function () {",
+									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath'));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(1);",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"Check gtag\", function () {",
+									"        pm.expect(jsonData.gtags.length).to.eql(1);",
+									"        pm.expect(jsonData.gtags[0]).to.eql(\"tagA\");",
+									"    });",
+									"",
+									"    pm.test(\"Check seismicmetadata\", () => {",
+									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"gtags\": [\r\n        \"tagA\"\r\n    ],\r\n    \"seismicmeta\": {\r\n        \"data\": {\r\n            \"additionalMetaData\": [\r\n                {\r\n                    \"name\": \"SOURCE BARCODE\",\r\n                    \"value\": 3843967263,\r\n                    \"valueAsString\": \"3843967263\"\r\n                },\r\n                {\r\n                    \"name\": \"ORIGINAL FILE NAME\",\r\n                    \"value\": \"1_67_Srv3D_1_8_Original.sgy\",\r\n                    \"valueAsString\": \"1_67_Srv3D_1_8_Original.sgy\"\r\n                },\r\n                {\r\n                    \"name\": \"BIN SPACING\",\r\n                    \"value\": 90,\r\n                    \"valueAsString\": \"90\"\r\n                }\r\n            ],\r\n            \"binGridOperation\": {\r\n                \"binGridOriginEasting\": 1276435.2,\r\n                \"binGridOriginI\": 1,\r\n                \"binGridOriginJ\": 1,\r\n                \"binGridOriginNorthing\": 242030.61,\r\n                \"binGridScaleFactor\": 1,\r\n                \"binNodeIncrementI\": 1,\r\n                \"binNodeIncrementJ\": 1,\r\n                \"binWidthI\": 83.39992,\r\n                \"binWidthJ\": 91.77242,\r\n                \"crsKey\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                \"mapGridBearingJ\": 206.58368,\r\n                \"persistableReferenceCrs\": {\r\n                    \"lateBoundCRS\": {\r\n                        \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"26782\"\r\n                        },\r\n                        \"type\": \"LBC\"\r\n                    },\r\n                    \"singleCT\": {\r\n                        \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"15851\"\r\n                        },\r\n                        \"type\": \"ST\"\r\n                    },\r\n                    \"ver\": \"PE_10_3_1\",\r\n                    \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                    \"authCode\": {\r\n                        \"auth\": \"SLB\",\r\n                        \"code\": \"26782079\"\r\n                    },\r\n                    \"type\": \"EBC\"\r\n                },\r\n                \"transformationMethodNumber\": 1049,\r\n                \"unitKeyBearing\": \"dega\"\r\n            },\r\n            \"binNodePositions\": [\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        1276435.2,\r\n                                        242030.61\r\n                                    ],\r\n                                    [\r\n                                        1281357.8,\r\n                                        239567.36\r\n                                    ],\r\n                                    [\r\n                                        1280002.5,\r\n                                        236859.05\r\n                                    ],\r\n                                    [\r\n                                        1275080,\r\n                                        239322.28\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsMultiPoint\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ]\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"26782\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"26782079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                },\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        -93.60371,\r\n                                        29.312513\r\n                                    ],\r\n                                    [\r\n                                        -93.58811,\r\n                                        29.306007\r\n                                    ],\r\n                                    [\r\n                                        -93.59219,\r\n                                        29.298489\r\n                                    ],\r\n                                    [\r\n                                        -93.60779,\r\n                                        29.304993\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsMultiPoint\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ]\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4267]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"GCS_North_American_1927\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"4267\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus [4267,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"4267079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                },\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        -93.60387,\r\n                                        29.312752\r\n                                    ],\r\n                                    [\r\n                                        -93.58827,\r\n                                        29.306248\r\n                                    ],\r\n                                    [\r\n                                        -93.592354,\r\n                                        29.298727\r\n                                    ],\r\n                                    [\r\n                                        -93.60795,\r\n                                        29.305231\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsMultiPoint\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ]\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"wkt\": \"GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4326]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"GCS_WGS_1984\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"4326\"\r\n                        },\r\n                        \"type\": \"LBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                }\r\n            ],\r\n            \"classification\": \"Post-stack, time-migrated\",\r\n            \"dateCreated\": \"2013-03-22T11:16:03Z\",\r\n            \"dateModified\": \"2013-03-22T11:16:03Z\",\r\n            \"derivedBulk\": [\r\n                {\r\n                    \"size\": 1223488818,\r\n                    \"type\": \"ZGY\",\r\n                    \"url\": \"sd://SNTC/colors/test.zgy\"\r\n                },\r\n                {\r\n                    \"size\": 2653649950,\r\n                    \"type\": \"DIO\",\r\n                    \"url\": \"sd://SNTC/colors/test.DIO\"\r\n                }\r\n            ],\r\n            \"description\": \"A comment or a remark.\",\r\n            \"elevationReferenceTime\": {\r\n                \"elevationFromMsl\": {\r\n                    \"unitKey\": \"ft\",\r\n                    \"value\": 0\r\n                },\r\n                \"name\": \"SRD\",\r\n                \"replacementVelocity\": {\r\n                    \"unitKey\": \"ft/s\",\r\n                    \"value\": 4800\r\n                }\r\n            },\r\n            \"externalIds\": [\r\n                \"Petrel:tenant1/ProjectLouisiana/3491763/a9b46fc4-1840-450a-ac01-d15bdaa086ba:aef0e55c-4fcb-4546-a7a2-9df8f27277a1\"\r\n            ],\r\n            \"locationAtIndexZero\": {\r\n                \"features\": [\r\n                    {\r\n                        \"geometry\": {\r\n                            \"coordinates\": [\r\n                                1276435.2,\r\n                                242030.61,\r\n                                -1234\r\n                            ],\r\n                            \"type\": \"AnyCrsPoint\"\r\n                        },\r\n                        \"type\": \"AnyCrsFeature\"\r\n                    }\r\n                ],\r\n                \"persistableReferenceCrs\": {\r\n                    \"lateBoundCRS\": {\r\n                        \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"26782\"\r\n                        },\r\n                        \"type\": \"LBC\"\r\n                    },\r\n                    \"singleCT\": {\r\n                        \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"15851\"\r\n                        },\r\n                        \"type\": \"ST\"\r\n                    },\r\n                    \"ver\": \"PE_10_3_1\",\r\n                    \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                    \"authCode\": {\r\n                        \"auth\": \"SLB\",\r\n                        \"code\": \"26782079\"\r\n                    },\r\n                    \"type\": \"EBC\"\r\n                },\r\n                \"persistableReferenceUnitZ\": {\r\n                    \"scaleOffset\": {\r\n                        \"scale\": 0.001,\r\n                        \"offset\": 0\r\n                    },\r\n                    \"symbol\": \"ms\",\r\n                    \"baseMeasurement\": {\r\n                        \"ancestry\": \"Time\",\r\n                        \"type\": \"UM\"\r\n                    },\r\n                    \"type\": \"USO\"\r\n                },\r\n                \"type\": \"AnyCrsFeatureCollection\"\r\n            },\r\n            \"locationWGS84\": {\r\n                \"features\": [\r\n                    {\r\n                        \"geometry\": {\r\n                            \"coordinates\": [\r\n                                [\r\n                                    [\r\n                                        -93.60387,\r\n                                        29.312752\r\n                                    ],\r\n                                    [\r\n                                        -93.58827,\r\n                                        29.306248\r\n                                    ],\r\n                                    [\r\n                                        -93.592354,\r\n                                        29.298727\r\n                                    ],\r\n                                    [\r\n                                        -93.60795,\r\n                                        29.305231\r\n                                    ],\r\n                                    [\r\n                                        -93.60387,\r\n                                        29.312752\r\n                                    ]\r\n                                ]\r\n                            ],\r\n                            \"type\": \"Polygon\"\r\n                        },\r\n                        \"properties\": {\r\n                            \"name\": \"Survey 4 INLINE_1_67_Srv3D_1_8_Original\"\r\n                        },\r\n                        \"type\": \"Feature\"\r\n                    }\r\n                ],\r\n                \"type\": \"FeatureCollection\"\r\n            },\r\n            \"name\": \"Survey 4 INLINE_1_67_Srv3D_1_8_Original\",\r\n            \"originalBulk\": {\r\n                \"size\": 2873437400,\r\n                \"type\": \"SEGY\",\r\n                \"url\": \"sd://SNTC/colors/test.segy\"\r\n            },\r\n            \"perimeters\": [\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        [\r\n                                            1276435.2,\r\n                                            242030.61\r\n                                        ],\r\n                                        [\r\n                                            1281357.8,\r\n                                            239567.36\r\n                                        ],\r\n                                        [\r\n                                            1280002.5,\r\n                                            236859.05\r\n                                        ],\r\n                                        [\r\n                                            1275080,\r\n                                            239322.28\r\n                                        ],\r\n                                        [\r\n                                            1276435.2,\r\n                                            242030.61\r\n                                        ]\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsPolygon\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ],\r\n                                \"perimeterType\": \"Full Fold Coverage\"\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"26782\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"26782079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                },\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        [\r\n                                            -93.60371,\r\n                                            29.312513\r\n                                        ],\r\n                                        [\r\n                                            -93.58811,\r\n                                            29.306007\r\n                                        ],\r\n                                        [\r\n                                            -93.59219,\r\n                                            29.298489\r\n                                        ],\r\n                                        [\r\n                                            -93.60779,\r\n                                            29.304993\r\n                                        ],\r\n                                        [\r\n                                            -93.60371,\r\n                                            29.312513\r\n                                        ]\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsPolygon\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ],\r\n                                \"perimeterType\": \"Full Fold Coverage\"\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4267]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"GCS_North_American_1927\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"4267\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus [4267,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"4267079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                }\r\n            ],\r\n            \"rangeAmplitudeMax\": {\r\n                \"unitKey\": \"amplitude\",\r\n                \"value\": 232467.8\r\n            },\r\n            \"rangeAmplitudeMin\": {\r\n                \"unitKey\": \"amplitude\",\r\n                \"value\": -226153.4\r\n            },\r\n            \"rangeCrosslineIncrement\": 1,\r\n            \"rangeCrosslineStart\": 1,\r\n            \"rangeCrosslineStop\": 34,\r\n            \"rangeInlineIncrement\": 1,\r\n            \"rangeInlineStart\": 1,\r\n            \"rangeInlineStop\": 67,\r\n            \"relationships\": {\r\n                \"binGrid\": {\r\n                    \"id\": \"slb:wke:binGrid-5067af51fe6542968ce8868c01af6cb7\"\r\n                },\r\n                \"seismicSurvey\": {\r\n                    \"id\": \"slb:wke:seismicSurvey3d-62d8fe58-c044-537a-b354-7f3f8e860421\",\r\n                    \"name\": \"ST2013-L\"\r\n                },\r\n                \"usesAssociations\": true\r\n            },\r\n            \"seismicProperty\": \"Instantaneous Amplitude\",\r\n            \"stackAngleRangeMax\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": 10\r\n            },\r\n            \"stackAngleRangeMin\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": 0\r\n            },\r\n            \"stackAzimuthRangeMax\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": 20\r\n            },\r\n            \"stackAzimuthRangeMin\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": -20\r\n            },\r\n            \"stackOffsetRangeMax\": {\r\n                \"unitKey\": \"ftUS\",\r\n                \"value\": 3000\r\n            },\r\n            \"stackOffsetRangeMin\": {\r\n                \"unitKey\": \"ftUS\",\r\n                \"value\": 0\r\n            },\r\n            \"stackSubType\": \"Full\",\r\n            \"stackType\": \"Full\",\r\n            \"storageType\": \"32-BIT\",\r\n            \"textualFileHeader\": [\r\n                \"C 1 CLIENT COMPANY CREW NO                                                      C 2 LINE line1dS AREA MAP ID                                                    C 3 REEL NO DAY-START OF REEL YEAR OBSERVER                                     C 4 INSTRUMENT: DELPH MODEL xx SERIAL NO                                        C 5 DATA TRACES/RECORD 1 AUXILIARY TRACES/RECORD 0 CDP FOLD                     C 6 SAMPLE INTERVAL 333 SAMPLES/TRACE 1496 BITS/IN 16 BYTES/SAMPLE 2            C 7 RECORDING FORMAT FORMAT THIS REEL MEASUREMENT SYSTEM                        C 8 SAMPLE CODE: FIXED PT                                                       C 9 GAIN TYPE: FIXED                                                            C10 FILTERS: ALIAS 1500HZ NOTCH HZ BAND - HZ SLOPE - DB/OCT                     C11 SOURCE: TYPE NUMBER/POINT POINT INTERVAL                                    C12 PATTERN: LENGTH WIDTH                                                       C13 SWEEP: START HZ END HZ LENGTH MS CHANEL NO TYPE                             C14 TAPER: START LENGTH MS END LENGTH MS TYPE                                   C15 SPREAD: OFFSET MAX DISTANCE GROUP INTERVAL                                  C16 GEOPHONES: PER GROUP SPACING FREQUENCY MFG MODEL                            C17 PATTERN: LENGTH WIDTH                                                       C18 TRACES SORTED BY: RECORD                                                    C19 AMPLITUDE RECOVERY: NONE                                                    C20 MAP PROJECTION ZONE ID COORDINATE UNITS                                     C21 PROCESSING:                                                                 C22 PROCESSING:                                                                 C23                                                                             C24                                                                             C25                                                                             C26                                                                             C27                                                                             C28                                                                             C29                                                                             C30                                                                             C31                                                                             C32                                                                             C33                                                                             C34                                                                             C35                                                                             C36                                                                             C37                                                                             C38                                                                             C39                                                                             C40 END EBCDIC                                                                  \"\r\n            ],\r\n            \"verticalDomain\": \"Elevation time (two-way travel time)\",\r\n            \"verticalIncrement\": {\r\n                \"unitKey\": \"ms\",\r\n                \"value\": -4\r\n            },\r\n            \"verticalSampleCount\": 1000,\r\n            \"verticalStart\": {\r\n                \"unitKey\": \"ms\",\r\n                \"value\": 0\r\n            },\r\n            \"verticalStop\": {\r\n                \"unitKey\": \"ms\",\r\n                \"value\": -3996\r\n            },\r\n            \"vintage\": \"ST2013-InstantaneousAmplitude\",\r\n            \"waveType\": \"PP\"\r\n        },\r\n        \"kind\": \"{{datapartition}}:wks:seismic3d:1.0.5\",\r\n        \"legal\": {\r\n            \"legaltags\": [\r\n                \"{{legaltag01}}\"\r\n            ],\r\n            \"otherRelevantDataCountries\": [\r\n                \"US\",\r\n                \"BE\",\r\n                \"NO\",\r\n                \"IN\"\r\n            ]\r\n        },\r\n        \"version\": 1040891613125385\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET GET + SEISMICMETA (FROM POST)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx01'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"path\", function () {",
+									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath'));",
+									"",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(1);",
+									"    });",
+									"",
+									"    pm.test(\"sbit\", function () {",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"gcsurl\", () => {",
+									"        postman.setEnvironmentVariable(\"gcsBucketName\", jsonData.gcsurl.split('/')[0]);",
+									"        postman.setEnvironmentVariable(\"gcsObjectPrefix\", jsonData.gcsurl.split('/')[1]);",
+									"    })",
+									"",
+									"    pm.test(\"Check gtag\", function () {",
+									"        pm.expect(jsonData.gtags.length).to.eql(1);",
+									"        pm.expect(jsonData.gtags[0]).to.eql(\"tagA\");",
+									"    });",
+									"",
+									"    pm.test(\"Check seismicmetadata\", () => {",
+									"        pm.expect(jsonData.seismicmeta).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.id).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.kind).to.eql(pm.environment.get('datapartition') + \":wks:seismic3d:1.0.5\");",
+									"        pm.expect(jsonData.seismicmeta.acl).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.acl.viewers).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.acl.owners).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.legal).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.legal.legaltags).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.legal.otherRelevantDataCountries).to.contain(\"US\");",
+									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.coordinates[0][1]).to.equal(242030.61);",
+									"        pm.expect(jsonData.seismicmeta.data.binNodePositions[0].features[0].geometry.type).to.equal(\"AnyCrsMultiPoint\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}&seismicmeta=true",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								},
+								{
+									"key": "seismicmeta",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET PATCH + SEISMICMETA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx01'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"path\", function () {",
+									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath'));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(0);",
+									"    });",
+									"",
+									"    pm.test(\"Check gtag\", function () {",
+									"        pm.expect(jsonData.gtags.length).to.eql(1);",
+									"        pm.expect(jsonData.gtags[0]).to.eql(\"tagA\");",
+									"    });",
+									"",
+									"    pm.test(\"Check seismicmetadata\", () => {",
+									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var result           = '';\r",
+									"var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+									"var charactersLength = characters.length;\r",
+									"for ( var i = 0; i < 16; i++ ) {\r",
+									"    result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"}\r",
+									"pm.variables.set(\"randomString16\", result);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gtags\": [\n    \"tagA\"\n  ],\n  \"seismicmeta\": {\n  \"id\": \"{{datapartition}}:seismic3d:{{randomString16}}\",\n  \"kind\": \"{{datapartition}}:wks:seismic3d:1.0.5\",\n    \"legal\": {\n    \"legaltags\": [\n      \"{{legaltag01}}\"\n    ],\n      \"otherRelevantDataCountries\": [\n        \"US\"\n      ]\n  },\n  \"data\": {\n    \"geometry\": {\n      \"coordinates\": [\n        [\n          -93.61,\n          9.32\n        ],\n        [\n          -93.78,\n          29.44\n        ]\n      ],\n        \"type\": \"Polygon\"\n     }\n   },\n  \"meta\": [\n\t    {\n\t        \"kind\": \"Unit\",\n\t        \"name\": \"ft/s\",\n\t        \"persistableReference\": {\n\t            \"scaleOffset\": {\n\t                \"scale\": 0.3048,\n\t                \"offset\": 0\n\t            },\n\t            \"symbol\": \"ft/s\",\n\t            \"baseMeasurement\": {\n\t                \"ancestry\": \"Velocity\",\n\t                \"type\": \"UM\"\n\t            },\n\t            \"type\": \"USO\"\n\t        },\n\t        \"propertyNames\": [\n\t            \"elevationReferenceTime.replacementVelocity.value\"\n\t        ]\n\t    }\n    ]\n  }\n} \n \n"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}&close={{sbit}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								},
+								{
+									"key": "close",
+									"value": "{{sbit}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET GET + SEISMICMETA (FROM PATCH)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx01'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"path\", function () {",
+									"        pm.expect(jsonData.path).to.eql(pm.environment.get('testPath'));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(0);",
+									"    });",
+									"",
+									"    pm.test(\"sbit\", function () {",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"gcsurl\", () => {",
+									"        postman.setEnvironmentVariable(\"gcsBucketName\", jsonData.gcsurl.split('/')[0]);",
+									"        postman.setEnvironmentVariable(\"gcsObjectPrefix\", jsonData.gcsurl.split('/')[1]);",
+									"    })",
+									"",
+									"    pm.test(\"Check gtag\", function () {",
+									"        pm.expect(jsonData.gtags.length).to.eql(1);",
+									"        pm.expect(jsonData.gtags[0]).to.eql(\"tagA\");",
+									"    });",
+									"",
+									"    pm.test(\"Check seismicmetadata\", () => {",
+									"        pm.expect(jsonData.seismicmeta).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.kind).to.eql(pm.environment.get('datapartition') +\":wks:seismic3d:1.0.5\");",
+									"        pm.expect(jsonData.seismicmeta.acl).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.acl.viewers).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.acl.owners).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.legal).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.legal.legaltags).not.equal(null);",
+									"        pm.expect(jsonData.seismicmeta.legal.otherRelevantDataCountries).to.contain(\"US\");",
+									"        pm.expect(jsonData.seismicmeta.data.geometry.coordinates[0][1]).to.equal(9.32);",
+									"        pm.expect(jsonData.seismicmeta.data.geometry.type).to.equal(\"Polygon\");",
+									"        pm.expect(jsonData.seismicmeta.meta[0].kind).to.eql(\"Unit\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded}}&seismicmeta=true",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx01}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								},
+								{
+									"key": "seismicmeta",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET DELETE SEISMICMETA 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.expect(pm.response.code).to.be.eql(200)",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx02}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER WITH OPENZGY_V1(schema validation error for missing kind)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status to be 400 as the schema body does not contain kind\", function () {",
+									"       pm.response.to.have.status(400)",
+									"    });",
+									"",
+									"    pm.test(\"Check error message\", function () {",
+									"        pm.response.text().includes(\"must have required property 'kind'\")",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"openzgy_v1\": {\r\n        \"data\": {\r\n            \"ResourceHomeRegionID\": \"opendes:reference-data--OSDURegion:AWSEastUSA:\",\r\n            \"ResourceHostRegionIDs\": [\r\n                \"opendes:reference-data--OSDURegion:AWSEastUSA:\"\r\n            ],\r\n            \"ResourceCurationStatus\": \"opendes:reference-data--ResourceCurationStatus:CREATED:\",\r\n            \"ResourceLifecycleStatus\": \"opendes:reference-data--ResourceLifecycleStatus:LOADING:\",\r\n            \"ResourceSecurityClassification\": \"opendes:reference-data--ResourceSecurityClassification:RESTRICTED:\",\r\n            \"Source\": \"Example Data Source\",\r\n            \"ExistenceKind\": \"opendes:reference-data--ExistenceKind:Prototype:\",\r\n            \"Name\": \"Dataset X221/15\",\r\n            \"Description\": \"As originally delivered by ACME.com.\",\r\n            \"TotalSize\": \"13245217273\",\r\n            \"EncodingFormatTypeID\": \"opendes:reference-data--EncodingFormatType:text%2Fcsv:\",\r\n            \"SchemaFormatTypeID\": \"opendes:reference-data--SchemaFormatType:CWLS%20LAS3:\",\r\n            \"Endian\": \"BIG\",\r\n            \"DatasetProperties\": {\r\n                \"FileCollectionPath\": \"s3://default_bucket/opendes/data/vds-dataset/\",\r\n                \"IndexFilePath\": \"s3://default_bucket/opendes/data/vds-dataset/vds-dataset.index\",\r\n                \"FileSourceInfos\": [\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-1\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-1\",\r\n                        \"Name\": \"vds-file-1\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:46:20.163Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:20:05.356Z\",\r\n                        \"FileSize\": \"439452464\",\r\n                        \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    },\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-2\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-2\",\r\n                        \"Name\": \"vds-file-2\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:50:40.321Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:59:03.456Z\",\r\n                        \"FileSize\": \"433645463\",\r\n                        \"Checksum\": \"204e9800998ecf8427ed41d8cd98f00b\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    }\r\n                ],\r\n                \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\"\r\n            },\r\n            \"ExtensionProperties\": {}\r\n        },\r\n        \"meta\": [],\r\n        \"id\": \"opendes:dataset--FileCollection.Slb.OpenZGY:5771c352-dc52-5d26-9351-2b8dbc9eb475\",\r\n        \"version\": 1637208623527796,\r\n        \"acl\": {\r\n            \"viewers\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ],\r\n            \"owners\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ]\r\n        },\r\n        \"legal\": {\r\n            \"legaltags\": [\r\n                \"opendes-seistore-test-01\"\r\n            ],\r\n            \"otherRelevantDataCountries\": [\r\n                \"US\"\r\n            ],\r\n            \"status\": \"compliant\"\r\n        },\r\n        \"tags\": {\r\n            \"NameOfKey\": \"String value\"\r\n        },\r\n        \"createUser\": \"vmanohar@slb.com\",\r\n        \"createTime\": \"2021-11-16T02:08:16.420Z\",\r\n        \"modifyUser\": \"39916b94-71a9-409e-856e-0f29558fa908\",\r\n        \"modifyTime\": \"2021-11-18T04:10:23.817Z\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx02}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER WITH OPENZGY_V1 (schema validation errors for incorrect kind)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    pm.test(\"Status code is 400\", function () {",
+									"        pm.response.to.have.status(400);",
+									"    });",
+									"",
+									"    pm.test(\"Check error message\", function () {",
+									"        pm.response.text().includes(\"/kind must match pattern \\\"osdu:wks:dataset--FileCollection.Slb.OpenZGY:1.0.0\\\"\")",
+									"    });",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"openzgy_v1\": {\r\n        \"data\": {\r\n            \"ResourceHomeRegionID\": \"opendes:reference-data--OSDURegion:AWSEastUSA:\",\r\n            \"ResourceHostRegionIDs\": [\r\n                \"opendes:reference-data--OSDURegion:AWSEastUSA:\"\r\n            ],\r\n            \"ResourceCurationStatus\": \"opendes:reference-data--ResourceCurationStatus:CREATED:\",\r\n            \"ResourceLifecycleStatus\": \"opendes:reference-data--ResourceLifecycleStatus:LOADING:\",\r\n            \"ResourceSecurityClassification\": \"opendes:reference-data--ResourceSecurityClassification:RESTRICTED:\",\r\n            \"Source\": \"Example Data Source\",\r\n            \"ExistenceKind\": \"opendes:reference-data--ExistenceKind:Prototype:\",\r\n            \"Name\": \"Dataset X221/15\",\r\n            \"Description\": \"As originally delivered by ACME.com.\",\r\n            \"TotalSize\": \"13245217273\",\r\n            \"EncodingFormatTypeID\": \"opendes:reference-data--EncodingFormatType:text%2Fcsv:\",\r\n            \"SchemaFormatTypeID\": \"opendes:reference-data--SchemaFormatType:CWLS%20LAS3:\",\r\n            \"Endian\": \"BIG\",\r\n            \"DatasetProperties\": {\r\n                \"FileCollectionPath\": \"s3://default_bucket/opendes/data/vds-dataset/\",\r\n                \"IndexFilePath\": \"s3://default_bucket/opendes/data/vds-dataset/vds-dataset.index\",\r\n                \"FileSourceInfos\": [\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-1\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-1\",\r\n                        \"Name\": \"vds-file-1\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:46:20.163Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:20:05.356Z\",\r\n                        \"FileSize\": \"439452464\",\r\n                        \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    },\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-2\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-2\",\r\n                        \"Name\": \"vds-file-2\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:50:40.321Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:59:03.456Z\",\r\n                        \"FileSize\": \"433645463\",\r\n                        \"Checksum\": \"204e9800998ecf8427ed41d8cd98f00b\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    }\r\n                ],\r\n                \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\"\r\n            },\r\n            \"ExtensionProperties\": {}\r\n        },\r\n        \"meta\": [],\r\n        \"id\": \"opendes:dataset--FileCollection.Slb.OpenZGY:5771c352-dc52-5d26-9351-2b8dbc9eb475\",\r\n        \"kind\": \"incorrect-kind\",\r\n        \"version\": 1637208623527796,\r\n        \"acl\": {\r\n            \"viewers\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ],\r\n            \"owners\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ]\r\n        },\r\n        \"legal\": {\r\n            \"legaltags\": [\r\n                \"opendes-seistore-test-01\"\r\n            ],\r\n            \"otherRelevantDataCountries\": [\r\n                \"US\"\r\n            ],\r\n            \"status\": \"compliant\"\r\n        },\r\n        \"tags\": {\r\n            \"NameOfKey\": \"String value\"\r\n        },\r\n        \"createUser\": \"vmanohar@slb.com\",\r\n        \"createTime\": \"2021-11-16T02:08:16.420Z\",\r\n        \"modifyUser\": \"39916b94-71a9-409e-856e-0f29558fa908\",\r\n        \"modifyTime\": \"2021-11-18T04:10:23.817Z\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx02}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER WITH OPENZGY_V1 (storage record id is computed by backend and returned to client)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx02'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(1);",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"Check openzgy_v1 schema record\", () => {",
+									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
+									"        // pm.expect(jsonData.seismicmeta_guid).eql(jsonData.openzgy_v1.id);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"openzgy_v1\": {\r\n        \"data\": {\r\n            \"ResourceHomeRegionID\": \"opendes:reference-data--OSDURegion:AWSEastUSA:\",\r\n            \"ResourceHostRegionIDs\": [\r\n                \"opendes:reference-data--OSDURegion:AWSEastUSA:\"\r\n            ],\r\n            \"ResourceCurationStatus\": \"opendes:reference-data--ResourceCurationStatus:CREATED:\",\r\n            \"ResourceLifecycleStatus\": \"opendes:reference-data--ResourceLifecycleStatus:LOADING:\",\r\n            \"ResourceSecurityClassification\": \"opendes:reference-data--ResourceSecurityClassification:RESTRICTED:\",\r\n            \"Source\": \"Example Data Source\",\r\n            \"ExistenceKind\": \"opendes:reference-data--ExistenceKind:Prototype:\",\r\n            \"Name\": \"Dataset X221/15\",\r\n            \"Description\": \"As originally delivered by ACME.com.\",\r\n            \"TotalSize\": \"13245217273\",\r\n            \"EncodingFormatTypeID\": \"opendes:reference-data--EncodingFormatType:text%2Fcsv:\",\r\n            \"SchemaFormatTypeID\": \"opendes:reference-data--SchemaFormatType:CWLS%20LAS3:\",\r\n            \"Endian\": \"BIG\",\r\n            \"DatasetProperties\": {\r\n                \"FileCollectionPath\": \"s3://default_bucket/opendes/data/vds-dataset/\",\r\n                \"IndexFilePath\": \"s3://default_bucket/opendes/data/vds-dataset/vds-dataset.index\",\r\n                \"FileSourceInfos\": [\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-1\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-1\",\r\n                        \"Name\": \"vds-file-1\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:46:20.163Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:20:05.356Z\",\r\n                        \"FileSize\": \"439452464\",\r\n                        \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    },\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-2\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-2\",\r\n                        \"Name\": \"vds-file-2\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:50:40.321Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:59:03.456Z\",\r\n                        \"FileSize\": \"433645463\",\r\n                        \"Checksum\": \"204e9800998ecf8427ed41d8cd98f00b\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    }\r\n                ],\r\n                \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\"\r\n            },\r\n            \"ExtensionProperties\": {}\r\n        },\r\n        \"meta\": [],\r\n        \"version\": 1637223275655929,\r\n        \"kind\": \"osdu:wks:dataset--FileCollection.Slb.OpenZGY:1.0.0\",\r\n        \"acl\": {\r\n            \"viewers\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ],\r\n            \"owners\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ]\r\n        },\r\n        \"legal\": {\r\n            \"legaltags\": [\r\n                \"opendes-seistore-test-01\"\r\n            ],\r\n            \"otherRelevantDataCountries\": [\r\n                \"US\"\r\n            ],\r\n            \"status\": \"compliant\"\r\n        },\r\n        \"tags\": {\r\n            \"NameOfKey\": \"String value\"\r\n        },\r\n        \"createUser\": \"vmanohar@slb.com\",\r\n        \"createTime\": \"2021-11-16T02:08:16.420Z\",\r\n        \"modifyUser\": \"39916b94-71a9-409e-856e-0f29558fa908\",\r\n        \"modifyTime\": \"2021-11-18T08:14:36.310Z\"\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx02}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET GET WITH OPENZGY_V1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx02'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(1);",
+									"    });",
+									"",
+									"    pm.test(\"sbit\", function () {",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"gcsurl\", () => {",
+									"        postman.setEnvironmentVariable(\"gcsBucketName\", jsonData.gcsurl.split('/')[0]);",
+									"        postman.setEnvironmentVariable(\"gcsObjectPrefix\", jsonData.gcsurl.split('/')[1]);",
+									"    })",
+									"",
+									"    pm.test(\"Check openzgy_v1 record matches the post from previous request\", () => {",
+									"        pm.expect(jsonData.openzgy_v1).not.equal(null);",
+									"        pm.expect(jsonData.openzgy_v1.id).not.equal(null);",
+									"        pm.expect(jsonData.openzgy_v1.data.ResourceHomeRegionID).equal('opendes:reference-data--OSDURegion:AWSEastUSA:');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}?seismicmeta=true",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx02}}"
+							],
+							"query": [
+								{
+									"key": "seismicmeta",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET DELETE WITH SEGY_V1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.expect(pm.response.code).to.be.eql(200)",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx03}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx03}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER WITH SEGY_V1 (storage record id is computed by backend and returned to client)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx03'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(1);",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"Check segy_v1 schema record\", () => {",
+									"        pm.expect(jsonData.seismicmeta_guid).not.equal(null);",
+									"        // pm.expect(jsonData.seismicmeta_guid).eql(jsonData.segy_v1.id);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"segy_v1\": {\r\n        \"kind\": \"osdu:wks:dataset--FileCollection.SEGY:1.0.0\",\r\n        \"version\": 1562066009929332,\r\n        \"tags\": {\r\n            \"NameOfKey\": \"String value\"\r\n        },\r\n        \"createTime\": \"2020-12-16T11:46:20.163Z\",\r\n        \"createUser\": \"vmanohar@slb.com\",\r\n        \"modifyTime\": \"2020-12-16T11:52:24.477Z\",\r\n        \"modifyUser\": \"vmanohar@slb.com\",\r\n        \"ancestry\": {\r\n            \"parents\": []\r\n        },\r\n        \"meta\": [],\r\n        \"data\": {\r\n            \"ResourceHomeRegionID\": \"namespace:reference-data--OSDURegion:AWSEastUSA:\",\r\n            \"ResourceHostRegionIDs\": [\r\n                \"namespace:reference-data--OSDURegion:AWSEastUSA:\"\r\n            ],\r\n            \"ResourceCurationStatus\": \"namespace:reference-data--ResourceCurationStatus:CREATED:\",\r\n            \"ResourceLifecycleStatus\": \"namespace:reference-data--ResourceLifecycleStatus:LOADING:\",\r\n            \"ResourceSecurityClassification\": \"namespace:reference-data--ResourceSecurityClassification:RESTRICTED:\",\r\n            \"Source\": \"Example Data Source\",\r\n            \"ExistenceKind\": \"namespace:reference-data--ExistenceKind:Prototype:\",\r\n            \"Name\": \"Dataset X221/15\",\r\n            \"Description\": \"As originally delivered by ACME.com.\",\r\n            \"TotalSize\": \"13245217273\",\r\n            \"EncodingFormatTypeID\": \"namespace:reference-data--EncodingFormatType:text%2Fcsv:\",\r\n            \"SchemaFormatTypeID\": \"namespace:reference-data--SchemaFormatType:CWLS%20LAS3:\",\r\n            \"Endian\": \"BIG\",\r\n            \"DatasetProperties\": {\r\n                \"FileCollectionPath\": \"s3://default_bucket/opendes/data/vds-dataset/\",\r\n                \"IndexFilePath\": \"s3://default_bucket/opendes/data/vds-dataset/vds-dataset.index\",\r\n                \"FileSourceInfos\": [\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-1\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-1\",\r\n                        \"Name\": \"vds-file-1\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:46:20.163Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:20:05.356Z\",\r\n                        \"FileSize\": \"439452464\",\r\n                        \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    },\r\n                    {\r\n                        \"FileSource\": \"s3://default_bucket/opendes/data/vds-dataset/vds-file-2\",\r\n                        \"PreloadFilePath\": \"s3://staging-area/r7/raw-data/provided/documents/vds-file-2\",\r\n                        \"Name\": \"vds-file-2\",\r\n                        \"PreloadFileCreateUser\": \"somebody@acme.org\",\r\n                        \"PreloadFileCreateDate\": \"2019-12-16T11:50:40.321Z\",\r\n                        \"PreloadFileModifyUser\": \"somebody.else@acme.org\",\r\n                        \"PreloadFileModifyDate\": \"2019-12-20T17:59:03.456Z\",\r\n                        \"FileSize\": \"433645463\",\r\n                        \"Checksum\": \"204e9800998ecf8427ed41d8cd98f00b\",\r\n                        \"ChecksumAlgorithm\": \"MD5\"\r\n                    }\r\n                ],\r\n                \"Checksum\": \"d41d8cd98f00b204e9800998ecf8427e\"\r\n            },\r\n            \"VectorHeaderMapping\": [\r\n                {\r\n                    \"KeyName\": \"namespace:reference-data--HeaderKeyName:CMPX:\",\r\n                    \"WordFormat\": \"namespace:reference-data--WordFormatType:INT:\",\r\n                    \"WordWidth\": 2,\r\n                    \"Position\": 2,\r\n                    \"UoM\": \"namespace:reference-data--UnitOfMeasure:m:\",\r\n                    \"ScalarIndicator\": \"STANDARD\",\r\n                    \"ScalarOverride\": 12345.6\r\n                }\r\n            ],\r\n            \"SEGYRevision\": \"rev 0\",\r\n            \"ExtensionProperties\": {}\r\n        },\r\n        \"id\": \"opendes:dataset--FileCollection.SEGY:c26bfb75-721a-481b-9b93-cd91fb739d4b\",\r\n        \"acl\": {\r\n            \"owners\": [\r\n                \"data.default.owners@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ],\r\n            \"viewers\": [\r\n                \"data.default.viewers@opendes.enterprisedata.cloud.slb-ds.com\"\r\n            ]\r\n        },\r\n        \"legal\": {\r\n            \"legaltags\": [\r\n                \"opendes-seistore-test-01\"\r\n            ],\r\n            \"otherRelevantDataCountries\": [\r\n                \"US\"\r\n            ]\r\n        }\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx03}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx03}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET GET WITH SEGY_V1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"",
+									"    pm.test(\"Dataset name\", function () {",
+									"        pm.expect(jsonData.name).to.eql(pm.environment.get('dsx03'));",
+									"    });",
+									"",
+									"    pm.test(\"tenant\", function () {",
+									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
+									"    });",
+									"",
+									"    pm.test(\"subproject\", function () {",
+									"        pm.expect(jsonData.subproject).to.eql(pm.environment.get(\"subproject\"));",
+									"    });",
+									"",
+									"    pm.test(\"ltag\", function () {",
+									"        pm.expect(jsonData.ltag).to.eql(pm.environment.get('legaltag01'));",
+									"    });",
+									"",
+									"    pm.test(\"Dates are present\", function () {",
+									"        pm.expect(jsonData.created_date).to.exist;",
+									"        pm.expect(jsonData.last_modified_date).to.exist;",
+									"    });",
+									"",
+									"    pm.test(\"sbit_count\", function () {",
+									"        pm.expect(jsonData.sbit_count).to.eql(1);",
+									"    });",
+									"",
+									"    pm.test(\"sbit\", function () {",
+									"        postman.setEnvironmentVariable(\"sbit\", jsonData.sbit);",
+									"    });",
+									"",
+									"    pm.test(\"gcsurl\", () => {",
+									"        postman.setEnvironmentVariable(\"gcsBucketName\", jsonData.gcsurl.split('/')[0]);",
+									"        postman.setEnvironmentVariable(\"gcsObjectPrefix\", jsonData.gcsurl.split('/')[1]);",
+									"    })",
+									"",
+									"    pm.test(\"Check segy_v1 record matches the post from previous request\", () => {",
+									"        pm.expect(jsonData.segy_v1).not.equal(null);",
+									"        console.log(jsonData.segy_v1);",
+									"        pm.expect(jsonData.segy_v1.id).not.equal(null);",
+									"        pm.expect(jsonData.segy_v1.data.TotalSize).equal('13245217273');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx03}}?seismicmeta=true",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx03}}"
+							],
+							"query": [
+								{
+									"key": "seismicmeta",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET DELETE WITH SEGY_V1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.expect(pm.response.code).to.be.eql(200)",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx02}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STATUS UNSET SEISMICMETA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Body matches string\", function () {",
+									"        pm.expect(pm.response.text()).to.include(\"service OK\");",
+									"    });",
+									"",
+									"    pm.environment.unset('dsx01')",
+									"    pm.environment.unset('dsx02')",
+									"    pm.environment.unset('dsx03')",
+									"    pm.environment.unset('testPath')",
+									"    pm.environment.unset('testPathEncoded')",
+									"    pm.environment.unset('sbit')",
+									"    pm.environment.unset('gcsBucketName')",
+									"    pm.environment.unset('gcsObjectPrefix')",
+									"    pm.environment.unset('dsx01_record_type')",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "tags",
 			"item": [
 				{

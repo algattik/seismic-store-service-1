@@ -17,19 +17,16 @@
 import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
+import hpropagate from 'hpropagate';
 import https from 'https';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
-import replaceInFile from 'replace-in-file';
 import swaggerUi from 'swagger-ui-express';
 import { v4 as uuidv4 } from 'uuid';
-import YAML from 'yamljs';
-import hpropagate from 'hpropagate'
-
 import { AuthProviderFactory } from '../auth';
 import { Config, LoggerFactory } from '../cloud';
 import { ServiceRouter } from '../services';
 import { Cache, Error, Feature, FeatureFlags, Response, Utils } from '../shared';
-
+import { SwaggerManager } from './swagger-manager';
 // -------------------------------------------------------------------
 // Seismic Store Service
 // -------------------------------------------------------------------
@@ -77,28 +74,8 @@ export class Server {
         ]
     };
 
-    private optionsDivClear = {
-        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
-        from: '.swagger-ui .topbar{display:none;visibility:hidden',
-        to: '.swagger-ui .topbar{'
-    };
-
-    private optionsDivHide = {
-        files: 'node_modules/swagger-ui-dist/swagger-ui.css',
-        from: '.swagger-ui .topbar{',
-        to: '.swagger-ui .topbar{display:none;visibility:hidden;'
-    };
 
     constructor() {
-
-        const swaggerDocument = YAML.load('./dist/docs/api/openapi.osdu.yaml');
-        try {
-            replaceInFile.sync(this.optionsDivClear);
-            replaceInFile.sync(this.optionsDivHide);
-        }
-        catch (error) {
-            console.error('Error occurred:', error);
-        }
 
         // set the caller headers to forward to the downstream services
         if (Config.CALLER_FORWARD_HEADERS) {
@@ -106,7 +83,7 @@ export class Server {
                 headersToPropagate: Config.CALLER_FORWARD_HEADERS.split(',')
             });
         } else {
-            hpropagate()
+            hpropagate();
         }
 
         this.app = express();
@@ -115,7 +92,8 @@ export class Server {
         this.app.disable('x-powered-by');
         this.app.use(cors(this.corsOptions));
         this.app.options('*', cors());
-        this.app.use(Config.SDMS_PREFIX + '/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+        this.app.use(Config.SDMS_PREFIX + '/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(
+            SwaggerManager.swaggerDocument, {
             customCss: '.swagger-ui .topbar { display: none }'
         }));
         this.app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -149,7 +127,7 @@ export class Server {
 
                         // init the cache
                         if (!Server._exchangedTokenCache) {
-                            Server._exchangedTokenCache = new Cache<string>('tkex')
+                            Server._exchangedTokenCache = new Cache<string>('tkex');
                         }
 
                         if (req.headers.authorization) {

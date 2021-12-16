@@ -23,7 +23,7 @@ import { PaginatedDatasetList } from './model';
 export class DatasetDAO {
 
     public static async register(
-        journalClient: IJournal, datasetEntity: {key: object, data: DatasetModel}) {
+        journalClient: IJournal, datasetEntity: { key: object, data: DatasetModel; }) {
         datasetEntity.data.ctag = Utils.makeID(16);
         await journalClient.save(datasetEntity);
     }
@@ -32,7 +32,7 @@ export class DatasetDAO {
         const datasetEntityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
             path: [Config.DATASETS_KIND],
-            enforcedKey: dataset.path.slice(0,-1) + '/' + dataset.name
+            enforcedKey: dataset.path.slice(0, -1) + '/' + dataset.name
         });
         const [entity] = await journalClient.get(datasetEntityKey);
         return entity ? await this.fixOldModel(entity, dataset.tenant, dataset.subproject) : entity;
@@ -62,7 +62,7 @@ export class DatasetDAO {
     }
 
     public static async updateAll(
-        journalClient: IJournal, datasets: {data: DatasetModel, key: any}[]) {
+        journalClient: IJournal, datasets: { data: DatasetModel, key: any; }[]) {
         datasets.forEach(dataset => { dataset.data.ctag = Utils.makeID(16); });
         await journalClient.save(datasets);
     }
@@ -132,7 +132,7 @@ export class DatasetDAO {
     public static async paginatedListContent(
         journalClient: IJournal, dataset: DatasetModel,
         wmode: string, pagination: PaginationModel):
-        Promise<{ datasets: string[], nextPageCursor: string }> {
+        Promise<{ datasets: string[], nextPageCursor: string; }> {
 
         const output = { datasets: [], nextPageCursor: null };
 
@@ -178,35 +178,35 @@ export class DatasetDAO {
     public static async listDatasets(
         journalClient: IJournal,
         tenant: string, subproject: string, pagination?: PaginationModel):
-        Promise<{ datasets: {data: DatasetModel, key: any}[], nextPageCursor: string }> {
+        Promise<{ datasets: { data: DatasetModel, key: any; }[], nextPageCursor: string; }> {
 
-            const output: any = { datasets: [], nextPageCursor: undefined };
+        const output: any = { datasets: [], nextPageCursor: undefined };
 
-            // Retrieve the content datasets
-            let query = journalClient.createQuery(
-                Config.SEISMIC_STORE_NS + '-' + tenant + '-' + subproject, Config.DATASETS_KIND);
+        // Retrieve the content datasets
+        let query = journalClient.createQuery(
+            Config.SEISMIC_STORE_NS + '-' + tenant + '-' + subproject, Config.DATASETS_KIND);
 
-            if (pagination && pagination.cursor) query = query.start(pagination.cursor);
-            if (pagination && pagination.limit) query = query.limit(pagination.limit);
+        if (pagination && pagination.cursor) query = query.start(pagination.cursor);
+        if (pagination && pagination.limit) query = query.limit(pagination.limit);
 
-            const [datasetEntities, info] = (
-                await journalClient.runQuery(query)) as [DatasetModel[], {endCursor?: string}];
+        const [datasetEntities, info] = (
+            await journalClient.runQuery(query)) as [DatasetModel[], { endCursor?: string; }];
 
-            if (datasetEntities.length !== 0) {
-                output.datasets = datasetEntities.map((entity) => {
-                    return {data: entity, key: entity[journalClient.KEY]};
-                })
-                if (pagination) {
-                    output.nextPageCursor = info.endCursor;
-                }
+        if (datasetEntities.length !== 0) {
+            output.datasets = datasetEntities.map((entity) => {
+                return { data: entity, key: entity[journalClient.KEY] };
+            });
+            if (pagination) {
+                output.nextPageCursor = info.endCursor;
             }
+        }
 
-            return output;
+        return output;
     }
 
     public static async listContent(
         journalClient: IJournal, dataset: DatasetModel,
-        wmode: string = Config.LS_MODE.ALL): Promise<{ datasets: string[], directories: string[] }> {
+        wmode: string = Config.LS_MODE.ALL): Promise<{ datasets: string[], directories: string[]; }> {
 
         const results = { datasets: [], directories: [] };
 
@@ -232,7 +232,7 @@ export class DatasetDAO {
                 (entity) => (entity.path as string).substr(dataset.path.length));
             results.directories = results.directories.map(
                 (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
-                    (elem, index, self) => index === self.indexOf(elem) );
+                    (elem, index, self) => index === self.indexOf(elem));
         }
 
         return results;
