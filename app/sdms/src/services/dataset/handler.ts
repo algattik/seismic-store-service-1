@@ -15,10 +15,11 @@
 // ============================================================================
 
 import { Request as expRequest, Response as expResponse } from 'express';
-import { v4 as uuidv4 } from 'uuid';
-import { DatasetModel } from '.';
+
+import { DatasetModel, DatasetUtils } from '.';
 import { Auth, AuthRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { DESStorage, DESUtils, UserAssociationServiceFactory } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubprojectAuth, SubProjectDAO, SubProjectModel } from '../subproject';
@@ -118,14 +119,9 @@ export class DatasetHandler {
 
         try {
 
-            if (dataset.acls) {
-                const subprojectMetadata = await SubProjectDAO.get(journalClient, tenant.name, subproject.name);
-                const subprojectAccessPolicy = subprojectMetadata.access_policy;
-
-                if (subprojectAccessPolicy === Config.UNIFORM_ACCESS_POLICY) {
-                    throw Error.make(Error.Status.BAD_REQUEST,
-                        'Subproject access policy is set to uniform and so ACLs cannot be applied. Patch the subproject access policy to dataset and attempt this operation again.');
-                }
+            if (dataset.acls && subproject.access_policy === Config.UNIFORM_ACCESS_POLICY) {
+                throw Error.make(Error.Status.BAD_REQUEST,
+                    'Subproject access policy is set to uniform and so ACLs cannot be applied.');
             }
 
             // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
@@ -145,11 +141,8 @@ export class DatasetHandler {
                 }
             }
 
-            // set gcs URL and LegalTag with the subproject information
-            dataset.gcsurl = subproject.gcs_bucket + '/' + uuidv4();
-            dataset.ltag = dataset.ltag || subproject.ltag;
-
             // ensure that a legal tag exist
+            dataset.ltag = dataset.ltag || subproject.ltag;
             if (!dataset.ltag) {
                 throw Error.make(Error.Status.NOT_FOUND,
                     'No legal-tag has been found for the subproject resource ' +
@@ -187,6 +180,11 @@ export class DatasetHandler {
                     .build(dataset.storageSchemaRecordType)
                     .addStorageRecordDefaults(dataset.storageSchemaRecord, dataset, tenant);
             }
+
+            // get the gcs account from the cloud provider
+            dataset.gcsurl = await SeistoreFactory.build(
+                Config.CLOUDPROVIDER).getDatasetStorageResource(tenant, subproject);
+
             // prepare the keys
             datasetEntityKey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
@@ -198,7 +196,7 @@ export class DatasetHandler {
             // this flag will inform the service to check roll-back the registration in the error catch.
             datasetRegisteredConsistencyFlag = true;
 
-            // storageschemarecord is not persisted in the dataset metadata
+            // StorageSchemaRecord is not persisted in the dataset metadata
             const storageSchemaRecord = dataset.storageSchemaRecord;
             delete dataset.storageSchemaRecord;
 
@@ -210,12 +208,14 @@ export class DatasetHandler {
                         [storageSchemaRecord], tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
-
             // release the mutex and keep the lock session
             await Locker.removeWriteLock(writeLockSession, true);
 
             // attach the gcpid for fast check
             dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+
+            // attach access policy
+            dataset.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
 
             // attach locking information
             dataset.sbit = writeLockSession.wid;
@@ -286,7 +286,6 @@ export class DatasetHandler {
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
-
         // Use the access policy to determine which groups to fetch for read authorization
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
             await Auth.isReadAuthorized(req.headers.authorization,
@@ -304,7 +303,6 @@ export class DatasetHandler {
                         datasetOUT.created_by, dataPartition);
                 datasetOUT.created_by = userEmail;
             }
-
         }
 
         // Apply transforms for openzgy_V1 and segy_v1 is required
@@ -332,6 +330,9 @@ export class DatasetHandler {
         }
         // attach the gcpid for fast check
         datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+
+        // attach access policy
+        datasetOUT.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
 
         return datasetOUT;
 
@@ -362,12 +363,13 @@ export class DatasetHandler {
         // Retrieve the list of datasets metadata
         const output = await DatasetDAO.list(journalClient, dataset, pagination) as any;
 
-        // attach the gcpid for fast check and exchange user-info if requested
+        // attach the gcpid for fast check, access_policy and exchange user-info (if requested)
         const userAssociationService = FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && userInfo ?
             UserAssociationServiceFactory.build(Config.USER_ASSOCIATION_SVC_PROVIDER) : undefined;
         const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
         for (const item of output.datasets) {
             item.ctag = item.ctag + tenant.gcpid + ';' + dataPartition;
+            item.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
             if (userAssociationService && !Utils.isEmail(item.created_by)) {
                 item.created_by = await userAssociationService.convertPrincipalIdentifierToUserInfo(
                     item.created_by, dataPartition);
@@ -419,14 +421,6 @@ export class DatasetHandler {
                 req.headers['impersonation-token-context'] as string);
         }
 
-        // check if valid url
-        if (!dataset.gcsurl || dataset.gcsurl.indexOf('/') === -1) {
-            throw (Error.make(Error.Status.UNKNOWN,
-                'The dataset ' + Config.SDPATHPREFIX + datasetIn.tenant + '/' +
-                datasetIn.subproject + datasetIn.path + datasetIn.name +
-                ' cannot be deleted as it does not have a valid gcs url in the metadata catalogue.'));
-        }
-
         // Delete the dataset metadata (both firestore and DEStorage)
         await Promise.all([
             // delete the dataset entity
@@ -438,12 +432,11 @@ export class DatasetHandler {
         ]);
 
         // Delete all physical objects (not wait for full objects deletion)
-        const bucketName = dataset.gcsurl.split('/')[0];
-        const gcsPrefix = dataset.gcsurl.split('/')[1];
-        const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-        // tslint:disable-next-line: no-floating-promises no-console
-        storage.deleteObjects(bucketName, gcsPrefix).catch((error) => {
-            LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));
+        const bucket = DatasetUtils.getBucketFromDatasetResourceUri(dataset.gcsurl);
+        const virtualFolder = DatasetUtils.getVirtualFolderFromDatasetResourceUri(dataset.gcsurl);
+        StorageFactory.build(Config.CLOUDPROVIDER, tenant).deleteObjects(
+            bucket, virtualFolder).catch((error) => {
+                LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));
         });
 
         // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
@@ -500,6 +493,11 @@ export class DatasetHandler {
             const unlockRes = await Locker.unlock(lockKey, wid);
             dataset.sbit = unlockRes.id;
             dataset.sbit_count = unlockRes.cnt;
+
+            // attach the gcpid for fast check
+            dataset.ctag = dataset.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+            // attach access policy
+            dataset.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
 
             return dataset;
         }
@@ -662,6 +660,8 @@ export class DatasetHandler {
 
         // attach the gcpid for fast check
         datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+        // attach access policy
+        datasetOUT.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
 
         delete datasetOUT.storageSchemaRecordType;
 
@@ -743,6 +743,8 @@ export class DatasetHandler {
 
         // attach the gcpid for fast check
         datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+        // attach access policy
+        datasetOUT.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
 
         return datasetOUT;
 

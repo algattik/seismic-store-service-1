@@ -23,7 +23,6 @@ export interface IStorage {
     deleteBucket(bucketName: string): void;
     bucketExists(bucketName: string): Promise<boolean>;
     deleteFiles(bucketName: string): Promise<void>;
-    deleteObject(bucketName: string, objectName: string): Promise<void>;
     deleteObjects(bucketName: string, prefix: string): Promise<void>;
     saveObject(bucketName: string, objectName: string, data: string): Promise<void>;
     copy(bucketIn: string, prefixIn: string, bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void>;
@@ -36,7 +35,6 @@ export abstract class AbstractStorage implements IStorage {
     public abstract deleteBucket(bucketName: string): Promise<void>;
     public abstract bucketExists(bucketName: string): Promise<boolean>;
     public abstract deleteFiles(bucketName: string): Promise<void>;
-    public abstract deleteObject(bucketName: string, objectName: string): Promise<void>;
     public abstract deleteObjects(bucketName: string, prefix: string): Promise<void>;
     public abstract saveObject(bucketName: string, objectName: string, data: string): Promise<void>;
     public abstract copy(

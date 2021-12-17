@@ -12,8 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { v4 as uuidv4 } from 'uuid';
+import { AWSStorage } from '.';
 
 import { SubProjectModel } from '../../../services/subproject';
+import { TenantModel } from '../../../services/tenant';
 import { Utils } from '../../../shared';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 
@@ -32,5 +35,22 @@ export class AwsSeistore extends AbstractSeistore {
     public async notifySubprojectCreationStatus(subproject: SubProjectModel,
         status: string): Promise<string> {
         return 'Not Implemented';
+    }
+
+    public async getDatasetStorageResource(_tenant: TenantModel, subproject: SubProjectModel): Promise<string> {
+        return subproject.gcs_bucket + '/' + uuidv4();
+    }
+
+    public async getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+        await new AWSStorage(tenant).createBucket(
+            subproject.gcs_bucket, subproject.storage_location, subproject.storage_class);
+    }
+
+    public async deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+        const storage = new AWSStorage(tenant);
+        // probably this line is not needed for azure implementation.
+        // deleting the bucket should be enough (logic abstracted from core)
+        await storage.deleteFiles(subproject.gcs_bucket);
+        await storage.deleteBucket(subproject.gcs_bucket);
     }
 }

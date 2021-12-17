@@ -72,7 +72,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         }
     }
 
-    public static async getStorageAccountName(dataPartitionID: string): Promise<string> {
+    public static async getStorageResourceName(dataPartitionID: string): Promise<string> {
 
         if (!this._storageConfigs) {
             this._storageConfigs = new Cache<string>('storage');

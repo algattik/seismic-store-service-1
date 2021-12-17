@@ -121,6 +121,7 @@ export class ConfigGoogle extends Config {
                 DES_SERVICE_HOST_ENTITLEMENT: process.env.DES_SERVICE_HOST_ENTITLEMENT || process.env.SEISTORE_DES_HOST,
                 DES_SERVICE_HOST_STORAGE: process.env.DES_SERVICE_HOST_STORAGE || process.env.SEISTORE_DES_HOST,
                 DES_SERVICE_HOST_PARTITION: process.env.DES_SERVICE_HOST_PARTITION || process.env.SEISTORE_DES_HOST,
+                DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: '/groups/data/',
                 DES_SERVICE_APPKEY: process.env.SEISTORE_DES_APPKEY,
                 DES_GROUP_CHAR_LIMIT: ConfigGoogle.DES_GROUP_CHAR_LIMIT,
                 JWKS_URL: process.env.JWKS_URL,

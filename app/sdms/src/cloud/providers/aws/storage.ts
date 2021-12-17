@@ -194,7 +194,7 @@ export class AWSStorage extends AbstractStorage {
         await this.s3.deleteObjects(deleteParams).promise();
 
         if (listedObjects.IsTruncated) // continue delete files as there are more...
-            await this.deleteObjects(folderName, prefix, async);
+            await this.deleteObjects(folderName, prefix);
     }
 
     // copy multiple objects (skip the dummy file)

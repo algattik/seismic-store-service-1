@@ -140,19 +140,14 @@ export class SubProjectHandler {
             );
         }
 
-        subproject.gcs_bucket = await this.getBucketName(tenant);
-
         subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins.concat([adminGroup])
             .filter((group, index, self) => self.indexOf(group) === index) : [adminGroup];
         subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers.concat([viewerGroup])
             .filter((group, index, self) => self.indexOf(group) === index) : [viewerGroup];
 
-        // Create the GCS bucket resource
-        const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-        await storage.createBucket(
-            subproject.gcs_bucket,
-            subproject.storage_location, subproject.storage_class);
-
+        // Create the storage resource
+        subproject.gcs_bucket = await this.getBucketName(tenant);
+        await SeistoreFactory.build(Config.CLOUDPROVIDER).getSubprojectStorageResources(tenant, subproject);
 
         // Register the subproject
         await SubProjectDAO.register(journalClient, subproject);
@@ -188,8 +183,7 @@ export class SubProjectHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const convertSubIdToEmail = (req.query['subid-to-email'] !== undefined) ?
-            req.query['subid-to-email'] === 'true' : true;
+        const convertSubIdToEmail = req.query['subid-to-email'] === 'false'
 
         // get subproject
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
@@ -221,50 +215,43 @@ export class SubProjectHandler {
 
     }
 
-    // Delete the subproject data group
-    // Required role: tenant.admin
+    // delete the subproject resource
+    // required roles: [tenant.admin]
     private static async delete(req: expRequest, tenant: TenantModel) {
 
-        // init journalClient client
+        // request inputs
+        const subprojectName = req.params.subprojectid;
+
         const journalClient = JournalFactoryTenantClient.get(tenant);
+        const subproject = await SubProjectDAO.get(journalClient, tenant.name, subprojectName);
 
-        // get the subproject metadata
-        const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);
-
-        // Only tenant admins are allowed to delete the subproject
+        // auth check: tenant.admin
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check if user is a tenant admin
             await Auth.isUserAuthorized(
                 req.headers.authorization, TenantAuth.getAuthGroups(tenant),
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
-        const storage = StorageFactory.build(Config.CLOUDPROVIDER, tenant);
-
+        // 1. delete subproject and dataset metadata
         await Promise.all([
-            // delete the subproject metadata from Datastore
             SubProjectDAO.delete(journalClient, tenant.name, subproject.name),
-            // delete all datasets metadata from Datastore.
             DatasetDAO.deleteAll(journalClient, tenant.name, subproject.name),
-            // delete the subproject associated bucket. This operation will delete all subproject data in GCS.
-            storage.deleteFiles(subproject.gcs_bucket),
         ]);
 
-        const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
-        const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
-        const viewerSubprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
-        const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSubprojectDataGroups);
-
+        // 2. delete default authorization groups
         if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
+            const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+            const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
+            const viewerSubprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+            const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSubprojectDataGroups);
             for (const group of subprojectDataGroups) {
                 await AuthGroups.deleteGroup(
                     req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
         }
 
-        // delete the bucket resource (to perform after files deletions)
-        // tslint:disable-next-line: no-floating-promises no-console (we want it async)
-        storage.deleteBucket(subproject.gcs_bucket).catch((error) => {
+        // 3. delete the storage resources (files and bucket)
+        SeistoreFactory.build(Config.CLOUDPROVIDER).deleteStorageResources(tenant, subproject).catch((error) => {
             LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));
         });
 

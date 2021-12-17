@@ -59,7 +59,6 @@ export class AzureConfig extends Config {
             AzureConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST;
-            AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = process.env.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH;
             AzureConfig.DES_SERVICE_APPKEY = process.env.SEISTORE_DES_APPKEY || 'undefined';
             AzureConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
             AzureConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
@@ -102,7 +101,6 @@ export class AzureConfig extends Config {
                 DES_SERVICE_HOST_ENTITLEMENT: AzureConfig.DES_SERVICE_HOST_ENTITLEMENT,
                 DES_SERVICE_HOST_STORAGE: AzureConfig.DES_SERVICE_HOST_STORAGE,
                 DES_SERVICE_HOST_PARTITION: AzureConfig.DES_SERVICE_HOST_PARTITION,
-                DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: AzureConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH,
                 DES_SERVICE_APPKEY: AzureConfig.DES_SERVICE_APPKEY,
                 DES_GROUP_CHAR_LIMIT: AzureConfig.DES_GROUP_CHAR_LIMIT,
                 SERVICE_AUTH_PROVIDER: AzureConfig.SERVICE_AUTH_PROVIDER,

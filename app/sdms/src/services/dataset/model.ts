@@ -36,6 +36,7 @@ export interface IDatasetModel {
     seismicmeta_guid: string;
     transfer_status: string;
     acls?: IDatasetAcl;
+    access_policy: string;
     storageSchemaRecordType?: string;
     storageSchemaRecord?: any;
 

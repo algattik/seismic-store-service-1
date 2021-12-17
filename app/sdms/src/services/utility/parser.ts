@@ -136,12 +136,7 @@ export class UtilityParser {
         dataset.name = sdPath.dataset;
         dataset.tenant = sdPath.tenant;
         dataset.subproject = sdPath.subproject;
-
-        const path = req.query.path ? '/' + decodeURIComponent(req.query.path as string) + '/' : '/';
-        Params.checkDatasetPath(path, 'path', true);
-        dataset.path = path;
-
-        while (dataset.path.indexOf('//') !== -1) { dataset.path = dataset.path.replace('//', '/'); }
+        dataset.path = sdPath.path;
     }
 
 }

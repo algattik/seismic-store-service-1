@@ -13,7 +13,7 @@ variables:
   SDMS_MIN_REPLICAS: 1
   SDMS_MAX_REPLICAS: 5
   AZURE_SDMS_PREFIX: /seistore-svc/api/v3
-  E2E_SUBPROJECT: demosandbox02
+  E2E_SUBPROJECT: demosandbox03
   
 sdms_push_runtime_image_azure:
   image: danielscholl/azure-build-image
