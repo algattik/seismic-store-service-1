@@ -15,14 +15,18 @@
 // ============================================================================
 
 import { PubSub } from '@google-cloud/pubsub';
+import { v4 as uuidv4 } from 'uuid';
+import { GCS } from '.';
+
 import { SubProjectModel } from '../../../services/subproject';
+import { TenantModel } from '../../../services/tenant';
 import { Error, Params, Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 import { ConfigGoogle } from './config';
 
 // reference time zone and class locations
-const KSTORAGE_CLASS = ['MULTI_REGIONAL', 'REGIONAL', 'NEARLINE', 'COLDLINE'];
+const KSTORAGE_CLASS = ['MULTI_REGIONAL', 'REGIONAL', 'NEARLINE', 'CODDLING'];
 const KSTORAGE_LOCATION_MR = ['ASIA', 'EU', 'US'];
 const KSTORAGE_LOCATION_RG = [
     'NORTHAMERICA-NORTHEAST1',
@@ -138,4 +142,19 @@ export class GoogleSeistore extends AbstractSeistore {
             return null;
         }
     }
+
+    public async getDatasetStorageResource(_tenant: TenantModel, subproject: SubProjectModel): Promise<string> {
+        return subproject.gcs_bucket + '/' + uuidv4();
+    }
+
+    public async getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+        await new GCS(tenant).createBucket(
+            subproject.gcs_bucket, subproject.storage_location, subproject.storage_class);
+    }
+
+    public async deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+        const storage = new GCS(tenant);
+        await storage.deleteBucket(subproject.gcs_bucket);
+    }
+
 }

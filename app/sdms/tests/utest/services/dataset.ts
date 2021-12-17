@@ -472,7 +472,6 @@ export class TestDatasetSVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(undefined);
             this.sandbox.stub(DatasetDAO, 'delete').resolves(undefined);
-            this.sandbox.stub(google.GCS.prototype, 'deleteObject').resolves(undefined);
             this.sandbox.stub(google.GCS.prototype, 'deleteObjects').resolves(undefined);
             this.transaction.run.resolves();
             this.transaction.rollback.resolves();
@@ -559,7 +558,6 @@ export class TestDatasetSVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(undefined);
             this.sandbox.stub(DatasetDAO, 'delete').resolves(undefined);
-            this.sandbox.stub(google.GCS.prototype, 'deleteObject').throws();
             this.transaction.run.resolves();
             this.transaction.rollback.resolves();
             this.transaction.commit.resolves();
@@ -746,6 +744,7 @@ export class TestDatasetSVC {
             this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
             this.sandbox.stub(Locker, 'acquireMutex').resolves();
             this.sandbox.stub(Locker, 'releaseMutex').resolves();
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('partition');
             await DatasetHandler.handler(expReq, expRes, DatasetOP.Patch);
             Tx.check200(expRes.statusCode, done);
         });

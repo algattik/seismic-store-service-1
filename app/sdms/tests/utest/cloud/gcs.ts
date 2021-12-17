@@ -41,7 +41,6 @@ export class TestGCSCore {
          this.testCreateBucket();
          this.testDeleteBucket();
          this.testSaveObject();
-         this.testDeleteObject();
          this.testDeleteObjects();
          this.testobjectsCopy();
       });
@@ -97,18 +96,6 @@ export class TestGCSCore {
 
    }
 
-   private static testDeleteObject() {
-
-      Tx.sectionInit('delete object');
-
-      Tx.test(async (done: any) => {
-         const deleteStub = this.sandbox.stub(File.prototype, 'delete');
-         deleteStub.resolves();
-         await this.gcsStorage.deleteObject('buckname', 'objname');
-         Tx.checkTrue(deleteStub.calledOnce, done);
-      });
-   }
-
    private static testDeleteObjects() {
 
       Tx.sectionInit('delete objects ');
@@ -123,7 +110,7 @@ export class TestGCSCore {
       Tx.test(async (done: any) => {
          const deleteFiles = this.sandbox.stub(Bucket.prototype, 'deleteFiles');
          deleteFiles.resolves();
-         await this.gcsStorage.deleteObjects('bucket-a', 'obj-a', true);
+         await this.gcsStorage.deleteObjects('bucket-a', 'obj-a');
 
          const opts: DeleteFilesOptions = {
             force: true,
@@ -136,7 +123,7 @@ export class TestGCSCore {
       Tx.test(async (done: any) => {
          const deleteFiles = this.sandbox.stub(Bucket.prototype, 'deleteFiles');
          deleteFiles.resolves();
-         await this.gcsStorage.deleteObjects('bucket-a', 'prefix//obj-b', true);
+         await this.gcsStorage.deleteObjects('bucket-a', 'prefix//obj-b');
 
          const opts: DeleteFilesOptions = {
             force: true,

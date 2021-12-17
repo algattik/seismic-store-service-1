@@ -79,7 +79,6 @@ export class IbmConfig extends Config {
         IbmConfig.ENTITLEMENT_CONTEXT_PATH = process.env.ENTITLEMENT_CONTEXT_PATH;
         IbmConfig.COMPLIANCE_CONTEXT_PATH = process.env.COMPLIANCE_CONTEXT_PATH;
         IbmConfig.STORAGE_CONTEXT_PATH = process.env.STORAGE_CONTEXT_PATH;
-        IbmConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = '/groups/';
 
         // DES_SERVICE_HOST replaced by new variable ENTITLEMENT_HOST
         IbmConfig.ENTITLEMENT_HOST = process.env.ENTITLEMENT_HOST;
@@ -153,7 +152,6 @@ export class IbmConfig extends Config {
             DES_SERVICE_HOST_ENTITLEMENT: IbmConfig.DES_SERVICE_HOST_ENTITLEMENT,
             DES_SERVICE_HOST_STORAGE: IbmConfig.DES_SERVICE_HOST_STORAGE,
             DES_SERVICE_HOST_PARTITION: 'TO DEFINE',
-            DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: IbmConfig.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH,
             DES_SERVICE_APPKEY: IbmConfig.DES_SERVICE_APPKEY,
             DES_GROUP_CHAR_LIMIT: IbmConfig.DES_GROUP_CHAR_LIMIT,
             JWKS_URL: process.env.JWKS_URL,

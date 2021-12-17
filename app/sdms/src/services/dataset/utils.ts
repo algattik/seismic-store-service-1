@@ -14,16 +14,15 @@
 // limitations under the License.
 // ============================================================================
 
-export { DatasetAuth } from './auth';
-export { DatasetDAO } from './dao';
-export {
-  IDatasetModel as DatasetModel,
-  IPaginationModel as PaginationModel,
-  SchemaTransformModel
-} from './model';
-export { DatasetUtils } from './utils'
+export class DatasetUtils {
 
-export * as Schemamanagement from './schema-manager';
+    public static getBucketFromDatasetResourceUri(resourceURI: string): string {
+        return resourceURI.split('/')[0];
+    }
 
+    public static getVirtualFolderFromDatasetResourceUri(resourceURI: string): string {
+        // undefined if no virtual folder are defined
+        return resourceURI.split('/')[1];
+    }
 
-
+}

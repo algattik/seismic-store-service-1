@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,15 @@
 // limitations under the License.
 // ============================================================================
 
+import { v4 as uuidv4 } from 'uuid';
+
+import { AzureCloudStorage } from './cloudstorage';
 import { SubProjectModel } from '../../../services/subproject';
+import { TenantModel } from '../../../services/tenant';
 import { Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
+import { AzureInsightsLogger } from '.';
 
 @SeistoreFactory.register('azure')
 export class AzureSeistore extends AbstractSeistore {
@@ -36,4 +41,44 @@ export class AzureSeistore extends AbstractSeistore {
         subproject: SubProjectModel, status: string): Promise<string> {
         return 'Not Implemented';
     }
+
+    // return a storage location or create a storage resource based on applied access policy
+    public async getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string> {
+        // dataset access policy, created a dedicated container for store dataset bulk objects
+        if (subproject.access_policy === Config.DATASET_ACCESS_POLICY) {
+            let containerName = subproject.gcs_bucket + '-' + uuidv4();
+            containerName = containerName.substr(0, Math.min(containerName.length, 63)); // container name < 63 chars
+            await new AzureCloudStorage(tenant).createBucket(containerName, undefined, undefined);
+            return containerName;
+        }
+        // uniform access policy, return a unique location in bucket (to use as prefix in the dataset object uri)
+        return subproject.gcs_bucket + '/' + uuidv4();
+    }
+
+    // create the subproject storage resource based on applied access policy.
+    public async getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+        // if the the access policy is set to dataset, we don't need a subproject container.
+        // each dataset will have its own dedicated container resource (created one a dataset is registered)
+        if (subproject.access_policy === Config.UNIFORM_ACCESS_POLICY) {
+            await new AzureCloudStorage(tenant).createBucket(
+                subproject.gcs_bucket, subproject.storage_location, subproject.storage_class);
+        }
+    }
+
+    // remove the subproject storage resource based on applied access policy
+    public async deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+        const storage = new AzureCloudStorage(tenant);
+        if (subproject.access_policy === Config.UNIFORM_ACCESS_POLICY) {
+            // probably this line is not needed for azure implementation.
+            // deleting the bucket should be enough (logic abstracted from core)
+            await storage.deleteFiles(subproject.gcs_bucket)
+            await storage.deleteBucket(subproject.gcs_bucket);
+        } else {
+            // dataset access policy, delete all containers/buckets (one per dataset)
+            storage.deleteBuckets(subproject.gcs_bucket).catch((err) => {
+                new AzureInsightsLogger().error(err)
+            });
+        }
+    }
+
 }

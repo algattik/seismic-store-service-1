@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { Request as expRequest } from 'express';
+
 import { SubProjectModel } from '.';
 import { Config } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
@@ -29,9 +30,11 @@ export class SubProjectParser {
         subproject.name = req.params.subprojectid;
         subproject.tenant = req.params.tenantid;
         subproject.ltag = req.headers.ltag as string;
+
         // optional parameters
         subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] };
-        subproject.access_policy = (req.body && req.body.access_policy) ? req.body.access_policy : 'uniform';
+        subproject.access_policy = (req.body && req.body.access_policy) ?
+            req.body.access_policy : Config.UNIFORM_ACCESS_POLICY;
 
         // check user input params
         Params.checkString(subproject.admin, 'admin', false);
@@ -53,6 +56,9 @@ export class SubProjectParser {
                 'does not match the required pattern [a-z][a-z\\d\\-]*[a-z\\d]'));
         }
 
+        // check policy corectness
+        this.checkAccessPolicy(req.body);
+
         // check extra requirements
         SeistoreFactory.build(Config.CLOUDPROVIDER).checkExtraSubprojectCreateParams(req.body, subproject);
 
@@ -61,30 +67,36 @@ export class SubProjectParser {
 
     public static patch(req: expRequest): {
         ltag: string, access_policy: string,
-        acls: ISubprojectAcl, recursive: boolean;
+        acls: ISubprojectAcl, recursive: boolean
     } {
 
         Params.checkString(req.query.recursive, 'recursive', false);
         Params.checkString(req.body.access_policy, 'access_policy', false);
 
-        if (req.body.access_policy) {
-            SubProjectParser.checkAccessPolicy(req.body.access_policy);
+        // [TODO:V4] Remove support for patch access policy, supported in google only, not osdu-compliant.
+        if (req.body && req.body.access_policy && Config.CLOUDPROVIDER !== 'google') {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The subproject access policy cannot be patched.'));
+        } else {
+            // check policy corectness
+            this.checkAccessPolicy(req.body);
         }
 
         return {
             ltag: req.get('ltag'),
-            access_policy: (req.body && req.body.access_policy) ? req.body.access_policy : undefined,
-            acls: (req.body && req.body.acls) ? req.body.acls : undefined,
-            recursive: req.query.recursive ? (req.query.recursive === 'true') : false
+            access_policy: req.body ? req.body.access_policy : undefined,
+            acls: req.body ? req.body.acls : undefined,
+            recursive: req.query.recursive === 'true'
         };
     }
 
-    private static checkAccessPolicy(policy: string) {
-        if (policy === 'dataset' || policy === 'uniform') {
-            return;
-        }
-        else {
-            throw (Error.make(Error.Status.BAD_REQUEST, 'Access_policy value has to be dataset or uniform'));
+    private static checkAccessPolicy(req: expRequest): void {
+        if (req.body && req.body.access_policy &&
+            req.body.access_policy !== Config.DATASET_ACCESS_POLICY &&
+            req.body.access_policy !== Config.UNIFORM_ACCESS_POLICY) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'Access_policy value has to be ' + Config.DATASET_ACCESS_POLICY +
+                ' or ' + Config.UNIFORM_ACCESS_POLICY));
         }
     }
 

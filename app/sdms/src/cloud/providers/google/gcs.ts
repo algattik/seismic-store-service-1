@@ -86,23 +86,14 @@ export class GCS extends AbstractStorage {
         await this.getStorageClient().bucket(bucketName).file(objectName).save(data);
     }
 
-    // delete an object from a bucket
-    public async deleteObject(bucketName: string, objectName: string): Promise<void> {
-        await this.getStorageClient().bucket(bucketName).file(objectName).delete();
-    }
-
     // delete multiple objects
-    public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
+    public async deleteObjects(bucketName: string, prefix: string): Promise<void> {
         prefix = prefix ? (prefix + '/').replace('//', '/') : prefix;
-        if (async) {
-            await this.getStorageClient().bucket(bucketName).deleteFiles({ prefix, force: true });
-        } else {
-            // tslint:disable-next-line: no-floating-promises
-            this.getStorageClient().bucket(bucketName).deleteFiles(
-                { prefix, force: true }).catch(
-                    // tslint:disable-next-line: no-console
-                    (error) => { LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
-        }
+        // tslint:disable-next-line: no-floating-promises
+        this.getStorageClient().bucket(bucketName).deleteFiles(
+            { prefix, force: true }).catch(
+                // tslint:disable-next-line: no-console
+                (error) => { LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)); });
     }
 
     // copy multiple objects (skip the dummy file)

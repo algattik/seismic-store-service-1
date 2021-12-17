@@ -17,12 +17,13 @@
 import { TokenCredential } from '@azure/identity';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { Readable } from 'stream';
+import { AzureInsightsLogger } from '.';
+
 import { TenantModel } from '../../../services/tenant';
 import { Config } from '../../config';
 import { AbstractStorage, StorageFactory } from '../../storage';
 import { AzureCredentials } from './credentials';
 import { AzureDataEcosystemServices } from './dataecosystem';
-
 
 @StorageFactory.register('azure')
 export class AzureCloudStorage extends AbstractStorage {
@@ -34,7 +35,7 @@ export class AzureCloudStorage extends AbstractStorage {
 
     public async getBlobServiceClient(): Promise<BlobServiceClient> {
         if (!this.blobServiceClient) {
-            const account = await AzureDataEcosystemServices.getStorageAccountName(this.dataPartition);
+            const account = await AzureDataEcosystemServices.getStorageResourceName(this.dataPartition);
             this.blobServiceClient = new BlobServiceClient(
                 `https://${account}.blob.core.windows.net`,
                 this.defaultAzureCredential
@@ -109,21 +110,17 @@ export class AzureCloudStorage extends AbstractStorage {
         await blockClient.uploadStream(streamData);
     }
 
-    // delete an object from a container
-    public async deleteObject(bucketName: string, objectName: string): Promise<void> {
-        const container = (await this.getBlobServiceClient()).getContainerClient(bucketName);
-        const blobClient = container.getBlobClient(objectName);
-        await blobClient.delete();
-    }
-
     // delete multiple objects from a container
-    public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
-        const blobUrls = await this.generateBlobUrls(bucketName, prefix);
-        if (!blobUrls.length) {
-            return;
+    public async deleteObjects(bucketName: string, prefix: string): Promise<void> {
+        if (prefix) { // datasets managed as subfolder path into the container
+            const blobUrls = await this.generateBlobUrls(bucketName, prefix);
+            if (blobUrls.length) {
+                const batchClient = (await this.getBlobServiceClient()).getBlobBatchClient();
+                await batchClient.deleteBlobs(blobUrls, this.defaultAzureCredential);
+            }
+        } else {  // datasets managed as separate containers
+            await this.deleteBucket(bucketName);
         }
-        const batchClient = (await this.getBlobServiceClient()).getBlobBatchClient();
-        await batchClient.deleteBlobs(blobUrls, this.defaultAzureCredential);
     }
 
     /* copy multiple objects from one container to another
@@ -149,6 +146,16 @@ export class AzureCloudStorage extends AbstractStorage {
     public async bucketExists(bucketName: string): Promise<boolean> {
         const container = (await this.getBlobServiceClient()).getContainerClient(bucketName);
         return await container.exists();
+    }
+
+    // delete all buckets starting with
+    public async deleteBuckets(bucketsNamePrefix: string): Promise<void> {
+        const containers = (await this.getBlobServiceClient()).listContainers({prefix: bucketsNamePrefix});
+        for await (const container of containers) {
+            this.deleteBucket(container.name).catch((err) => {
+                new AzureInsightsLogger().error(err)
+            });;
+        }
     }
 
 }

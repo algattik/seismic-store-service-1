@@ -15,20 +15,25 @@
 // ============================================================================
 
 import { SubProjectModel } from '../services/subproject';
+import { TenantModel } from '../services/tenant';
 import { CloudFactory } from './cloud';
 
 export interface ISeistore {
     checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
     getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string>;
     notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string>;
-
+    getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>
+    getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
+    deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
 }
 
 export abstract class AbstractSeistore implements ISeistore {
     public abstract checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
     public abstract getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string>;
-    public abstract notifySubprojectCreationStatus
-        (subproject: SubProjectModel, status: string): Promise<string>;
+    public abstract notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string>;
+    public abstract getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>;
+    public abstract getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
+    public abstract deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
 }
 
 export class SeistoreFactory extends CloudFactory {

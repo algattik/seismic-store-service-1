@@ -28,7 +28,6 @@ export class TestAzureStorage {
 
             this.createBucket();
             this.deleteBucket();
-            this.deleteObject();
             this.saveObject();
             this.bucketExists();
             this.deleteFiles();
@@ -51,15 +50,6 @@ export class TestAzureStorage {
         Tx.test(async (done: any) => {
             this.sandbox.stub(ContainerClient.prototype, 'delete').resolves();
             await this.storage.deleteBucket('entity');
-            done();
-        });
-    }
-
-    private static deleteObject() {
-        Tx.sectionInit('deleteObject');
-        Tx.test(async (done: any) => {
-            this.sandbox.stub(BlobClient.prototype, 'delete').resolves();
-            await this.storage.deleteObject('entity', 'name');
             done();
         });
     }

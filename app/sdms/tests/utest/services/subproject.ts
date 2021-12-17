@@ -54,6 +54,15 @@ export class TestSubProjectSVC {
             },
             async notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string> {
                 return 'messageID';
+            },
+            async getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string> {
+                return 'storageBucket';
+            },
+            async getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+                return;
+            },
+            async deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
+                return;
             }
         };
 
@@ -264,7 +273,6 @@ export class TestSubProjectSVC {
                 },
                 async createBucket() { return; },
                 async bucketExists() { return false; },
-                async deleteObject() { return; },
                 async deleteObjects() { return; },
                 async saveObject() { return; },
                 async copy() { return; },

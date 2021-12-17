@@ -106,7 +106,7 @@ export class AzureCredentials extends AbstractCredentials {
     public async getStorageCredentials(
         tenant: string, subproject: string,
         bucket: string,readonly: boolean,partition: string): Promise<IAccessTokenModel> {
-        const accountName = await AzureDataEcosystemServices.getStorageAccountName(partition);
+        const accountName = await AzureDataEcosystemServices.getStorageResourceName(partition);
         const now = new Date();
         const expiration = this.addMinutes(now, SasExpirationInMinutes);
         const sasToken = await this.generateSASToken(accountName, bucket, expiration, readonly);

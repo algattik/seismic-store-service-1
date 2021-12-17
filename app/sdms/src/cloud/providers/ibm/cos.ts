@@ -137,7 +137,7 @@ export class Cos extends AbstractStorage {
     }
 
     // delete an object from a bucket
-    public async deleteObject(bucketName: string, objectName: string): Promise<void> {
+    private async deleteObject(bucketName: string, objectName: string): Promise<void> {
         /// used to delete CDO file
         logger.info('In Cos.deleteObject.');
         const params = {Bucket: bucketName, Key: objectName};
@@ -153,7 +153,7 @@ export class Cos extends AbstractStorage {
     }
 
     // [TODO] this must be implemented! essentially we are not removing bulk data here
-    public async deleteObjects(bucketName: string, prefix: string, async: boolean = false): Promise<void> {
+    public async deleteObjects(bucketName: string, prefix: string): Promise<void> {
         logger.info('This function deletes bulk data uploaded by SDAPI/SDUTIL. Not implemented yet.');
         logger.debug(bucketName);
         logger.debug(prefix);

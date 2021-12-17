@@ -16,14 +16,14 @@
 
 import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 import { Auth, AuthRoles } from '../../auth';
 import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
+import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
 import { DESEntitlement, DESStorage, DESUtils } from '../../dataecosystem';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
-import { DatasetAuth, DatasetDAO, DatasetModel } from '../dataset';
+import { DatasetAuth, DatasetDAO, DatasetModel, DatasetUtils } from '../dataset';
 import { IWriteLockSession, Locker } from '../dataset/locker';
 import { SubprojectAuth, SubProjectDAO } from '../subproject';
 import { TenantDAO, TenantGroups } from '../tenant';
@@ -61,7 +61,6 @@ export class UtilityHandler {
 
         if (!FeatureFlags.isEnabled(Feature.STORAGE_CREDENTIALS)) return {};
 
-        let objectPrefix: string;
         const inputParams = UtilityParser.gcsToken(req);
         const sdPath = inputParams.sdPath;
         const readOnly = inputParams.readOnly;
@@ -83,6 +82,11 @@ export class UtilityHandler {
                     tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                     req.headers['impersonation-token-context'] as string);
 
+            return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
+                subproject.tenant, subproject.name,
+                subproject.gcs_bucket, readOnly, DESUtils.getDataPartitionID(tenant.esd));
+
+
         } else { // dataset access request
 
             const dataset = subproject.enforce_key ?
@@ -99,12 +103,14 @@ export class UtilityHandler {
                     tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
                     req.headers['impersonation-token-context'] as string);
 
-            objectPrefix = dataset.gcsurl.split('/')[1];
+            const bucket = DatasetUtils.getBucketFromDatasetResourceUri(dataset.gcsurl);
+            const virtualFolder = DatasetUtils.getVirtualFolderFromDatasetResourceUri(dataset.gcsurl);
+            return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
+                subproject.tenant, subproject.name, bucket, readOnly,
+                DESUtils.getDataPartitionID(tenant.esd), virtualFolder);
+
         }
 
-        return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
-            subproject.tenant, subproject.name,
-            subproject.gcs_bucket, readOnly, DESUtils.getDataPartitionID(tenant.esd), objectPrefix);
 
     }
 
@@ -291,7 +297,9 @@ export class UtilityHandler {
         datasetTo.name = sdPathTo.dataset;
         datasetTo.path = sdPathTo.path;
         datasetTo.last_modified_date = new Date().toString();
-        datasetTo.gcsurl = subproject.gcs_bucket + '/' + uuidv4();
+        // get the gcs account from the cloud provider
+        datasetTo.gcsurl = await SeistoreFactory.build(
+            Config.CLOUDPROVIDER).getDatasetStorageResource(tenant, subproject);
         datasetTo.ltag = datasetTo.ltag || subproject.ltag;
         datasetTo.sbit = Utils.makeID(16);
         datasetTo.sbit_count = 1;
@@ -402,10 +410,10 @@ export class UtilityHandler {
             ]);
 
             // set the objects prefix
-            const bucketFrom = datasetFrom.gcsurl.split('/')[0];
-            const prefixFrom = datasetFrom.gcsurl.split('/')[1];
-            const bucketTo = datasetTo.gcsurl.split('/')[0];
-            const prefixTo = datasetTo.gcsurl.split('/')[1];
+            const bucketFrom = DatasetUtils.getBucketFromDatasetResourceUri(datasetFrom.gcsurl);
+            const prefixFrom =  DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetFrom.gcsurl);
+            const bucketTo = DatasetUtils.getBucketFromDatasetResourceUri(datasetTo.gcsurl);
+            const prefixTo =  DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetTo.gcsurl);
 
             // copy the objects
             const RETRY_MAX_ATTEMPTS = 10;
