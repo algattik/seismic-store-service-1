@@ -602,22 +602,20 @@ export class DatasetHandler {
             datasetOUT.name = newName;
         }
 
-        const inputStorageSchemaRecord = datasetIN.storageSchemaRecord;
-
-        if (inputStorageSchemaRecord) {
+        if (datasetIN.storageSchemaRecord) {
 
             SchemaManagerFactory.build(datasetIN.storageSchemaRecordType)
-                .addStorageRecordDefaults(inputStorageSchemaRecord, datasetIN, tenant);
+                .addStorageRecordDefaults(datasetIN.storageSchemaRecord, datasetOUT, tenant);
 
             SchemaManagerFactory.build(datasetIN.storageSchemaRecordType)
                 .applySchemaTransforms({
-                    data: inputStorageSchemaRecord,
+                    data: datasetIN.storageSchemaRecord,
                     transformFuncID: datasetIN.storageSchemaRecord['kind'],
                     nextTransformFuncID: undefined
                 });
 
             datasetOUT.storageSchemaRecordType = datasetIN.storageSchemaRecordType;
-            datasetOUT.seismicmeta_guid = datasetIN.seismicmeta_guid;
+
         }
 
         // Update the ACLs if the input request has them
@@ -627,7 +625,7 @@ export class DatasetHandler {
 
         if (datasetIN.storageSchemaRecord && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) {
             await DESStorage.insertRecord(
-                req.headers.authorization, [inputStorageSchemaRecord], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                req.headers.authorization, [datasetIN.storageSchemaRecord], tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         if (newName) {
