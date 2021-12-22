@@ -17,6 +17,7 @@
 import { SubProjectModel } from '../services/subproject';
 import { TenantModel } from '../services/tenant';
 import { CloudFactory } from './cloud';
+import { Response as expResponse } from 'express';
 
 export interface ISeistore {
     checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
@@ -25,6 +26,7 @@ export interface ISeistore {
     getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>
     getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
     deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
+    handleReadinessCheck(): Promise<boolean>
 }
 
 export abstract class AbstractSeistore implements ISeistore {
@@ -34,6 +36,7 @@ export abstract class AbstractSeistore implements ISeistore {
     public abstract getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>;
     public abstract getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
     public abstract deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
+    public abstract handleReadinessCheck(): Promise<boolean>
 }
 
 export class SeistoreFactory extends CloudFactory {

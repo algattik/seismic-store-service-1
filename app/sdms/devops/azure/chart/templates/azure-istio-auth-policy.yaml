@@ -14,8 +14,7 @@ spec:
             notRequestPrincipals: ["*"]
       to:
         - operation:
-            notPaths: ["/","*/index.html",
-                       "*/v2/api-docs",
-                       "*/actuator/health", "*/health",
-                       "*/configuration/ui","*/configuration/security",
-                       "{{ .Values.configEnv.sdmsPrefix }}/swagger-ui.html*"]
+            notPaths: ["/",
+                       "*/swagger-ui.html*",
+                       "*/svcstatus",
+                       "*/svcstatus/readiness"]

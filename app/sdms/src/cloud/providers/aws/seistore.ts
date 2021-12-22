@@ -14,7 +14,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { AWSStorage } from '.';
-
+import { Response as expResponse } from 'express';
 import { SubProjectModel } from '../../../services/subproject';
 import { TenantModel } from '../../../services/tenant';
 import { Utils } from '../../../shared';
@@ -53,4 +53,7 @@ export class AwsSeistore extends AbstractSeistore {
         await storage.deleteFiles(subproject.gcs_bucket);
         await storage.deleteBucket(subproject.gcs_bucket);
     }
+
+    public async handleReadinessCheck(): Promise<boolean> { return true; }
+
 }

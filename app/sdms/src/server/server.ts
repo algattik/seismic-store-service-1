@@ -163,7 +163,11 @@ export class Server {
                 // the imptoken endpoints have been marked as obsoleted and will be deprecated with the
                 // next service upgrade (v3>v4)
                 if (!req.headers.authorization) {
-                    if (!((req.method === 'PUT' && req.url.endsWith('imptoken')) || req.url.endsWith('svcstatus'))) {
+
+                    const imptokenCall = (req.method === 'PUT' && req.url.endsWith('imptoken'));
+                    const statusCall = req.url.endsWith('svcstatus');
+                    const readinessCall = req.url.endsWith('readiness');
+                    if (!(imptokenCall || statusCall || readinessCall)) {
                         Response.writeError(res, Error.make(
                             Error.Status.UNAUTHENTICATED,
                             'Unauthenticated Access. Authorizations not found in the request.'));

@@ -63,6 +63,9 @@ export class TestSubProjectSVC {
             },
             async deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
                 return;
+            },
+            async handleReadinessCheck(): Promise<boolean> {
+                return true;
             }
         };
 

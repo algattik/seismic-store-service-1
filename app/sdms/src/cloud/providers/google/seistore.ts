@@ -17,7 +17,6 @@
 import { PubSub } from '@google-cloud/pubsub';
 import { v4 as uuidv4 } from 'uuid';
 import { GCS } from '.';
-
 import { SubProjectModel } from '../../../services/subproject';
 import { TenantModel } from '../../../services/tenant';
 import { Error, Params, Utils } from '../../../shared';
@@ -156,5 +155,7 @@ export class GoogleSeistore extends AbstractSeistore {
         const storage = new GCS(tenant);
         await storage.deleteBucket(subproject.gcs_bucket);
     }
+
+    public async handleReadinessCheck(): Promise<boolean> { return true; }
 
 }

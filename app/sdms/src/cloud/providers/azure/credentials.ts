@@ -14,6 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
+import request from 'request-promise';
+
 import { Error } from '../../../shared';
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
 import {
@@ -23,10 +25,10 @@ import {
     SASProtocol,
     UserDelegationKey
 } from '@azure/storage-blob';
-import { DefaultAzureCredential, TokenCredential } from '@azure/identity';
+import { DefaultAzureCredential, TokenCredential, DefaultAzureCredentialOptions } from '@azure/identity';
 import { AzureDataEcosystemServices } from './dataecosystem';
-
-import request from 'request-promise';
+import {ExponentialRetryPolicyOptions} from '@azure/core-rest-pipeline'
+import { AccessToken, GetTokenOptions } from '@azure/core-auth';
 
 const KExpiresMargin = 300; // 5 minutes
 const UserDelegationKeyValidityInMinutes = 60 * 4; // 4 hours
@@ -64,7 +66,7 @@ export class AzureCredentials extends AbstractCredentials {
         // - AZURE_CLIENT_SECRET: The client secret for the registered application
         // https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview
 
-        return new DefaultAzureCredential();
+        return new RetriableAzureCredential();
     }
 
     public static async getAzureServicePrincipalAccessToken(
@@ -191,4 +193,49 @@ export class AzureCredentials extends AbstractCredentials {
         throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
     }
 
+}
+
+class RetriableAzureCredential extends DefaultAzureCredential {
+
+    private static DefaultRetryCount = 10;
+    private static DefaultRetryInterval = 1000;
+    private static DefaultMaxRetryInterval = 64 * 1000;
+    private static DefaultRequestTimeout = 5 * 1000;
+
+    private options:ExponentialRetryPolicyOptions  = {
+        maxRetries: RetriableAzureCredential.DefaultRetryCount,
+        retryDelayInMs: RetriableAzureCredential.DefaultRetryInterval, // Not supported yet
+        maxRetryDelayInMs: RetriableAzureCredential.DefaultMaxRetryInterval // Not supported yet
+    };
+
+    private credentials: DefaultAzureCredential;
+
+    private defaultRequestOptions = {
+        requestOptions: {
+            timeout: RetriableAzureCredential.DefaultRequestTimeout
+        }
+    };
+
+    public constructor(tokenCredentialOptions?: DefaultAzureCredentialOptions) {
+        super(tokenCredentialOptions);
+        const retryOptions = tokenCredentialOptions?.retryOptions;
+        this.options = {...this.options, ...retryOptions}
+        this.credentials = new DefaultAzureCredential();
+    }
+
+    public getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> {
+        const requestOptions = {...options, ...this.defaultRequestOptions};
+        return this.retry(() => this.credentials.getToken(scopes, requestOptions));
+    }
+
+    private async retry <T> (fn: () => Promise<T>, retries: number = this.options.maxRetries): Promise<T> {
+        if(retries <= 0) {
+            return Promise.reject('Failed after several attempts');
+        }
+
+        const prom = fn();
+        return prom
+            .then(res => prom)
+            .catch(err => this.retry(fn, retries - 1))
+    }
 }

@@ -15,14 +15,14 @@
 // ============================================================================
 
 import { v4 as uuidv4 } from 'uuid';
-
 import { AzureCloudStorage } from './cloudstorage';
 import { SubProjectModel } from '../../../services/subproject';
 import { TenantModel } from '../../../services/tenant';
 import { Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
-import { AzureInsightsLogger } from '.';
+import { AzureConfig, AzureInsightsLogger } from '.';
+import { AzureCredentials } from './credentials';
 
 @SeistoreFactory.register('azure')
 export class AzureSeistore extends AbstractSeistore {
@@ -78,6 +78,17 @@ export class AzureSeistore extends AbstractSeistore {
             storage.deleteBuckets(subproject.gcs_bucket).catch((err) => {
                 new AzureInsightsLogger().error(err)
             });
+        }
+    }
+
+    public async handleReadinessCheck(): Promise<boolean> {
+        try {
+            const credentials = AzureCredentials.getCredential();
+            const scope = AzureConfig.SP_APP_RESOURCE_ID;
+            await credentials.getToken(`${scope}/.default`);
+            return true;
+        } catch (error: any) {
+            return false;
         }
     }
 

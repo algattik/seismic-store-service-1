@@ -74,7 +74,7 @@ export class Keyvault {
         AzureConfig.SP_CLIENT_SECRET =
             AzureConfig.SP_CLIENT_SECRET = (await client.getSecret(this.SP_CLIENT_SECRET)).value;
         AzureConfig.SP_APP_RESOURCE_ID =
-            AzureConfig.SP_APP_RESOURCE_ID = (await client.getSecret(this.SP_APP_RESOURCE_ID)).value;;
+            AzureConfig.SP_APP_RESOURCE_ID = (await client.getSecret(this.SP_APP_RESOURCE_ID)).value;
 
     }
 }

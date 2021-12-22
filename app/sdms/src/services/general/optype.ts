@@ -14,4 +14,4 @@
 // limitations under the License.
 // ============================================================================
 
-export enum GeneralOP { Status, Access }
+export enum GeneralOP { Status, Access, Readiness }

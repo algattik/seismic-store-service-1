@@ -20,14 +20,19 @@ import { GeneralOP } from './optype';
 
 const router = Router();
 
-// get the service status response [jwt not required by esp]
+// get the service status response [jwt not required by proxy]
 router.get('/', async (req: expRequest, res: expResponse) => {
     await GeneralHandler.handler(req, res, GeneralOP.Status);
 });
 
-// get the service status response [jwt required by esp]
+// get the service status response [jwt required by proxy]
 router.get('/access', async (req: expRequest, res: expResponse) => {
     await GeneralHandler.handler(req, res, GeneralOP.Access);
+});
+
+// get the service readiness status response [jwt not required by proxy]
+router.get('/readiness', async (req: expRequest, res: expResponse) => {
+    await GeneralHandler.handler(req, res, GeneralOP.Readiness);
 });
 
 export { router as GeneralRouter };
