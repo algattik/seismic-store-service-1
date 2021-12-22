@@ -34,7 +34,8 @@ export class Error {
         PERMISSION_DENIED: 403,
         UNAUTHENTICATED: 401,
         UNKNOWN: 500,
-        NOT_IMPLEMENTED: 501
+        NOT_IMPLEMENTED: 501,
+        NOT_AVAILABLE: 503
     };
 
 
