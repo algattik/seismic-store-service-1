@@ -1,6 +1,3 @@
-variables:
-  OSDU_GCP_HELM_PACKAGE_CHARTS: "app/sdms/devops/gcp/deploy app/sdms/devops/gcp/configmap"
-
 include:
   # pipeline logic
   - project: "osdu/platform/ci-cd-pipelines"

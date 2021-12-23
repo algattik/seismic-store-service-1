@@ -7,6 +7,9 @@ include:
   # gcp
   - local: "devops/osdu/cloud-providers/gcp.yml"
 
+  # common gcp pipeline
+  - local: "devops/osdu/cloud-providers/gcp-common-pipeline.yml"
+
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
