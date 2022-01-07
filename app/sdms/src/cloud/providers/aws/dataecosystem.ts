@@ -19,6 +19,13 @@ import {
 } from '../../dataecosystem';
 import { AWSCredentials } from './credentials';
 import { AWSConfig } from './config';
+import { Cache, Error } from '../../../shared';
+
+interface PartitionInfoAws {
+    tenantId: string;
+    expires_in: number;
+}
+const ExpiresMargin = 3600; // 60 minutes
 @DataEcosystemCoreFactory.register('aws')
 export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
 
@@ -28,6 +35,7 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
     public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
     public static getPartitionBaseUrlPath(): string { return '/api/partition/v1/partitions/'; };
+    private static _cache: Cache<PartitionInfoAws>;
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;
@@ -46,6 +54,14 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     }
 
     public static async getTenantIdFromPartitionID(dataPartitionID: string): Promise<string> {
+        if (!this._cache) {
+            this._cache = new Cache<PartitionInfoAws>('partitionInfo');
+        };
+        const res = await this._cache.get(dataPartitionID);
+        if (res !== undefined && res.expires_in > Math.floor(Date.now() / 1000)) {
+            return res.tenantId;
+        };
+
         const token = await AWSCredentials.getServiceCredentials();
         const options = {
             headers: {
@@ -60,8 +76,11 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
 
         try {
             const response = JSON.parse(await request.get(options));
-            const tenantId = response['tenantId']['value'];
-            return tenantId;
+            const tenantInfo = response['tenantId']['value'];
+            const expiresIn = Math.floor(Date.now() / 1000) + ExpiresMargin;
+            const infoaws:PartitionInfoAws = {tenantId: tenantInfo, expires_in: expiresIn};
+            await this._cache.set(dataPartitionID, infoaws);
+            return tenantInfo;
         }
         catch (err) {
             // tslint:disable-next-line:no-console
