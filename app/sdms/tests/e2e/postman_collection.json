@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b0d6991c-18ce-4fbf-a5d1-fa1a117f995b",
+		"_postman_id": "25958636-7ea4-44c9-a291-04601963e214",
 		"name": "SDMS-E2E ver.M10 - Release 0.13",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -82,7 +82,8 @@
 									"\r",
 									"            postman.clearEnvironmentVariable(key);\r",
 									"        }\r",
-									"}"
+									"}\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -6788,6 +6789,7 @@
 								"type": "text"
 							}
 						],
+
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"seismicmeta\": {\r\n        \"data\": {\r\n            \"additionalMetaData\": [\r\n                {\r\n                    \"name\": \"SOURCE BARCODE\",\r\n                    \"value\": 3843967263,\r\n                    \"valueAsString\": \"3843967263\"\r\n                },\r\n                {\r\n                    \"name\": \"ORIGINAL FILE NAME\",\r\n                    \"value\": \"1_67_Srv3D_1_8_Original.sgy\",\r\n                    \"valueAsString\": \"1_67_Srv3D_1_8_Original.sgy\"\r\n                },\r\n                {\r\n                    \"name\": \"BIN SPACING\",\r\n                    \"value\": 90,\r\n                    \"valueAsString\": \"90\"\r\n                }\r\n            ],\r\n            \"binGridOperation\": {\r\n                \"binGridOriginEasting\": 1276435.2,\r\n                \"binGridOriginI\": 1,\r\n                \"binGridOriginJ\": 1,\r\n                \"binGridOriginNorthing\": 242030.61,\r\n                \"binGridScaleFactor\": 1,\r\n                \"binNodeIncrementI\": 1,\r\n                \"binNodeIncrementJ\": 1,\r\n                \"binWidthI\": 83.39992,\r\n                \"binWidthJ\": 91.77242,\r\n                \"crsKey\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                \"mapGridBearingJ\": 206.58368,\r\n                \"persistableReferenceCrs\": {\r\n                    \"lateBoundCRS\": {\r\n                        \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"26782\"\r\n                        },\r\n                        \"type\": \"LBC\"\r\n                    },\r\n                    \"singleCT\": {\r\n                        \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"15851\"\r\n                        },\r\n                        \"type\": \"ST\"\r\n                    },\r\n                    \"ver\": \"PE_10_3_1\",\r\n                    \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                    \"authCode\": {\r\n                        \"auth\": \"SLB\",\r\n                        \"code\": \"26782079\"\r\n                    },\r\n                    \"type\": \"EBC\"\r\n                },\r\n                \"transformationMethodNumber\": 1049,\r\n                \"unitKeyBearing\": \"dega\"\r\n            },\r\n            \"binNodePositions\": [\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        1276435.2,\r\n                                        242030.61\r\n                                    ],\r\n                                    [\r\n                                        1281357.8,\r\n                                        239567.36\r\n                                    ],\r\n                                    [\r\n                                        1280002.5,\r\n                                        236859.05\r\n                                    ],\r\n                                    [\r\n                                        1275080,\r\n                                        239322.28\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsMultiPoint\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ]\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"26782\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"26782079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                },\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        -93.60371,\r\n                                        29.312513\r\n                                    ],\r\n                                    [\r\n                                        -93.58811,\r\n                                        29.306007\r\n                                    ],\r\n                                    [\r\n                                        -93.59219,\r\n                                        29.298489\r\n                                    ],\r\n                                    [\r\n                                        -93.60779,\r\n                                        29.304993\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsMultiPoint\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ]\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4267]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"GCS_North_American_1927\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"4267\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus [4267,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"4267079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                },\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        -93.60387,\r\n                                        29.312752\r\n                                    ],\r\n                                    [\r\n                                        -93.58827,\r\n                                        29.306248\r\n                                    ],\r\n                                    [\r\n                                        -93.592354,\r\n                                        29.298727\r\n                                    ],\r\n                                    [\r\n                                        -93.60795,\r\n                                        29.305231\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsMultiPoint\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ]\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"wkt\": \"GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4326]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"GCS_WGS_1984\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"4326\"\r\n                        },\r\n                        \"type\": \"LBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                }\r\n            ],\r\n            \"classification\": \"Post-stack, time-migrated\",\r\n            \"dateCreated\": \"2013-03-22T11:16:03Z\",\r\n            \"dateModified\": \"2013-03-22T11:16:03Z\",\r\n            \"derivedBulk\": [\r\n                {\r\n                    \"size\": 1223488818,\r\n                    \"type\": \"ZGY\",\r\n                    \"url\": \"sd://SNTC/colors/test.zgy\"\r\n                },\r\n                {\r\n                    \"size\": 2653649950,\r\n                    \"type\": \"DIO\",\r\n                    \"url\": \"sd://SNTC/colors/test.DIO\"\r\n                }\r\n            ],\r\n            \"description\": \"A comment or a remark.\",\r\n            \"elevationReferenceTime\": {\r\n                \"elevationFromMsl\": {\r\n                    \"unitKey\": \"ft\",\r\n                    \"value\": 0\r\n                },\r\n                \"name\": \"SRD\",\r\n                \"replacementVelocity\": {\r\n                    \"unitKey\": \"ft/s\",\r\n                    \"value\": 4800\r\n                }\r\n            },\r\n            \"externalIds\": [\r\n                \"Petrel:tenant1/ProjectLouisiana/3491763/a9b46fc4-1840-450a-ac01-d15bdaa086ba:aef0e55c-4fcb-4546-a7a2-9df8f27277a1\"\r\n            ],\r\n            \"locationAtIndexZero\": {\r\n                \"features\": [\r\n                    {\r\n                        \"geometry\": {\r\n                            \"coordinates\": [\r\n                                1276435.2,\r\n                                242030.61,\r\n                                -1234\r\n                            ],\r\n                            \"type\": \"AnyCrsPoint\"\r\n                        },\r\n                        \"type\": \"AnyCrsFeature\"\r\n                    }\r\n                ],\r\n                \"persistableReferenceCrs\": {\r\n                    \"lateBoundCRS\": {\r\n                        \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"26782\"\r\n                        },\r\n                        \"type\": \"LBC\"\r\n                    },\r\n                    \"singleCT\": {\r\n                        \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"EPSG\",\r\n                            \"code\": \"15851\"\r\n                        },\r\n                        \"type\": \"ST\"\r\n                    },\r\n                    \"ver\": \"PE_10_3_1\",\r\n                    \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                    \"authCode\": {\r\n                        \"auth\": \"SLB\",\r\n                        \"code\": \"26782079\"\r\n                    },\r\n                    \"type\": \"EBC\"\r\n                },\r\n                \"persistableReferenceUnitZ\": {\r\n                    \"scaleOffset\": {\r\n                        \"scale\": 0.001,\r\n                        \"offset\": 0\r\n                    },\r\n                    \"symbol\": \"ms\",\r\n                    \"baseMeasurement\": {\r\n                        \"ancestry\": \"Time\",\r\n                        \"type\": \"UM\"\r\n                    },\r\n                    \"type\": \"USO\"\r\n                },\r\n                \"type\": \"AnyCrsFeatureCollection\"\r\n            },\r\n            \"locationWGS84\": {\r\n                \"features\": [\r\n                    {\r\n                        \"geometry\": {\r\n                            \"coordinates\": [\r\n                                [\r\n                                    [\r\n                                        -93.60387,\r\n                                        29.312752\r\n                                    ],\r\n                                    [\r\n                                        -93.58827,\r\n                                        29.306248\r\n                                    ],\r\n                                    [\r\n                                        -93.592354,\r\n                                        29.298727\r\n                                    ],\r\n                                    [\r\n                                        -93.60795,\r\n                                        29.305231\r\n                                    ],\r\n                                    [\r\n                                        -93.60387,\r\n                                        29.312752\r\n                                    ]\r\n                                ]\r\n                            ],\r\n                            \"type\": \"Polygon\"\r\n                        },\r\n                        \"properties\": {\r\n                            \"name\": \"Survey 4 INLINE_1_67_Srv3D_1_8_Original\"\r\n                        },\r\n                        \"type\": \"Feature\"\r\n                    }\r\n                ],\r\n                \"type\": \"FeatureCollection\"\r\n            },\r\n            \"name\": \"Survey 4 INLINE_1_67_Srv3D_1_8_Original\",\r\n            \"originalBulk\": {\r\n                \"size\": 2873437400,\r\n                \"type\": \"SEGY\",\r\n                \"url\": \"sd://SNTC/colors/test.segy\"\r\n            },\r\n            \"perimeters\": [\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        [\r\n                                            1276435.2,\r\n                                            242030.61\r\n                                        ],\r\n                                        [\r\n                                            1281357.8,\r\n                                            239567.36\r\n                                        ],\r\n                                        [\r\n                                            1280002.5,\r\n                                            236859.05\r\n                                        ],\r\n                                        [\r\n                                            1275080,\r\n                                            239322.28\r\n                                        ],\r\n                                        [\r\n                                            1276435.2,\r\n                                            242030.61\r\n                                        ]\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsPolygon\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ],\r\n                                \"perimeterType\": \"Full Fold Coverage\"\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"PROJCS[\\\"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],PROJECTION[\\\"Lambert_Conformal_Conic\\\"],PARAMETER[\\\"False_Easting\\\",2000000.0],PARAMETER[\\\"False_Northing\\\",0.0],PARAMETER[\\\"Central_Meridian\\\",-91.3333333333333],PARAMETER[\\\"Standard_Parallel_1\\\",29.3],PARAMETER[\\\"Standard_Parallel_2\\\",30.7],PARAMETER[\\\"Latitude_Of_Origin\\\",28.6666666666667],UNIT[\\\"Foot_US\\\",0.304800609601219],AUTHORITY[\\\"EPSG\\\",26782]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_StatePlane_Louisiana_South_FIPS_1702\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"26782\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus / Louisiana South [26782,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"26782079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                },\r\n                {\r\n                    \"features\": [\r\n                        {\r\n                            \"geometry\": {\r\n                                \"coordinates\": [\r\n                                    [\r\n                                        [\r\n                                            -93.60371,\r\n                                            29.312513\r\n                                        ],\r\n                                        [\r\n                                            -93.58811,\r\n                                            29.306007\r\n                                        ],\r\n                                        [\r\n                                            -93.59219,\r\n                                            29.298489\r\n                                        ],\r\n                                        [\r\n                                            -93.60779,\r\n                                            29.304993\r\n                                        ],\r\n                                        [\r\n                                            -93.60371,\r\n                                            29.312513\r\n                                        ]\r\n                                    ]\r\n                                ],\r\n                                \"type\": \"AnyCrsPolygon\"\r\n                            },\r\n                            \"properties\": {\r\n                                \"ijNumbers\": [\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        1\r\n                                    ],\r\n                                    [\r\n                                        67,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        34\r\n                                    ],\r\n                                    [\r\n                                        1,\r\n                                        1\r\n                                    ]\r\n                                ],\r\n                                \"perimeterType\": \"Full Fold Coverage\"\r\n                            },\r\n                            \"type\": \"AnyCrsFeature\"\r\n                        }\r\n                    ],\r\n                    \"persistableReferenceCrs\": {\r\n                        \"lateBoundCRS\": {\r\n                            \"wkt\": \"GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4267]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"GCS_North_American_1927\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"4267\"\r\n                            },\r\n                            \"type\": \"LBC\"\r\n                        },\r\n                        \"singleCT\": {\r\n                            \"wkt\": \"GEOGTRAN[\\\"NAD_1927_To_WGS_1984_79_CONUS\\\",GEOGCS[\\\"GCS_North_American_1927\\\",DATUM[\\\"D_North_American_1927\\\",SPHEROID[\\\"Clarke_1866\\\",6378206.4,294.9786982]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],GEOGCS[\\\"GCS_WGS_1984\\\",DATUM[\\\"D_WGS_1984\\\",SPHEROID[\\\"WGS_1984\\\",6378137.0,298.257223563]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433]],METHOD[\\\"NADCON\\\"],PARAMETER[\\\"Dataset_conus\\\",0.0],AUTHORITY[\\\"EPSG\\\",15851]]\",\r\n                            \"ver\": \"PE_10_3_1\",\r\n                            \"name\": \"NAD_1927_To_WGS_1984_79_CONUS\",\r\n                            \"authCode\": {\r\n                                \"auth\": \"EPSG\",\r\n                                \"code\": \"15851\"\r\n                            },\r\n                            \"type\": \"ST\"\r\n                        },\r\n                        \"ver\": \"PE_10_3_1\",\r\n                        \"name\": \"NAD27 * OGP-Usa Conus [4267,15851]\",\r\n                        \"authCode\": {\r\n                            \"auth\": \"SLB\",\r\n                            \"code\": \"4267079\"\r\n                        },\r\n                        \"type\": \"EBC\"\r\n                    },\r\n                    \"type\": \"AnyCrsFeatureCollection\"\r\n                }\r\n            ],\r\n            \"rangeAmplitudeMax\": {\r\n                \"unitKey\": \"amplitude\",\r\n                \"value\": 232467.8\r\n            },\r\n            \"rangeAmplitudeMin\": {\r\n                \"unitKey\": \"amplitude\",\r\n                \"value\": -226153.4\r\n            },\r\n            \"rangeCrosslineIncrement\": 1,\r\n            \"rangeCrosslineStart\": 1,\r\n            \"rangeCrosslineStop\": 34,\r\n            \"rangeInlineIncrement\": 1,\r\n            \"rangeInlineStart\": 1,\r\n            \"rangeInlineStop\": 67,\r\n            \"relationships\": {\r\n                \"binGrid\": {\r\n                    \"id\": \"slb:wke:binGrid-5067af51fe6542968ce8868c01af6cb7\"\r\n                },\r\n                \"seismicSurvey\": {\r\n                    \"id\": \"slb:wke:seismicSurvey3d-62d8fe58-c044-537a-b354-7f3f8e860421\",\r\n                    \"name\": \"ST2013-L\"\r\n                },\r\n                \"usesAssociations\": true\r\n            },\r\n            \"seismicProperty\": \"Instantaneous Amplitude\",\r\n            \"stackAngleRangeMax\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": 10\r\n            },\r\n            \"stackAngleRangeMin\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": 0\r\n            },\r\n            \"stackAzimuthRangeMax\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": 20\r\n            },\r\n            \"stackAzimuthRangeMin\": {\r\n                \"unitKey\": \"deg\",\r\n                \"value\": -20\r\n            },\r\n            \"stackOffsetRangeMax\": {\r\n                \"unitKey\": \"ftUS\",\r\n                \"value\": 3000\r\n            },\r\n            \"stackOffsetRangeMin\": {\r\n                \"unitKey\": \"ftUS\",\r\n                \"value\": 0\r\n            },\r\n            \"stackSubType\": \"Full\",\r\n            \"stackType\": \"Full\",\r\n            \"storageType\": \"32-BIT\",\r\n            \"textualFileHeader\": [\r\n                \"C 1 CLIENT COMPANY CREW NO                                                      C 2 LINE line1dS AREA MAP ID                                                    C 3 REEL NO DAY-START OF REEL YEAR OBSERVER                                     C 4 INSTRUMENT: DELPH MODEL xx SERIAL NO                                        C 5 DATA TRACES/RECORD 1 AUXILIARY TRACES/RECORD 0 CDP FOLD                     C 6 SAMPLE INTERVAL 333 SAMPLES/TRACE 1496 BITS/IN 16 BYTES/SAMPLE 2            C 7 RECORDING FORMAT FORMAT THIS REEL MEASUREMENT SYSTEM                        C 8 SAMPLE CODE: FIXED PT                                                       C 9 GAIN TYPE: FIXED                                                            C10 FILTERS: ALIAS 1500HZ NOTCH HZ BAND - HZ SLOPE - DB/OCT                     C11 SOURCE: TYPE NUMBER/POINT POINT INTERVAL                                    C12 PATTERN: LENGTH WIDTH                                                       C13 SWEEP: START HZ END HZ LENGTH MS CHANEL NO TYPE                             C14 TAPER: START LENGTH MS END LENGTH MS TYPE                                   C15 SPREAD: OFFSET MAX DISTANCE GROUP INTERVAL                                  C16 GEOPHONES: PER GROUP SPACING FREQUENCY MFG MODEL                            C17 PATTERN: LENGTH WIDTH                                                       C18 TRACES SORTED BY: RECORD                                                    C19 AMPLITUDE RECOVERY: NONE                                                    C20 MAP PROJECTION ZONE ID COORDINATE UNITS                                     C21 PROCESSING:                                                                 C22 PROCESSING:                                                                 C23                                                                             C24                                                                             C25                                                                             C26                                                                             C27                                                                             C28                                                                             C29                                                                             C30                                                                             C31                                                                             C32                                                                             C33                                                                             C34                                                                             C35                                                                             C36                                                                             C37                                                                             C38                                                                             C39                                                                             C40 END EBCDIC                                                                  \"\r\n            ],\r\n            \"verticalDomain\": \"Elevation time (two-way travel time)\",\r\n            \"verticalIncrement\": {\r\n                \"unitKey\": \"ms\",\r\n                \"value\": -4\r\n            },\r\n            \"verticalSampleCount\": 1000,\r\n            \"verticalStart\": {\r\n                \"unitKey\": \"ms\",\r\n                \"value\": 0\r\n            },\r\n            \"verticalStop\": {\r\n                \"unitKey\": \"ms\",\r\n                \"value\": -3996\r\n            },\r\n            \"vintage\": \"ST2013-InstantaneousAmplitude\",\r\n            \"waveType\": \"PP\"\r\n        },\r\n        \"kind\": \"{{datapartition}}:wks:seismic3d:1.0.5\",\r\n        \"legal\": {\r\n            \"legaltags\": [\r\n                \"{{legaltag01}}\"\r\n            ],\r\n            \"otherRelevantDataCountries\": [\r\n                \"US\",\r\n                \"BE\",\r\n                \"NO\",\r\n                \"IN\"\r\n            ]\r\n        },\r\n        \"version\": 1040891613125385\r\n    }\r\n}"
@@ -6902,7 +6904,6 @@
 									"pm.environment.unset('gcsObjectPrefix')",
 									"pm.environment.unset('dsx01_record_type')",
 									"postman.setEnvironmentVariable('execCounter', 1)",
-									"",
 									"console.log('Dataset variables were removed for seismicmeta folder');"
 								],
 								"type": "text/javascript"
@@ -12727,6 +12728,635 @@
 									"key": "sdpath",
 									"value": "sd://{{tenant}}"
 								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "impersonation_token",
+			"item": [
+				{
+					"name": "STATUS SET IMPERSONATION TOKEN",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"Object.prototype.makeID_impersonation_token = function(length) {\r",
+									"   var result           = '';\r",
+									"   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+									"   var charactersLength = characters.length;\r",
+									"   for ( var i = 0; i < length; i++ ) {\r",
+									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"   }\r",
+									"   return result;\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable(\"testDatasetName\", makeID_impersonation_token(16));\r",
+									"var path = \"/\" + makeID_impersonation_token(8) + \"/\" + makeID_impersonation_token(4) + \"/\" + makeID_impersonation_token(4) + \"/\"\r",
+									"postman.setEnvironmentVariable(\"testPathEncoded\", encodeURIComponent(path));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"try {",
+									"    var tokenPayload = pm.environment.get('STOKEN').split('.')[1];",
+									"    tokenPayload = tokenPayload.replace(/-/g, '+').replace(/_/g, '/');",
+									"    tokenPayload = JSON.parse(decodeURIComponent(atob(tokenPayload).split('').map(function(c) {",
+									"        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);",
+									"    }).join('')));",
+									"    if(!tokenPayload.hasOwnProperty('sub')) {",
+									"        postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"    }",
+									"    postman.setEnvironmentVariable(\"trustedApplicationID\", tokenPayload['sub']);",
+									"} catch(error) {",
+									"    postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"}",
+									"",
+									"postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"console.log('The \\\"Impersonation token\\\" test suite variables have been set');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APP REGISTER",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/app/?email={{trustedApplicationID}}&sdpath=sd://{{tenant}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"app",
+								""
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{trustedApplicationID}}"
+								},
+								{
+									"key": "sdpath",
+									"value": "sd://{{tenant}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APP REGISTER TRUSTED",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/app/trusted?email={{trustedApplicationID}}&sdpath=sd://{{tenant}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"app",
+								"trusted"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{trustedApplicationID}}"
+								},
+								{
+									"key": "sdpath",
+									"value": "sd://{{tenant}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IMPTOKEN GENERATE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if ( (responseCode.code != 200) === (responseCode.code != 501) ) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else if(pm.response.code !== 501) {",
+									"",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable(\"impersonationToken\", jsonData.impersonation_token);",
+									"    postman.setEnvironmentVariable(\"impersonationTokenContext\", jsonData.context);",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check impersonation token exp time and type\", function () {",
+									"        pm.expect(jsonData.expires_in).to.lte(3600);",
+									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
+									"    });",
+									"    ",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"} else {",
+									"",
+									"    pm.test(\"Status code is 501\", function () {",
+									"        pm.response.to.have.status(501);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"",
+									"    postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"};"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "user-token",
+								"value": "{{STOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resources\": [{\n  \t\t\"readonly\": false, \n  \t\t\"resource\": \"sd://{{tenant}}/{{subproject}}/\"\n  \t\t\n  \t}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/impersonation-token",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"impersonation-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "IMPTOKEN REFRESH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if ( (responseCode.code != 200) === (responseCode.code != 501) ) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else if(pm.response.code !== 501) {",
+									"",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable(\"impersonationToken\", jsonData.impersonation_token);",
+									"    postman.setEnvironmentVariable(\"impersonationTokenContext\", jsonData.context);",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check imptoken\", function () {",
+									"        postman.setEnvironmentVariable(\"imptoken\", jsonData.impersonation_token);",
+									"        pm.expect(jsonData.expires_in).to.eql(3600);",
+									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"} else {",
+									"    ",
+									"    pm.test(\"Status code is 501\", function () {",
+									"        pm.response.to.have.status(501);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1);",
+									"",
+									"    postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"};"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "impersonation-token",
+								"value": "{{impersonationToken}}",
+								"type": "text"
+							},
+							{
+								"key": "impersonation-token-context",
+								"value": "{{impersonationTokenContext}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/impersonation-token",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"impersonation-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET REGISTER",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{impersonationToken}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "impersonation-token-context",
+								"value": "{{impersonationTokenContext}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{testDatasetName}}imptoken?path={{testPathEncoded}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{testDatasetName}}imptoken"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET DELETE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{impersonationToken}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "impersonation-token-context",
+								"value": "{{impersonationTokenContext}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{testDatasetName}}imptoken?path={{testPathEncoded}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{testDatasetName}}imptoken"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{testPathEncoded}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STATUS UNSET IMPERONATION TOKEN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.unset('impersonationToken')",
+									"pm.environment.unset('impersonationTokenContext')",
+									"pm.environment.unset('testDatasetName')",
+									"pm.environment.unset('testPathEncoded')",
+									"pm.environment.unset('trustedApplicationID')",
+									"",
+									"console.log('The \\\"Impersonation token\\\" test suite variables have been removed');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
 							]
 						}
 					},
