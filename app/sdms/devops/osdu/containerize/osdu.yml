@@ -12,8 +12,7 @@ sdms_push_runtime_image:
   script:
     # Gitlab Container Registry
     - cd app/$SDMS_SERVICE
-    - docker build -t builder_sdms:latest --file docker/builder.Dockerfile .
-    - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
+    - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile  .
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$SHA_IMAGE
     - docker push $CI_REGISTRY_IMAGE/$SHA_IMAGE
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE

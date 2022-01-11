@@ -580,7 +580,7 @@ The following software have components provided under the terms of this license:
 - ms (from https://www.npmjs.com/package/ms)
 - ms (from https://www.npmjs.com/package/ms)
 - nan (from https://www.npmjs.com/package/nan)
-- native-promise-only (from http://github.com/getify/native-promise-only)
+- native-promise-only (from https://www.npmjs.com/package/native-promise-only)
 - negotiator (from https://www.npmjs.com/package/negotiator)
 - node-abort-controller (from https://www.npmjs.com/package/node-abort-controller)
 - node-fetch (from https://www.npmjs.com/package/node-fetch)

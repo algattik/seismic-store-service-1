@@ -29,8 +29,7 @@ sdms_push_runtime_image_azure:
     # Azure Container Registry
     - cd app/$SDMS_SERVICE
     - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
-    - docker build -t builder_sdms:latest --file docker/builder.Dockerfile .
-    - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile --build-arg docker_builder_image=builder_sdms .
+    - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile .
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
     - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
