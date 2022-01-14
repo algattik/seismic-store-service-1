@@ -1,11 +1,14 @@
-filemetadata-osdu-gcp-helm-charts:
+filemetadata-osdu-gcp-helm-charts-master:
   variables:
-    SEISMIC_OSDU_GCP_HELM_PACKAGE_CHARTS: "app/filemetadata/devops/gcp/deploy app/filemetadata/devops/gcp/configmap"
-  extends: .osdu-gcp-helm-charts
-  only:
-    changes:
-      - devops/**/*
-      - app/filemetadata/**/*
+    SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/filemetadata/devops/gcp/configmap"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/filemetadata/devops/gcp/deploy"
+  extends: .osdu-gcp-helm-charts-master
+
+filemetadata-osdu-gcp-helm-charts-release:
+  variables:
+    SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/filemetadata/devops/gcp/configmap"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/filemetadata/devops/gcp/deploy"
+  extends: .osdu-gcp-helm-charts-release
 
 filemetadata-osdu-gcp-containerize-gitlab:
   variables:
