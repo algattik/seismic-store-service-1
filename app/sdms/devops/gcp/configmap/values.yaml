@@ -1,7 +1,7 @@
 data:
   log_level: "INFO"
   cloudProvider: "google"
-  port: 80
+  port: "5000"
   des_service_host: https://des
   des_service_host_partition: "http://partition/api/partition/v1/"
   entitlement_base_url_path: "/entitlements/v2"
@@ -20,5 +20,5 @@ data:
   locksmap_redis_instance_port: "6379"
   url_prefix: #{SDMS_PREFIX}#
 conf:
-  configmap: "seismic-store-config"
   app_name: "seismic-store"
+  configmap: "seismic-store-config"

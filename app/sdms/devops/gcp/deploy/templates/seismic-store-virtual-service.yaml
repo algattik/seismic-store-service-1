@@ -12,6 +12,8 @@ spec:
     - match:
         - uri:
             prefix: "{{ .Values.conf.url_prefix }}"
+      rewrite:
+        uri: /api/v3
       route:
         - destination:
             port:

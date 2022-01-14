@@ -7,8 +7,9 @@ metadata:
   namespace: "{{ .Release.Namespace }}"
 data:
   CLOUDPROVIDER: {{ .Values.data.cloudProvider }}
-  DES_SERVICE_HOST: https://{{ .Values.data.des_service_host }}
-  REDIS_INSTANCE_PORT: "{{ .Values.data.des_redis_instance_address }}"
+  DES_SERVICE_HOST: {{ .Values.data.des_service_host }}
+  REDIS_INSTANCE_ADDRESS: "{{ .Values.data.des_redis_instance_address }}"
+  REDIS_INSTANCE_PORT: "{{ .Values.data.des_redis_instance_port }}"
   APP_ENVIRONMENT_IDENTIFIER: "{{ .Values.data.app_environment_identifier }}"
   PORT: "{{ .Values.data.port }}"
   SDMS_PREFIX: "{{ .Values.data.url_prefix }}"
