@@ -1,19 +1,23 @@
 variables:
   GCP_SDMS_PREFIX: /api/seismic-store/v3
 
-sdms-osdu-gcp-helm-charts:
+sdms-osdu-gcp-helm-charts-master:
   variables:
-    SEISMIC_OSDU_GCP_HELM_PACKAGE_CHARTS: "app/sdms/devops/gcp/deploy app/sdms/devops/gcp/configmap"
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy" 
-  extends: .osdu-gcp-helm-charts
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
+  extends: .osdu-gcp-helm-charts-master
   before_script:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+
+sdms-osdu-gcp-helm-charts-release:
+  variables:
+    SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
+  extends: .osdu-gcp-helm-charts-release
+  before_script:
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
 
 sdms-osdu-gcp-containerize-gitlab:
   variables:
