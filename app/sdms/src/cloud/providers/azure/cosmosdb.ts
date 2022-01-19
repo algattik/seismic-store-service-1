@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
 // ============================================================================
 
 import { CosmosClient, Container, SqlQuerySpec, SqlParameter, FeedOptions } from '@azure/cosmos';
-import {
-    AbstractJournal, AbstractJournalTransaction,
-    IJournalQueryModel, IJournalTransaction, JournalFactory
-} from '../../journal';
+import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { Utils } from '../../../shared/utils'
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
@@ -32,24 +29,27 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     private static containerCache: { [key: string]: Container; } = {};
 
     public async getCosmoContainer(): Promise<Container> {
-        const containerId = 'seistore-' + this.dataPartition + '-container';
-        if (AzureCosmosDbDAO.containerCache[containerId]) {
-            return AzureCosmosDbDAO.containerCache[containerId];
-        } else {
+
+        const databaseId = 'sdms-db'
+        const containerId = 'sdms-container';
+
+        if (!AzureCosmosDbDAO.containerCache[containerId]) {
             const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
             const cosmosClient = new CosmosClient({
                 endpoint: connectionParams.endpoint,
                 key: connectionParams.key
             });
-            const { database } =  await cosmosClient.databases.createIfNotExists({id: 'seistore-' + this.dataPartition + '-db'});
+            const { database } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
             const { container } = await database.containers.createIfNotExists({
-                id: 'seistore-' + this.dataPartition + '-container',
+                id: containerId,
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
                 partitionKey: '/key'
             });
             AzureCosmosDbDAO.containerCache[containerId] = container;
-            return AzureCosmosDbDAO.containerCache[containerId];
         }
+
+        return AzureCosmosDbDAO.containerCache[containerId];
+
     }
 
     public constructor(tenant: TenantModel) {
@@ -58,9 +58,11 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     }
 
     public async save(datasetEntity: any): Promise<void> {
+
         if (!(datasetEntity instanceof Array)) {
             datasetEntity = [datasetEntity];
         }
+
         for (const entity of datasetEntity) {
             const item = {
                 id: entity.key.name,
@@ -68,20 +70,21 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 data: entity.data
             }
             item.data[this.KEY.toString()] = entity.key;
-            if (entity.ctag) {
-                item.data.ctag = entity.ctag;
-            }
+            // if (entity.ctag) {
+            //     item.data.ctag = entity.ctag;
+            // }
             await (await this.getCosmoContainer()).items.upsert(item);
         }
 
     }
 
     public async get(key: any): Promise<[any | any[]]> {
+
         const item = await (await this.getCosmoContainer()).item(key.name, key.partitionKey).read();
 
-        if (item.resource === undefined) {
+        if (!item.resource) {
             return [undefined];
-        };
+        }
 
         const data = item.resource.data;
         data[this.KEY] = data[this.KEY.toString()];
@@ -128,17 +131,28 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     }
 
     public createKey(specs: any): object {
+        // const kind = specs.path[0];
+        // const partitionKey = specs.namespace + '-' + kind;
+        // let name: string;
+        // if (kind === AzureConfig.DATASETS_KIND) {
+        //     name = Utils.makeID(16);
+        // } else if (kind === AzureConfig.SEISMICMETA_KIND) {
+        //     name = specs.path[1].replace(/\W/g, '-');
+        // } else {
+        //     name = specs.path[1];
+        // }
+        // return { name, partitionKey, kind };
+
         const kind = specs.path[0];
-        const partitionKey = specs.namespace + '-' + kind;
         let name: string;
-        if (kind === AzureConfig.DATASETS_KIND) {
-            name = Utils.makeID(16);
-        } else if (kind === AzureConfig.SEISMICMETA_KIND) {
-            name = specs.path[1].replace(/\W/g, '-');
-        } else {
+        let partitionKey: string;
+
+        if(kind === AzureConfig.TENANTS_KIND) {
             name = specs.path[1];
+            partitionKey = name;
         }
-        return { name, partitionKey, kind };
+
+        return { name, partitionKey, kind }; // maybe we can remove the kind?
     }
 
     // new instance of AzureCosmosDbTransactionDAO
@@ -165,80 +179,6 @@ export class AzureCosmosDbTransactionOperation {
 
     public type: OperationType;
     public entityOrKey: any;
-}
-
-/**
- * A wrapper class for datastore transactions
- * ! Note: looks awfully close to datastore interface.
- */
-export class AzureCosmosDbTransactionDAO extends AbstractJournalTransaction {
-
-    public KEY = null;
-
-    public constructor(owner: AzureCosmosDbDAO) {
-        super();
-        this.owner = owner;
-        this.KEY = this.owner.KEY;
-    }
-
-    public async save(entity: any): Promise<void> {
-        this.queuedOperations.push(new AzureCosmosDbTransactionOperation('save', entity));
-        await Promise.resolve();
-    }
-
-    public async get(key: any): Promise<[any | any[]]> {
-        return await this.owner.get(key);
-    }
-
-    public async delete(key: any): Promise<void> {
-        this.queuedOperations.push(new AzureCosmosDbTransactionOperation('delete', key));
-        await Promise.resolve();
-    }
-
-    public createQuery(namespace: string, kind: string): IJournalQueryModel {
-        return this.owner.createQuery(namespace, kind);
-    }
-
-    public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {
-        return await this.owner.runQuery(query);
-    }
-
-    public async run(): Promise<void> {
-        if (this.queuedOperations.length) {
-            await Promise.reject('Transaction is already in use.');
-        }
-        else {
-            this.queuedOperations = [];
-            return Promise.resolve();
-        }
-    }
-
-    public async rollback(): Promise<void> {
-        this.queuedOperations = [];
-        return Promise.resolve();
-    }
-
-    public async commit(): Promise<void> {
-
-        for (const operation of this.queuedOperations) {
-            if (operation.type === 'save') {
-                await this.owner.save(operation.entityOrKey);
-            }
-            if (operation.type === 'delete') {
-                await this.owner.delete(operation.entityOrKey);
-            }
-        }
-
-        this.queuedOperations = [];
-        return Promise.resolve();
-    }
-
-    public getQueryFilterSymbolContains(): string {
-        return 'CONTAINS';
-    }
-
-    private owner: AzureCosmosDbDAO;
-    public queuedOperations: AzureCosmosDbTransactionOperation[] = [];
 }
 
 declare type Operator = '=' | '<' | '>' | '<=' | '>=' | 'HAS_ANCESTOR' | 'CONTAINS';
@@ -364,10 +304,6 @@ class AzureCosmosDbFilter {
     }
 }
 
-/**
- * A shim for CosmosDB that provides compatibility with Google's SDK.
- * ! Note: looks awfully close to Google Query interface.
- */
 export class AzureCosmosDbQuery implements IJournalQueryModel {
 
     public constructor(namespace: string, kind: string) {
@@ -459,4 +395,74 @@ export class AzureCosmosDbQuery implements IJournalQueryModel {
             }
         };
     }
+}
+
+export class AzureCosmosDbTransactionDAO extends AbstractJournalTransaction {
+
+    public KEY = null;
+
+    public constructor(owner: AzureCosmosDbDAO) {
+        super();
+        this.owner = owner;
+        this.KEY = this.owner.KEY;
+    }
+
+    public async save(entity: any): Promise<void> {
+        this.queuedOperations.push(new AzureCosmosDbTransactionOperation('save', entity));
+        await Promise.resolve();
+    }
+
+    public async get(key: any): Promise<[any | any[]]> {
+        return await this.owner.get(key);
+    }
+
+    public async delete(key: any): Promise<void> {
+        this.queuedOperations.push(new AzureCosmosDbTransactionOperation('delete', key));
+        await Promise.resolve();
+    }
+
+    public createQuery(namespace: string, kind: string): IJournalQueryModel {
+        return this.owner.createQuery(namespace, kind);
+    }
+
+    public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {
+        return await this.owner.runQuery(query);
+    }
+
+    public async run(): Promise<void> {
+        if (this.queuedOperations.length) {
+            await Promise.reject('Transaction is already in use.');
+        }
+        else {
+            this.queuedOperations = [];
+            return Promise.resolve();
+        }
+    }
+
+    public async rollback(): Promise<void> {
+        this.queuedOperations = [];
+        return Promise.resolve();
+    }
+
+    public async commit(): Promise<void> {
+
+        for (const operation of this.queuedOperations) {
+            if (operation.type === 'save') {
+                await this.owner.save(operation.entityOrKey);
+            }
+            if (operation.type === 'delete') {
+                await this.owner.delete(operation.entityOrKey);
+            }
+        }
+
+        this.queuedOperations = [];
+        return Promise.resolve();
+    }
+
+    public getQueryFilterSymbolContains(): string {
+        return 'CONTAINS';
+    }
+
+    private owner: AzureCosmosDbDAO;
+    public queuedOperations: AzureCosmosDbTransactionOperation[] = [];
 }
