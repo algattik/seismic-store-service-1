@@ -14,12 +14,13 @@
 // limitations under the License.
 // ============================================================================
 
-import { CosmosClient, Container, SqlQuerySpec, SqlParameter, FeedOptions } from '@azure/cosmos';
+import { CosmosClient, Container, SqlQuerySpec, SqlParameter, FeedOptions, FeedResponse } from '@azure/cosmos';
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { Utils } from '../../../shared/utils'
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
+import { Config } from '../..';
 
 @JournalFactory.register('azure')
 export class AzureCosmosDbDAO extends AbstractJournal {
@@ -31,7 +32,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     public async getCosmoContainer(): Promise<Container> {
 
         const databaseId = 'sdms-db'
-        const containerId = 'sdms-container';
+        const containerId = 'data';
 
         if (!AzureCosmosDbDAO.containerCache[containerId]) {
             const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
@@ -103,31 +104,36 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {
 
         const cosmosQuery = (query as AzureCosmosDbQuery);
-        const statement = cosmosQuery.prepareSqlStatement(AzureConfig.DATASETS_KIND);
 
-        const response = await (await this.getCosmoContainer()).items.query(
-            statement.spec, statement.options).fetchNext();
+        // const statement = cosmosQuery.prepareSqlStatement(AzureConfig.DATASETS_KIND);
+
+        // statement.spec.query = 'SELECT * FROM c WHERE c.key LIKE "opendes-%"';
+        // delete statement.options.partitionKey;
+        // const response = await (await this.getCosmoContainer()).items.query(
+        //     'SELECT * FROM c WHERE c.key LIKE "opendes-%"', {
+        //         maxItemCount: 3
+        //     }).fetchAll();
+
+        let sqlQuery: string;
+        let response: FeedResponse<any>;
+
+        if (cosmosQuery.kind === Config.SUBPROJECTS_KIND) {
+            sqlQuery = 'SELECT * FROM c WHERE c.key LIKE "sp-%"';
+            response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+        }
+
         const results = response.resources.map(result => {
             if (!result.data) {
                 return result;
-            } else {
-                if (result.data[this.KEY.toString()]) {
-                    result.data[this.KEY] = result.data[this.KEY.toString()];
-                    delete result.data[this.KEY.toString()];
-                    return result.data;
-                } else {
-                    return result.data;
-                }
             }
+            if (result.data[this.KEY.toString()]) {
+                result.data[this.KEY] = result.data[this.KEY.toString()];
+                delete result.data[this.KEY.toString()];
+            }
+            return result.data;
         });
 
-        return Promise.resolve(
-            [
-                results,
-                {
-                    endCursor: response.continuationToken
-                }
-            ]);
+        return Promise.resolve([results, { endCursor: response.continuationToken }]);
     }
 
     public createKey(specs: any): object {
@@ -147,8 +153,13 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         let name: string;
         let partitionKey: string;
 
-        if(kind === AzureConfig.TENANTS_KIND) {
-            name = specs.path[1];
+        if (kind === AzureConfig.TENANTS_KIND) {
+            name = 'tn-' + specs.path[1];
+            partitionKey = name;
+        }
+
+        if (kind === AzureConfig.SUBPROJECTS_KIND) {
+            name = 'sp-' +  specs.path[1];
             partitionKey = name;
         }
 
