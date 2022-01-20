@@ -109,6 +109,7 @@ export class AzureConfig extends Config {
                 JWT_EXCLUDE_PATHS: process.env.JWT_EXCLUDE_PATHS,
                 JWT_AUDIENCE: process.env.JWT_AUDIENCE,
                 JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
+                ENFORCE_SCHEMA_BY_KEY: true,
                 TENANT_JOURNAL_ON_DATA_PARTITION: true,
                 CORRELATION_ID: 'correlation-id',
                 ENABLE_SDMS_ID_AUDIENCE_CHECK: process.env.ENABLE_SDMS_ID_AUDIENCE_CHECK !== undefined ?
