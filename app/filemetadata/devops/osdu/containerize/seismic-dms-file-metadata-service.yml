@@ -12,6 +12,7 @@ filemetadata_push_runtime_image:
   script:
     # Gitlab Container Registry
     - cd app/filemetadata
+    - sed -i "s/SEGY_LIBRARY_PAT/$SEGY_LIBRARY_FEED_PAT/g" pip.conf
     - docker build -t $LOCAL_SERVICE_NAME --file Dockerfile .
     - docker tag $LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$SHA_IMAGE
     - docker push $CI_REGISTRY_IMAGE/$SHA_IMAGE
