@@ -13492,7 +13492,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"    postman.setNextRequest(\"DATASET DELETE IMPTOKEN 02\");",
+									"    postman.setNextRequest(\"STATUS UNSET IMPTOKEN\");",
 									"};"
 								],
 								"type": "text/javascript"
