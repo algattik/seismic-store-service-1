@@ -7,7 +7,7 @@
 
 sdms_fossa-check-notice:
   image: $CI_REGISTRY/divido/fossa-cli/fossa-cli:v6.1
-  stage: attribution
+  stage: scan
   needs: ['sdms_fossa-analyze']
   tags: ['osdu-small']
   only:
@@ -118,7 +118,7 @@ sdms_fossa-check-notice:
 
 sdms_fossa-report:
   image: $CI_REGISTRY/divido/fossa-cli/fossa-cli:v6.1
-  stage: attribution
+  stage: scan
   needs: ['sdms_fossa-analyze']
   tags: ['osdu-small']
   only:

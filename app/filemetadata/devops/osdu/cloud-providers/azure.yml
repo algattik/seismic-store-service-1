@@ -18,6 +18,7 @@ filemetadata_push_runtime_image_azure:
   script:
     # Azure Container Registry
     - cd app/filemetadata
+    - sed -i "s/SEGY_LIBRARY_PAT/$SEGY_LIBRARY_FEED_PAT/g" pip.conf
     - docker build -t $LOCAL_SERVICE_NAME --file Dockerfile .
     - docker tag $LOCAL_SERVICE_NAME ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
     - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
