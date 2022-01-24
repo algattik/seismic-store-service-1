@@ -104,8 +104,16 @@ export class DatasetParser {
     }
 
     public static list(req: expRequest): any {
+
         const dataset = this.createDatasetModelFromRequest(req);
-        dataset.gtags = req.query.gtag as string[];
+
+        if(req.query.gtag) {
+            if (!(req.query.gtag instanceof Array)) {
+                dataset.gtags = [req.query.gtag as string]
+            } else {
+                dataset.gtags = req.query.gtag as string[]
+            }
+        }
 
         const limit = parseInt(req.query.limit as string, 10);
         if (limit < 0) {

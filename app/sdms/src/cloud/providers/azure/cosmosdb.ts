@@ -16,7 +16,6 @@
 
 import { CosmosClient, Container, SqlQuerySpec, SqlParameter, FeedOptions, FeedResponse } from '@azure/cosmos';
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
-import { Utils } from '../../../shared/utils'
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
@@ -71,9 +70,6 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 data: entity.data
             }
             item.data[this.KEY.toString()] = entity.key;
-            // if (entity.ctag) {
-            //     item.data.ctag = entity.ctag;
-            // }
             await (await this.getCosmoContainer()).items.upsert(item);
         }
 
@@ -105,20 +101,40 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
         const cosmosQuery = (query as AzureCosmosDbQuery);
 
-        // const statement = cosmosQuery.prepareSqlStatement(AzureConfig.DATASETS_KIND);
-
-        // statement.spec.query = 'SELECT * FROM c WHERE c.key LIKE "opendes-%"';
-        // delete statement.options.partitionKey;
-        // const response = await (await this.getCosmoContainer()).items.query(
-        //     'SELECT * FROM c WHERE c.key LIKE "opendes-%"', {
-        //         maxItemCount: 3
-        //     }).fetchAll();
-
         let sqlQuery: string;
         let response: FeedResponse<any>;
 
         if (cosmosQuery.kind === Config.SUBPROJECTS_KIND) {
             sqlQuery = 'SELECT * FROM c WHERE c.key LIKE "sp-%"';
+            response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+        }
+
+        if (cosmosQuery.kind === Config.DATASETS_KIND) {
+            const subprojectName = cosmosQuery.namespace.split('-').pop()
+            sqlQuery = 'SELECT * FROM c WHERE c.key LIKE "ds-' + subprojectName + '-%"';
+
+            for (const filter of cosmosQuery.filters) {
+                if (filter.operator === 'CONTAINS') {
+                    sqlQuery += (' AND (ARRAY_CONTAINS(c.data.' + filter.property + ', ' + '\'' + filter.value + '\'' + ')' +
+                    ' OR c.data.' + filter.property + ' = ' + '\'' + filter.value + '\'' + ')')
+                } else {
+                    sqlQuery += ( ' AND c.data.' + filter.property + ' ' + filter.operator + ' "' + filter.value + '"')
+                }
+            }
+
+            if(cosmosQuery.pagingLimit) {
+                response = await (await this.getCosmoContainer()).items.query(sqlQuery, {
+                    continuationToken: cosmosQuery.pagingStart,
+                    maxItemCount: cosmosQuery.pagingLimit
+                }).fetchNext();
+            } else {
+                response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+            }
+
+        }
+
+        if (cosmosQuery.kind === Config.APPS_KIND) {
+            sqlQuery = 'SELECT * FROM c WHERE c.key LIKE "ap-%"';
             response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
         }
 
@@ -137,17 +153,6 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     }
 
     public createKey(specs: any): object {
-        // const kind = specs.path[0];
-        // const partitionKey = specs.namespace + '-' + kind;
-        // let name: string;
-        // if (kind === AzureConfig.DATASETS_KIND) {
-        //     name = Utils.makeID(16);
-        // } else if (kind === AzureConfig.SEISMICMETA_KIND) {
-        //     name = specs.path[1].replace(/\W/g, '-');
-        // } else {
-        //     name = specs.path[1];
-        // }
-        // return { name, partitionKey, kind };
 
         const kind = specs.path[0];
         let name: string;
@@ -159,7 +164,18 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
 
         if (kind === AzureConfig.SUBPROJECTS_KIND) {
-            name = 'sp-' +  specs.path[1];
+            name = 'sp-' + specs.path[1];
+            partitionKey = name;
+        }
+
+        if (kind === AzureConfig.DATASETS_KIND) {
+            name = 'ds-' + (specs.namespace as string).split('-').pop() + specs.enforcedKey
+            name = name.replace(new RegExp('/', 'g'), '-')
+            partitionKey = name;
+        }
+
+        if (kind === AzureConfig.APPS_KIND) {
+            name = 'ap-' + specs.path[1];
             partitionKey = name;
         }
 
@@ -376,11 +392,11 @@ export class AzureCosmosDbQuery implements IJournalQueryModel {
         return this;
     }
 
-    private filters: AzureCosmosDbFilter[] = [];
+    public filters: AzureCosmosDbFilter[] = [];
     private projectedFieldNames: string[] = [];
     private groupByFieldNames: string[] = [];
-    private pagingStart?: string;
-    private pagingLimit?: number;
+    public pagingStart?: string;
+    public pagingLimit?: number;
     public namespace: string;
     public kind: string;
 
