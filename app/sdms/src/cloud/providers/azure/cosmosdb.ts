@@ -15,7 +15,9 @@
 // ============================================================================
 
 import { CosmosClient, Container, FeedResponse } from '@azure/cosmos';
-import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
+import {
+    AbstractJournal, AbstractJournalTransaction,
+    IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
