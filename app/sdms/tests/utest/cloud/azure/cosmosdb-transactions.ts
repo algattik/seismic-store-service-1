@@ -40,7 +40,6 @@ export class TestAzureCosmosDbTransactionDAO {
             this.testSave();
             this.testDelete();
             this.testCreateQuery();
-            this.testRunQuery();
             this.testRun();
             this.testRunWithInvalidState();
             this.testRollback();
@@ -144,49 +143,6 @@ export class TestAzureCosmosDbTransactionDAO {
                 const subject = new AzureCosmosDbTransactionDAO(journalStub as AzureCosmosDbDAO);
                 // act
                 const actual = subject.createQuery(expectedNamespace, expectedKind) as AzureCosmosDbQuery;
-                // assert
-                assert.deepEqual(actual, expectedResult);
-            }
-            finally {
-                done();
-            }
-        });
-    }
-
-    private static testRunQuery() {
-        Tx.sectionInit('testRunQuery');
-        // This test validates pass-through of runQuery() calls to the underlying non-transactional journal
-        Tx.test(async (done: any) => {
-            try {
-                // setup
-                const expectedResult: [any[], {endCursor?: string}] = [
-                    [],
-                    {
-                        endCursor: 'foo'
-                    }
-                ];
-                const queryStub = {
-                    prepareSqlStatement(tableName: string): { spec: SqlQuerySpec, options: FeedOptions } {
-                        return {
-                            spec: {
-                                query: '',
-                                parameters: []
-                            },
-                            options: {}
-                        };
-                    }
-                } as AzureCosmosDbQuery;
-                const journalStub = {
-                    runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]> {
-                        if (query !== queryStub) {
-                            throw new Error(`TEST FAILURE: Unexpected Parameter: '${query}' != '${queryStub}'`);
-                        }
-                        return Promise.resolve(expectedResult);
-                    }
-                } as IJournal;
-                const subject = new AzureCosmosDbTransactionDAO(journalStub as AzureCosmosDbDAO);
-                // act
-                const actual = await subject.runQuery(queryStub);
                 // assert
                 assert.deepEqual(actual, expectedResult);
             }

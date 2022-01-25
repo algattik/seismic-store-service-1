@@ -18,7 +18,6 @@ import { Tx } from '../utils';
 import { TestCredentials } from './credentials';
 import { TestGoogleDatastoreDAO, TestGoogleDatastoreTransactionDAO } from './datastore';
 import { TestAzureCosmosDbDAO } from './azure/cosmosdb';
-import { TestAzureCosmosDbQuery } from './azure/cosmosdb-query';
 import { TestAzureCosmosDbTransactionDAO } from './azure/cosmosdb-transactions';
 import { TestGCSCore } from './gcs';
 import { TestAzureKeyVault } from '../cloud/azure/keyvault';
@@ -35,7 +34,6 @@ export class TestCloud {
             TestGoogleDatastoreDAO.run();
             TestGoogleDatastoreTransactionDAO.run();
             TestAzureCosmosDbDAO.run();
-            TestAzureCosmosDbQuery.run();
             TestAzureCosmosDbTransactionDAO.run();
             TestAzureKeyVault.run();
             TestAzureStorage.run();
