@@ -14,24 +14,28 @@
 # limitations under the License.
 # ============================================================================
 
-# [seistore runtime image]
+ARG docker_node_image_version=14-alpine
 
-ARG docker_node_image_version=12.18.2
-ARG docker_builder_image
+# -------------------------------
+# Compilation stage
+# -------------------------------
+FROM node:${docker_node_image_version} as runtime-builder
 
-# build the service (require builder image)
-FROM ${docker_builder_image} as runtime-builder
-
-RUN apt-get install -yqq --no-install-recommends openssl
+# RUN apt-get install -yqq --no-install-recommends openssl
 
 ADD ./ /service
 WORKDIR /service
-RUN npm run clean && rm -rf node_modules && rm -rf artifact && mkdir artifact
-RUN npm ci
-RUN npm run build
-RUN cp -r package.json npm-shrinkwrap.json dist artifact
+RUN apk --no-cache add --virtual native-deps g++ openssl gcc libgcc libstdc++ linux-headers make python3 \
+    && npm install --quiet node-gyp -g \
+    && npm install --quiet \
+    && npm run build \
+    && mkdir artifact \
+    && cp -r package.json npm-shrinkwrap.json dist artifact \
+    && apk del native-deps
 
-# Create the runtime image (require base image)
+# -------------------------------
+# Package stage
+# -------------------------------
 FROM node:${docker_node_image_version} as release
 
 #Default to using self signed generated TLS cert
@@ -42,6 +46,16 @@ ENV SSL_ENABLED "true"
 
 COPY --from=runtime-builder /service/artifact /seistore-service
 WORKDIR /seistore-service
+
+RUN apk --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-headers make python3 \
+    && addgroup appgroup \
+    && adduser --disabled-password --gecos --shell appuser --ingroup appgroup \
+    && chown -R appuser:appgroup /seistore-service \
+    && echo '%appgroup ALL=(ALL) NOPASSWD: /usr/bin/npm' >> /etc/sudoers \
+    && echo '%appgroup ALL=(ALL) NOPASSWD: /usr/bin/node' >> /etc/sudoers \
+    && npm install --production --quiet \
+    && apk del native-deps
+
 COPY src/cloud/providers/aws/build-aws/ssl.sh /seistore-service/ssl.sh
 COPY src/cloud/providers/aws/build-aws/entrypoint.sh /seistore-service/entrypoint.sh
 RUN npm ci --production

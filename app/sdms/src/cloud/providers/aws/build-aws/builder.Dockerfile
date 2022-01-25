@@ -16,24 +16,6 @@
 # ============================================================================
 
 # [seistore builder image]
-
-# use ubuntu as base image
-FROM ubuntu:bionic
-
-# nodejs version
-ARG nodesecure_version=10
-
-# update package list and install required packages
-RUN apt-get update
-RUN apt-get install -y curl
-RUN apt-get install -y gnupg
-RUN apt-get install -y git
-
-# setup node from secure package
-RUN curl -sL https://deb.nodesource.com/setup_${nodesecure_version}.x -o tmp/nodesource_setup.sh
-RUN bash tmp/nodesource_setup.sh
-RUN rm -f tmp/nodesource_setup.sh
-
-# install nodejs and typescript globally
-RUN apt-get install -y nodejs
+FROM node:14
+# install typescript
 RUN npm install -g typescript
