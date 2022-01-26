@@ -203,6 +203,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         if (kind === AzureConfig.DATASETS_KIND) {
             name = 'ds-' + (specs.namespace as string).split('-').pop() + specs.enforcedKey
             name = name.replace(new RegExp('/', 'g'), '-')
+            name = name.replace(new RegExp('#', 'g'), '@anchor@')
             partitionKey = name;
         }
 
