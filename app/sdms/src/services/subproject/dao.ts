@@ -21,7 +21,7 @@ import { TenantDAO } from '../tenant';
 
 export class SubProjectDAO {
 
-    private static _cache = new Cache<SubProjectModel>('subproject');
+    // private static _cache = new Cache<SubProjectModel>('subproject');
 
     // register a new subproject under a given Tenant Project (existence check must be done externally)
     public static async register(journalClient: IJournal, subproject: SubProjectModel) {
@@ -33,7 +33,7 @@ export class SubProjectDAO {
 
         await journalClient.save({ data: subproject, key: entityKey });
 
-        await this._cache.set(this.getCacheKey(subproject.tenant, subproject.name), subproject);
+        // await this._cache.set(this.getCacheKey(subproject.tenant, subproject.name), subproject);
 
     }
 
@@ -41,8 +41,8 @@ export class SubProjectDAO {
     public static async get(
         journalClient: IJournal, tenantName: string, subprojectName: string): Promise<SubProjectModel> {
 
-        const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
-        if (res !== undefined && res) { return res; };
+        // const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
+        // if (res !== undefined && res) { return res; };
 
         const entityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
@@ -73,7 +73,7 @@ export class SubProjectDAO {
             entity.access_policy = Config.UNIFORM_ACCESS_POLICY;
         }
 
-        await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
+        // await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
 
         return entity;
 
@@ -86,7 +86,7 @@ export class SubProjectDAO {
             path: [Config.SUBPROJECTS_KIND, subprojectName],
         });
         await journalClient.delete(entityKey);
-        await this._cache.del(this.getCacheKey(tenantName, subprojectName));
+        // await this._cache.del(this.getCacheKey(tenantName, subprojectName));
     }
 
     // get all tenant metadata (throw if not exist)
@@ -129,8 +129,8 @@ export class SubProjectDAO {
 
     // check if a subproject exists
     public static async exist(journalClient: IJournal, tenantName: string, subprojectName: string): Promise<boolean> {
-        const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
-        if (res !== undefined && res) { return true; };
+        // const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
+        // if (res !== undefined && res) { return true; };
 
         const entityKey = journalClient.createKey({
             namespace: Config.SEISMIC_STORE_NS + '-' + tenantName,
