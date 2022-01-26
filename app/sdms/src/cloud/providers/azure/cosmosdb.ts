@@ -35,7 +35,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         const databaseId = 'sdms-db'
         const containerId = 'data';
 
-        if (!AzureCosmosDbDAO.containerCache[containerId]) {
+        if (!AzureCosmosDbDAO.containerCache[this.dataPartition]) {
             const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
             const cosmosClient = new CosmosClient({
                 endpoint: connectionParams.endpoint,
@@ -47,10 +47,10 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
                 partitionKey: '/key'
             });
-            AzureCosmosDbDAO.containerCache[containerId] = container;
+            AzureCosmosDbDAO.containerCache[this.dataPartition] = container;
         }
 
-        return AzureCosmosDbDAO.containerCache[containerId];
+        return AzureCosmosDbDAO.containerCache[this.dataPartition];
 
     }
 
