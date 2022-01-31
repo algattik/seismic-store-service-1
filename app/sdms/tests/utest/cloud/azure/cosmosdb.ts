@@ -15,6 +15,7 @@
 // ============================================================================
 
 import sinon from 'sinon';
+import crypto from 'crypto'
 
 import { Container, Item, Items } from '@azure/cosmos';
 import { AzureCosmosDbDAO } from '../../../../src/cloud/providers/azure/cosmosdb';
@@ -142,14 +143,15 @@ export class TestAzureCosmosDbDAO {
 
         Tx.test(async (done: any) => {
             const specs = {
-                namespace: 'ns-tenant-sp',
+                namespace: Config.SEISMIC_STORE_NS + '-tenant-sp',
                 path: [Config.DATASETS_KIND],
                 enforcedKey: '/path/name'
             }
 
+            const hash = crypto.createHash('md5').update(Config.SEISMIC_STORE_NS + '-tenant-sp').digest('hex');
             const expectedKey = {
-                name: 'ds-sp-path-name'.split('').reverse().join(''),
-                partitionKey: 'ds-sp-path-name'.split('').reverse().join(''),
+                name: 'ds-'+hash+'-path-name',
+                partitionKey: 'ds-'+hash+'-path-name',
                 kind: Config.DATASETS_KIND
             }
 

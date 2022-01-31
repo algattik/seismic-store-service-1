@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
+import crypto from 'crypto';
 import { CosmosClient, Container, FeedResponse } from '@azure/cosmos';
 import {
     AbstractJournal, AbstractJournalTransaction,
@@ -128,8 +129,8 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             }
 
             // query using partial partition key
-            const subprojectName = cosmosQuery.namespace.split('-').pop().split('').reverse().join('');
-            sqlQuery += ' FROM c WHERE c.key LIKE "%-' + subprojectName + '-sd"';
+            const hash = crypto.createHash('md5').update(cosmosQuery.namespace as string).digest('hex');
+            sqlQuery += ' FROM c WHERE c.key LIKE "ds-' + hash + '-%"';
 
             // add filters
             for (const filter of cosmosQuery.filters) {
@@ -201,10 +202,11 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
 
         if (kind === AzureConfig.DATASETS_KIND) {
-            name = 'ds-' + (specs.namespace as string).split('-').pop() + specs.enforcedKey
+            const hash = crypto.createHash('md5').update(specs.namespace as string).digest('hex');
+            name = 'ds-' + hash + '-' + specs.enforcedKey
             name = name.replace(new RegExp('/', 'g'), '-')
+            name = name.replace(new RegExp('--', 'g'), '-')
             name = name.replace(new RegExp('#', 'g'), '@anchor@')
-            name = name.split('').reverse().join('')
             partitionKey = name;
         }
 
