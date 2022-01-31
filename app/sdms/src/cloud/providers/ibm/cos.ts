@@ -174,7 +174,7 @@ export class Cos extends AbstractStorage {
         logger.debug(prefixOut);
         logger.debug(ownerEmail);
 
-        cosStorage.listObjects({Bucket: bucketIn}, (err: any, data: any) => {
+        cosStorage.listObjects({Bucket: bucketIn,Prefix: prefixIn}, async (err: any, data: any) => {
             if (err) {
                 logger.error('Error in listing objects.');
                 logger.error(err.stack);
@@ -183,20 +183,30 @@ export class Cos extends AbstractStorage {
 
             logger.info('Fetched objects.');
             logger.debug(data);
+
+            const copies = [];
             const items = data.Contents;
 
             if(!items || items.length<=0)
                 logger.info('No items to copy.');
             else
-                // for (var i = 0; i < items.length; i += 1) {
-                for (const i of items) {
-                    const objectKey = items[i].Key;
-                    // let prefix = items[i].Key.split('/')[0];
-                    logger.info('Object to be copied.');
-                    logger.debug(objectKey);
+                {
+                    for (const item of items) {
+                        const objectKey = item.Key;
+                        logger.debug('objectKey - ', objectKey);
+                        // let prefix = items[i].Key.split('/')[0];
+                        const param = {
+                            Bucket: bucketOut,
+                            CopySource: objectKey,
+                            Key: prefixOut
+                        };
+                        logger.info('Object to be copied.');
+                        copies.push(cosStorage.copyObject(param));
+                    }
                 }
+                await Promise.all(copies);
         });
-        logger.info('Returning from Cos.deleteObject.');
+        logger.info('Returning from Cos.copy.');
     }
 
     // check bucket exists or not
