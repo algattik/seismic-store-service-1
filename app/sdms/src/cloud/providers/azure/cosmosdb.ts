@@ -128,8 +128,8 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             }
 
             // query using partial partition key
-            const subprojectName = cosmosQuery.namespace.split('-').pop();
-            sqlQuery += ' FROM c WHERE c.key LIKE "ds-' + subprojectName + '-%"';
+            const subprojectName = cosmosQuery.namespace.split('-').pop().split('').reverse().join('');
+            sqlQuery += ' FROM c WHERE c.key LIKE "%-' + subprojectName + '-sd"';
 
             // add filters
             for (const filter of cosmosQuery.filters) {
@@ -204,6 +204,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             name = 'ds-' + (specs.namespace as string).split('-').pop() + specs.enforcedKey
             name = name.replace(new RegExp('/', 'g'), '-')
             name = name.replace(new RegExp('#', 'g'), '@anchor@')
+            name = name.split('').reverse().join('')
             partitionKey = name;
         }
 
