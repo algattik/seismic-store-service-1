@@ -148,8 +148,8 @@ export class TestAzureCosmosDbDAO {
             }
 
             const expectedKey = {
-                name: 'ds-sp-path-name',
-                partitionKey: 'ds-sp-path-name',
+                name: 'ds-sp-path-name'.split('').reverse().join(''),
+                partitionKey: 'ds-sp-path-name'.split('').reverse().join(''),
                 kind: Config.DATASETS_KIND
             }
 
