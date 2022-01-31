@@ -20,13 +20,13 @@ import { Cache, Error } from '../../shared';
 
 export class TenantDAO {
 
-    // private static _cache = new Cache<TenantModel>('tenant');
+    private static _cache = new Cache<TenantModel>('sdms-tenant');
 
     // get tenant metadata (throw if not exist)
     public static async get(tenantName: string): Promise<TenantModel> {
 
-        // const res = await this._cache.get(tenantName);
-        // if (res !== undefined && res) { return res; };
+        const res = await this._cache.get(tenantName);
+        if (res !== undefined && res) { return res; };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? {
@@ -51,7 +51,7 @@ export class TenantDAO {
         entity = entity as TenantModel;
         if (!entity.name) { entity.name = tenantName; }
 
-        // await this._cache.set(entity.name, entity);
+        await this._cache.set(entity.name, entity);
 
         return entity;
 
@@ -91,7 +91,7 @@ export class TenantDAO {
 
         await serviceClient.save({ data: tenant, key: entityKey });
 
-        // await this._cache.set(tenant.name, tenant);
+        await this._cache.set(tenant.name, tenant);
 
     }
 
@@ -110,14 +110,14 @@ export class TenantDAO {
             namespace: Config.ORGANIZATION_NS,
             path: [Config.TENANTS_KIND, tenantName],
         }));
-        // await this._cache.del(tenantName);
+        await this._cache.del(tenantName);
     }
 
     // check if a tenant exist
     public static async exist(tenant: TenantModel): Promise<boolean> {
 
-        // const res = await this._cache.get(tenant.name);
-        // if (res !== undefined && res) { return true; };
+        const res = await this._cache.get(tenant.name);
+        if (res !== undefined && res) { return true; };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? tenant : undefined);
@@ -127,9 +127,9 @@ export class TenantDAO {
             path: [Config.TENANTS_KIND, tenant.name],
         }));
 
-        // if (entity) {
-            // await this._cache.set(entity.name, entity);
-        // }
+        if (entity) {
+            await this._cache.set(entity.name, entity);
+        }
 
         return entity !== undefined;
     }
