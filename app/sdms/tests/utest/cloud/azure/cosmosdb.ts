@@ -148,10 +148,11 @@ export class TestAzureCosmosDbDAO {
                 enforcedKey: '/path/name'
             }
 
-            const hash = crypto.createHash('md5').update(Config.SEISMIC_STORE_NS + '-tenant-sp').digest('hex');
+            const hash1 = crypto.createHash('sha512').update(Config.SEISMIC_STORE_NS + '-tenant-sp').digest('hex')
+            const hash2 = crypto.createHash('sha512').update('/path/name').digest('hex')
             const expectedKey = {
-                name: 'ds-'+hash+'-path-name',
-                partitionKey: 'ds-'+hash+'-path-name',
+                name: hash1 + '-' + hash2,
+                partitionKey: hash1 + '-' + hash2,
                 kind: Config.DATASETS_KIND
             }
 

@@ -18,7 +18,8 @@ import crypto from 'crypto';
 import { CosmosClient, Container, FeedResponse } from '@azure/cosmos';
 import {
     AbstractJournal, AbstractJournalTransaction,
-    IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
+    IJournalQueryModel, IJournalTransaction, JournalFactory
+} from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
@@ -129,8 +130,9 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             }
 
             // query using partial partition key
-            const hash = crypto.createHash('md5').update(cosmosQuery.namespace as string).digest('hex');
-            sqlQuery += ' FROM c WHERE c.key LIKE "ds-' + hash + '-%"';
+            // const hash = crypto.createHash('md5').update(cosmosQuery.namespace as string).digest('hex');
+            const hash = crypto.createHash('sha512').update(cosmosQuery.namespace).digest('hex')
+            sqlQuery += ' FROM c WHERE c.key LIKE "' + hash + '-%"';
 
             // add filters
             for (const filter of cosmosQuery.filters) {
@@ -202,11 +204,8 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
 
         if (kind === AzureConfig.DATASETS_KIND) {
-            const hash = crypto.createHash('md5').update(specs.namespace as string).digest('hex');
-            name = 'ds-' + hash + '-' + specs.enforcedKey
-            name = name.replace(new RegExp('/', 'g'), '-')
-            name = name.replace(new RegExp('--', 'g'), '-')
-            name = name.replace(new RegExp('#', 'g'), '@anchor@')
+            name = crypto.createHash('sha512').update(specs.namespace).digest('hex') + '-' +
+                crypto.createHash('sha512').update(specs.enforcedKey).digest('hex');
             partitionKey = name;
         }
 
