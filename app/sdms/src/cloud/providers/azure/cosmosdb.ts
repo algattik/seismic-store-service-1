@@ -130,9 +130,8 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             }
 
             // query using partial partition key
-            // const hash = crypto.createHash('md5').update(cosmosQuery.namespace as string).digest('hex');
-            const hash = crypto.createHash('sha512').update(cosmosQuery.namespace).digest('hex')
-            sqlQuery += ' FROM c WHERE c.key LIKE "' + hash + '-%"';
+            const partialKey = 'ds' + cosmosQuery.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
+            sqlQuery += ' FROM c WHERE c.key LIKE "' + partialKey + '-%"';
 
             // add filters
             for (const filter of cosmosQuery.filters) {
@@ -204,8 +203,8 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
 
         if (kind === AzureConfig.DATASETS_KIND) {
-            name = crypto.createHash('sha512').update(specs.namespace).digest('hex') + '-' +
-                crypto.createHash('sha512').update(specs.enforcedKey).digest('hex');
+            name = 'ds' + specs.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
+                + '-' + crypto.createHash('sha512').update(specs.enforcedKey).digest('hex');
             partitionKey = name;
         }
 
