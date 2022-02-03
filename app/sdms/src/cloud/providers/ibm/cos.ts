@@ -157,8 +157,42 @@ export class Cos extends AbstractStorage {
         logger.info('This function deletes bulk data uploaded by SDAPI/SDUTIL. Not implemented yet.');
         logger.debug(bucketName);
         logger.debug(prefix);
-        logger.info('Returning from Cos.deleteObject.');
-        await Promise.resolve();
+
+        await cosStorage.listObjects({Bucket: bucketName, Prefix: prefix}, async (err: any, data: any) => {
+            if (err) {
+                logger.error('Error in listing objects.');
+                logger.error(err.stack);
+                throw err;
+            }
+
+            logger.info('Fetched objects.');
+            logger.debug(data);
+
+            const items = data.Contents;
+            const params = { Bucket: bucketName, Delete: {Objects: []} };
+
+            if(!items || items.length<=0) {
+                logger.info('No items to delete.');
+            }
+            else
+            {
+                items.forEach(({ Key }) => {
+                    params.Delete.Objects.push({ Key });
+                });
+
+                await cosStorage.deleteObjects(params, (delErr: any, delData: any) => {
+                    if (delErr)
+                        logger.error(delErr, delErr.stack); // an error occurred
+                    else
+                    {
+                        logger.info('data deleted');
+                        logger.debug(delData);           // successful response
+                    }
+                });
+            }
+        });
+
+        logger.info('Returning from Cos.deleteObjects.');
     }
 
     // [TODO] Nothing is copied here! This method is not working
