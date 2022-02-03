@@ -15,11 +15,9 @@
 // ============================================================================
 
 import crypto from 'crypto';
+
 import { CosmosClient, Container, FeedResponse } from '@azure/cosmos';
-import {
-    AbstractJournal, AbstractJournalTransaction,
-    IJournalQueryModel, IJournalTransaction, JournalFactory
-} from '../../journal';
+import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
@@ -47,7 +45,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             const { container } = await database.containers.createIfNotExists({
                 id: containerId,
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
-                partitionKey: '/key'
+                partitionKey: { paths:['/id'], version: 2 }
             });
             AzureCosmosDbDAO.containerCache[this.dataPartition] = container;
         }
@@ -69,8 +67,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
         for (const entity of datasetEntity) {
             const item = {
-                id: entity.key.name,
-                key: entity.key.partitionKey,
+                id: entity.key.partitionKey,
                 data: entity.data
             }
             item.data[this.KEY.toString()] = entity.key;
@@ -81,7 +78,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
     public async get(key: any): Promise<[any | any[]]> {
 
-        const item = await (await this.getCosmoContainer()).item(key.name, key.partitionKey).read();
+        const item = await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).read();
 
         if (!item.resource) {
             return [undefined];
@@ -94,7 +91,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     }
 
     public async delete(key: any): Promise<void> {
-        await (await this.getCosmoContainer()).item(key.name, key.partitionKey).delete();
+        await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).delete();
     }
 
     public createQuery(namespace: string, kind: string): IJournalQueryModel {
@@ -109,7 +106,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         let response: FeedResponse<any>;
 
         if (cosmosQuery.kind === Config.SUBPROJECTS_KIND) {
-            sqlQuery = 'SELECT * FROM c WHERE c.key LIKE "sp-%"';
+            sqlQuery = 'SELECT * FROM c WHERE c.id LIKE "sp-%"';
             response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
         }
 
@@ -131,7 +128,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
             // query using partial partition key
             const partialKey = 'ds' + cosmosQuery.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
-            sqlQuery += ' FROM c WHERE c.key LIKE "' + partialKey + '-%"';
+            sqlQuery += ' FROM c WHERE c.id LIKE "' + partialKey + '-%"';
 
             // add filters
             for (const filter of cosmosQuery.filters) {
@@ -168,7 +165,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
 
         if (cosmosQuery.kind === Config.APPS_KIND) {
-            sqlQuery = 'SELECT * FROM c WHERE c.key LIKE "ap-%"';
+            sqlQuery = 'SELECT * FROM c WHERE c.id LIKE "ap-%"';
             response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
         }
 
@@ -189,31 +186,26 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     public createKey(specs: any): object {
 
         const kind = specs.path[0];
-        let name: string;
         let partitionKey: string;
 
         if (kind === AzureConfig.TENANTS_KIND) {
-            name = 'tn-' + specs.path[1];
-            partitionKey = name;
+            partitionKey = 'tn-' + specs.path[1];
         }
 
         if (kind === AzureConfig.SUBPROJECTS_KIND) {
-            name = 'sp-' + specs.path[1];
-            partitionKey = name;
+            partitionKey = 'sp-' + specs.path[1];
         }
 
         if (kind === AzureConfig.DATASETS_KIND) {
-            name = 'ds' + specs.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
+            partitionKey = 'ds' + specs.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
                 + '-' + crypto.createHash('sha512').update(specs.enforcedKey).digest('hex');
-            partitionKey = name;
         }
 
         if (kind === AzureConfig.APPS_KIND) {
-            name = 'ap-' + specs.path[1];
-            partitionKey = name;
+            partitionKey = 'ap-' + specs.path[1];
         }
 
-        return { name, partitionKey, kind };
+        return { partitionKey };
     }
 
     public getTransaction(): IJournalTransaction {
