@@ -21,7 +21,7 @@ import { Auth, AuthRoles } from '../../auth';
 import { Config, JournalFactoryTenantClient, LoggerFactory, StorageFactory } from '../../cloud';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { DESStorage, DESUtils, UserAssociationServiceFactory } from '../../dataecosystem';
-import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
+import { Error, ErrorModel, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { SubprojectAuth, SubProjectDAO, SubProjectModel } from '../subproject';
 import { TenantDAO, TenantModel } from '../tenant';
 import { DatasetAuth } from './auth';
@@ -246,6 +246,18 @@ export class DatasetHandler {
 
             // release the mutex and unlock the resource
             await Locker.removeWriteLock(writeLockSession);
+
+            // if the error was a 423, the previous line cleaned the status of locker cache.
+            // it is no more required to throw a 423 error or consumer applications can wrongly retry the call
+            // by trying to unlock a non locked status
+            if (err instanceof (ErrorModel)) {
+                if ((err as ErrorModel).error.code === Error.Status.LOCKED) {
+                    throw (Error.make(Error.Status.UNKNOWN, ' correctly handled previously thrown error ' +
+                    (err as ErrorModel).error.status + ':' +  (err as ErrorModel).error.message +
+                    ' an idempotent retry is required'));
+                }
+            }
+
             throw (err);
 
         }
