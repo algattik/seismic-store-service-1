@@ -3,11 +3,11 @@ variables:
   SDMS_AZURE_SERVICE: seismic-store-service
   CHART_PATH: devops/azure/chart
   CLOUD_PROVIDER: azure
-  E2E_ADMIN_EMAIL: integration.test@azureglobal1.onmicrosoft.com
-  E2E_DATA_PARTITION: opendes
-  E2E_LEGALTAG01: opendes-public-usa-dataset-7643990
+  E2E_ADMIN_EMAIL: $AZURE_AD_USER_EMAIL
+  E2E_DATA_PARTITION: $TENANT_NAME
+  E2E_LEGALTAG01: $LEGAL_TAG
   E2E_LEGALTAG02: opendes-dps-integration-test-valid2-legal-tag
-  E2E_TENANT: opendes
+  E2E_TENANT: $TENANT_NAME
   POD_IDENTITY: osdu-identity
   REDIS_INSTANCE_PORT: 6380
   SDMS_MIN_REPLICAS: 1
@@ -15,28 +15,34 @@ variables:
   AZURE_SDMS_PREFIX: /seistore-svc/api/v3
   E2E_SUBPROJECT: demosandbox03
   
-sdms_push_runtime_image_azure:
-  image: danielscholl/azure-build-image
-  tags: ["osdu-medium"]
-  stage: containerize
+sdms_azure_containerize:
+  extends: .azure_containerize
+  needs: ['sdms_compile-and-unit-test']
   variables:
     SHA_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
     LATEST_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
-  before_script:
-    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
-    - az acr login -n $AZURE_REGISTRY
+    RELEASE_IMAGE: release-${CI_COMMIT_TAG}:${SDMS_PROJECT_NAME}-${CI_COMMIT_TAG}
   script:
-    # Azure Container Registry
     - cd app/$SDMS_SERVICE
     - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
     - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile .
+    # Gitlab Container Registry
+    - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$SHA_IMAGE
+    - docker push ${CI_REGISTRY_IMAGE}/$SHA_IMAGE
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+    - docker push ${CI_REGISTRY_IMAGE}/$LATEST_IMAGE
+    # Azure Container Registry
+    - az acr login -n $AZURE_REGISTRY
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
     - docker push ${AZURE_REGISTRY}.azurecr.io/$SHA_IMAGE
-    - docker tag $SDMS_UTEST_RUNTIME_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
     - docker push ${AZURE_REGISTRY}.azurecr.io/$LATEST_IMAGE
+    - |
+      if [ ! -z "$CI_COMMIT_TAG" ]; then
+        docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE ${AZURE_REGISTRY}.azurecr.io/$RELEASE_IMAGE
+        docker push ${AZURE_REGISTRY}.azurecr.io/$RELEASE_IMAGE
+      fi
   only:
-    variables:
-      - $AZURE == 'true'
     changes:
       - devops/**/*
       - app/sdms/**/*
@@ -46,19 +52,15 @@ sdms_push_runtime_image_azure:
       - merge_requests
   
 sdms_azure_deploy:
-  tags: ["osdu-medium"]
-  image: danielscholl/azure-build-image
-  stage: deploy
-  needs: ["sdms_push_runtime_image_azure"]
+  extends: .azure_deploy
+  needs: ["sdms_azure_containerize"]
   variables:
     AZURE_KEYVAULT: osdu-svc-properties
     DES_URL: ${AZURE_DNS_NAME}
     IMAGE: ${AZURE_REGISTRY}.azurecr.io/${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
     SDMS_SERVICE_NAME: ${SDMS_AZURE_SERVICE}
-    TAG: ${CI_COMMIT_SHA}
-  before_script:
-    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
-    - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
+    BRANCH: ${CI_COMMIT_REF_SLUG}
+    TAG: $CI_COMMIT_SHA
   script:
     # Replace values in config file
     - cd app/$SDMS_SERVICE
@@ -85,8 +87,6 @@ sdms_azure_deploy:
     - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=600s)
     - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
   only:
-    variables:
-      - $AZURE == 'true'
     changes:
       - devops/**/*
       - app/sdms/**/*
@@ -96,9 +96,8 @@ sdms_azure_deploy:
       - merge_requests
       
 sdms_azure_test:
-  tags: ["osdu-medium"]
   image: node
-  stage: integration
+  extends: .azure_test
   needs: ["sdms_azure_deploy"]
   variables:
     AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
@@ -107,18 +106,11 @@ sdms_azure_test:
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
     - cd app/$SDMS_SERVICE
-    - apt-get update
-    - apt-get install -y python3
-    - apt-get install -y python3-pip
-    - pip3 install msal
-    - svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/azure_jwt_client.py)
     - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
     - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"  --subproject="${E2E_SUBPROJECT}"
   only:
-    variables:
-      - $AZURE == 'true'
     changes:
       - devops/**/*
       - app/sdms/**/*

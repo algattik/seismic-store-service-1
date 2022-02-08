@@ -17,6 +17,7 @@ filemetadata-osdu-gcp-containerize-gitlab:
   extends: .osdu-gcp-containerize-gitlab
   before_script:
     - cd app/$FILEMETADATA_SERVICE
+    - sed -i "s/SEGY_LIBRARY_PAT/$SEGY_LIBRARY_FEED_PAT/g" pip.conf
   only:
     changes:
       - devops/**/*
