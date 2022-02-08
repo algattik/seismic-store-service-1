@@ -1,5 +1,4 @@
 include:
-
   # global
   - local: "app/sdms/devops/osdu/global/gitlab.yml"
 
@@ -9,10 +8,10 @@ include:
   # scan
   # fossa
   - local: "app/sdms/devops/osdu/scanners/fossa-node.yml"
-  
+
   # lint
   - local: "app/sdms/devops/osdu/scanners/lint-node.yml"
-  
+
   # scan for secrets
   - local: "app/sdms/devops/osdu/scanners/scan-for-secrets-node.yml"
 
@@ -23,12 +22,12 @@ include:
   # deploy
   # azure
   - local: "app/sdms/devops/osdu/cloud-providers/azure.yml"
-  
+
   # aws
   - local: "app/sdms/devops/osdu/cloud-providers/aws.yml"
-  
+
   # gcp
   - local: "app/sdms/devops/osdu/cloud-providers/gcp.yml"
-  
+
   # ibm
   - local: "app/sdms/devops/osdu/cloud-providers/ibm.yml"
