@@ -1,15 +1,10 @@
-variables:
-  REPLICA: 1
-  MIN_REPLICA_COUNT: 1
-  MAX_REPLICA_COUNT: 5
-  LOCAL_SERVICE_NAME: seismic-dms-file-metadata-service
-
 include:
+
   # global
   - local: "app/filemetadata/devops/osdu/global/gitlab.yml"
 
   # containerize
-  - local: "app/filemetadata/devops/osdu/containerize/seismic-dms-file-metadata-service.yml"
+  - local: "app/filemetadata/devops/osdu/containerize/osdu.yml"
 
   # deploy
   # azure

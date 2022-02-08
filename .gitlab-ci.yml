@@ -9,10 +9,13 @@ include:
 
   # common gcp pipeline
   - local: "devops/osdu/cloud-providers/gcp-common-pipeline.yml"
+  
+  # azure
+  - local: "devops/osdu/cloud-providers/azure.yml"
 
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
 
   # file metadata service
-  - local: "app/filemetadata/.gitlab-ci.yml"
+  - local: "app/filemetadata/.gitlab-ci.yml"  

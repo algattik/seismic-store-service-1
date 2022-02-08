@@ -1,3 +1,7 @@
 variables:
-  #seismic store service variables
+  #filemetadata service variables
   FILEMETADATA_SERVICE: filemetadata
+  REPLICA: 1
+  FILEMETADATA_MIN_REPLICA_COUNT: 1
+  FILEMETADATA_MAX_REPLICA_COUNT: 5
+  FILEMETADATA_LOCAL_SERVICE_NAME: seismic-dms-file-metadata-service

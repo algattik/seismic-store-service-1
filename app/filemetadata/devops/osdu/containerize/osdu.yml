@@ -5,18 +5,18 @@ filemetadata_push_runtime_image:
   tags: ["osdu-medium"]
   stage: containerize
   variables:
-    SHA_IMAGE: ${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
-    LATEST_IMAGE: ${LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:latest
+    SHA_IMAGE: ${FILEMETADATA_LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${FILEMETADATA_LOCAL_SERVICE_NAME}-${CI_COMMIT_REF_SLUG}:latest
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     # Gitlab Container Registry
-    - cd app/filemetadata
+    - cd app/$FILEMETADATA_SERVICE
     - sed -i "s/SEGY_LIBRARY_PAT/$SEGY_LIBRARY_FEED_PAT/g" pip.conf
-    - docker build -t $LOCAL_SERVICE_NAME --file Dockerfile .
-    - docker tag $LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$SHA_IMAGE
+    - docker build -t $FILEMETADATA_LOCAL_SERVICE_NAME --file Dockerfile .
+    - docker tag $FILEMETADATA_LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$SHA_IMAGE
     - docker push $CI_REGISTRY_IMAGE/$SHA_IMAGE
-    - docker tag $LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$LATEST_IMAGE
+    - docker tag $FILEMETADATA_LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$LATEST_IMAGE
     - docker push $CI_REGISTRY_IMAGE/$LATEST_IMAGE
   only:
     changes:
