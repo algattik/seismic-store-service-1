@@ -12,9 +12,9 @@ data:
   imp_service_account_signer: ""
   des_service_host_entitlement: "http://entitlements/api"
   seistore_des_appkey: ""
-  des_redis_instance_address: ""
+  des_redis_instance_address: "redis-cache-ddms.redis.svc.cluster.local"
   des_redis_instance_port: "6379"
-  locksmap_redis_instance_address: ""
+  locksmap_redis_instance_address: "redis-cache-ddms.redis.svc.cluster.local"
   locksmap_redis_instance_port: "6379"
 conf:
   configmap: "seismic-store-filemetadata-config"
