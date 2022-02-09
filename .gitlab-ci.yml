@@ -16,6 +16,9 @@ include:
   # azure
   - local: "devops/osdu/cloud-providers/azure.yml"
 
+  # ibm
+  - local: "devops/osdu/cloud-providers/ibm.yml"
+
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"

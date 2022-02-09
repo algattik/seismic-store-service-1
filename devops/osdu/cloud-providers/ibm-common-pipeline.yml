@@ -1,0 +1,83 @@
+ibm-deploy:
+  needs: []
+  script:
+      echo 'empty'
+  rules:
+     - if: $DISABLED == 'true'
+      
+ibm-deploy-devpri:
+  needs: []
+  script:
+      echo 'empty'
+  rules:
+     - if: $DISABLED == 'true'
+
+ibm-test:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+      
+ibm-test-py:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+      
+ibm-preship-promote:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  rules:
+     - if: $DISABLED == 'true'
+      
+ibm-preship-promote-release:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  rules:
+     - if: $DISABLED == 'true'
+      
+.ibm-deploy:
+  extends: .ibm
+  stage: deploy
+  only:
+    variables:
+      - $IBM == 'true' && $IBM_OPENSHIFT_URL && $IBM_OPENSHIFT_TOKEN
+      
+.ibm-deploy-devpri:
+  extends: .ibm
+  stage: deploy
+  rules:
+     - if: $IBM == 'true' && $IBM_OPENSHIFT_DEV_URL && $IBM_OPENSHIFT_DEV_TOKEN
+       when: always
+     - if: '$CI_COMMIT_BRANCH == "master"'
+     
+.ibm-test-py:
+  stage: integration
+  extends:
+    - .ibm_variables
+  only:
+    variables:
+      - $IBM == 'true'
+  except:
+    variables:
+      - $IBM_SKIP_TEST == 'true'
+
+.ibm-preship-promote:
+  extends: .ibm
+  stage: publish
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+
+.ibm-preship-promote-release:
+  extends: .ibm
+  stage: publish
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $IBM_PRESHIP_RELEASE_BRANCH'
