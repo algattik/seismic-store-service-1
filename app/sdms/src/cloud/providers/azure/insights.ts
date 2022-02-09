@@ -66,22 +66,32 @@ export class AzureInsightsLogger extends AbstractLogger {
 
 
     public info(data: any): void {
-        if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
-            appinsights.defaultClient.trackTrace({ message: JSON.stringify(data) });
+        if (!Config.UTEST && AzureConfig.ENABLE_LOGGING_INFO) {
+            if (AzureConfig.AI_INSTRUMENTATION_KEY) {
+                appinsights.defaultClient.trackTrace({ message: JSON.stringify(data) });
+            }
+            // tslint:disable-next-line
+            console.log(data);
         }
     }
 
     public error(data: any): void {
-        if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
-            appinsights.defaultClient.trackException({ exception: data });
+        if (!Config.UTEST && AzureConfig.ENABLE_LOGGING_ERROR) {
+            if (AzureConfig.AI_INSTRUMENTATION_KEY) {
+                appinsights.defaultClient.trackException({ exception: data });
+            }
             // tslint:disable-next-line
             console.log(data);
         }
     }
 
     public metric(key: string, data: any) {
-        if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
-            appinsights.defaultClient.trackMetric({ name: key, value: data });
+        if (!Config.UTEST && AzureConfig.ENABLE_LOGGING_METRIC) {
+            if (AzureConfig.AI_INSTRUMENTATION_KEY) {
+                appinsights.defaultClient.trackMetric({ name: key, value: data });
+            }
+            // tslint:disable-next-line
+            console.log(data);
         }
     }
 }

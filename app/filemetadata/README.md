@@ -2,7 +2,6 @@
 This project will provide the restful APIs to access SEGY file headers.
 
 There are 3 ways to build and test this service: local, docker and GitLab.
-
 # Local
 ## Getting Started
 1.	Installation process

@@ -44,6 +44,11 @@ export class AzureConfig extends Config {
     // cosmo db max throughput settings
     public static COSMO_MAX_THROUGHPUT: number;
 
+    // internal logging
+    public static ENABLE_LOGGING_INFO: boolean;
+    public static ENABLE_LOGGING_ERROR: boolean;
+    public static ENABLE_LOGGING_METRIC: boolean;
+
     public async init(): Promise<void> {
 
 
@@ -84,6 +89,11 @@ export class AzureConfig extends Config {
 
             // cosmo throughput settings
             AzureConfig.COSMO_MAX_THROUGHPUT = +process.env.COSMO_MAX_THROUGHPUT || 25000;
+
+            // logging
+            AzureConfig.ENABLE_LOGGING_INFO = process.env.ENABLE_LOGGING_INFO === 'true'; // disabled by default
+            AzureConfig.ENABLE_LOGGING_ERROR = process.env.ENABLE_LOGGING_ERROR !== 'false'; // enabled by default
+            AzureConfig.ENABLE_LOGGING_METRIC = process.env.ENABLE_LOGGING_METRIC === 'true'; // disabled by default
 
             // init generic configurations
             await Config.initServiceConfiguration({

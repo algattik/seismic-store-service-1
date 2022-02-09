@@ -1,0 +1,82 @@
+azure_containerize:
+  needs: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+
+azure_deploy:
+  needs: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+
+azure_test:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+      
+azure_code_coverage:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+      
+azure_test_py:
+  needs: []
+  extends: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
+      
+.azure_containerize:
+  tags: ["osdu-medium"]
+  image: danielscholl/azure-build-image
+  stage: containerize
+  extends:
+    - .azure_variables
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - az --version
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+  only:
+    variables:
+      - $AZURE == 'true'
+
+.azure_deploy:
+  image: danielscholl/azure-build-image
+  tags: ["osdu-medium"]
+  stage: deploy
+  extends:
+    - .azure_variables
+  before_script:
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
+  only:
+    variables:
+      - $AZURE == 'true'
+  except:
+    variables:
+      - $AZURE_SKIP_DEPLOY == 'true'
+
+.azure_test:
+  tags: ["osdu-medium"]
+  stage: integration
+  extends:
+    - .azure_variables
+  before_script:
+    - apt-get update
+    - apt-get install -y python3
+    - apt-get install -y python3-pip
+    - pip3 install msal
+    - export svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/azure_jwt_client.py)
+  only:
+    variables:
+      - $AZURE == 'true'

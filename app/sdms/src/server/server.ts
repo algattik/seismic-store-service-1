@@ -99,23 +99,6 @@ export class Server {
         this.app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
 
             try {
-                // Audience Check Reporting
-                // This will be temporary used instead of the more generic JWKS PROXY.
-                // We want a non-fail check that report only the missing audience
-                // slb requirement - to support client migration in september 2021
-                // This will be removed and replace in october 2021 with the generic JWKS PROXY
-                if (Config.ENABLE_SDMS_ID_AUDIENCE_CHECK) {
-                    if (req.headers.authorization) {
-                        const audience = Utils.getAudienceFromPayload(req.headers.authorization);
-                        const sdmsID = AuthProviderFactory.build(Config.SERVICE_AUTH_PROVIDER).getClientID();
-                        if ((Array.isArray(audience) && audience.indexOf(sdmsID) === -1) || (audience !== sdmsID)) {
-                            if (audience.indexOf(sdmsID) === -1) {
-                                LoggerFactory.build(Config.CLOUDPROVIDER).info('[audience] ' +
-                                    JSON.stringify(Utils.getPayloadFromStringToken(req.headers.authorization)));
-                            }
-                        }
-                    }
-                }
 
                 // disable silent error logs
                 res.locals['disabled_error_logs'] = req.query['silent'] ?
