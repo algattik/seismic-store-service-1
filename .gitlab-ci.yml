@@ -4,6 +4,9 @@ include:
     file: "standard-setup.yml"
 
   # global
+  # aws
+  - local: "devops/osdu/cloud-providers/aws.yml"
+  
   # gcp
   - local: "devops/osdu/cloud-providers/gcp.yml"
 
