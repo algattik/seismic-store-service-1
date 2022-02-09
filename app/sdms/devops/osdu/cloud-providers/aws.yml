@@ -1,12 +1,9 @@
-include:
-  - local: "devops/osdu/cloud-providers/aws.yml"
-
 variables:
   #aws variables
-  AWS_SERVICE: seismic-store
-  AWS_SERVICE_NAMESPACE: osdu-seismic-ddms
   AWS_BUILD_SUBDIR: src/cloud/providers/aws/build-aws
   AWS_TEST_SUBDIR: tests
+  AWS_SERVICE: seismic-store
+  AWS_SERVICE_NAMESPACE: osdu-seismic-ddms
   AWS_ENVIRONMENT: dev
   AWS_DEPLOY_TARGET: EKS
   AWS_EKS_DEPLOYMENT_NAME: os-seismic-store
@@ -18,10 +15,7 @@ variables:
 
 sdms_aws-containerize:
   extends:
-    - .aws    
-    - .aws_common_variables
-    - .aws_variables
-  stage: containerize
+    - .aws-containerize
   needs: ['sdms_compile-and-unit-test']
   script:
     - |
@@ -34,7 +28,7 @@ sdms_aws-containerize:
         docker build -t builder:latest --file $AWS_BUILDER_DOCKERFILE_PATH .;
         docker build -t $LOCAL_IMAGE_TAG --file $AWS_RUNTIME_DOCKERFILE_PATH --build-arg docker_builder_image=builder .;
       fi
-    # Push to the local container registry
+    # Push to the localcontainer registry
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $LOCAL_IMAGE_TAG
     # Push to Amazon's container registry
@@ -44,8 +38,6 @@ sdms_aws-containerize:
     - docker push $AWS_IMAGE_TAG_BASE:$CI_COMMIT_SHA
     - docker push $AWS_IMAGE_TAG_BASE:latest
   only:
-    variables:
-      - $AWS == 'true'
     changes:
       - devops/**/*
       - app/sdms/**/*
@@ -56,10 +48,7 @@ sdms_aws-containerize:
 
 sdms_aws-update-eks:
   extends:
-    - .aws
-    - .aws_variables
-    - .aws_common_variables
-  stage: deploy
+    - .aws-update-eks
   needs: ['sdms_aws-containerize']
   script:
     - cd app/$SDMS_SERVICE
@@ -70,11 +59,11 @@ sdms_aws-update-eks:
     - aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME --role-arn $EKS_CLUSTER_MGMT_ROLE
     #Some CLIs require a restrictive KUBECONFIG file
     - chmod 644 $KUBECONFIG
+    - export CONTAINER_IMAGE=`kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} get deployment/${AWS_EKS_DEPLOYMENT_NAME} -o jsonpath='{.spec.template.spec.containers[0].name}'`
+    - kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} set image deployment/${AWS_EKS_DEPLOYMENT_NAME} $CONTAINER_IMAGE=$AWS_IMAGE_TAG_BASE:$CI_COMMIT_SHA
     - kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} rollout restart deployment/${AWS_EKS_DEPLOYMENT_NAME}
-    - kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} rollout status -w deployment/${AWS_EKS_DEPLOYMENT_NAME} --timeout=900s
+    - kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} rollout status -w deployment/${AWS_EKS_DEPLOYMENT_NAME} --timeout=300s
   only:
-    variables:
-      - $AWS_SKIP_DEPLOY != 'true' && $AWS == 'true' && $AWS_DEPLOY_TARGET == 'EKS'
     changes:
       - devops/**/*
       - app/sdms/**/*
@@ -82,7 +71,7 @@ sdms_aws-update-eks:
       - branches
       - main
       - merge_requests
-      
+    
 sdms_aws-test-newman:
   extends:
     - .aws
@@ -127,7 +116,6 @@ sdms_aws-test-newman:
           "esd": "opendes.example.com",
           "gcpid": "aws_project_id"
         }'
-
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
     - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url=${AWS_BASE_URL}${AWS_SDMS_PREFIX} --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user-idtoken="$svctoken" --tenant=opendes --admin-email="${AWS_COGNITO_AUTH_PARAMS_USER}" --datapartition=opendes --legaltag01=opendes-sdmstestlegaltag --legaltag02=opendes-sdmstestlegaltag --VCS-Provider="${ISGITLAB}" --subproject=awsdemosubproject
@@ -146,3 +134,4 @@ sdms_aws-test-newman:
     paths:
       - app/$SDMS_SERVICE/$INTEGRATION_TEST_DIR
     expire_in: 14 days
+    
