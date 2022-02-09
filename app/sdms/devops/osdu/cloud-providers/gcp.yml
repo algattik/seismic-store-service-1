@@ -50,7 +50,7 @@ sdms-osdu-gcp-deployment:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s"
   extends: .osdu-gcp-deployment
   needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-deploy-configmap"]
   before_script:
