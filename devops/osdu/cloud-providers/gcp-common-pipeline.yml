@@ -1,9 +1,14 @@
 #  common pipeline could be extended with before_script at respective service pipeline
-
 .common: &common
   - gcloud auth activate-service-account --key-file $OSDU_GCP_DEPLOY_FILE
   - gcloud config set project $OSDU_GCP_PROJECT
   - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT
+  - curl https://get.helm.sh/helm-v3.5.4-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+  
+.common_dev2: &common_dev2
+  - gcloud auth activate-service-account --key-file $OSDU_GCP_DEV2_DEPLOY_FILE
+  - gcloud config set project $OSDU_GCP_DEV2_PROJECT
+  - gcloud container clusters get-credentials $OSDU_GCP_DEV2_CLUSTER --zone $OSDU_GCP_DEV2_ZONE --project $OSDU_GCP_DEV2_PROJECT
   - curl https://get.helm.sh/helm-v3.5.4-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
 
 .osdu-gcp-helm-charts-master:
@@ -41,10 +46,10 @@
   cache: {}
   allow_failure: true
   script:
-    - export EXTRA_DOCKER_TAG=""; if [ "$CI_COMMIT_TAG" != "" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_TAG" ; elif [ "$CI_COMMIT_REF_NAME" = "master" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:latest" ; fi
-    - docker build -t $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA $EXTRA_DOCKER_TAG --file $SEISMIC_OSDU_GCP_DOCKERFILE_NAME .
+    - export EXTRA_DOCKER_TAG=""; if [ "$CI_COMMIT_TAG" != "" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:$CI_COMMIT_TAG" ; elif [ "$CI_COMMIT_REF_NAME" = "master" ] ; then EXTRA_DOCKER_TAG="-t $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:latest" ; fi
+    - docker build -t $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA $EXTRA_DOCKER_TAG --file $SEISMIC_OSDU_GCP_DOCKERFILE_NAME .
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
+    - docker push $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG
   only:
     variables:
       - $OSDU_GCP == 'true'
@@ -75,6 +80,29 @@
       - main
       - merge_requests
 
+.osdu-gcp-dev2-deploy-configmap:
+  extends: .osdu-gcp-dev2-variables
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  stage: deploy
+  script:
+    - *common_dev2
+    - >
+      helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR
+      --install
+      --create-namespace
+      --namespace=$OSDU_GCP_HELM_NAMESPACE
+      --wait
+      --history-max=3
+      $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE_VARS
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+
 .osdu-gcp-deployment:
   extends: .osdu-gcp-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -103,3 +131,52 @@
       - branches
       - main
       - merge_requests
+
+.osdu-gcp-dev2-deploy-deployment:
+  extends: .osdu-gcp-dev2-variables
+  image: gcr.io/google.com/cloudsdktool/cloud-sdk
+  stage: deploy
+  script:
+    - *common_dev2
+    - >
+      helm upgrade $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR
+      --install
+      --create-namespace
+      --namespace=$OSDU_GCP_HELM_NAMESPACE
+      --wait
+      --history-max=3
+      --set data.imagePullPolicy=Always
+      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}
+      --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
+      --set data.sql_connection_string=$OSDU_GCP_SQL_CONNECTION_STRING
+    - echo ----- Verify Deployment -----
+    - kubectl rollout status deployment.v1.apps/$SEISMIC_OSDU_GCP_SERVICE -n $OSDU_GCP_HELM_NAMESPACE --timeout=900s
+    - POD=$(kubectl get pod --sort-by=.metadata.creationTimestamp -n $OSDU_GCP_HELM_NAMESPACE | grep $SEISMIC_OSDU_GCP_SERVICE | tail -1 | awk '{print $1}')
+    - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=300s)
+    - echo $STATUS
+    - if [[ "$STATUS" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+
+.osdu-gcp-dev2-test-python:
+  extends:
+    - .osdu-gcp-dev2-variables
+  variables:
+    # Service Accounts for running integration tests
+    INTEGRATION_TESTER: $OSDU_GCP_INTEGRATION_TESTER
+  stage: integration
+  image: python:3.7
+  rules:
+    - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $CI_COMMIT_TAG'
+      when: on_success
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $DEV2 == "true"'
+      when: on_success

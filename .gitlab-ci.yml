@@ -4,14 +4,17 @@ include:
     file: "standard-setup.yml"
 
   # global
+  # aws
+  - local: "devops/osdu/cloud-providers/aws.yml"
+  
   # gcp
   - local: "devops/osdu/cloud-providers/gcp.yml"
-
-  # common gcp pipeline
-  - local: "devops/osdu/cloud-providers/gcp-common-pipeline.yml"
   
   # azure
   - local: "devops/osdu/cloud-providers/azure.yml"
+
+  # ibm
+  - local: "devops/osdu/cloud-providers/ibm.yml"
 
   # app
   # sdms
