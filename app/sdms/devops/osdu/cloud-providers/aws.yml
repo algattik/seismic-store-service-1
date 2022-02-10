@@ -83,7 +83,7 @@ sdms_aws-test-newman:
   script:
     - cd app/$SDMS_SERVICE
     - pip3 install -r devops/aws/requirements.txt
-    - svctoken=$(python3 devops/scripts/aws_jwt_client.py)
+    - svctoken=$(python3 ../../devops/scripts/aws_jwt_client.py)
     - > 
       curl --insecure --location --request POST "$LEGAL_BASE_URL"'legaltags' \
         --header 'accept: application/json' \

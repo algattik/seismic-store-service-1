@@ -1,4 +1,10 @@
 include:
-  # pipeline logic
+  
+  # gcp-global
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/osdu-gcp-variables.yml"
+  # gcp-global-dev2
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/osdu-gcp-dev2-variables.yml"
+    
+  - local: "devops/osdu/cloud-providers/gcp-common-pipeline.yml"
