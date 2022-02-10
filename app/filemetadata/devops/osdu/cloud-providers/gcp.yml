@@ -33,12 +33,36 @@ filemetadata-osdu-gcp-deploy-configmap:
     changes:
       - devops/**/*
       - app/filemetadata/**/*
+      
+filemetadata-osdu-gcp-dev2-deploy-configmap:
+  variables:
+    SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-filemetadata-configmap
+    SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/filemetadata/devops/gcp/configmap"
+    SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.domain=$DOMAIN"
+  extends: .osdu-gcp-dev2-deploy-configmap
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/filemetadata/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/filemetadata/**/*
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/filemetadata/**/*
 
 filemetadata-osdu-gcp-deployment:
   variables:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-filemetadata-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/filemetadata/devops/gcp/deploy"
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store-filemetadata
   extends: .osdu-gcp-deployment
   allow_failure: true
@@ -47,3 +71,29 @@ filemetadata-osdu-gcp-deployment:
     changes:
       - devops/**/*
       - app/filemetadata/**/*
+
+filemetadata-osdu-gcp-dev2-deploy-deployment:
+  variables:
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-filemetadata-deploy
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/filemetadata/devops/gcp/deploy"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA"
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store-filemetadata
+  extends: .osdu-gcp-dev2-deploy-deployment
+  needs: ["filemetadata-osdu-gcp-containerize-gitlab", "filemetadata-osdu-gcp-dev2-deploy-configmap"]
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/filemetadata/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/filemetadata/**/*
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/filemetadata/**/*

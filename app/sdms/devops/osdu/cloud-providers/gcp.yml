@@ -44,13 +44,39 @@ sdms-osdu-gcp-deploy-configmap:
     changes:
       - devops/**/*
       - app/sdms/**/*
+      
+sdms-osdu-gcp-dev2-deploy-configmap:
+  variables:
+    SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-configmap
+    SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
+    SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.domain=$DOMAIN"
+  extends: .osdu-gcp-dev2-deploy-configmap
+  before_script:
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
 
 sdms-osdu-gcp-deployment:
   variables:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s"
   extends: .osdu-gcp-deployment
   needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-deploy-configmap"]
   before_script:
@@ -59,3 +85,31 @@ sdms-osdu-gcp-deployment:
     changes:
       - devops/**/*
       - app/sdms/**/*
+
+sdms-osdu-gcp-dev2-deploy-deployment:
+  variables:
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA"
+  extends: .osdu-gcp-dev2-deploy-deployment
+  needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-dev2-deploy-configmap"]
+  before_script:
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
