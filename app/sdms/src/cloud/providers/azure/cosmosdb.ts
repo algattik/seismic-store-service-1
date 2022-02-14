@@ -45,7 +45,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             const { container } = await database.containers.createIfNotExists({
                 id: containerId,
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
-                partitionKey: { paths:['/id'], version: 2 }
+                partitionKey: { paths: ['/id'], version: 2 }
             });
             AzureCosmosDbDAO.containerCache[this.dataPartition] = container;
         }
@@ -187,25 +187,32 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
         const kind = specs.path[0];
         let partitionKey: string;
+        let name: string;
 
         if (kind === AzureConfig.TENANTS_KIND) {
-            partitionKey = 'tn-' + specs.path[1];
+            name = specs.path[1];
+            partitionKey = 'tn-' + name;
         }
 
         if (kind === AzureConfig.SUBPROJECTS_KIND) {
-            partitionKey = 'sp-' + specs.path[1];
+            name = specs.path[1];
+            partitionKey = 'sp-' + name;
         }
 
         if (kind === AzureConfig.DATASETS_KIND) {
+            name = specs.enforcedKey.indexOf('/') === -1 ?
+                specs.enforcedKey :
+                specs.enforcedKey.substring((specs.enforcedKey).lastIndexOf('/') + 1);
             partitionKey = 'ds' + specs.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
                 + '-' + crypto.createHash('sha512').update(specs.enforcedKey).digest('hex');
         }
 
         if (kind === AzureConfig.APPS_KIND) {
-            partitionKey = 'ap-' + specs.path[1];
+            name = specs.path[1];
+            partitionKey = 'ap-' + name;
         }
 
-        return { partitionKey };
+        return { partitionKey, name };
     }
 
     public getTransaction(): IJournalTransaction {
