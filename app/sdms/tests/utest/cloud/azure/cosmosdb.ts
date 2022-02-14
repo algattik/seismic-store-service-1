@@ -130,7 +130,7 @@ export class TestAzureCosmosDbDAO {
                 path: [AzureConfig.SUBPROJECTS_KIND, 'spName']
             }
 
-            const expectedKey = { partitionKey: 'sp-spName' }
+            const expectedKey = { partitionKey: 'sp-spName', name: 'spName' }
 
             const key = this.cosmos.createKey(specs);
             assert.deepEqual(key, expectedKey, 'Keys do not match');
@@ -144,7 +144,7 @@ export class TestAzureCosmosDbDAO {
                 enforcedKey: '/path/name'
             }
             const partitionKey = 'ds-tenant-sp-' + crypto.createHash('sha512').update('/path/name').digest('hex');
-            const expectedKey = { partitionKey }
+            const expectedKey = { partitionKey, name: 'name' }
 
             const key = this.cosmos.createKey(specs) as { name: string, partitionKey: string, kind: string };
             assert.deepEqual(key, expectedKey, 'Keys do not match');
