@@ -24,12 +24,12 @@ import { Credentials } from './credentials';
 
 @DataEcosystemCoreFactory.register('google')
 export class GoogleDataEcosystemServices extends AbstractDataEcosystemCore {
-
     public getDataPartitionIDRestHeaderName(): string { return ConfigGoogle.DATA_PARTITION_REST_HEADER_KEY; }
     public getEntitlementBaseUrlPath(): string { return ConfigGoogle.ENTITLEMENT_BASE_URL_PATH; };
     public getComplianceBaseUrlPath(): string { return '/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/storage/v2'; };
     public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
+    public getPolicySvcBaseUrlPath(): string { return 'api/policy/v1'; }
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return 'Bearer ' + await new Credentials().getServiceCredentials();

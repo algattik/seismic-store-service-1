@@ -57,6 +57,7 @@ export class IbmConfig extends Config {
     public static ENTITLEMENT_CONTEXT_PATH: string;
     public static COMPLIANCE_CONTEXT_PATH: string;
     public static STORAGE_CONTEXT_PATH: string;
+    public static POLICY_SVC_CONTEXT_PATH: string;
 
     // list of caller headers to forward to downstream service call (DE Core Service like entitlement/storage...)
     // if specified the default forwarded headers list will be override. (ref, https://www.npmjs.com/package/hpropagate)
@@ -79,6 +80,7 @@ export class IbmConfig extends Config {
         IbmConfig.ENTITLEMENT_CONTEXT_PATH = process.env.ENTITLEMENT_CONTEXT_PATH;
         IbmConfig.COMPLIANCE_CONTEXT_PATH = process.env.COMPLIANCE_CONTEXT_PATH;
         IbmConfig.STORAGE_CONTEXT_PATH = process.env.STORAGE_CONTEXT_PATH;
+        IbmConfig.POLICY_SVC_CONTEXT_PATH = process.env.POLICY_SVC_CONTEXT_PATH || '/api/policy/v1';
 
         // DES_SERVICE_HOST replaced by new variable ENTITLEMENT_HOST
         IbmConfig.ENTITLEMENT_HOST = process.env.ENTITLEMENT_HOST;
@@ -176,6 +178,7 @@ export class IbmConfig extends Config {
             FEATURE_FLAG_STACKDRIVER_EXPORTER: process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== undefined ?
                 process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
             FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION === 'true',
+            FEATURE_FLAG_POLICY_SVC_INTERACTION: process.env.FEATURE_FLAG_POLICY_SVC_INTERACTION === 'true',
             CCM_SERVICE_URL: process.env.CCM_SERVICE_URL,
             CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE,
             CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
@@ -183,7 +186,8 @@ export class IbmConfig extends Config {
             USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
                 process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
             USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER,
-            SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3'
+            SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3',
+            DES_POLICY_SERVICE_HOST: process.env.DES_POLICY_SERVICE_HOST || process.env.DES_SERVICE_HOST
         });
 
         config();

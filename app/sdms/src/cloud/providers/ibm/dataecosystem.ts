@@ -13,7 +13,6 @@ import { logger } from './logger';
 // [TODO] don't use any! use types
 @DataEcosystemCoreFactory.register('ibm')
 export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
-
     public fixGroupMembersResponse(groupMembers: any): IDESEntitlementGroupMembersModel {
 
         logger.info('in IbmDataEcosystemServices.fixGroupMembersResponse. Returning..');
@@ -86,6 +85,10 @@ export class IbmDataEcosystemServices extends AbstractDataEcosystemCore {
         };
         logger.info('in IbmDataEcosystemServices.getUserAddBodyRequest. Returning..');
         return userBody;
+    }
+
+    public getPolicySvcBaseUrlPath(): string {
+        return IbmConfig.POLICY_SVC_CONTEXT_PATH;
     }
 
     public tenantNameAndDataPartitionIDShouldMatch() {
