@@ -17,7 +17,7 @@
 import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth, AuthRoles } from '../../auth';
-import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
+import { Config, CredentialsFactory, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
@@ -44,7 +44,10 @@ export class UtilityHandler {
             } else if (op === UtilityOP.CP) {
                 const response = await this.cp(req);
                 Response.writeOK(res, { 'status': response.status }, response.code);
-            } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
+            } else if (op === UtilityOP.STORAGE_TIERS) {
+                Response.writeOK(res, await this.listStorageTiers(req));
+            }
+            else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
         } catch (error) { Response.writeError(res, error); }
 
     }
@@ -448,10 +451,16 @@ export class UtilityHandler {
         }
     }
 
+    private static listStorageTiers(req: expRequest): string[] {
+        const storageProvider = StorageFactory.build(Config.CLOUDPROVIDER, null);
+        return storageProvider.getStorageTiers();
+    }
+
     // validate if the entitlement object follow the SDMS conventions
     private static isValidEntitlementGroup(el: IDESEntitlementGroupModel): boolean {
         return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
             (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor)
                 || el.name.endsWith(AuthRoles.viewer)));
     }
+
 }

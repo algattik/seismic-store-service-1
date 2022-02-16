@@ -27,6 +27,7 @@ export interface IStorage {
     saveObject(bucketName: string, objectName: string, data: string): Promise<void>;
     copy(bucketIn: string, prefixIn: string, bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void>;
     randomBucketName(): Promise<string>;
+    getStorageTiers(): string[];
 }
 
 export abstract class AbstractStorage implements IStorage {
@@ -41,10 +42,11 @@ export abstract class AbstractStorage implements IStorage {
         bucketIn: string, prefixIn: string, bucketOut: string,
         prefixOut: string, ownerEmail: string): Promise<void>;
     public abstract randomBucketName(): Promise<string>;
+    public abstract getStorageTiers(): string[];
 }
 
 export class StorageFactory extends CloudFactory {
-    public static build(providerLabel: string, args: { [key: string]: any } = {}): IStorage {
+    public static build(providerLabel: string, args: { [key: string]: any; } = {}): IStorage {
         return CloudFactory.build(providerLabel, AbstractStorage, args) as IStorage;
     }
 }
