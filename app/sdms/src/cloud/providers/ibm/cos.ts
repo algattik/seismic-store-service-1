@@ -264,4 +264,8 @@ export class Cos extends AbstractStorage {
             throw err;
         }
     }
+
+    public getStorageTiers(): string[] {
+        throw new Error('Method not implemented.');
+    }
 }

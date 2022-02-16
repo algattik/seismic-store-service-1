@@ -14,4 +14,4 @@
 // limitations under the License.
 // ============================================================================
 
-export enum UtilityOP { LS, CP, GCSTOKEN }
+export enum UtilityOP { LS, CP, GCSTOKEN, STORAGE_TIERS }

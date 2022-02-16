@@ -21,7 +21,6 @@ import { AWSDataEcosystemServices } from './dataecosystem';
 import { AWSSSMhelper } from './ssmhelper';
 @StorageFactory.register('aws')
 export class AWSStorage extends AbstractStorage {
-
     private s3: S3; // S3 service object
     private dataPartition: string;
     private awsBucket: string;
@@ -31,16 +30,17 @@ export class AWSStorage extends AbstractStorage {
         AWS.config.update({ region: AWSConfig.AWS_REGION });
         this.s3 = new S3({ apiVersion: '2006-03-01' });
         // this.dataPartition = tenant.gcpid;
-        this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
-        this.awsBucket='';
+        this.dataPartition = tenant?.esd.indexOf('.') !== -1 ? tenant?.esd.split('.')[0] : tenant.esd;
+        this.awsBucket = '';
+
 
     }
-    private async getBucket(){
-        if(this.awsBucket === ''){
+    private async getBucket() {
+        if (this.awsBucket === '') {
             const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(this.dataPartition);
             const awsSSMHelper = new AWSSSMhelper();
             this.awsBucket = await awsSSMHelper.getSSMParameter('/osdu/' +
-                AWSConfig.AWS_ENVIRONMENT +'/tenants/'+tenantId+ '/seismic-store/SeismicDDMSBucket/name');
+                AWSConfig.AWS_ENVIRONMENT + '/tenants/' + tenantId + '/seismic-store/SeismicDDMSBucket/name');
         }
     }
 
@@ -60,13 +60,13 @@ export class AWSStorage extends AbstractStorage {
         let suffix = Math.random().toString(36).substring(2, 16);
         suffix = suffix + Math.random().toString(36).substring(2, 16);
         suffix = suffix.substr(0, 16);
-        return this.awsBucket+'$$'+suffix;
+        return this.awsBucket + '$$' + suffix;
     }
 
     // whenever ask for a bucket, we return bucketName$$folderName for that subproject
     // this function return the real folderName by remove bucketName$$ at the front of folderName
-    public getFolder(folderName:string): string {
-        const start = this.awsBucket.length+2;
+    public getFolder(folderName: string): string {
+        const start = this.awsBucket.length + 2;
         const str = folderName.substr(start);
         return str;
     }
@@ -240,6 +240,10 @@ export class AWSStorage extends AbstractStorage {
         if (listedObjects.Contents.length === 0)
             return false;
         return true;
+    }
+
+    public getStorageTiers(): string[] {
+        throw new Error('Method not implemented.');
     }
 
 }

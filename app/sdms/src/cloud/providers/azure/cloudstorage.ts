@@ -16,6 +16,7 @@
 
 import { TokenCredential } from '@azure/identity';
 import { BlobServiceClient } from '@azure/storage-blob';
+import { BlockBlobTier } from '@azure/storage-blob';
 import { Readable } from 'stream';
 import { AzureInsightsLogger } from '.';
 
@@ -27,7 +28,6 @@ import { AzureDataEcosystemServices } from './dataecosystem';
 
 @StorageFactory.register('azure')
 export class AzureCloudStorage extends AbstractStorage {
-
     private AZURE_CONTAINER_PREFIX = 'ss-' + Config.SERVICE_ENV;
     private blobServiceClient: BlobServiceClient;
     private defaultAzureCredential: TokenCredential;
@@ -47,7 +47,8 @@ export class AzureCloudStorage extends AbstractStorage {
     public constructor(tenant: TenantModel) {
         super();
         this.defaultAzureCredential = AzureCredentials.getCredential();
-        this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
+        this.dataPartition = tenant?.esd.indexOf('.') !== -1 ? tenant?.esd.split('.')[0] : tenant.esd;
+
     }
 
     // generate a random container name
@@ -150,12 +151,16 @@ export class AzureCloudStorage extends AbstractStorage {
 
     // delete all buckets starting with
     public async deleteBuckets(bucketsNamePrefix: string): Promise<void> {
-        const containers = (await this.getBlobServiceClient()).listContainers({prefix: bucketsNamePrefix});
+        const containers = (await this.getBlobServiceClient()).listContainers({ prefix: bucketsNamePrefix });
         for await (const container of containers) {
             this.deleteBucket(container.name).catch((err) => {
-                new AzureInsightsLogger().error(err)
+                new AzureInsightsLogger().error(err);
             });;
         }
+    }
+
+    public getStorageTiers(): string[] {
+        return Object.keys(BlockBlobTier);
     }
 
 }

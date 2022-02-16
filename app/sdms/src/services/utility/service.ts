@@ -35,4 +35,8 @@ router.get('/gcs-access-token', async (req: expRequest, res: expResponse) => {
     await UtilityHandler.handler(req, res, UtilityOP.GCSTOKEN);
 });
 
+router.get('/storage-tiers', async (req: expRequest, res: expResponse) => {
+    await UtilityHandler.handler(req, res, UtilityOP.STORAGE_TIERS);
+});
+
 export { router as UtilityRouter };
