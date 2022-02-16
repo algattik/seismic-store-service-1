@@ -14,10 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
-import sinon from 'sinon';
-
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
+import sinon from 'sinon';
 import { Auth } from '../../../src/auth';
 import { Config, google, JournalFactoryTenantClient } from '../../../src/cloud';
 import { IDESEntitlementGroupModel } from '../../../src/cloud/dataecosystem';
@@ -29,8 +28,9 @@ import { TenantDAO, TenantGroups, TenantModel } from '../../../src/services/tena
 import { UtilityHandler } from '../../../src/services/utility/handler';
 import { UtilityOP } from '../../../src/services/utility/optype';
 import { UtilityParser } from '../../../src/services/utility/parser';
-import { Response, Utils } from '../../../src/shared';
+import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
+
 
 export class TestUtilitySVC {
 
@@ -79,7 +79,7 @@ export class TestUtilitySVC {
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.query.sdpath = 'sd://tnx/spx';
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            this.sandbox.stub(SubProjectDAO, 'get').resolves({acls:{viewers: [], admins: []}} as any);
+            this.sandbox.stub(SubProjectDAO, 'get').resolves({ acls: { viewers: [], admins: [] } } as any);
             this.sandbox.stub(Auth, 'isReadAuthorized');
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(google.Credentials.prototype, 'getStorageCredentials');
@@ -91,7 +91,7 @@ export class TestUtilitySVC {
             expReq.query.sdpath = 'sd://tnx/spx';
             expReq.query.readonly = 'false';
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
-            this.sandbox.stub(SubProjectDAO, 'get').resolves({acls:{viewers: [], admins: []}} as any);
+            this.sandbox.stub(SubProjectDAO, 'get').resolves({ acls: { viewers: [], admins: [] } } as any);
             this.sandbox.stub(Auth, 'isWriteAuthorized');
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(google.Credentials.prototype, 'getStorageCredentials');
@@ -145,9 +145,8 @@ export class TestUtilitySVC {
             const prefix = TenantGroups.serviceGroupPrefix('tnx');
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
-            this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.admin' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
-            { 'name': 'subproject-b' }] as any);
+            this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.admin', email: prefix + '.spx.admin@email' }] as never);
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
         });
@@ -158,8 +157,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.editor' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
-            { 'name': 'subproject-b' }] as any);
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
         });
@@ -170,8 +168,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: prefix + '.spx.viewer' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
-            { 'name': 'subproject-b' }] as any);
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
         });
@@ -182,8 +179,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
             this.sandbox.stub(DESEntitlement, 'getUserGroups').resolves([{ name: '' }] as never);
-            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' },
-            { 'name': 'subproject-b' }] as any);
+            this.sandbox.stub(SubProjectDAO, 'list').resolves([{ 'name': 'subproject-a' }] as any);
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.check200(expRes.statusCode, done);
         });
@@ -240,7 +236,6 @@ export class TestUtilitySVC {
             const responseStub = this.sandbox.stub(Response, 'writeOK');
             responseStub.resolves();
 
-
             await UtilityHandler.handler(expReq, expRes, UtilityOP.LS);
             Tx.checkTrue(
                 responseStub.args[0][1].includes('tenant-a') &&
@@ -271,7 +266,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(google.GCS.prototype, 'saveObject');
             this.sandbox.stub(Locker, 'acquireMutex').resolves('mutex');
             this.sandbox.stub(Locker, 'releaseMutex').resolves();
-            this.sandbox.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('email')
+            this.sandbox.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('email');
             this.transaction.run.resolves();
             await UtilityHandler.handler(expReq, expRes, UtilityOP.CP);
             Tx.check200(expRes.statusCode, done);
@@ -285,7 +280,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(Auth, 'isReadAuthorized');
             this.sandbox.stub(Locker, 'getLock');
             this.sandbox.stub(Locker, 'createWriteLock').resolves(
-                {idempotent: undefined, wid: undefined, mutex: undefined, key: undefined});
+                { idempotent: undefined, wid: undefined, mutex: undefined, key: undefined });
             this.sandbox.stub(Locker, 'acquireMutex').resolves();
             this.sandbox.stub(Locker, 'releaseMutex').resolves();
             this.sandbox.stub(Locker, 'unlock').resolves();
@@ -297,7 +292,7 @@ export class TestUtilitySVC {
             this.sandbox.stub(google.GCS.prototype, 'copy');
             this.sandbox.stub(google.GCS.prototype, 'saveObject');
             this.transaction.run.resolves();
-            this.sandbox.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('email')
+            this.sandbox.stub(google.GoogleSeistore.prototype, 'getEmailFromTokenPayload').resolves('email');
             await UtilityHandler.handler(expReq, expRes, UtilityOP.CP);
             Tx.check200(expRes.statusCode, done);
         });
