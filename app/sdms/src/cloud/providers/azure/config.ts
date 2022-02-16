@@ -64,6 +64,7 @@ export class AzureConfig extends Config {
             AzureConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST;
+            AzureConfig.DES_POLICY_SERVICE_HOST = process.env.DES_POLICY_SERVICE_HOST || process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_APPKEY = process.env.SEISTORE_DES_APPKEY || 'undefined';
             AzureConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
             AzureConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
@@ -111,6 +112,7 @@ export class AzureConfig extends Config {
                 DES_SERVICE_HOST_ENTITLEMENT: AzureConfig.DES_SERVICE_HOST_ENTITLEMENT,
                 DES_SERVICE_HOST_STORAGE: AzureConfig.DES_SERVICE_HOST_STORAGE,
                 DES_SERVICE_HOST_PARTITION: AzureConfig.DES_SERVICE_HOST_PARTITION,
+                DES_POLICY_SERVICE_HOST: AzureConfig.DES_POLICY_SERVICE_HOST,
                 DES_SERVICE_APPKEY: AzureConfig.DES_SERVICE_APPKEY,
                 DES_GROUP_CHAR_LIMIT: AzureConfig.DES_GROUP_CHAR_LIMIT,
                 SERVICE_AUTH_PROVIDER: AzureConfig.SERVICE_AUTH_PROVIDER,
@@ -144,6 +146,7 @@ export class AzureConfig extends Config {
                     process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
                 FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
                     process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+                FEATURE_FLAG_POLICY_SVC_INTERACTION: process.env.FEATURE_FLAG_POLICY_SVC_INTERACTION === 'true',
                 CCM_SERVICE_URL: AzureConfig.CCM_SERVICE_URL,
                 CCM_TOKEN_SCOPE: AzureConfig.CCM_TOKEN_SCOPE,
                 CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,

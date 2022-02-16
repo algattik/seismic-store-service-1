@@ -411,9 +411,9 @@ export class UtilityHandler {
 
             // set the objects prefix
             const bucketFrom = DatasetUtils.getBucketFromDatasetResourceUri(datasetFrom.gcsurl);
-            const prefixFrom =  DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetFrom.gcsurl);
+            const prefixFrom = DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetFrom.gcsurl);
             const bucketTo = DatasetUtils.getBucketFromDatasetResourceUri(datasetTo.gcsurl);
-            const prefixTo =  DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetTo.gcsurl);
+            const prefixTo = DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetTo.gcsurl);
 
             // copy the objects
             const RETRY_MAX_ATTEMPTS = 10;

@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import request from 'request-promise';
+import { Cache } from '../../../shared';
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
     IDESEntitlementGroupMembersModel
 } from '../../dataecosystem';
-import { AWSCredentials } from './credentials';
 import { AWSConfig } from './config';
-import { Cache, Error } from '../../../shared';
+import { AWSCredentials } from './credentials';
 
 interface PartitionInfoAws {
     tenantId: string;
@@ -28,13 +28,13 @@ interface PartitionInfoAws {
 const ExpiresMargin = 3600; // 60 minutes
 @DataEcosystemCoreFactory.register('aws')
 export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
-
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
     public getEntitlementBaseUrlPath(): string { return '/api/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
     public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
     public static getPartitionBaseUrlPath(): string { return '/api/partition/v1/partitions/'; };
+    public getPolicySvcBaseUrlPath(): string { return 'api/policy/v1'; }
     private static _cache: Cache<PartitionInfoAws>;
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
@@ -70,7 +70,7 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
                 'Content-Type': 'application/json'
             },
             url: AWSConfig.DES_SERVICE_HOST_PARTITION +
-                AWSDataEcosystemServices.getPartitionBaseUrlPath()+ dataPartitionID
+                AWSDataEcosystemServices.getPartitionBaseUrlPath() + dataPartitionID
             // url: 'https://kogliny.dev.osdu.aws/api/partition/v1/partitions/' + dataPartitionID
         };
 
@@ -78,7 +78,7 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
             const response = JSON.parse(await request.get(options));
             const tenantInfo = response['tenantId']['value'];
             const expiresIn = Math.floor(Date.now() / 1000) + ExpiresMargin;
-            const infoaws:PartitionInfoAws = {tenantId: tenantInfo, expires_in: expiresIn};
+            const infoaws: PartitionInfoAws = { tenantId: tenantInfo, expires_in: expiresIn };
             await this._cache.set(dataPartitionID, infoaws);
             return tenantInfo;
         }

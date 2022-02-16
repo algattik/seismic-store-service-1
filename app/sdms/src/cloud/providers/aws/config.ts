@@ -80,6 +80,7 @@ export class AWSConfig extends Config {
                 process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
             FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
                 process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+            FEATURE_FLAG_POLICY_SVC_INTERACTION: process.env.FEATURE_FLAG_POLICY_SVC_INTERACTION === 'true',
             CCM_SERVICE_URL: process.env.CCM_SERVICE_URL || '',
             CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE || '',
             CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
@@ -87,7 +88,8 @@ export class AWSConfig extends Config {
             USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
                 process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',
             USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER,
-            SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3'
+            SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3',
+            DES_POLICY_SERVICE_HOST: process.env.DES_POLICY_SERVICE_HOST || process.env.DES_SERVICE_HOST
         });
 
     }
