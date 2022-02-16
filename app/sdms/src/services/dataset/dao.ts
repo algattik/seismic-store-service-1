@@ -102,7 +102,7 @@ export class DatasetDAO {
         };
 
         if (pagination) {
-            output.nextPageCursor = info.endCursor;
+            output.nextPageCursor = info.endCursor || '';
         }
 
         return output;

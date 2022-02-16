@@ -253,8 +253,8 @@ export class DatasetHandler {
             if (err instanceof (ErrorModel)) {
                 if ((err as ErrorModel).error.code === Error.Status.LOCKED) {
                     throw (Error.make(Error.Status.UNKNOWN, ' correctly handled previously thrown error ' +
-                    (err as ErrorModel).error.status + ':' +  (err as ErrorModel).error.message +
-                    ' an idempotent retry is required'));
+                        (err as ErrorModel).error.status + ':' + (err as ErrorModel).error.message +
+                        ' an idempotent retry is required'));
                 }
             }
 
@@ -389,7 +389,7 @@ export class DatasetHandler {
         }
 
         // Retrieve the list of datasets metadata
-        if (output.nextPageCursor) {
+        if (pagination) {
             return output;
         }
 
@@ -449,7 +449,7 @@ export class DatasetHandler {
         StorageFactory.build(Config.CLOUDPROVIDER, tenant).deleteObjects(
             bucket, virtualFolder).catch((error) => {
                 LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error));
-        });
+            });
 
         // remove any remaining locks (this should be removed with SKIP_WRITE_LOCK_CHECK_ON_MUTABLE_OPERATIONS)
         const datasetLockKey = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;

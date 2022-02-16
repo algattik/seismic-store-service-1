@@ -31,6 +31,7 @@ import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject
 import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
 import { Tx } from '../utils';
+import exp from 'constants';
 
 
 export class TestDatasetSVC {
@@ -455,6 +456,40 @@ export class TestDatasetSVC {
             Tx.check200(expRes.statusCode, done);
         });
 
+        // Pagination unit test 
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.query.limit = '10';
+            Config.USER_ASSOCIATION_SVC_PROVIDER = 'ccm-internal';
+            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
+            this.sandbox.stub(Auth, 'isReadAuthorized').resolves(undefined);
+            this.sandbox.stub(DatasetDAO, 'list').resolves({ datasets: [this.dataset as DatasetModel], nextPageCursor: 'cursor' });
+            this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
+            this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('datapartition');
+            this.sandbox.stub(DESUserAssociation.prototype, 'convertPrincipalIdentifierToUserInfo').resolves();
+            const responseStub = this.sandbox.stub(Response, 'writeOK');
+            responseStub.returns();
+            await DatasetHandler.handler(expReq, expRes, DatasetOP.List);
+            const data = responseStub.getCall(0).args[1];
+            Tx.checkTrue(data.datasets[0] === this.dataset && data.nextPageCursor === 'cursor', done);
+        });
+
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.query.limit = '10';
+            Config.USER_ASSOCIATION_SVC_PROVIDER = 'ccm-internal';
+            this.sandbox.stub(TenantDAO, 'get').resolves({} as any);
+            this.sandbox.stub(Auth, 'isReadAuthorized').resolves(undefined);
+            this.sandbox.stub(DatasetDAO, 'list').resolves({ datasets: [this.dataset as DatasetModel], nextPageCursor: '' });
+            this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
+            this.sandbox.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+            this.sandbox.stub(DESUtils, 'getDataPartitionID').returns('datapartition');
+            this.sandbox.stub(DESUserAssociation.prototype, 'convertPrincipalIdentifierToUserInfo').resolves();
+            const responseStub = this.sandbox.stub(Response, 'writeOK');
+            responseStub.returns();
+            await DatasetHandler.handler(expReq, expRes, DatasetOP.List);
+            const data = responseStub.getCall(0).args[1];
+            Tx.checkTrue(data.datasets[0] === this.dataset && data.nextPageCursor === '', done);
+        });
     }
 
     private static delete() {
