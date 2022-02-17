@@ -59,9 +59,11 @@
       - merge_requests
 
 .osdu-gcp-deploy-configmap:
+  stage: deploy
+  tags: ["osdu-medium"]
   extends: .osdu-gcp-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
-  stage: deploy
+  cache: {}
   script:
     - *common
     - >
@@ -110,6 +112,7 @@
   cache: {}
   script:
     - *common
+    - kubectl logs deployment/seismic-store
     - >
       helm upgrade $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR
       --install
@@ -121,7 +124,7 @@
     - echo ----- Verify Deployment -----
     - kubectl rollout status deployment.v1.apps/$SEISMIC_OSDU_GCP_SERVICE -n $OSDU_GCP_HELM_NAMESPACE --timeout=900s
     - POD=$(kubectl get pod --sort-by=.metadata.creationTimestamp -n $OSDU_GCP_HELM_NAMESPACE | grep $SEISMIC_OSDU_GCP_SERVICE | tail -1 | awk '{print $1}')
-    - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=300s)
+    - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=600s)
     - echo $STATUS
     - if [[ "$STATUS" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
   only:
@@ -164,6 +167,20 @@
     - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
       when: on_success
 
+.osdu-gcp-test-python:
+  extends: .osdu-gcp-variables
+  variables:
+    # Service Accounts for running integration tests
+    INTEGRATION_TESTER: $OSDU_GCP_INTEGRATION_TESTER
+  stage: integration
+  only:
+    variables:
+      - $OSDU_GCP == 'true'
+    refs:
+      - branches
+      - main
+      - merge_requests
+
 .osdu-gcp-dev2-test-python:
   extends:
     - .osdu-gcp-dev2-variables
@@ -171,7 +188,6 @@
     # Service Accounts for running integration tests
     INTEGRATION_TESTER: $OSDU_GCP_INTEGRATION_TESTER
   stage: integration
-  image: python:3.7
   rules:
     - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success

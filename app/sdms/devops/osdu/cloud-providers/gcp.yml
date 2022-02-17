@@ -113,3 +113,78 @@ sdms-osdu-gcp-dev2-deploy-deployment:
       changes:
         - devops/**/*
         - app/sdms/**/*
+
+sdms-osdu-gcp-test-python:
+  variables: 
+    GOOGLE_CREDENTIALS: $OSDU_GCP_R3_INTEGRATION_TESTER
+  extends: .osdu-gcp-test-python
+  image: node
+  needs: ["sdms-osdu-gcp-deployment"]
+  allow_failure: true
+  before_script:
+    - cd app/$SDMS_SERVICE
+  script:
+    - apt-get update
+    - apt-get install -y python3
+    - apt-get install -y python3-pip
+    - pip install google
+    - pip install google-auth
+    - pip install google-api-python-client 
+    - pip install google-auth-httplib2 
+    - pip install google-auth-oauthlib
+    - export OSDU_GCP_AUDIENCE=$INTEGRATION_TEST_AUDIENCE
+    - echo $GOOGLE_CREDENTIALS > google_credentials.json
+    - export GOOGLE_APPLICATION_CREDENTIALS=google_credentials.json
+    - svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/gcp_jwt_client.py)
+    - echo $svctoken > /dev/null
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${LEGAL_TAG}" --legaltag02="${LEGAL_TAG}" --VCS-Provider="${ISGITLAB}"
+  only:
+    changes:
+      - devops/**/*
+      - app/sdms/**/*
+
+sdms-osdu-gcp-dev2-test-python:
+  variables: 
+    GOOGLE_CREDENTIALS: $OSDU_GCP_R3_INTEGRATION_TESTER
+  extends: .osdu-gcp-dev2-test-python
+  image: node
+  needs: ["sdms-osdu-gcp-dev2-deploy-deployment"]
+  allow_failure: true
+  before_script:
+    - cd app/$SDMS_SERVICE
+  script:
+    - apt-get update
+    - apt-get install -y python3
+    - apt-get install -y python3-pip
+    - pip install google
+    - pip install google-auth
+    - pip install google-api-python-client 
+    - pip install google-auth-httplib2 
+    - pip install google-auth-oauthlib
+    - export OSDU_GCP_AUDIENCE=$INTEGRATION_TEST_AUDIENCE
+    - echo $GOOGLE_CREDENTIALS > google_credentials.json
+    - export GOOGLE_APPLICATION_CREDENTIALS=google_credentials.json
+    - svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/gcp_jwt_client.py)
+    - echo $svctoken > /dev/null
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${LEGAL_TAG}" --legaltag02="${LEGAL_TAG}" --VCS-Provider="${ISGITLAB}"
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
+    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
