@@ -1,5 +1,5 @@
 data:
-  requests_cpu: "0.25"
+  requests_cpu: "0.1"
   requests_memory: "256M"
   limits_cpu: "1"
   limits_memory: "1G"
