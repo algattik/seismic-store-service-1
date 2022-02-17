@@ -1,21 +1,14 @@
 import json
 import os
+import google.oauth2.id_token
 
 from google.auth.transport.requests import Request
-from google.oauth2 import service_account
-
 
 def get_id_token():
-    sa_info = json.loads(os.environ.get("OSDU_GCP_SA_FILE"))
     audience = os.environ.get("OSDU_GCP_AUDIENCE")
-    credentials = service_account.IDTokenCredentials.from_service_account_info(
-        sa_info, target_audience=audience)
-    credentials.refresh(Request())
-    if not credentials.token:
-        raise Exception("Can't generte ID Token")
-    print(credentials.token)
-    return credentials.token
-
+    id_token = google.oauth2.id_token.fetch_id_token(Request(), audience)
+    print(id_token)
+    return id_token
 
 def get_invalid_token():
     """
