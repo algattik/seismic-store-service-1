@@ -4,6 +4,11 @@ include:
     file: "standard-setup.yml"
 
   # global
+  # scanners
+  # fossa
+  - local: "devops/osdu/scanners/fossa.yml"
+  
+  # cloud-providers
   # aws
   - local: "devops/osdu/cloud-providers/aws.yml"
   

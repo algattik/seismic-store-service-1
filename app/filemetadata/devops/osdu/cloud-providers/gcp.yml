@@ -62,7 +62,7 @@ filemetadata-osdu-gcp-deployment:
   variables:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-filemetadata-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/filemetadata/devops/gcp/deploy"
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE-$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHORT_SHA"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store-filemetadata
   extends: .osdu-gcp-deployment
   allow_failure: true

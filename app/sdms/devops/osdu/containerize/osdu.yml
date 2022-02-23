@@ -5,8 +5,8 @@ sdms_push_runtime_image:
   tags: ["osdu-medium"]
   stage: containerize
   variables:
-    SHA_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
-    LATEST_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+    SHA_IMAGE: ${SDMS_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${SDMS_PROJECT_NAME}:latest
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
