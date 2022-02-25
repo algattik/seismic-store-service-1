@@ -139,7 +139,7 @@ sdms-osdu-gcp-test-python:
     - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
-    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${LEGAL_TAG}" --legaltag02="${LEGAL_TAG}" --VCS-Provider="${ISGITLAB}"
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${OSDU_GCP_SEISTORE_LEGALTAG01}" --legaltag02="${OSDU_GCP_SEISTORE_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
   only:
     changes:
       - devops/**/*
@@ -170,7 +170,7 @@ sdms-osdu-gcp-dev2-test-python:
     - echo $svctoken > /dev/null
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
-    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${LEGAL_TAG}" --legaltag02="${LEGAL_TAG}" --VCS-Provider="${ISGITLAB}"
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${OSDU_GCP_SEISTORE_LEGALTAG01}" --legaltag02="${OSDU_GCP_SEISTORE_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
   rules:
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
