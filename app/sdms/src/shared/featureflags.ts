@@ -25,7 +25,8 @@ export enum Feature {
     TRACE,
     LOGGING,
     STACKDRIVER_EXPORTER,
-    CCM_INTERACTION
+    CCM_INTERACTION,
+    POLICY_SERVICE_INTERACTION,
 }
 
 export class FeatureFlags {
@@ -38,7 +39,8 @@ export class FeatureFlags {
             flag === Feature.TRACE && Config.FEATURE_FLAG_TRACE ||
             flag === Feature.LOGGING && Config.FEATURE_FLAG_LOGGING ||
             flag === Feature.STACKDRIVER_EXPORTER && Config.FEATURE_FLAG_STACKDRIVER_EXPORTER ||
-            flag === Feature.CCM_INTERACTION && Config.FEATURE_FLAG_CCM_INTERACTION;
+            flag === Feature.CCM_INTERACTION && Config.FEATURE_FLAG_CCM_INTERACTION ||
+            flag === Feature.POLICY_SERVICE_INTERACTION && Config.FEATURE_FLAG_POLICY_SVC_INTERACTION;
 
     }
 }

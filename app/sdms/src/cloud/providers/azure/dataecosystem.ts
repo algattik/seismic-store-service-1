@@ -37,6 +37,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
     public getEntitlementBaseUrlPath(): string { return '/api/entitlements/v2'; };
     public getComplianceBaseUrlPath(): string { return '/api/legal/v1'; };
     public getStorageBaseUrlPath(): string { return '/api/storage/v2'; };
+    public getPolicySvcBaseUrlPath(): string { return '/api/policy/v1'; }
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;

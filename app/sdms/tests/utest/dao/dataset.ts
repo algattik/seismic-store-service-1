@@ -372,6 +372,54 @@ export class TestDataset {
 				done
 			);
 		});
+
+		Tx.test(async (done: any) => {
+			Config.CLOUDPROVIDER = 'azure';
+			this.dataset.gtags = ['tagA', 'tagB'];
+			const expectedResult = [
+				{
+					// tslint:disable-next-line: object-literal-sort-keys
+					created_by: 'user@email',
+					created_date: 'Wed Oct 09 2019 16:50:07 GMT+0000 (UTC)',
+					ctag: 'ctag',
+					filemetadata: {
+						nobjects: 1,
+						size: 7768,
+						type: 'GENERIC',
+					},
+					gcsurl: 'gcsurl',
+					gtags: ['tagA', 'tagB'],
+					last_modified_date: 'Wed Oct 09 2019 16:50:10 GMT+0000 (UTC)',
+					ltag: 'ltag',
+					name: 'ds01',
+					path: '/',
+					sbit: null,
+					sbit_count: 0,
+					subproject: 'subproject',
+					tenant: 'tenant',
+				} as DatasetModel,
+			];
+
+			let query = this.journal.createQuery(
+				Config.SEISMIC_STORE_NS + '-' + this.dataset.tenant + '-' + this.dataset.subproject,
+				Config.DATASETS_KIND
+			);
+
+			for (const gtag of ['tagA', 'tagB']) {
+				query = query.filter('gtags', 'CONTAINS', gtag);
+			}
+
+			this.journal.runQuery.resolves([expectedResult, undefined]);
+			this.journal.getQueryFilterSymbolContains.returns('CONTAINS');
+			this.sandbox.stub(DatasetDAO, 'fixOldModel').resolves(expectedResult[0]);
+
+			const result = await DatasetDAO.list(this.journal, this.dataset, null);
+
+			Tx.checkTrue(
+				this.journal.runQuery.calledWith(query) && result[0] === expectedResult[0],
+				done
+			);
+		});
 	}
 
 

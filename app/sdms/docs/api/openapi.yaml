@@ -872,6 +872,25 @@ paths:
         404:
           description: "Not found"
 
+  /api/v3/utility/storage-tiers:
+    get:
+      summary: "Retrieve the list of supported storage tiers"
+      description: "<ul><li>Return the list of storage tiers</ul>"
+      operationId: storage-tiers
+      tags:
+        - Utility
+      responses:
+        200:
+          description: "Supported storage tiers"
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not found"
+
   /api/v3/utility/cp:
     post:
       summary: "Copy dataset"

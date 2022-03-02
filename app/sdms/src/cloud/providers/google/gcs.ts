@@ -23,7 +23,6 @@ import { ConfigGoogle } from './config';
 
 @StorageFactory.register('google')
 export class GCS extends AbstractStorage {
-
     private KMaxResults = 100;
     private GCS_BUCKET_PREFIX = 'ss-' + ConfigGoogle.SERVICE_ENV;
     private projectID: string;
@@ -32,7 +31,8 @@ export class GCS extends AbstractStorage {
 
     public constructor(tenant: TenantModel) {
         super();
-        this.projectID = tenant.gcpid;
+        this.projectID = tenant?.gcpid;
+
     }
 
     private getStorageClient(): Storage {
@@ -138,6 +138,10 @@ export class GCS extends AbstractStorage {
     public async bucketExists(bucketName: string): Promise<boolean> {
         const result = await this.getStorageClient().bucket(bucketName).exists();
         return result[0];
+    }
+
+    public getStorageTiers(): string[] {
+        return ['STANDARD', 'NEARLINE', 'COLDLINE', 'ARCHIVE'];
     }
 
 }

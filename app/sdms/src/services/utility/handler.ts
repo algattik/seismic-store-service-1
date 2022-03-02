@@ -17,7 +17,7 @@
 import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth, AuthRoles } from '../../auth';
-import { Config, CredentialsFactory, JournalFactoryTenantClient } from '../../cloud';
+import { Config, CredentialsFactory, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
@@ -26,7 +26,7 @@ import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { DatasetAuth, DatasetDAO, DatasetModel, DatasetUtils } from '../dataset';
 import { IWriteLockSession, Locker } from '../dataset/locker';
 import { SubprojectAuth, SubProjectDAO } from '../subproject';
-import { TenantDAO, TenantGroups } from '../tenant';
+import { TenantDAO } from '../tenant';
 import { UtilityOP } from './optype';
 import { UtilityParser } from './parser';
 
@@ -44,7 +44,10 @@ export class UtilityHandler {
             } else if (op === UtilityOP.CP) {
                 const response = await this.cp(req);
                 Response.writeOK(res, { 'status': response.status }, response.code);
-            } else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
+            } else if (op === UtilityOP.STORAGE_TIERS) {
+                Response.writeOK(res, await this.listStorageTiers(req));
+            }
+            else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
         } catch (error) { Response.writeError(res, error); }
 
     }
@@ -145,7 +148,7 @@ export class UtilityHandler {
             // Filter tenants which the user does not belong
             let groups = entitlementCalls.reduce(
                 (carry, groupList) => carry.concat(groupList), []) as IDESEntitlementGroupModel[];
-            groups = groups.filter(group => this.validateEntitlements(group)); // only valid seismic-dsm group
+            groups = groups.filter(group => this.isValidEntitlementGroup(group)); // only valid seismic-dsm group
             const listTenants: string[] = groups.map((group) => {
                 return group.name.startsWith(Config.SERVICEGROUPS_PREFIX) ?
                     group.name.split('.')[3] : group.name.split('.')[2];
@@ -161,30 +164,26 @@ export class UtilityHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         if (!sdPath.subproject) {
-
+            let subprojects = [];
             const entitlementTenant = DESUtils.getDataPartitionID(tenant.esd);
-            let groups = await DESEntitlement.getUserGroups(
+            const userGroups = await DESEntitlement.getUserGroups(
                 req.headers.authorization, entitlementTenant, req[Config.DE_FORWARD_APPKEY]);
+            const userGroupEmailsList = userGroups.map(group => group.email);
 
-            // Filter tenants which the user does not belong
-            groups = groups.filter(group => this.validateEntitlements(group)); // only valid seismic-dsm group
-            groups = groups.filter(group => group.name.startsWith( // get both data and service groups
-                TenantGroups.serviceGroupPrefix(sdPath.tenant))).concat(
-                    groups.filter(group => group.name.startsWith(
-                        TenantGroups.dataGroupPrefix(sdPath.tenant))));
-            let listSubprojects: string[] = groups.map((group) => { // retrieve the subproject name
-                return group.name.startsWith(Config.SERVICEGROUPS_PREFIX) ?
-                    group.name.split('.')[4] : group.name.split('.')[3];
-            });
-            listSubprojects = listSubprojects.filter((item, pos, self) => self.indexOf(item) === pos);
+            const registeredSubprojectsList = await SubProjectDAO.list(journalClient, sdPath.tenant);
 
-            // Registered subprojects in the journal
-            const listRegisteredSubprojects = (
-                await SubProjectDAO.list(journalClient, sdPath.tenant)).map(item => item.name);
-
-            // Intersection of two lists above
-            return listSubprojects.filter((sp) => listRegisteredSubprojects.includes(sp));
-
+            for (const registeredSubproject of registeredSubprojectsList) {
+                if (registeredSubproject.acls) {
+                    const aclGroups = registeredSubproject.acls.admins.concat(registeredSubproject.acls.viewers);
+                    for (const aclGroup of aclGroups) {
+                        if (userGroupEmailsList.indexOf(aclGroup) !== -1) {
+                            subprojects.push(registeredSubproject);
+                        }
+                    }
+                }
+            }
+            subprojects = [...new Set(subprojects)];
+            return subprojects.map(sp => sp.name);
         }
 
         // list the folder content for sdPaths <sd://tenant/subproject>
@@ -411,9 +410,9 @@ export class UtilityHandler {
 
             // set the objects prefix
             const bucketFrom = DatasetUtils.getBucketFromDatasetResourceUri(datasetFrom.gcsurl);
-            const prefixFrom =  DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetFrom.gcsurl);
+            const prefixFrom = DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetFrom.gcsurl);
             const bucketTo = DatasetUtils.getBucketFromDatasetResourceUri(datasetTo.gcsurl);
-            const prefixTo =  DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetTo.gcsurl);
+            const prefixTo = DatasetUtils.getVirtualFolderFromDatasetResourceUri(datasetTo.gcsurl);
 
             // copy the objects
             const RETRY_MAX_ATTEMPTS = 10;
@@ -452,10 +451,16 @@ export class UtilityHandler {
         }
     }
 
+    private static listStorageTiers(req: expRequest): string[] {
+        const storageProvider = StorageFactory.build(Config.CLOUDPROVIDER, null);
+        return storageProvider.getStorageTiers();
+    }
+
     // validate if the entitlement object follow the SDMS conventions
-    private static validateEntitlements(el: IDESEntitlementGroupModel): boolean {
+    private static isValidEntitlementGroup(el: IDESEntitlementGroupModel): boolean {
         return ((el.name.startsWith(Config.SERVICEGROUPS_PREFIX) || el.name.startsWith(Config.DATAGROUPS_PREFIX)) &&
             (el.name.endsWith(AuthRoles.admin) || el.name.endsWith(AuthRoles.editor)
                 || el.name.endsWith(AuthRoles.viewer)));
     }
+
 }

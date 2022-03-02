@@ -7,7 +7,7 @@ include:
 
   # scan
   # fossa
-  - local: "app/sdms/devops/osdu/scanners/fossa-node.yml"
+  - local: "app/sdms/devops/osdu/scanners/fossa.yml"
 
   # lint
   - local: "app/sdms/devops/osdu/scanners/lint-node.yml"

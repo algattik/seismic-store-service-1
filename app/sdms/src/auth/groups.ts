@@ -16,7 +16,8 @@
 
 import { UserRoles } from '.';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
-import { DESEntitlement, DESUtils } from '../dataecosystem';
+import { DESEntitlement, DESUtils, PolicyService } from '../dataecosystem';
+import { Error, Feature, FeatureFlags } from '../shared';
 
 export class AuthGroups {
 
@@ -59,8 +60,24 @@ export class AuthGroups {
     public static async isMemberOfAtLeastOneGroup(
         userToken: string, groupEmails: string[], esd: string, appkey: string): Promise<boolean> {
         const entitlementTenant = DESUtils.getDataPartitionID(esd);
-        const groups = await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
-        return groupEmails.some((groupEmail) => (groups.map((group) => group.email)).includes(groupEmail));
+
+        if (FeatureFlags.isEnabled(Feature.POLICY_SERVICE_INTERACTION)) {
+            userToken = userToken.startsWith('Bearer') ? userToken.split(/[ ,]+/)[1] : userToken;
+            const result = await PolicyService.evaluatePolicy(entitlementTenant, userToken, groupEmails);
+            if (result.error.length > 0) {
+                throw Error.makeForHTTPRequest(result.error[0], '[policy-service]');
+            }
+
+            if (result.userExistsInAtleastOneGroup) {
+                return true;
+            }
+            return false;
+        }
+        else {
+            const groups = await DESEntitlement.getUserGroups(userToken, entitlementTenant, appkey);
+            return groupEmails.some((groupEmail) => (groups.map((group) => group.email)).includes(groupEmail));
+        }
+
     }
 
     public static async isMemberOfaGroup(

@@ -16,8 +16,10 @@
 
 import { Datastore, Query, Transaction } from '@google-cloud/datastore';
 import { TenantModel } from '../../../services/tenant';
-import { AbstractJournal, AbstractJournalTransaction,
-    IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
+import {
+    AbstractJournal, AbstractJournalTransaction,
+    IJournalQueryModel, IJournalTransaction, JournalFactory
+} from '../../journal';
 import { ConfigGoogle } from './config';
 
 // a wrapper class for google datastore
@@ -43,7 +45,7 @@ export class DatastoreDAO extends AbstractJournal {
                 keyFilename: ConfigGoogle.SERVICE_IDENTITY_KEY_FILENAME,
                 projectId: this.projectID,
             });
-            return  DatastoreDAO.clientsCache[this.projectID];
+            return DatastoreDAO.clientsCache[this.projectID];
         }
     }
 
@@ -63,13 +65,24 @@ export class DatastoreDAO extends AbstractJournal {
         return this.getDataStoreClient().createQuery(namespace, kind);
     }
 
-    public async runQuery(query: IJournalQueryModel): Promise<[any[], {endCursor?: string}]> {
-        return await this.getDataStoreClient().runQuery(query as Query);
+    public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string; }]> {
+        const results = await this.getDataStoreClient().runQuery(query as Query);
+        const info = results[1];
+
+        if (info.moreResults === Datastore.NO_MORE_RESULTS) {
+            return [
+                results[0],
+                {
+                    endCursor: ''
+                }
+            ];
+        }
+        return results;
     }
 
     public createKey(specs: any): object {
-        if(specs.enforcedKey) {
-            specs.path.push(specs.enforcedKey)
+        if (specs.enforcedKey) {
+            specs.path.push(specs.enforcedKey);
         }
         return this.getDataStoreClient().key(specs);
     }
@@ -111,7 +124,7 @@ export class DatastoreTransactionDAO extends AbstractJournalTransaction {
         return this.transaction.createQuery(namespace, kind);
     }
 
-    public async runQuery(query: Query): Promise<[any[], {endCursor?: string}]> {
+    public async runQuery(query: Query): Promise<[any[], { endCursor?: string; }]> {
         return await this.transaction.runQuery(query);
     }
 

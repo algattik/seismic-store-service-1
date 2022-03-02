@@ -21,7 +21,8 @@
     "test-e2e-parallel": "node ./tests/e2e/parallel/run_e2e_tests_parallel.js",
     "copy-static-files": "copyfiles --error --up 1 ./docs/api/openapi.osdu.yaml ./dist/docs",
     "copy-schemas": "copyfiles --up 1 ./docs/schemas/**/*.json ./dist/docs",
-    "postbuild": "npm run copy-static-files && npm run copy-schemas",
+    "copy-rego-policies": "copyfiles --up 1 ./docs/policies/*.rego ./dist/docs",
+    "postbuild": "npm run copy-static-files && npm run copy-schemas && npm run copy-rego-policies",
     "prepare": "cd ../.. && husky install ./app/sdms/.husky"
   },
   "nyc": {

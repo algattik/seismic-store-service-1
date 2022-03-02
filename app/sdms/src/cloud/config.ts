@@ -36,6 +36,7 @@ export interface ConfigModel {
     DES_SERVICE_HOST_COMPLIANCE: string;
     DES_SERVICE_HOST_STORAGE: string;
     DES_SERVICE_HOST_PARTITION: string;
+    DES_POLICY_SERVICE_HOST: string;
     DES_ENTITLEMENT_DELETE_ENDPOINT_PATH?: string;
     DES_SERVICE_APPKEY: string;
     DES_GROUP_CHAR_LIMIT: number;
@@ -64,6 +65,7 @@ export interface ConfigModel {
     FEATURE_FLAG_LOGGING: boolean;
     FEATURE_FLAG_STACKDRIVER_EXPORTER: boolean;
     FEATURE_FLAG_CCM_INTERACTION: boolean;
+    FEATURE_FLAG_POLICY_SVC_INTERACTION: boolean;
     CCM_SERVICE_URL: string;
     CCM_TOKEN_SCOPE: string;
     CALLER_FORWARD_HEADERS: string;
@@ -123,6 +125,7 @@ export abstract class Config implements IConfig {
     public static DES_SERVICE_HOST_STORAGE: string;
     public static DES_SERVICE_HOST_PARTITION: string;
     public static DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: string;
+    public static DES_POLICY_SERVICE_HOST: string;
     public static DES_SERVICE_APPKEY: string;
     public static DES_GROUP_CHAR_LIMIT: number;
     public static DE_FORWARD_APPKEY = Symbol('seismic-dms-fw-caller-appkey');
@@ -146,6 +149,7 @@ export abstract class Config implements IConfig {
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
     public static FEATURE_FLAG_CCM_INTERACTION = false;
+    public static FEATURE_FLAG_POLICY_SVC_INTERACTION = false;
 
     // DataGroups prefix
     public static DATAGROUPS_PREFIX = 'data.sdms';
@@ -251,11 +255,13 @@ export abstract class Config implements IConfig {
         Config.FEATURE_FLAG_LOGGING = model.FEATURE_FLAG_LOGGING;
         Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = model.FEATURE_FLAG_STACKDRIVER_EXPORTER;
         Config.FEATURE_FLAG_CCM_INTERACTION = model.FEATURE_FLAG_CCM_INTERACTION;
+        Config.FEATURE_FLAG_POLICY_SVC_INTERACTION = model.FEATURE_FLAG_POLICY_SVC_INTERACTION;
 
         Config.DES_SERVICE_HOST_ENTITLEMENT = model.DES_SERVICE_HOST_ENTITLEMENT;
         Config.DES_SERVICE_HOST_COMPLIANCE = model.DES_SERVICE_HOST_COMPLIANCE;
         Config.DES_SERVICE_HOST_STORAGE = model.DES_SERVICE_HOST_STORAGE;
         Config.DES_SERVICE_HOST_PARTITION = model.DES_SERVICE_HOST_PARTITION;
+        Config.DES_POLICY_SERVICE_HOST = model.DES_POLICY_SERVICE_HOST;
         Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH = model.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH || '/groups/';
         Config.DES_SERVICE_APPKEY = model.DES_SERVICE_APPKEY;
         Config.DES_GROUP_CHAR_LIMIT = model.DES_GROUP_CHAR_LIMIT;
@@ -303,6 +309,10 @@ export abstract class Config implements IConfig {
             Config.CCM_TOKEN_SCOPE = model.CCM_TOKEN_SCOPE;
             Config.checkRequiredConfig(Config.CCM_SERVICE_URL, 'CCM_SERVICE_URL');
             Config.checkRequiredConfig(Config.CCM_TOKEN_SCOPE, 'CCM_TOKEN_SCOPE');
+        }
+
+        if (Config.FEATURE_FLAG_POLICY_SVC_INTERACTION) {
+            Config.checkRequiredConfig(Config.DES_POLICY_SERVICE_HOST, 'DES_POLICY_SERVICE_HOST');
         }
 
         // JWT validation

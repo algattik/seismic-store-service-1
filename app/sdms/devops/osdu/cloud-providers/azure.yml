@@ -13,14 +13,14 @@ variables:
   SDMS_MIN_REPLICAS: 1
   SDMS_MAX_REPLICAS: 5
   AZURE_SDMS_PREFIX: /seistore-svc/api/v3
-  E2E_SUBPROJECT: demosandbox03
+  E2E_SUBPROJECT: demosandbox08
   
 sdms_azure_containerize:
   extends: .azure_containerize
   needs: ['sdms_compile-and-unit-test']
   variables:
-    SHA_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
-    LATEST_IMAGE: ${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}:latest
+    SHA_IMAGE: ${SDMS_PROJECT_NAME}:${CI_COMMIT_SHA}
+    LATEST_IMAGE: ${SDMS_PROJECT_NAME}:latest
     RELEASE_IMAGE: release-${CI_COMMIT_TAG}:${SDMS_PROJECT_NAME}-${CI_COMMIT_TAG}
   script:
     - cd app/$SDMS_SERVICE
@@ -57,7 +57,7 @@ sdms_azure_deploy:
   variables:
     AZURE_KEYVAULT: osdu-svc-properties
     DES_URL: ${AZURE_DNS_NAME}
-    IMAGE: ${AZURE_REGISTRY}.azurecr.io/${SDMS_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}
+    IMAGE: ${AZURE_REGISTRY}.azurecr.io/${SDMS_PROJECT_NAME}
     SDMS_SERVICE_NAME: ${SDMS_AZURE_SERVICE}
     BRANCH: ${CI_COMMIT_REF_SLUG}
     TAG: $CI_COMMIT_SHA

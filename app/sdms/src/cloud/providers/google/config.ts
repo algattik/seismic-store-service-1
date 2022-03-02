@@ -121,6 +121,7 @@ export class ConfigGoogle extends Config {
                 DES_SERVICE_HOST_ENTITLEMENT: process.env.DES_SERVICE_HOST_ENTITLEMENT || process.env.SEISTORE_DES_HOST,
                 DES_SERVICE_HOST_STORAGE: process.env.DES_SERVICE_HOST_STORAGE || process.env.SEISTORE_DES_HOST,
                 DES_SERVICE_HOST_PARTITION: process.env.DES_SERVICE_HOST_PARTITION || process.env.SEISTORE_DES_HOST,
+                DES_POLICY_SERVICE_HOST: process.env.DES_POLICY_SERVICE_HOST || process.env.SEISTORE_DES_HOST,
                 DES_ENTITLEMENT_DELETE_ENDPOINT_PATH: '/groups/data/',
                 DES_SERVICE_APPKEY: process.env.SEISTORE_DES_APPKEY,
                 DES_GROUP_CHAR_LIMIT: ConfigGoogle.DES_GROUP_CHAR_LIMIT,
@@ -156,6 +157,7 @@ export class ConfigGoogle extends Config {
                     process.env.FEATURE_FLAG_STACKDRIVER_EXPORTER !== 'false' : true,
                 FEATURE_FLAG_CCM_INTERACTION: process.env.FEATURE_FLAG_CCM_INTERACTION ?
                     process.env.FEATURE_FLAG_CCM_INTERACTION === 'true' : false,
+                FEATURE_FLAG_POLICY_SVC_INTERACTION: process.env.FEATURE_FLAG_POLICY_SVC_INTERACTION === 'true',
                 CCM_SERVICE_URL: process.env.CCM_SERVICE_URL,
                 CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE,
                 CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
