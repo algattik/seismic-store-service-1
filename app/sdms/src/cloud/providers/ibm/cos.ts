@@ -7,9 +7,7 @@ import { Config } from '../../config';
 import { IbmConfig } from './config';
 import { logger } from './logger';
 
-// [TODO] this should be typed! (all any type should have a type here)
-// [TODO] don't use any! use types
-let cosStorage: any;
+let cosStorage: AWS.S3;
 
 @StorageFactory.register('ibm')
 export class Cos extends AbstractStorage {
@@ -102,8 +100,8 @@ export class Cos extends AbstractStorage {
             if(!items || items.length<=0)
                 logger.info('No items to delete.');
             else
-                for (const i of items) {
-                    const objectKey = items[i].Key;
+                for (const item of items) {
+                    const objectKey = item.Key;
                     logger.info('Object to be deleted. objectKey-');
                     logger.debug(objectKey);
                     // tslint:disable-next-line: no-floating-promises no-console
@@ -208,7 +206,7 @@ export class Cos extends AbstractStorage {
         logger.debug(prefixOut);
         logger.debug(ownerEmail);
 
-        cosStorage.listObjects({Bucket: bucketIn,Prefix: prefixIn}, async (err: any, data: any) => {
+        cosStorage.listObjects({ Bucket: bucketIn, Prefix: prefixIn }, async (err: any, data: any) => {
             if (err) {
                 logger.error('Error in listing objects.');
                 logger.error(err.stack);
@@ -218,27 +216,34 @@ export class Cos extends AbstractStorage {
             logger.info('Fetched objects.');
             logger.debug(data);
 
-            const copies = [];
             const items = data.Contents;
 
-            if(!items || items.length<=0)
+            if (!items || items.length <= 0)
                 logger.info('No items to copy.');
-            else
-                {
-                    for (const item of items) {
-                        const objectKey = item.Key;
-                        logger.debug('objectKey - ', objectKey);
-                        // let prefix = items[i].Key.split('/')[0];
-                        const param = {
-                            Bucket: bucketOut,
-                            CopySource: objectKey,
-                            Key: prefixOut
-                        };
-                        logger.info('Object to be copied.');
-                        copies.push(cosStorage.copyObject(param));
-                    }
+            else {
+                for (const item of items) {
+                    const objectKey = item.Key;
+                    const objectName = objectKey.split('/')[1];
+                    logger.debug('objectKey - ', objectKey);
+                    logger.debug('objectName - ', objectName);
+                    const param = {
+                        Bucket: bucketOut + '/'+ prefixOut,
+                        CopySource: encodeURIComponent('/'+ bucketIn + '/' + item.Key),
+                        Key: objectName
+                    };
+                    logger.info('Object to be copied.');
+                    logger.debug('param - ', param);
+                    cosStorage.copyObject(param, (copyErr, copyData) => {
+                        if (copyErr) {
+                            logger.error('Unable to delete bucket. Error stack');
+                            logger.error(copyErr.stack);
+                            throw copyErr;
+                        }
+                        logger.info('Object copied.');
+                        logger.debug(copyData);
+                    });
                 }
-                await Promise.all(copies);
+            }
         });
         logger.info('Returning from Cos.copy.');
     }
