@@ -24,6 +24,7 @@ filemetadata-osdu-gcp-containerize-gitlab:
       - app/filemetadata/**/*
 
 filemetadata-osdu-gcp-deploy-configmap:
+  needs: ["filemetadata-osdu-gcp-containerize-gitlab"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-filemetadata-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/filemetadata/devops/gcp/configmap"
@@ -35,6 +36,7 @@ filemetadata-osdu-gcp-deploy-configmap:
       - app/filemetadata/**/*
       
 filemetadata-osdu-gcp-dev2-deploy-configmap:
+  needs: ["filemetadata-osdu-gcp-containerize-gitlab"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-filemetadata-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/filemetadata/devops/gcp/configmap"

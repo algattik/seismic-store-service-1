@@ -20,6 +20,7 @@ sdms-osdu-gcp-helm-charts-release:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
 
 sdms-osdu-gcp-containerize-gitlab:
+  needs: ["sdms_compile-and-unit-test"]
   variables:
     SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "docker/runtime.Dockerfile"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store    
@@ -33,6 +34,7 @@ sdms-osdu-gcp-containerize-gitlab:
       - app/sdms/**/*
 
 sdms-osdu-gcp-deploy-configmap:
+  needs: ["sdms_compile-and-unit-test"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
@@ -46,6 +48,7 @@ sdms-osdu-gcp-deploy-configmap:
       - app/sdms/**/*
       
 sdms-osdu-gcp-dev2-deploy-configmap:
+  needs: ["sdms_compile-and-unit-test"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
