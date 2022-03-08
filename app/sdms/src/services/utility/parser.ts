@@ -96,6 +96,31 @@ export class UtilityParser {
         return { sdPath, wmode, pagination };
     }
 
+    public static connectionString(req: expRequest): DatasetModel {
+
+        Params.checkString(req.query.sdpath, 'sdpath');
+
+        const sdPath = SDPath.getFromString(req.query.sdpath as string);
+
+        if (!sdPath) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The \'sdpath\' query parameter is not a valid seismic store resource path.'));
+        }
+        if (!sdPath.subproject) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The \'sdpath\' query parameter must be a subproject or a dataset resource path.'));
+        }
+
+        const dataset: DatasetModel = { } as DatasetModel;
+        dataset.name = sdPath.dataset;
+        dataset.tenant = sdPath.tenant;
+        dataset.subproject = sdPath.subproject;
+        dataset.path = sdPath.path;
+
+        return dataset ;
+
+    }
+
     public static gcsToken(req: expRequest): { sdPath: SDPathModel, readOnly: boolean; dataset: DatasetModel } {
 
         Params.checkString(req.query.sdpath, 'sdpath');
@@ -114,7 +139,7 @@ export class UtilityParser {
 
         const dataset: DatasetModel = {} as DatasetModel;
         if (sdPath.dataset) {
-            this.constructDatasetModel(dataset, sdPath, req);
+            this.constructDatasetModel(dataset, sdPath);
         }
 
         Params.checkString(req.query.readonly, 'readonly', false);
@@ -132,7 +157,7 @@ export class UtilityParser {
     }
 
 
-    private static constructDatasetModel(dataset: DatasetModel, sdPath: SDPathModel, req: expRequest) {
+    private static constructDatasetModel(dataset: DatasetModel, sdPath: SDPathModel) {
         dataset.name = sdPath.dataset;
         dataset.tenant = sdPath.tenant;
         dataset.subproject = sdPath.subproject;
