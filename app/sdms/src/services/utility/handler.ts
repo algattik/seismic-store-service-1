@@ -18,6 +18,7 @@ import Bull from 'bull';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Auth, AuthRoles } from '../../auth';
 import { Config, CredentialsFactory, JournalFactoryTenantClient, StorageFactory } from '../../cloud';
+import { IAccessTokenModel } from '../../cloud/credentials';
 import { IDESEntitlementGroupModel } from '../../cloud/dataecosystem';
 import { SeistoreFactory } from '../../cloud/seistore';
 import { StorageJobManager } from '../../cloud/shared/queue';
@@ -44,11 +45,82 @@ export class UtilityHandler {
             } else if (op === UtilityOP.CP) {
                 const response = await this.cp(req);
                 Response.writeOK(res, { 'status': response.status }, response.code);
+            } else if (op === UtilityOP.UPLOAD_CONNECTION_STRING) {
+                Response.writeOK(res, await this.getConnectionString(req, false));
+            } else if (op === UtilityOP.DOWNLOAD_CONNECTION_STRING) {
+                Response.writeOK(res, await this.getConnectionString(req, true));
             } else if (op === UtilityOP.STORAGE_TIERS) {
                 Response.writeOK(res, await this.listStorageTiers(req));
+            } else {
+                throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error'));
             }
-            else { throw (Error.make(Error.Status.UNKNOWN, 'Internal Server Error')); }
         } catch (error) { Response.writeError(res, error); }
+
+    }
+
+    // ------------------------------------------------------------------
+    // get the connection credentials string token
+    //
+    // Required role:
+    //
+    //  - for connection string with subproject access:
+    //    - read write access request: subproject.admin
+    //    - read only access request: subproject.viewer
+    //
+    //  - for connection string with dataset access:
+    //    - read write access request:
+    //      - subproject.admin if the subproject access policy = uniform
+    //      - dataset.admin  if the subproject access policy = dataset
+    //    - read only access request:
+    //      - subproject.viewer if the subproject access policy = uniform
+    //      - dataset.viewer if the subproject access policy = dataset
+    // ------------------------------------------------------------------
+    private static async getConnectionString(req: expRequest, readOnly: boolean): Promise<IAccessTokenModel> {
+
+        if (!FeatureFlags.isEnabled(Feature.STORAGE_CREDENTIALS)) return;
+
+        const requestDataset = UtilityParser.connectionString(req);
+
+        const tenant = await TenantDAO.get(requestDataset.tenant);
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+        const subproject = await SubProjectDAO.get(journalClient, requestDataset.tenant, requestDataset.subproject);
+        const dataPartitionId = DESUtils.getDataPartitionID(tenant.esd);
+
+        let bucket: string;
+        let virtualFolder: string;
+        let authGroups: string[];
+
+        if (requestDataset.name) { // dataset connection strings
+
+            const dataset = subproject.enforce_key ?
+                await DatasetDAO.getByKey(journalClient, requestDataset) :
+                (await DatasetDAO.get(journalClient, requestDataset))[0];
+
+            authGroups = DatasetAuth.getAuthGroups(subproject, dataset, readOnly ? AuthRoles.viewer : AuthRoles.admin);
+            bucket = DatasetUtils.getBucketFromDatasetResourceUri(dataset.gcsurl);
+            virtualFolder = DatasetUtils.getVirtualFolderFromDatasetResourceUri(dataset.gcsurl);
+
+        } else { // subproject connection string
+
+            authGroups = SubprojectAuth.getAuthGroups(subproject, readOnly ? AuthRoles.viewer : AuthRoles.admin);
+            bucket = subproject.gcs_bucket;
+
+        }
+
+        // authorize the call
+        readOnly ?
+            await Auth.isReadAuthorized(req.headers.authorization,
+                authGroups,
+                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string) :
+            await Auth.isWriteAuthorized(req.headers.authorization,
+                authGroups,
+                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
+
+        // generate and return the connection credentials string
+        return await CredentialsFactory.build(Config.CLOUDPROVIDER).getStorageCredentials(
+            subproject.tenant, subproject.name, bucket, readOnly, dataPartitionId, virtualFolder);
 
     }
 
