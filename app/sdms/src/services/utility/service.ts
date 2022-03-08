@@ -35,6 +35,17 @@ router.get('/gcs-access-token', async (req: expRequest, res: expResponse) => {
     await UtilityHandler.handler(req, res, UtilityOP.GCSTOKEN);
 });
 
+// get the upload connection string
+router.get('/upload-connection-string', async (req: expRequest, res: expResponse) => {
+    await UtilityHandler.handler(req, res, UtilityOP.UPLOAD_CONNECTION_STRING);
+});
+
+// get the download connection string
+router.get('/download-connection-string', async (req: expRequest, res: expResponse) => {
+    await UtilityHandler.handler(req, res, UtilityOP.DOWNLOAD_CONNECTION_STRING);
+});
+
+// get the list of supported storage tiers
 router.get('/storage-tiers', async (req: expRequest, res: expResponse) => {
     await UtilityHandler.handler(req, res, UtilityOP.STORAGE_TIERS);
 });

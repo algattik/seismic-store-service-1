@@ -986,6 +986,157 @@ paths:
         404:
           description: "Not found."
 
+  /utility/upload-connection-string:
+    get:
+      summary: "Generate the upload connection credentials string"
+      description: "<ul>
+                      <li>Generate the upload connection credential string for a subproject collection or a dataset, depending of the applied access policy (uniform/dataset).
+                      <li>These credentials can be used via CSP SDK, on client side, to perform bulk upload.</li>
+                      <li>
+                        The endpoint response is CSP (Cloud Solution Provider) dependent:
+                        <ul>
+                          <br/><li><b>Azure</b>: shared access signature (SaS) Url token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'https://{accountName}.blob.core.windows.net/{containerName}?{SASQueryParameters}`'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'SasUrl'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>Google</b>: standard access token credential signed and down-scoped by google
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'google_signed_access_token'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3600
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>AWS</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>IBM</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 7200
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                        </ul>
+                      </li>
+                      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li>
+                    </ul>"
+      operationId: upload-connection-string
+      tags:
+        - Utility
+      parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""
+        - description: "Seismic store path in the format sd://tenant/subproject (for uniform applied policies) or sd://tenant/subproject/dataset (for dataset applied policies)"
+          in: query
+          name: sdpath
+          type: string
+          required: true
+          default: "sd://opendes/sandbox"
+      responses:
+        200:
+          description: "The upload connection credential string."
+          schema:
+            $ref: "#/definitions/AccessToken"
+        400:
+          description: "Bad request."
+        401:
+          description: "Unauthorized."
+        403:
+          description: "Forbidden."
+        404:
+          description: "Not found."
+
+  /utility/download-connection-string:
+    get:
+      summary: "Generate the download connection credentials string"
+      description: "<ul>
+                      <li>Generate the download connection credential string for a subproject collection or a dataset, depending of the applied access policy (uniform/dataset).
+                      <li>These credentials can be used via CSP SDK, on client side, to perform bulk download.</li>
+                      <li>
+                        The endpoint response is CSP (Cloud Solution Provider) dependent:
+                        <ul>
+                          <br/><li><b>Azure</b>: shared access signature (SaS) Url token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'https://{accountName}.blob.core.windows.net/{containerName}?{SASQueryParameters}`'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'SasUrl'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>Google</b>: standard access token credential signed and down-scoped by google
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'google_signed_access_token'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3600
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>AWS</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>IBM</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 7200
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                        </ul>
+                      </li>
+                      <li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li>
+                    </ul>"
+      operationId: download-connection-string
+      tags:
+        - Utility
+      parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""
+        - description: "Seismic store path in the format sd://tenant/subproject (for uniform applied policies) or sd://tenant/subproject/dataset (for dataset applied policies)"
+          in: query
+          name: sdpath
+          type: string
+          required: true
+          default: "sd://opendes/sandbox"
+      responses:
+        200:
+          description: "The download connection credential string."
+          schema:
+            $ref: "#/definitions/AccessToken"
+        400:
+          description: "Bad request."
+        401:
+          description: "Unauthorized."
+        403:
+          description: "Forbidden."
+        404:
+          description: "Not found."
+
+
   /imptoken:
     post:
       summary: "Generate impersonation credentials token."
@@ -1985,15 +2136,15 @@ definitions:
     properties:
       access_token:
         type: string
-        description: Access token.
+        description: connection string credentials or standard access token (CSP dependent)
       token_type:
         type: string
-        description: Type of the token.
+        description: token type (Bearer, SasUrl, ....).
       expires_in:
         type: number
-        description: Time in seconds for expiration of the access token.
+        description: expiration time (in minutes) of the connection string credentials
     example:
-      access_token: "ya29.fgdgsdngevrjbinb0exdnberoibnerbnerber-fdsfwefwe_cece.rfd43f3"
+      access_token: "header.payload.signature"
       token_type: "Bearer"
       expires_in: 3600
 
