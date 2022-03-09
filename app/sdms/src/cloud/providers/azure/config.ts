@@ -89,7 +89,7 @@ export class AzureConfig extends Config {
                 AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL || process.env.SERVICE_AUTH_PROVIDER_CREDENTIAL;
 
             // cosmo throughput settings
-            AzureConfig.COSMO_MAX_THROUGHPUT = +process.env.COSMO_MAX_THROUGHPUT || 25000;
+            AzureConfig.COSMO_MAX_THROUGHPUT = +process.env.COSMO_MAX_THROUGHPUT || 40000;
 
             // logging
             AzureConfig.ENABLE_LOGGING_INFO = process.env.ENABLE_LOGGING_INFO === 'true'; // disabled by default
