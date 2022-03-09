@@ -44,12 +44,14 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 // https://docs.microsoft.com/en-us/azure/cosmos-db/sql/troubleshoot-not-found
                 consistencyLevel: ConsistencyLevel.Strong
             });
-            const { database } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
+            const { database } = await cosmosClient.databases.createIfNotExists(
+                { id: databaseId },
+                { consistencyLevel: ConsistencyLevel.Strong });
             const { container } = await database.containers.createIfNotExists({
                 id: containerId,
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
                 partitionKey: { paths: ['/id'], version: 2 }
-            });
+            }, { consistencyLevel: ConsistencyLevel.Strong });
             AzureCosmosDbDAO.containerCache[this.dataPartition] = container;
         }
 
