@@ -33,12 +33,17 @@ export class AzureInsightsLogger extends AbstractLogger {
             }
 
             // Log party to which the JWT was originally issued
-            if (httpRequest.headers.authorization) {
+            try {
                 const azp = Utils.getAzpFromPayload(httpRequest.headers.authorization);
                 if (azp) {
                     envelope.data.baseData.properties['client-id'] = azp;
                 }
+            } catch (e) {
+                console.error('Telemetry process error - unrecognized header format');
+                console.error(httpRequest.headers);
+                console.error(e);
             }
+
         }
         return true;
     }
