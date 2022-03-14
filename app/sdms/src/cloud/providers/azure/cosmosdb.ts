@@ -16,7 +16,7 @@
 
 import crypto from 'crypto';
 
-import { CosmosClient, Container, FeedResponse, ConsistencyLevel } from '@azure/cosmos';
+import { CosmosClient, Container, FeedResponse } from '@azure/cosmos';
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
@@ -40,18 +40,13 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             const cosmosClient = new CosmosClient({
                 endpoint: connectionParams.endpoint,
                 key: connectionParams.key,
-                // to deal with high rates of 404 from the db:
-                // https://docs.microsoft.com/en-us/azure/cosmos-db/sql/troubleshoot-not-found
-                consistencyLevel: ConsistencyLevel.Strong
             });
-            const { database } = await cosmosClient.databases.createIfNotExists(
-                { id: databaseId },
-                { consistencyLevel: ConsistencyLevel.Strong });
+            const { database } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
             const { container } = await database.containers.createIfNotExists({
                 id: containerId,
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
                 partitionKey: { paths: ['/id'], version: 2 }
-            }, { consistencyLevel: ConsistencyLevel.Strong });
+            });
             AzureCosmosDbDAO.containerCache[this.dataPartition] = container;
         }
 

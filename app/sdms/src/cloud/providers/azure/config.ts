@@ -14,8 +14,10 @@
 // limitations under the License.
 // ============================================================================
 
+import { ENABLED_COSMOS_MIGRATION } from '../../cloud';
 import { Config, ConfigFactory } from '../../config';
 import { LoggerFactory } from '../../logger';
+import { DatabaseChecker } from './cosmos-background';
 import { AzureInsightsLogger } from './insights';
 import { Keyvault } from './keyvault';
 
@@ -159,6 +161,16 @@ export class AzureConfig extends Config {
 
             // initialize app insight
             AzureInsightsLogger.initialize();
+
+            // initialize and run background job to detect databases existence
+            if (ENABLED_COSMOS_MIGRATION) {
+                await DatabaseChecker.collectPartitions();
+                await DatabaseChecker.checkDatabaseExistence();
+                DatabaseChecker.run().catch((error) => {
+                    LoggerFactory.build(Config.CLOUDPROVIDER).error(error);
+                });
+            }
+
         } catch (error) {
             LoggerFactory.build(Config.CLOUDPROVIDER).error('Unable to initialize configuration for azure cloud provider ' + error);
             throw error;
