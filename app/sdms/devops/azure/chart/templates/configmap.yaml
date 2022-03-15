@@ -10,3 +10,4 @@ data:
   APP_ENVIRONMENT_IDENTIFIER: {{ .Values.configEnv.appEnvironmentIdentifier }}
   PORT: "{{ .Values.configEnv.port }}"
   SDMS_PREFIX: "{{ .Values.configEnv.sdmsPrefix }}"
+  ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX: "{{ .Values.configEnv.cosmosOldIndexDb }}"

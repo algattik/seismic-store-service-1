@@ -19,6 +19,7 @@ import { Error } from '../shared';
 
 // [to-remove] cosmos migration
 export const ENABLED_COSMOS_MIGRATION = process.env.ENABLED_COSMOS_MIGRATION !== 'false';
+export const ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX = process.env.ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX === 'true';
 
 export class CloudFactory {
 
@@ -45,6 +46,9 @@ export class CloudFactory {
 
             for (const provider of CloudFactory.providers[providerLabel]) {
                 if (provider.prototype instanceof referenceAbstraction) {
+                    if (ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX && provider.name === 'AzureCosmosDbDAO') {
+                        continue;
+                    }
                     return new provider(args);
                 }
             }
@@ -62,11 +66,10 @@ export class CloudFactory {
                     // It will allow cosmos databases migration to a new index model with no downtime.
                     // This condition will be removed once the migration process is completed.
                     if (provider.name === 'AzureCosmosDbDAO' || provider.name === 'AzureCosmosDbDAORegular') {
-                        if (referenceAbstraction.name === 'AbstractJournal') {
-                            azureJournalProviders.push(provider);
-                        } else {
+                        if (ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX && provider.name === 'AzureCosmosDbDAORegular') {
                             return new provider(args);
                         }
+                        azureJournalProviders.push(provider);
                     } else {
                         return new provider(args);
                     }
