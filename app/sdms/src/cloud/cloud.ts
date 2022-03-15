@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
+import { Config } from '.';
 import { Error } from '../shared';
 
 // [to-remove] cosmos migration
@@ -98,6 +99,7 @@ export class CloudFactory {
 
                 // load the right implementation. supported is provided for both version of the db.
                 // if no database exist, the new one will be used (newly created partitions)
+                Config.ENFORCE_SCHEMA_BY_KEY = !CloudFactory.azureDatabase[partition].regular
                 const cosmosClassName = CloudFactory.azureDatabase[partition].regular ? 'AzureCosmosDbDAORegular' : 'AzureCosmosDbDAO';
                 for (const azureProvider of azureJournalProviders) {
                     if (azureProvider.name === cosmosClassName) {

@@ -84,7 +84,7 @@ export class DatasetHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get({
-            gcpid: userInput.tenantID, esd: userInput.dataPartitionID, default_acls: 'any', name: 'any'
+            gcpid: userInput.tenantID, esd: userInput.dataPartitionID, default_acls: 'any', name: userInput.tenantID
         });
 
         const datasetOUT = subproject.enforce_key ?
