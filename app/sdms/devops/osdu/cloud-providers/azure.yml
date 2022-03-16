@@ -13,7 +13,6 @@ variables:
   SDMS_MIN_REPLICAS: 1
   SDMS_MAX_REPLICAS: 5
   AZURE_SDMS_PREFIX: /seistore-svc/api/v3
-  COSMOS_OLD_INDEX_DB: "true"
   E2E_SUBPROJECT: demosandbox08
   
 sdms_azure_containerize:
@@ -79,7 +78,6 @@ sdms_azure_deploy:
     - sed -i 's/#{SDMS_MIN_REPLICAS}#/'$SDMS_MIN_REPLICAS'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MAX_REPLICAS}#/'$SDMS_MAX_REPLICAS'/' ${CHART_PATH}/values.yaml
     - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ${CHART_PATH}/values.yaml
-    - sed -i 's|#{COSMOS_OLD_INDEX_DB}#|'$COSMOS_OLD_INDEX_DB'|' ${CHART_PATH}/values.yaml
     # Install helm chart
     - helm upgrade $SDMS_SERVICE_NAME ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
     - helm upgrade $SDMS_SERVICE_NAME ${CHART_PATH} --install --values $CHART_PATH/values.yaml 

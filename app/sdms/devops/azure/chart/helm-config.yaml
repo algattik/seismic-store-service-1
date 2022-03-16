@@ -17,7 +17,6 @@ configEnv:
   appEnvironmentIdentifier: #{ENVIRONMENT_NAME}#
   port: #{PORT}#
   sdmsPrefix: #{SDMS_PREFIX}#
-  cosmosOldIndexDb: #{COSMOS_OLD_INDEX_DB}#
 image:
   repository: #{CONTAINER_REGISTRY_NAME}#
   branch: master
