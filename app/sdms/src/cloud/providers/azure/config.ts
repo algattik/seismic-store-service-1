@@ -32,6 +32,7 @@ export class AzureConfig extends Config {
 
     // Instrumentation key
     public static AI_INSTRUMENTATION_KEY: string;
+    public static CORRELATION_ID = 'correlation-id';
 
     // keyvault id
     public static KEYVAULT_URL: string;
@@ -98,6 +99,9 @@ export class AzureConfig extends Config {
             AzureConfig.ENABLE_LOGGING_ERROR = process.env.ENABLE_LOGGING_ERROR !== 'false'; // enabled by default
             AzureConfig.ENABLE_LOGGING_METRIC = process.env.ENABLE_LOGGING_METRIC === 'true'; // disabled by default
 
+            // set the correlation id
+            AzureConfig.CORRELATION_ID = process.env.CORRELATION_ID || AzureConfig.CORRELATION_ID;
+
             // init generic configurations
             await Config.initServiceConfiguration({
                 SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
@@ -125,7 +129,7 @@ export class AzureConfig extends Config {
                 JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
                 ENFORCE_SCHEMA_BY_KEY: true,
                 TENANT_JOURNAL_ON_DATA_PARTITION: true,
-                CORRELATION_ID: 'correlation-id',
+                CORRELATION_ID: AzureConfig.CORRELATION_ID,
                 ENABLE_SDMS_ID_AUDIENCE_CHECK: process.env.ENABLE_SDMS_ID_AUDIENCE_CHECK !== undefined ?
                     process.env.ENABLE_SDMS_ID_AUDIENCE_CHECK === 'true' : false,
                 ENABLE_DE_TOKEN_EXCHANGE: process.env.ENABLE_DE_TOKEN_EXCHANGE !== undefined ?
@@ -152,7 +156,9 @@ export class AzureConfig extends Config {
                 FEATURE_FLAG_POLICY_SVC_INTERACTION: process.env.FEATURE_FLAG_POLICY_SVC_INTERACTION === 'true',
                 CCM_SERVICE_URL: AzureConfig.CCM_SERVICE_URL,
                 CCM_TOKEN_SCOPE: AzureConfig.CCM_TOKEN_SCOPE,
-                CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
+                CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS ?
+                    process.env.CALLER_FORWARD_HEADERS + ',' + AzureConfig.CORRELATION_ID :
+                    AzureConfig.CORRELATION_ID,
                 USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS || 'subid',
                 USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC || 'email',
                 USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER || 'ccm-internal',
