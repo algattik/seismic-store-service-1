@@ -17,6 +17,7 @@ configEnv:
   appEnvironmentIdentifier: #{ENVIRONMENT_NAME}#
   port: #{PORT}#
   sdmsPrefix: #{SDMS_PREFIX}#
+
 image:
   repository: #{CONTAINER_REGISTRY_NAME}#
   branch: master
