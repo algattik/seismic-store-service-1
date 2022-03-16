@@ -23,7 +23,8 @@
     "copy-schemas": "copyfiles --up 1 ./docs/schemas/**/*.json ./dist/docs",
     "copy-rego-policies": "copyfiles --up 1 ./docs/policies/*.rego ./dist/docs",
     "postbuild": "npm run copy-static-files && npm run copy-schemas && npm run copy-rego-policies",
-    "prepare": "cd ../.. && husky install ./app/sdms/.husky"
+    "prepare": "cd ../.. && husky install ./app/sdms/.husky",
+    "postinstall": "sed -i 's/body.UserConsistencyPolicy/body.userConsistencyPolicy/g' node_modules/@azure/cosmos/dist/index.js"
   },
   "nyc": {
     "include": [

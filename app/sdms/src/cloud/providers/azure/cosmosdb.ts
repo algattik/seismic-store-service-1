@@ -16,7 +16,7 @@
 
 import crypto from 'crypto';
 
-import { CosmosClient, Container, FeedResponse } from '@azure/cosmos';
+import { CosmosClient, Container, FeedResponse, ConsistencyLevel } from '@azure/cosmos';
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
@@ -40,6 +40,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             const cosmosClient = new CosmosClient({
                 endpoint: connectionParams.endpoint,
                 key: connectionParams.key,
+                consistencyLevel: ConsistencyLevel.Strong
             });
             const { database } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
             const { container } = await database.containers.createIfNotExists({
