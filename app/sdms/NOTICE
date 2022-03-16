@@ -81,7 +81,6 @@ The following software have components provided under the terms of this license:
 
 - ajv (from https://www.npmjs.com/package/ajv)
 - ansi-regex (from https://www.npmjs.com/package/ansi-regex)
-- argparse (from https://www.npmjs.com/package/argparse)
 - asn1 (from https://www.npmjs.com/package/asn1)
 - assert-plus (from https://www.npmjs.com/package/assert-plus)
 - asynckit (from https://www.npmjs.com/package/asynckit)
