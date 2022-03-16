@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ============================================================================
-import appinsights from 'applicationinsights';
+import * as appinsights from 'applicationinsights';
 import { Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractLogger, LoggerFactory } from '../../logger';
 import { AzureConfig } from './config';
-
 
 @LoggerFactory.register('azure')
 export class AzureInsightsLogger extends AbstractLogger {
