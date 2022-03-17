@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import { CosmosClient } from '@azure/cosmos';
+import { Container, CosmosClient } from '@azure/cosmos';
 import { CloudFactory } from '../../cloud';
 import { AzureDataEcosystemServices } from './dataecosystem';
 
@@ -25,6 +25,7 @@ export class DatabaseChecker {
 
     private static partitions: string[];
     private static clients: { [key: string]: CosmosClient } = {};
+    private static containers: { [key: string]: Container } = {};
 
     public static async run(): Promise<void> {
         // refresh the list of existing partitions every 60 seconds.
@@ -47,6 +48,8 @@ export class DatabaseChecker {
 
         if (DatabaseChecker.partitions) {
 
+            let allMigrated = true;
+            let allMigratedCounter = 0;
             for (const partition of DatabaseChecker.partitions) {
 
                 // retrieve the connection parameters if not already fetched
@@ -74,6 +77,20 @@ export class DatabaseChecker {
                     regular = true;
                 } catch (err: any) { /* do nothing */ }
 
+                if (regular && enhanced) {
+                    // retrieve the enhanced database container
+                    if (!(partition in DatabaseChecker.containers)) {
+                        const database = DatabaseChecker.clients[partition].database('sdms-db');
+                        DatabaseChecker.containers[partition] = database.container('data');
+                    }
+
+                    // check if the migration completed flag exists in the database
+                    if ((await DatabaseChecker.containers[partition].item(
+                        'z:mig:db:complete', 'z:mig:db:complete').read()).statusCode === 200) {
+                        regular = false;
+                    }
+                }
+
                 // build or update the reference databases existence object in the cloud provider
                 if (partition in CloudFactory.azureDatabase) {
                     CloudFactory.azureDatabase[partition].regular = regular;
@@ -82,6 +99,18 @@ export class DatabaseChecker {
                     CloudFactory.azureDatabase[partition] = { regular, enhanced };
                 }
 
+                // disable all migrated if not migrated
+                if (regular) {
+                    allMigrated = false
+                }
+            }
+
+            if (allMigrated) {
+                if (allMigratedCounter === 0) {
+                    // tslint:disable-next-line: no-console
+                    console.log('!!! all partitions have been migrated !!! set ENABLED_COSMOS_MIGRATION=false in the env and restart the service');
+                }
+                allMigratedCounter = allMigratedCounter === 9 ? 0 : (allMigratedCounter + 1);
             }
         }
     }
