@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { Container, CosmosClient } from '@azure/cosmos';
+import { Cache } from '../../../shared';
 import { CloudFactory } from '../../cloud';
 import { AzureDataEcosystemServices } from './dataecosystem';
 
@@ -26,6 +27,7 @@ export class DatabaseChecker {
     private static partitions: string[];
     private static clients: { [key: string]: CosmosClient } = {};
     private static containers: { [key: string]: Container } = {};
+    private static cache: Cache<string>;
 
     public static async run(): Promise<void> {
         // refresh the list of existing partitions every 60 seconds.
@@ -48,8 +50,6 @@ export class DatabaseChecker {
 
         if (DatabaseChecker.partitions) {
 
-            let allMigrated = true;
-            let allMigratedCounter = 0;
             for (const partition of DatabaseChecker.partitions) {
 
                 // retrieve the connection parameters if not already fetched
@@ -89,6 +89,17 @@ export class DatabaseChecker {
                         'z:mig:db:complete', 'z:mig:db:complete').read()).statusCode === 200) {
                         regular = false;
                     }
+
+                    // check if the cache clear flag exists in the database
+                    if ((await DatabaseChecker.containers[partition].item(
+                        'z:cache::clear', 'z:cache::clear').read()).statusCode === 200) {
+                            if(!DatabaseChecker.cache) {
+                                DatabaseChecker.cache = new Cache();
+                            }
+                            await DatabaseChecker.cache.clear('sdms-tenant*');
+                            await DatabaseChecker.cache.clear('sdms-subproject*');
+                    }
+
                 }
 
                 // build or update the reference databases existence object in the cloud provider
@@ -99,18 +110,6 @@ export class DatabaseChecker {
                     CloudFactory.azureDatabase[partition] = { regular, enhanced };
                 }
 
-                // disable all migrated if not migrated
-                if (regular) {
-                    allMigrated = false
-                }
-            }
-
-            if (allMigrated) {
-                if (allMigratedCounter === 0) {
-                    // tslint:disable-next-line: no-console
-                    console.log('!!! all partitions have been migrated !!! set ENABLED_COSMOS_MIGRATION=false in the env and restart the service');
-                }
-                allMigratedCounter = allMigratedCounter === 9 ? 0 : (allMigratedCounter + 1);
             }
         }
     }

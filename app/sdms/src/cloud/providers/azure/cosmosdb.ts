@@ -39,8 +39,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
             const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
             const cosmosClient = new CosmosClient({
                 endpoint: connectionParams.endpoint,
-                key: connectionParams.key,
-                consistencyLevel: ConsistencyLevel.Strong
+                key: connectionParams.key
             });
             const { database } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
             const { container } = await database.containers.createIfNotExists({
