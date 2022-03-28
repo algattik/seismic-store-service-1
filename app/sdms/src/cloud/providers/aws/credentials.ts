@@ -137,13 +137,14 @@ export class AWSCredentials extends AbstractCredentials {
 
         const options = {
             form: {
-                grant_type: 'client_credentials'
+                grant_type: 'client_credentials',
+                scope: oauthCustomScope
             },
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': 'Basic '+encodedAuth
             },
-            url: tokenUrl+'?client_id='+clientId+'&scope='+ oauthCustomScope,
+            url: tokenUrl,
         };
         const response = JSON.parse(await request.post(options));
         AWSCredentials.servicePrincipalCredential = response as IAccessTokenModel;
