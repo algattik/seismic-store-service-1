@@ -16,12 +16,13 @@
 
 import crypto from 'crypto';
 
-import { CosmosClient, Container, FeedResponse, ConsistencyLevel } from '@azure/cosmos';
+import { CosmosClient, Container, FeedResponse, ItemResponse } from '@azure/cosmos';
 import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
 import { Config } from '../..';
+import { AzureInsightsLogger } from './insights';
 
 @JournalFactory.register('azure')
 export class AzureCosmosDbDAO extends AbstractJournal {
@@ -78,7 +79,13 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
     public async get(key: any): Promise<[any | any[]]> {
 
-        const item = await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).read();
+        let retry = 0;
+        let item: ItemResponse<any>;
+        while (retry++ < 5) {
+            item = await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).read();
+            if (item.statusCode !== 404 || !Config.ENABLE_STRONG_CONSISTENCY_EMULATION) { break; }
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        }
 
         if (!item.resource) {
             return [undefined];

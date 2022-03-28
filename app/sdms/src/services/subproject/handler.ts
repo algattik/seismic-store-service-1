@@ -113,11 +113,13 @@ export class SubProjectHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Check if the subproject already exists
+        Config.disableStrongConsistencyEmulation();
         if (await SubProjectDAO.exist(journalClient, subproject.tenant, subproject.name)) {
             throw (Error.make(Error.Status.ALREADY_EXISTS,
                 'The subproject ' + subproject.name +
                 ' already exists in the tenant project ' + subproject.tenant));
         }
+        Config.enableStrongConsistencyEmulation();
 
         const uuid = uuidv4();
         const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd, uuid);
