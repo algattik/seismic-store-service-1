@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2022, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import { Config } from '.';
 import { Error } from '../shared';
 
-// [to-remove] cosmos migration
+// to-remove once the migration to the new DB has been completed in all Azure deployments
 export const ENABLED_COSMOS_MIGRATION = process.env.ENABLED_COSMOS_MIGRATION !== 'false';
 export const ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX = process.env.ENABLE_USAGE_COSMOS_DATABASE_OLD_INDEX === 'true';
 
@@ -55,8 +55,7 @@ export class CloudFactory {
             throw Error.make(Error.Status.UNKNOWN,
                 `The cloud provider builder that extend ${referenceAbstraction} has not been found`);
 
-        } else { // [to-remove]
-
+        } else { // to-remove once the migration to the new DB has been completed in all Azure deployments
             const azureJournalProviders: any[] = []; // This is temporary required by Azure deployments.
             for (const provider of CloudFactory.providers[providerLabel]) {
 
