@@ -56,11 +56,8 @@ export interface ConfigModel {
     ENABLE_SDMS_ID_AUDIENCE_CHECK?: boolean;
     ENABLE_DE_TOKEN_EXCHANGE?: boolean;
     DES_TARGET_AUDIENCE?: string;
-    FEATURE_FLAG_AUTHORIZATION: boolean;
-    FEATURE_FLAG_LEGALTAG: boolean;
     FEATURE_FLAG_SEISMICMETA_STORAGE: boolean;
     FEATURE_FLAG_IMPTOKEN: boolean;
-    FEATURE_FLAG_STORAGE_CREDENTIALS: boolean;
     FEATURE_FLAG_TRACE: boolean;
     FEATURE_FLAG_LOGGING: boolean;
     FEATURE_FLAG_STACKDRIVER_EXPORTER: boolean;
@@ -140,11 +137,8 @@ export abstract class Config implements IConfig {
     public static TENANT_JOURNAL_ON_DATA_PARTITION = false;
 
     // Feature Flags
-    public static FEATURE_FLAG_AUTHORIZATION = true;
-    public static FEATURE_FLAG_LEGALTAG = true;
     public static FEATURE_FLAG_SEISMICMETA_STORAGE = true;
     public static FEATURE_FLAG_IMPTOKEN = true;
-    public static FEATURE_FLAG_STORAGE_CREDENTIALS = true;
     public static FEATURE_FLAG_TRACE = true;
     public static FEATURE_FLAG_LOGGING = true;
     public static FEATURE_FLAG_STACKDRIVER_EXPORTER = true;
@@ -246,11 +240,8 @@ export abstract class Config implements IConfig {
         Config.DES_REDIS_INSTANCE_TLS_DISABLE =
             model.DES_REDIS_INSTANCE_TLS_DISABLE || model.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE;
 
-        Config.FEATURE_FLAG_AUTHORIZATION = model.FEATURE_FLAG_AUTHORIZATION;
-        Config.FEATURE_FLAG_LEGALTAG = model.FEATURE_FLAG_LEGALTAG;
         Config.FEATURE_FLAG_SEISMICMETA_STORAGE = model.FEATURE_FLAG_SEISMICMETA_STORAGE;
         Config.FEATURE_FLAG_IMPTOKEN = model.FEATURE_FLAG_IMPTOKEN;
-        Config.FEATURE_FLAG_STORAGE_CREDENTIALS = model.FEATURE_FLAG_STORAGE_CREDENTIALS;
         Config.FEATURE_FLAG_TRACE = model.FEATURE_FLAG_TRACE;
         Config.FEATURE_FLAG_LOGGING = model.FEATURE_FLAG_LOGGING;
         Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = model.FEATURE_FLAG_STACKDRIVER_EXPORTER;

@@ -100,9 +100,6 @@ export class UserHandler {
 
     // Add a user to a tenant or a subproject or a dataset
     private static async addUser(req: expRequest) {
-
-        if (!FeatureFlags.isEnabled(Feature.AUTHORIZATION)) return {};
-
         // parse user request
         const userInput = UserParser.addUser(req);
         const sdPath = userInput.sdPath;
@@ -212,8 +209,6 @@ export class UserHandler {
     // Remove a user from a tenant or a subproject or a dataset
     private static async removeUser(req: expRequest) {
 
-        if (!FeatureFlags.isEnabled(Feature.AUTHORIZATION)) return {};
-
         // parse user request
         const userInput = UserParser.removeUser(req);
         const sdPath = userInput.sdPath;
@@ -321,8 +316,6 @@ export class UserHandler {
     // list users and their roles in a subproject
     private static async listUsers(req: expRequest): Promise<string[][]> {
 
-        if (!FeatureFlags.isEnabled(Feature.AUTHORIZATION)) return [];
-
         // parse user request
         const sdPath = UserParser.listUsers(req);
 
@@ -385,8 +378,6 @@ export class UserHandler {
 
     // retrieve the roles of a user
     private static async rolesUser(req: expRequest) {
-
-        if (!FeatureFlags.isEnabled(Feature.AUTHORIZATION)) return {};
 
         // parse user request
         const sdPath = UserParser.rolesUser(req);

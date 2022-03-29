@@ -128,16 +128,10 @@ export class AzureConfig extends Config {
                 ENABLE_DE_TOKEN_EXCHANGE: process.env.ENABLE_DE_TOKEN_EXCHANGE !== undefined ?
                     process.env.ENABLE_DE_TOKEN_EXCHANGE === 'true' : false,
                 DES_TARGET_AUDIENCE: process.env.DES_TARGET_AUDIENCE,
-                FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
-                    process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,
-                FEATURE_FLAG_LEGALTAG: process.env.FEATURE_FLAG_LEGALTAG !== undefined ?
-                    process.env.FEATURE_FLAG_LEGALTAG !== 'false' : true,
                 FEATURE_FLAG_SEISMICMETA_STORAGE: process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== undefined ?
                     process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== 'false' : true,
                 FEATURE_FLAG_IMPTOKEN: process.env.FEATURE_FLAG_IMPTOKEN !== undefined ?
                     process.env.FEATURE_FLAG_IMPTOKEN !== 'false' : true,
-                FEATURE_FLAG_STORAGE_CREDENTIALS: process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== undefined ?
-                    process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== 'false' : true,
                 FEATURE_FLAG_TRACE: process.env.FEATURE_FLAG_TRACE !== undefined ?
                     process.env.FEATURE_FLAG_TRACE !== 'false' : true,
                 FEATURE_FLAG_LOGGING: process.env.FEATURE_FLAG_LOGGING !== undefined ?
