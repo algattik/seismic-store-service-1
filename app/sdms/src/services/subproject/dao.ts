@@ -21,7 +21,7 @@ import { TenantDAO } from '../tenant';
 
 export class SubProjectDAO {
 
-    private static _cache = new Cache<SubProjectModel>('subproject');
+    private static _cache = new Cache<SubProjectModel>('sdms-subproject');
 
     // register a new subproject under a given Tenant Project (existence check must be done externally)
     public static async register(journalClient: IJournal, subproject: SubProjectModel) {

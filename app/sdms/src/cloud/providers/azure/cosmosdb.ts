@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2022, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
 // limitations under the License.
 // ============================================================================
 
-import { CosmosClient, Container, SqlQuerySpec, SqlParameter, FeedOptions } from '@azure/cosmos';
-import {
-    AbstractJournal, AbstractJournalTransaction,
-    IJournalQueryModel, IJournalTransaction, JournalFactory
-} from '../../journal';
-import { Utils } from '../../../shared/utils'
+import crypto from 'crypto';
+
+import { CosmosClient, Container, FeedResponse, ItemResponse } from '@azure/cosmos';
+import { AbstractJournal, AbstractJournalTransaction, IJournalQueryModel, IJournalTransaction, JournalFactory } from '../../journal';
 import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
+import { Config } from '../..';
+import { AzureInsightsLogger } from './insights';
 
 @JournalFactory.register('azure')
 export class AzureCosmosDbDAO extends AbstractJournal {
@@ -32,24 +32,27 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     private static containerCache: { [key: string]: Container; } = {};
 
     public async getCosmoContainer(): Promise<Container> {
-        const containerId = 'seistore-' + this.dataPartition + '-container';
-        if (AzureCosmosDbDAO.containerCache[containerId]) {
-            return AzureCosmosDbDAO.containerCache[containerId];
-        } else {
+
+        const databaseId = 'sdms-db'
+        const containerId = 'data';
+
+        if (!AzureCosmosDbDAO.containerCache[this.dataPartition]) {
             const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
             const cosmosClient = new CosmosClient({
                 endpoint: connectionParams.endpoint,
                 key: connectionParams.key
             });
-            const { database } =  await cosmosClient.databases.createIfNotExists({id: 'seistore-' + this.dataPartition + '-db'});
+            const { database } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
             const { container } = await database.containers.createIfNotExists({
-                id: 'seistore-' + this.dataPartition + '-container',
+                id: containerId,
                 maxThroughput: AzureConfig.COSMO_MAX_THROUGHPUT,
-                partitionKey: '/key'
+                partitionKey: { paths: ['/id'], version: 2 }
             });
-            AzureCosmosDbDAO.containerCache[containerId] = container;
-            return AzureCosmosDbDAO.containerCache[containerId];
+            AzureCosmosDbDAO.containerCache[this.dataPartition] = container;
         }
+
+        return AzureCosmosDbDAO.containerCache[this.dataPartition];
+
     }
 
     public constructor(tenant: TenantModel) {
@@ -58,30 +61,35 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     }
 
     public async save(datasetEntity: any): Promise<void> {
+
         if (!(datasetEntity instanceof Array)) {
             datasetEntity = [datasetEntity];
         }
+
         for (const entity of datasetEntity) {
             const item = {
-                id: entity.key.name,
-                key: entity.key.partitionKey,
+                id: entity.key.partitionKey,
                 data: entity.data
             }
             item.data[this.KEY.toString()] = entity.key;
-            if (entity.ctag) {
-                item.data.ctag = entity.ctag;
-            }
             await (await this.getCosmoContainer()).items.upsert(item);
         }
 
     }
 
     public async get(key: any): Promise<[any | any[]]> {
-        const item = await (await this.getCosmoContainer()).item(key.name, key.partitionKey).read();
 
-        if (item.resource === undefined) {
+        let retry = 0;
+        let item: ItemResponse<any>;
+        while (retry++ < 5) {
+            item = await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).read();
+            if (item.statusCode !== 404 || !Config.ENABLE_STRONG_CONSISTENCY_EMULATION) { break; }
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        }
+
+        if (!item.resource) {
             return [undefined];
-        };
+        }
 
         const data = item.resource.data;
         data[this.KEY] = data[this.KEY.toString()];
@@ -90,7 +98,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     }
 
     public async delete(key: any): Promise<void> {
-        await (await this.getCosmoContainer()).item(key.name, key.partitionKey).delete();
+        await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).delete();
     }
 
     public createQuery(namespace: string, kind: string): IJournalQueryModel {
@@ -100,48 +108,120 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {
 
         const cosmosQuery = (query as AzureCosmosDbQuery);
-        const statement = cosmosQuery.prepareSqlStatement(AzureConfig.DATASETS_KIND);
 
-        const response = await (await this.getCosmoContainer()).items.query(
-            statement.spec, statement.options).fetchNext();
+        let sqlQuery: string;
+        let response: FeedResponse<any>;
+
+        if (cosmosQuery.kind === Config.SUBPROJECTS_KIND) {
+            sqlQuery = 'SELECT * FROM c WHERE c.id LIKE "sp-%"';
+            response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+        }
+
+        if (cosmosQuery.kind === Config.DATASETS_KIND) {
+
+            // return selected fields
+            if (cosmosQuery.projectedFieldNames.length) {
+                let fieldList = '';
+                for (const field of cosmosQuery.projectedFieldNames) {
+                    if (fieldList) {
+                        fieldList += ', ';
+                    }
+                    fieldList += 'c.data.' + field;
+                }
+                sqlQuery = 'SELECT ' + fieldList
+            } else {
+                sqlQuery = 'SELECT *';
+            }
+
+            // query using partial partition key
+            const partialKey = 'ds' + cosmosQuery.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
+            sqlQuery += ' FROM c WHERE c.id LIKE "' + partialKey + '-%"';
+
+            // add filters
+            for (const filter of cosmosQuery.filters) {
+                if (filter.operator === 'CONTAINS') {
+                    sqlQuery += (' AND (ARRAY_CONTAINS(c.data.' + filter.property + ', ' + '\'' + filter.value + '\'' + ')' +
+                        ' OR c.data.' + filter.property + ' = ' + '\'' + filter.value + '\'' + ')')
+                } else {
+                    sqlQuery += (' AND c.data.' + filter.property + ' ' + filter.operator + ' "' + filter.value + '"')
+                }
+            }
+
+            // group results by field
+            if (cosmosQuery.groupByFieldNames.length) {
+                let groupByList = '';
+                for (const field of cosmosQuery.groupByFieldNames) {
+                    if (groupByList) {
+                        groupByList += ', ';
+                    }
+                    groupByList += 'c.data.' + field;
+                }
+                sqlQuery += ' GROUP BY ' + groupByList;
+            }
+
+            // use paginated query if required
+            if (cosmosQuery.pagingLimit) {
+                response = await (await this.getCosmoContainer()).items.query(sqlQuery, {
+                    continuationToken: cosmosQuery.pagingStart,
+                    maxItemCount: cosmosQuery.pagingLimit
+                }).fetchNext();
+            } else {
+                response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+            }
+
+        }
+
+        if (cosmosQuery.kind === Config.APPS_KIND) {
+            sqlQuery = 'SELECT * FROM c WHERE c.id LIKE "ap-%"';
+            response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+        }
+
         const results = response.resources.map(result => {
             if (!result.data) {
                 return result;
-            } else {
-                if (result.data[this.KEY.toString()]) {
-                    result.data[this.KEY] = result.data[this.KEY.toString()];
-                    delete result.data[this.KEY.toString()];
-                    return result.data;
-                } else {
-                    return result.data;
-                }
             }
+            if (result.data[this.KEY.toString()]) {
+                result.data[this.KEY] = result.data[this.KEY.toString()];
+                delete result.data[this.KEY.toString()];
+            }
+            return result.data;
         });
 
-        return Promise.resolve(
-            [
-                results,
-                {
-                    endCursor: response.continuationToken
-                }
-            ]);
+        return Promise.resolve([results, { endCursor: response.continuationToken }]);
     }
 
     public createKey(specs: any): object {
+
         const kind = specs.path[0];
-        const partitionKey = specs.namespace + '-' + kind;
+        let partitionKey: string;
         let name: string;
-        if (kind === AzureConfig.DATASETS_KIND) {
-            name = Utils.makeID(16);
-        } else if (kind === AzureConfig.SEISMICMETA_KIND) {
-            name = specs.path[1].replace(/\W/g, '-');
-        } else {
+
+        if (kind === AzureConfig.TENANTS_KIND) {
             name = specs.path[1];
+            partitionKey = 'tn-' + name;
         }
-        return { name, partitionKey, kind };
+
+        if (kind === AzureConfig.SUBPROJECTS_KIND) {
+            name = specs.path[1];
+            partitionKey = 'sp-' + name;
+        }
+
+        if (kind === AzureConfig.DATASETS_KIND) {
+            name = specs.enforcedKey.indexOf('/') === -1 ?
+                specs.enforcedKey :
+                specs.enforcedKey.substring((specs.enforcedKey).lastIndexOf('/') + 1);
+            partitionKey = 'ds' + specs.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
+                + '-' + crypto.createHash('sha512').update(specs.enforcedKey).digest('hex');
+        }
+
+        if (kind === AzureConfig.APPS_KIND) {
+            name = specs.path[1];
+            partitionKey = 'ap-' + name;
+        }
+
+        return { partitionKey, name };
     }
 
-    // new instance of AzureCosmosDbTransactionDAO
     public getTransaction(): IJournalTransaction {
         return new AzureCosmosDbTransactionDAO(this);
     }
@@ -150,9 +230,81 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         return 'CONTAINS';
     }
 
-    public type: OperationType;
-    public entityOrKey: any;
 }
+
+declare type Operator = '=' | '<' | '>' | '<=' | '>=' | 'HAS_ANCESTOR' | 'CONTAINS';
+
+export class AzureCosmosDbQuery implements IJournalQueryModel {
+
+    public constructor(namespace: string, kind: string) {
+        this.namespace = namespace;
+        this.kind = kind;
+    }
+
+    filter(property: string, operator?: Operator, value?: {}): IJournalQueryModel {
+
+        if (value === undefined) {
+            value = operator;
+            operator = '=';
+        }
+
+        if (operator === undefined) {
+            operator = '=';
+        }
+
+        if (value === undefined) {
+            value = '';
+        }
+
+        this.filters.push({ property, operator, value });
+
+        return this;
+    }
+
+    start(start: string | Buffer): IJournalQueryModel {
+        if (start instanceof Buffer) {
+            throw new Error('Type \'Buffer\' is not supported for CosmosDB Continuation while paging.');
+        }
+        this.pagingStart = start as string;
+        return this;
+    }
+
+    limit(n: number): IJournalQueryModel {
+        this.pagingLimit = n;
+        return this;
+    }
+
+    groupBy(fieldNames: string | string[]): IJournalQueryModel {
+        if (typeof fieldNames === 'string') {
+            this.groupByFieldNames = [fieldNames];
+        } else {
+            this.groupByFieldNames = fieldNames;
+        }
+        return this;
+    }
+
+    select(fieldNames: string | string[]): IJournalQueryModel {
+        if (typeof fieldNames === 'string') {
+            this.projectedFieldNames = [fieldNames];
+        } else {
+            this.projectedFieldNames = fieldNames;
+        }
+        return this;
+    }
+
+    public filters: { property: string; operator: Operator; value: {} }[] = [];
+    public projectedFieldNames: string[] = [];
+    public groupByFieldNames: string[] = [];
+    public pagingStart?: string;
+    public pagingLimit?: number;
+    public namespace: string;
+    public kind: string;
+
+}
+
+// ===========================================================================
+// TRANSACTIONS MODEL
+// ===========================================================================
 
 declare type OperationType = 'save' | 'delete';
 
@@ -167,10 +319,6 @@ export class AzureCosmosDbTransactionOperation {
     public entityOrKey: any;
 }
 
-/**
- * A wrapper class for datastore transactions
- * ! Note: looks awfully close to datastore interface.
- */
 export class AzureCosmosDbTransactionDAO extends AbstractJournalTransaction {
 
     public KEY = null;
@@ -239,224 +387,4 @@ export class AzureCosmosDbTransactionDAO extends AbstractJournalTransaction {
 
     private owner: AzureCosmosDbDAO;
     public queuedOperations: AzureCosmosDbTransactionOperation[] = [];
-}
-
-declare type Operator = '=' | '<' | '>' | '<=' | '>=' | 'HAS_ANCESTOR' | 'CONTAINS';
-
-class SqlStatementBuilder {
-
-    constructor(tableName: string, alias: string) {
-        this.tableName = tableName;
-        this.alias = alias;
-    }
-
-    public getUniqueParameterName(baseName: string): string {
-        let actualName = baseName;
-        let paramIndex = 0;
-
-        // find the first variation of this param name that is unused
-        while (this.parameterValues.find(p => p.name === `@${actualName}`)) {
-            paramIndex++;
-            actualName = `${actualName}${paramIndex}`;
-        }
-
-        return actualName;
-    }
-
-    public addFilterExpression(expression: string, parameterName: string, value: {}) {
-        this.filterExpressions.push(expression);
-        this.parameterValues.push({ name: parameterName, value });
-    }
-
-    public build(): SqlQuerySpec {
-        let query = '';
-
-        query = '';
-        for (const filter of this.filterExpressions) {
-            if (query) {
-                query += ' AND ';
-            }
-            query += filter;
-        }
-
-        if (query) {
-            query = `WHERE ${query}`;
-        }
-
-        let fieldList = '*';
-        if (this.projectedFieldNames.length) {
-            fieldList = '';
-            for (const field of this.projectedFieldNames) {
-                if (fieldList) {
-                    fieldList += ', ';
-                }
-                fieldList += `${this.alias}.data.${field}`;
-            }
-        }
-
-        if (query) {
-            query = `SELECT ${fieldList} FROM ${this.tableName} AS ${this.alias} ${query}`;
-        }
-        else {
-            query = `SELECT ${fieldList} FROM ${this.tableName} AS ${this.alias}`;
-        }
-
-        if (this.groupByFieldNames.length) {
-            let groupByList = '';
-            for (const field of this.groupByFieldNames) {
-                if (groupByList) {
-                    groupByList += ', ';
-                }
-                groupByList += `${this.alias}.data.${field}`;
-            }
-            query = `${query} GROUP BY ${groupByList}`;
-        }
-
-        return {
-            query,
-            parameters: this.parameterValues
-        };
-    }
-
-    public tableName: string;
-    public alias: string;
-    private filterExpressions: string[] = [];
-    private parameterValues: SqlParameter[] = [];
-    public projectedFieldNames: string[] = [];
-    public groupByFieldNames: string[] = [];
-}
-
-class AzureCosmosDbFilter {
-
-    public constructor(property: string, operator: Operator, value: {}) {
-        this.property = property;
-        this.operator = operator;
-        this.value = value;
-    }
-
-    public property: string;
-
-    public operator: Operator;
-
-    public value: {};
-
-    public addFilterExpression(toStatement: SqlStatementBuilder) {
-        if (this.operator === 'HAS_ANCESTOR') {
-            throw new Error('HAS_ANCESTOR operator is not supported in query filters.');
-        }
-        const parameterName = `@${toStatement.getUniqueParameterName(this.property)}`;
-
-        if (this.operator === 'CONTAINS') {
-            toStatement.addFilterExpression(
-                `ARRAY_CONTAINS(${toStatement.alias}.data.${this.property} , ${parameterName})`,
-                parameterName,
-                this.value
-            );
-        }
-        else {
-            toStatement.addFilterExpression(
-                `${toStatement.alias}.data.${this.property} ${this.operator} ${parameterName}`,
-                parameterName,
-                this.value
-            );
-        }
-
-    }
-}
-
-/**
- * A shim for CosmosDB that provides compatibility with Google's SDK.
- * ! Note: looks awfully close to Google Query interface.
- */
-export class AzureCosmosDbQuery implements IJournalQueryModel {
-
-    public constructor(namespace: string, kind: string) {
-        this.namespace = namespace;
-        this.kind = kind;
-    }
-
-    filter(property: string, value: {}): IJournalQueryModel;
-
-    filter(property: string, operator: Operator, value: {}): IJournalQueryModel;
-
-    filter(property: string, operator?: Operator, value?: {}): IJournalQueryModel {
-        if (value === undefined) {
-            value = operator;
-            operator = '=';
-        }
-        if (operator === undefined) {
-            operator = '=';
-        }
-        if (value === undefined) {
-            value = '';
-        }
-
-        const filter = new AzureCosmosDbFilter(property, operator, value);
-
-        this.filters.push(filter);
-
-        return this;
-    }
-
-    start(start: string | Buffer): IJournalQueryModel {
-        if (start instanceof Buffer) {
-            throw new Error('Type \'Buffer\' is not supported for CosmosDB Continuation while paging.');
-        }
-        this.pagingStart = start as string;
-        return this;
-    }
-
-    limit(n: number): IJournalQueryModel {
-        this.pagingLimit = n;
-        return this;
-    }
-
-    groupBy(fieldNames: string | string[]): IJournalQueryModel {
-        if (typeof fieldNames === 'string') {
-            this.groupByFieldNames = [fieldNames];
-        } else {
-            this.groupByFieldNames = fieldNames;
-        }
-        return this;
-    }
-
-    select(fieldNames: string | string[]): IJournalQueryModel {
-        if (typeof fieldNames === 'string') {
-            this.projectedFieldNames = [fieldNames];
-        } else {
-            this.projectedFieldNames = fieldNames;
-        }
-        return this;
-    }
-
-    private filters: AzureCosmosDbFilter[] = [];
-    private projectedFieldNames: string[] = [];
-    private groupByFieldNames: string[] = [];
-    private pagingStart?: string;
-    private pagingLimit?: number;
-    public namespace: string;
-    public kind: string;
-
-    public prepareSqlStatement(tableName: string): { spec: SqlQuerySpec, options: FeedOptions } {
-
-        const builder = new SqlStatementBuilder(tableName, 'a');
-
-        for (const filter of this.filters) {
-            filter.addFilterExpression(builder);
-        }
-
-        builder.projectedFieldNames = this.projectedFieldNames;
-        builder.groupByFieldNames = this.groupByFieldNames;
-
-        const spec = builder.build();
-
-        return {
-            spec,
-            options: {
-                partitionKey: `${this.namespace}-${this.kind}`,
-                continuationToken: this.pagingStart,
-                maxItemCount: this.pagingLimit || -1
-            }
-        };
-    }
 }

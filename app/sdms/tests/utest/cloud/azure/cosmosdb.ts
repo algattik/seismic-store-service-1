@@ -1,10 +1,28 @@
+// ============================================================================
+// Copyright 2017-2021, Schlumberger
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ============================================================================
+
 import sinon from 'sinon';
+import crypto from 'crypto'
 
 import { Container, Item, Items } from '@azure/cosmos';
 import { AzureCosmosDbDAO } from '../../../../src/cloud/providers/azure/cosmosdb';
 import { Config } from '../../../../src/cloud';
 import { Tx } from '../../utils';
 import { assert } from 'chai';
+import { AzureConfig } from '../../../../src/cloud/providers/azure';
 
 export class TestAzureCosmosDbDAO {
     private static sandbox: sinon.SinonSandbox;
@@ -98,7 +116,7 @@ export class TestAzureCosmosDbDAO {
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(Item.prototype, 'delete').resolves();
-            this.cosmos.delete('entity');
+            await this.cosmos.delete('entity');
             done();
         });
     }
@@ -109,14 +127,10 @@ export class TestAzureCosmosDbDAO {
         Tx.test(async (done: any) => {
             const specs = {
                 namespace: 'testNamespace',
-                path: ['testKind', 'testPathValue']
+                path: [AzureConfig.SUBPROJECTS_KIND, 'spName']
             }
 
-            const expectedKey = {
-                name: specs.path[1],
-                partitionKey: specs.namespace + '-' + specs.path[0],
-                kind: specs.path[0]
-            }
+            const expectedKey = { partitionKey: 'sp-spName', name: 'spName' }
 
             const key = this.cosmos.createKey(specs);
             assert.deepEqual(key, expectedKey, 'Keys do not match');
@@ -125,21 +139,15 @@ export class TestAzureCosmosDbDAO {
 
         Tx.test(async (done: any) => {
             const specs = {
-                namespace: 'testNamespace',
-                path: [Config.DATASETS_KIND]
+                namespace: Config.SEISMIC_STORE_NS + '-tenant-sp',
+                path: [Config.DATASETS_KIND],
+                enforcedKey: '/path/name'
             }
-
-            const expectedKey = {
-                name: undefined,
-                partitionKey: specs.namespace + '-' + specs.path[0],
-                kind: Config.DATASETS_KIND
-            }
+            const partitionKey = 'ds-tenant-sp-' + crypto.createHash('sha512').update('/path/name').digest('hex');
+            const expectedKey = { partitionKey, name: 'name' }
 
             const key = this.cosmos.createKey(specs) as { name: string, partitionKey: string, kind: string };
-            assert.deepEqual(key.partitionKey, expectedKey.partitionKey);
-            assert.deepEqual(key.kind, expectedKey.kind);
-            assert.isDefined(key.name);
-            assert.equal(key.name.length, 16);
+            assert.deepEqual(key, expectedKey, 'Keys do not match');
             done();
         });
     }

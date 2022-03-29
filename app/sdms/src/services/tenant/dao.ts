@@ -20,7 +20,7 @@ import { Cache, Error } from '../../shared';
 
 export class TenantDAO {
 
-    private static _cache = new Cache<TenantModel>('tenant');
+    private static _cache = new Cache<TenantModel>('sdms-tenant');
 
     // get tenant metadata (throw if not exist)
     public static async get(tenantName: string): Promise<TenantModel> {

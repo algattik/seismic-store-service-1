@@ -84,7 +84,7 @@ export class DatasetHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get({
-            gcpid: userInput.tenantID, esd: userInput.dataPartitionID, default_acls: 'any', name: 'any'
+            gcpid: userInput.tenantID, esd: userInput.dataPartitionID, default_acls: 'any', name: userInput.tenantID
         });
 
         const datasetOUT = subproject.enforce_key ?
@@ -163,9 +163,11 @@ export class DatasetHandler {
                     tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
+            Config.disableStrongConsistencyEmulation();
             const datasetAlreadyExist = subproject.enforce_key ?
                 await DatasetDAO.getByKey(journalClient, dataset) :
                 (await DatasetDAO.get(journalClient, dataset))[0];
+            Config.enableStrongConsistencyEmulation();
 
             // check if dataset already exist
             if (datasetAlreadyExist) {
@@ -584,9 +586,11 @@ export class DatasetHandler {
 
             datasetIN.name = newName;
 
+            Config.disableStrongConsistencyEmulation();
             const datasetAlreadyExist = subproject.enforce_key ?
                 await DatasetDAO.getByKey(journalClient, datasetIN) :
                 (await DatasetDAO.get(journalClient, datasetIN))[0];
+            Config.enableStrongConsistencyEmulation();
 
             // check if dataset already exist
             if (datasetAlreadyExist) {

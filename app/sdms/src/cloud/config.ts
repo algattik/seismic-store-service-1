@@ -211,6 +211,9 @@ export abstract class Config implements IConfig {
     // SDMS URL prefix
     public static SDMS_PREFIX: string;
 
+    // strong consistency emulation
+    public static ENABLE_STRONG_CONSISTENCY_EMULATION: boolean;
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -326,6 +329,10 @@ export abstract class Config implements IConfig {
         // caller headers to forward to the downstream services
         Config.CALLER_FORWARD_HEADERS = model.CALLER_FORWARD_HEADERS;
 
+
+        // strong consistency emulation
+        Config.ENABLE_STRONG_CONSISTENCY_EMULATION = process.env.ENABLE_STRONG_CONSISTENCY_EMULATION !== 'false'
+
     }
 
     // must be implemented in the provider
@@ -336,6 +343,16 @@ export abstract class Config implements IConfig {
             throw (new Error('missing configuration: ' + name));
         }
     }
+
+
+    public static enableStrongConsistencyEmulation(): void {
+        Config.ENABLE_STRONG_CONSISTENCY_EMULATION = true;
+    }
+
+    public static disableStrongConsistencyEmulation(): void {
+        Config.ENABLE_STRONG_CONSISTENCY_EMULATION = false;
+    }
+
 
 }
 

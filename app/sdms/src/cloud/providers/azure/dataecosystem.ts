@@ -25,10 +25,9 @@ import { AzureConfig } from './config';
 import { AzureCredentials } from './credentials';
 import { Keyvault } from './keyvault';
 
-
-
 @DataEcosystemCoreFactory.register('azure')
 export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
+
     private static _storageConfigs: Cache<string>;
     private static _cosmosConfigs: Cache<string>;
 
@@ -73,6 +72,24 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         }
     }
 
+    public static async getPartitions(): Promise<string[]> {
+        const options = {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + (await AzureCredentials.getAzureServicePrincipalAccessToken(
+                    AzureConfig.SP_CLIENT_ID, AzureConfig.SP_CLIENT_SECRET,
+                    AzureConfig.SP_TENANT_ID, AzureConfig.SP_APP_RESOURCE_ID)).access_token,
+                'Content-Type': 'application/json'
+            },
+            url: AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions'
+        };
+        try {
+            return JSON.parse(await request.get(options));
+        } catch (error) {
+            throw (Error.makeForHTTPRequest(error));
+        }
+    }
+
     public static async getStorageResourceName(dataPartitionID: string): Promise<string> {
 
         if (!this._storageConfigs) {
@@ -105,28 +122,28 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
 
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
 
-        const cosomsEndpointConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_ENDPOINT] as {
+        const cosmosEndpointConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_ENDPOINT] as {
             sensitive: boolean, value: string;
         });
-        if (cosomsEndpointConfigs.sensitive) {
-            cosomsEndpointConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
-                cosomsEndpointConfigs.value)).value;
+        if (cosmosEndpointConfigs.sensitive) {
+            cosmosEndpointConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
+                cosmosEndpointConfigs.value)).value;
         }
 
-        const cosomsKeyConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_PRIMARY_KEY] as {
+        const cosmosKeyConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_PRIMARY_KEY] as {
             sensitive: boolean, value: string;
         });
-        if (cosomsKeyConfigs.sensitive) {
-            cosomsKeyConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
-                cosomsKeyConfigs.value)).value;
+        if (cosmosKeyConfigs.sensitive) {
+            cosmosKeyConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
+                cosmosKeyConfigs.value)).value;
         }
 
         await this._cosmosConfigs.set(dataPartitionID, JSON.stringify({
-            endpoint: cosomsEndpointConfigs.value, key: cosomsKeyConfigs.value
+            endpoint: cosmosEndpointConfigs.value, key: cosmosKeyConfigs.value
         }));
 
         // return storageConfigs.value;
-        return { endpoint: cosomsEndpointConfigs.value, key: cosomsKeyConfigs.value };
+        return { endpoint: cosmosEndpointConfigs.value, key: cosmosKeyConfigs.value };
     }
 
 }

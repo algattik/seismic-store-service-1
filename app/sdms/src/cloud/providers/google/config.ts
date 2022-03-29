@@ -73,6 +73,9 @@ export class ConfigGoogle extends Config {
     // This id build the auth provider in the abstraction implemented in src/auth/providers/*
     public static SERVICE_AUTH_PROVIDER: string;
 
+    // correlation id
+    public static CORRELATION_ID = 'correlation-id';
+
     public async init(): Promise<void> {
 
         try {
@@ -106,6 +109,9 @@ export class ConfigGoogle extends Config {
             ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL = await new Secrets().getSecret(
                 'sdms-svc-auth-provider-credential', false);
 
+            // set the correlation id
+            ConfigGoogle.CORRELATION_ID = process.env.CORRELATION_ID || ConfigGoogle.CORRELATION_ID;
+
             await Config.initServiceConfiguration({
                 SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
                 SERVICE_PORT: +process.env.PORT || 5000,
@@ -130,7 +136,7 @@ export class ConfigGoogle extends Config {
                 JWT_AUDIENCE: process.env.JWT_AUDIENCE,
                 JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
                 ENFORCE_SCHEMA_BY_KEY: true,
-                CORRELATION_ID: 'correlation-id',
+                CORRELATION_ID: ConfigGoogle.CORRELATION_ID,
                 SERVICE_AUTH_PROVIDER: ConfigGoogle.SERVICE_AUTH_PROVIDER,
                 SERVICE_AUTH_PROVIDER_CREDENTIAL: ConfigGoogle.SERVICE_AUTH_PROVIDER_CREDENTIAL,
                 ENABLE_SDMS_ID_AUDIENCE_CHECK: process.env.ENABLE_SDMS_ID_AUDIENCE_CHECK !== undefined ?
@@ -154,7 +160,9 @@ export class ConfigGoogle extends Config {
                 FEATURE_FLAG_POLICY_SVC_INTERACTION: process.env.FEATURE_FLAG_POLICY_SVC_INTERACTION === 'true',
                 CCM_SERVICE_URL: process.env.CCM_SERVICE_URL,
                 CCM_TOKEN_SCOPE: process.env.CCM_TOKEN_SCOPE,
-                CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS,
+                CALLER_FORWARD_HEADERS: process.env.CALLER_FORWARD_HEADERS ?
+                    process.env.CALLER_FORWARD_HEADERS + ',' + ConfigGoogle.CORRELATION_ID :
+                    ConfigGoogle.CORRELATION_ID,
                 USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS ? process.env.USER_ID_CLAIM_FOR_SDMS : 'subid',
                 USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC ?
                     process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC : 'email',

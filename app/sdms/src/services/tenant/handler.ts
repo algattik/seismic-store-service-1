@@ -78,10 +78,12 @@ export class TenantHandler {
             tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // Check if tenant already exists
+        Config.disableStrongConsistencyEmulation();
         if (await TenantDAO.exist(tenant)) {
             throw (Error.make(Error.Status.ALREADY_EXISTS,
                 'The tenant ' + tenant.name + ' has been registered already'));
         }
+        Config.enableStrongConsistencyEmulation();
 
         // register the tenant metadata
         // leave this registration at the end as last operation (mapping to do only if all previuos operation succeed)

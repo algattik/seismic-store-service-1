@@ -44,6 +44,13 @@ export class Cache<T = string> {
         await _cacheCore._set(this.buildKey(key), value, expireTime);
     }
 
+    public async clear(key: string) {
+        const res = await _cacheCore._keys(key);
+        if(res.length > 0) {
+            await _cacheCore._del(res);
+        }
+    }
+
     private buildKey(key: string): string {
         return this._keyTag ? (this._keyTag + ':' + key) : key;
     }
@@ -91,7 +98,7 @@ class CacheCore {
                     });
     }
 
-    public async _del(key: string): Promise<void> {
+    public async _del(key: string | string[]): Promise<void> {
         return new Promise((resolve, reject) => {
             this._redisClient.del(key, (err) => {
                 err ? reject(err) : resolve();
@@ -113,6 +120,10 @@ class CacheCore {
                 err ? reject(err) : resolve();
             });
         });
+    }
+
+    public async _keys(pattern: string): Promise<any> {
+        return await this._redisClient.keys(pattern);
     }
 
 }

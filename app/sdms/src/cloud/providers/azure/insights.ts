@@ -19,32 +19,44 @@ import { Config } from '../../config';
 import { AbstractLogger, LoggerFactory } from '../../logger';
 import { AzureConfig } from './config';
 
-
 @LoggerFactory.register('azure')
 export class AzureInsightsLogger extends AbstractLogger {
 
-    public static logCustomHeaders(envelope, context) {
+    public static logCustomHeaders(
+        envelope: appinsights.Contracts.EnvelopeTelemetry, context: { [name: string]: any }): boolean {
+
         const httpRequest = context['http.ServerRequest'];
         if (httpRequest && appinsights.Contracts.domainSupportsProperties(envelope.data.baseData)) {
 
             // Log the correlation-id
-            if ('correlation-id' in httpRequest.headers) {
-                envelope.data.baseData.properties['correlation-id'] = httpRequest.headers['correlation-id'];
+            if (AzureConfig.CORRELATION_ID in httpRequest.headers) {
+                envelope.data.baseData.properties[AzureConfig.CORRELATION_ID] =
+                    httpRequest.headers[AzureConfig.CORRELATION_ID];
             }
 
             // Log party to which the JWT was originally issued
-            if (httpRequest.headers.authorization) {
-                const azp = Utils.getAzpFromPayload(httpRequest.headers.authorization);
-                if (azp) {
-                    envelope.data.baseData.properties['client-id'] = azp;
+            if ('authorization' in httpRequest.headers) {
+                try {
+                    const azp = Utils.getAzpFromPayload(httpRequest.headers.authorization);
+                    if (azp) {
+                        envelope.data.baseData.properties['client-id'] = azp;
+                    }
+                } catch (e) {
+                    console.error('Telemetry process error - unrecognized header format');
+                    console.error(httpRequest.headers);
+                    console.error(e);
+                    return false;
                 }
             }
+
         }
         return true;
     }
 
     public static initialize() {
+
         if (!Config.UTEST && AzureConfig.AI_INSTRUMENTATION_KEY) {
+
             appinsights.setup(AzureConfig.AI_INSTRUMENTATION_KEY)
                 .setAutoDependencyCorrelation(true)
                 .setAutoCollectRequests(true)
@@ -52,7 +64,7 @@ export class AzureInsightsLogger extends AbstractLogger {
                 .setAutoCollectExceptions(true)
                 .setAutoCollectDependencies(true)
                 .setAutoCollectConsole(true)
-                .setUseDiskRetryCaching(true)
+                .setUseDiskRetryCaching(true, 30 * 1000, 104857600)
                 .setDistributedTracingMode(appinsights.DistributedTracingModes.AI_AND_W3C);
 
             appinsights.defaultClient.context.tags[
