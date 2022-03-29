@@ -31,14 +31,11 @@ export class AppHandler {
     public static async handler(req: expRequest, res: expResponse, op: AppOp) {
 
         try {
-
-            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                // subproject endpoints are not available with impersonation token
-                if (Auth.isImpersonationToken(req.headers.authorization)) {
-                    throw (Error.make(Error.Status.PERMISSION_DENIED,
-                        'app endpoints not available' +
-                        ' with an impersonation token as Auth credentials.'));
-                }
+            // subproject endpoints are not available with impersonation token
+            if (Auth.isImpersonationToken(req.headers.authorization)) {
+                throw (Error.make(Error.Status.PERMISSION_DENIED,
+                    'app endpoints not available' +
+                    ' with an impersonation token as Auth credentials.'));
             }
 
             if (op === AppOp.Register) {
@@ -71,12 +68,10 @@ export class AppHandler {
         // retrieve the tenant information
         const tenant = await TenantDAO.get(userInput.sdPath.tenant);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if user is a tenant admin
-            await Auth.isUserAuthorized(
-                req.headers.authorization, [TenantGroups.adminGroup(tenant)],
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        // check if user is a tenant admin
+        await Auth.isUserAuthorized(
+            req.headers.authorization, [TenantGroups.adminGroup(tenant)],
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // check if application already exists
         if (await AppsDAO.get(tenant, application.email)) { return; }
@@ -103,12 +98,10 @@ export class AppHandler {
         // retrieve the tenant information
         const tenant = await TenantDAO.get(userInput.sdPath.tenant);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if user is a tenant admin
-            await Auth.isUserAuthorized(
-                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        // check if user is a tenant admin
+        await Auth.isUserAuthorized(
+            req.headers.authorization, TenantAuth.getAuthGroups(tenant),
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // check if the app has been previously registered
         if (!await AppsDAO.get(tenant, application.email)) {
@@ -131,12 +124,11 @@ export class AppHandler {
         // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if user is a tenant admin
-            await Auth.isUserAuthorized(
-                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        // check if user is a tenant admin
+        await Auth.isUserAuthorized(
+            req.headers.authorization, TenantAuth.getAuthGroups(tenant),
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
 
         // retrieve entity list
         // This method is temporary required by slb during the migration of sauth from v1 to v2
@@ -157,12 +149,10 @@ export class AppHandler {
         // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if user is a tenant admin
-            await Auth.isUserAuthorized(
-                req.headers.authorization, TenantAuth.getAuthGroups(tenant),
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        // check if user is a tenant admin
+        await Auth.isUserAuthorized(
+            req.headers.authorization, TenantAuth.getAuthGroups(tenant),
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // retrieve entity list
         // This method is temporary required by slb during the migration of sauth from v1 to v2

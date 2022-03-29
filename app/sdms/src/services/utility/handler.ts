@@ -77,10 +77,7 @@ export class UtilityHandler {
     // ------------------------------------------------------------------
     private static async getConnectionString(req: expRequest, readOnly: boolean): Promise<IAccessTokenModel> {
 
-        if (!FeatureFlags.isEnabled(Feature.STORAGE_CREDENTIALS)) return;
-
         const requestDataset = UtilityParser.connectionString(req);
-
         const tenant = await TenantDAO.get(requestDataset.tenant);
         const journalClient = JournalFactoryTenantClient.get(tenant);
         const subproject = await SubProjectDAO.get(journalClient, requestDataset.tenant, requestDataset.subproject);
@@ -133,8 +130,6 @@ export class UtilityHandler {
     //    - read write request: subproject.viewer || dataset.viewer (dependents on applied access policy)
     //    - read only request: subproject.admin || dataset.admin (dependents on applied access policy)
     private static async getGCSAccessToken(req: expRequest) {
-
-        if (!FeatureFlags.isEnabled(Feature.STORAGE_CREDENTIALS)) return {};
 
         const inputParams = UtilityParser.gcsToken(req);
         const sdPath = inputParams.sdPath;
@@ -266,13 +261,12 @@ export class UtilityHandler {
 
         const subproject = await SubProjectDAO.get(journalClient, dataset.tenant, dataset.subproject);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            //  Check if user is authorized
-            await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
-                tenant, sdPath.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        //  Check if user is authorized
+        await Auth.isReadAuthorized(req.headers.authorization,
+            SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
+            tenant, sdPath.subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         if (pagination) {
             // Retrieve paginated content list
@@ -335,17 +329,15 @@ export class UtilityHandler {
                 sdPathFrom.path + sdPathFrom.dataset + ' does not exist exist'));
         }
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Promise.all([
-                Auth.isReadAuthorized(req.headers.authorization,
-                    DatasetAuth.getAuthGroups(subproject, datasetFrom, AuthRoles.viewer),
-                    tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string),
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
-                    tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string)]);
-        }
+        await Promise.all([
+            Auth.isReadAuthorized(req.headers.authorization,
+                DatasetAuth.getAuthGroups(subproject, datasetFrom, AuthRoles.viewer),
+                tenant, sdPathFrom.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string),
+            await Auth.isWriteAuthorized(req.headers.authorization,
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
+                tenant, sdPathTo.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string)]);
 
         let seismicmeta: any;
 
@@ -442,21 +434,21 @@ export class UtilityHandler {
                 readlock = await Locker.acquireReadLock(lockKeyFrom);
             }
 
-            if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
-                // Check if legal tag of the source is valid
-                if (datasetFrom.ltag) {
-                    // [TODO] we should always have ltag. some datasets does not have it (the old ones)
-                    await Auth.isLegalTagValid(req.headers.authorization, datasetFrom.ltag,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                }
 
-                // Check if legal tag of the destination is valid
+            // Check if legal tag of the source is valid
+            if (datasetFrom.ltag) {
                 // [TODO] we should always have ltag. some datasets does not have it (the old ones)
-                if (datasetTo.ltag && datasetTo.ltag !== datasetFrom.ltag) {
-                    await Auth.isLegalTagValid(req.headers.authorization, datasetTo.ltag,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                }
+                await Auth.isLegalTagValid(req.headers.authorization, datasetFrom.ltag,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
             }
+
+            // Check if legal tag of the destination is valid
+            // [TODO] we should always have ltag. some datasets does not have it (the old ones)
+            if (datasetTo.ltag && datasetTo.ltag !== datasetFrom.ltag) {
+                await Auth.isLegalTagValid(req.headers.authorization, datasetTo.ltag,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            }
+
 
             const datasetToEntityKey = journalClient.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + datasetTo.tenant + '-' + datasetTo.subproject,

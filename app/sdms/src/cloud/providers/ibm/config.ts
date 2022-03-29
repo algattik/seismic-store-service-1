@@ -161,16 +161,10 @@ export class IbmConfig extends Config {
             JWT_AUDIENCE: process.env.JWT_AUDIENCE,
             JWT_ENABLE_FEATURE: process.env.JWT_ENABLE_FEATURE ? process.env.JWT_ENABLE_FEATURE === 'true' : false,
             TENANT_JOURNAL_ON_DATA_PARTITION: true,
-            FEATURE_FLAG_AUTHORIZATION: process.env.FEATURE_FLAG_AUTHORIZATION !== undefined ?
-                process.env.FEATURE_FLAG_AUTHORIZATION !== 'false' : true,
-            FEATURE_FLAG_LEGALTAG: process.env.FEATURE_FLAG_LEGALTAG !== undefined ?
-                process.env.FEATURE_FLAG_LEGALTAG !== 'false' : true,
             FEATURE_FLAG_SEISMICMETA_STORAGE: process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== undefined ?
                 process.env.FEATURE_FLAG_SEISMICMETA_STORAGE !== 'false' : true,
             FEATURE_FLAG_IMPTOKEN: process.env.FEATURE_FLAG_IMPTOKEN !== undefined ?
                 process.env.FEATURE_FLAG_IMPTOKEN !== 'false' : true,
-            FEATURE_FLAG_STORAGE_CREDENTIALS: process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== undefined ?
-                process.env.FEATURE_FLAG_STORAGE_CREDENTIALS !== 'false' : true,
             FEATURE_FLAG_TRACE: process.env.FEATURE_FLAG_TRACE !== undefined ?
                 process.env.FEATURE_FLAG_TRACE !== 'false' : true,
             FEATURE_FLAG_LOGGING: process.env.FEATURE_FLAG_LOGGING !== undefined ?
