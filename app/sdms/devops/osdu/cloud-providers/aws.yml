@@ -73,7 +73,7 @@ sdms_aws-update-eks:
       - merge_requests
     
 sdms_aws-test-newman:
-  allow_failure: true
+  allow_failure: false
   extends:
     - .aws
     - .aws_common_variables
