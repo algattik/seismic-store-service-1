@@ -73,11 +73,9 @@ export class TenantHandler {
                 'Default ACL for ' + tenant.name + ' was not provided'));
         }
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isUserAuthorized(
-                req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        await Auth.isUserAuthorized(
+            req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         // Check if tenant already exists
         Config.disableStrongConsistencyEmulation();
@@ -102,11 +100,10 @@ export class TenantHandler {
         // retrieve the tenant information
         const tenant = await TenantDAO.get(req.params.tenantid);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isUserAuthorized(
-                req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        await Auth.isUserAuthorized(
+            req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
 
         return tenant;
     }
@@ -118,12 +115,11 @@ export class TenantHandler {
         // retrieve the tenant information
         const tenant = await TenantDAO.get(req.params.tenantid);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // check if who make the request is a data partition admin admin
-            await Auth.isUserAuthorized(
-                req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-        }
+        // check if who make the request is a data partition admin admin
+        await Auth.isUserAuthorized(
+            req.headers.authorization, TenantAuth.datalakeAdminGroups(tenant),
+            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
 
         // retrieve the subprojects list
         const journalClient = JournalFactoryTenantClient.get(tenant);
@@ -154,10 +150,8 @@ export class TenantHandler {
             if (dataPartition === 'slb') return (Config.SDPATHPREFIX + dataPartition);
             for (const tenant of tenants) {
                 if (tenant.esd.startsWith(dataPartition)) {
-                    if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                        await Auth.isUserRegistered(req.headers.authorization,
-                            tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-                    }
+                    await Auth.isUserRegistered(req.headers.authorization,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
                     return Config.SDPATHPREFIX + tenant.name;
                 }
             }

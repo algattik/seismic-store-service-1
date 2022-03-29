@@ -152,15 +152,15 @@ export class DatasetHandler {
 
             // check if has read access, if legal tag is valid, and if the dataset does not already exist
             await Promise.all([
-                FeatureFlags.isEnabled(Feature.AUTHORIZATION) ?
-                    Auth.isWriteAuthorized(req.headers.authorization,
-                        SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
-                        tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string) : undefined,
-                FeatureFlags.isEnabled(Feature.LEGALTAG) ?
-                    dataset.ltag ? Auth.isLegalTagValid(
-                        req.headers.authorization, dataset.ltag,
-                        tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined : undefined,
+
+                Auth.isWriteAuthorized(req.headers.authorization,
+                    SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin),
+                    tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string),
+
+                dataset.ltag ? Auth.isLegalTagValid(
+                    req.headers.authorization, dataset.ltag,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
             ]);
 
             Config.disableStrongConsistencyEmulation();
@@ -295,18 +295,16 @@ export class DatasetHandler {
         const retrieveStorageRecord = datasetOUT.seismicmeta_guid !== undefined && userInput[1];
 
         // Check if legal tag is valid
-        if (FeatureFlags.isEnabled(Feature.LEGALTAG) && datasetOUT.ltag) {
+        if (datasetOUT.ltag) {
             await Auth.isLegalTagValid(req.headers.authorization, datasetOUT.ltag,
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // Use the access policy to determine which groups to fetch for read authorization
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isReadAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.viewer),
-                tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isReadAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.viewer),
+            tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
 
         // Convert subid to email if user input query param subid_to_email is true
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertUserInfo) {
@@ -366,13 +364,11 @@ export class DatasetHandler {
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check authorizations
-            await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
-                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        // Check authorizations
+        await Auth.isReadAuthorized(req.headers.authorization,
+            SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
+            tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
 
         // Retrieve the list of datasets metadata
         const output = await DatasetDAO.list(journalClient, dataset, pagination) as any;
@@ -428,12 +424,11 @@ export class DatasetHandler {
         if (!dataset) { return; }
 
         // check authorization (write)
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
-                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isWriteAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+            tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         // Delete the dataset metadata (both firestore and DEStorage)
         await Promise.all([
@@ -489,19 +484,18 @@ export class DatasetHandler {
             }
 
             // Check authorizations
-            if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-                if (wid.startsWith('W')) {
-                    await Auth.isWriteAuthorized(req.headers.authorization,
-                        DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                } else {
-                    await Auth.isReadAuthorized(req.headers.authorization,
-                        DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
-                        tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                        req.headers['impersonation-token-context'] as string);
-                }
+            if (wid.startsWith('W')) {
+                await Auth.isWriteAuthorized(req.headers.authorization,
+                    DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
+            } else {
+                await Auth.isReadAuthorized(req.headers.authorization,
+                    DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
+                    tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+                    req.headers['impersonation-token-context'] as string);
             }
+
 
             // unlock the dataset
             const unlockRes = await Locker.unlock(lockKey, wid);
@@ -564,12 +558,11 @@ export class DatasetHandler {
         }
 
         // If the input request has dataset ACLs then the subproject access policy is always dataset
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
-                tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isWriteAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
+            tenant, subproject.name, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         // patch datasetOUT with datasetIN
         if (datasetIN.metadata) { datasetOUT.metadata = datasetIN.metadata; }
@@ -578,10 +571,9 @@ export class DatasetHandler {
         if (datasetIN.readonly !== undefined) { datasetOUT.readonly = datasetIN.readonly; }
         if (datasetIN.gtags !== undefined && datasetIN.gtags.length > 0) { datasetOUT.gtags = datasetIN.gtags; }
         if (datasetIN.ltag) {
-            if (FeatureFlags.isEnabled(Feature.LEGALTAG)) {
-                await Auth.isLegalTagValid(
-                    req.headers.authorization, datasetIN.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
-            }
+            await Auth.isLegalTagValid(
+                req.headers.authorization, datasetIN.ltag, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
             datasetOUT.ltag = datasetIN.ltag;
         }
 
@@ -711,25 +703,24 @@ export class DatasetHandler {
         }
 
         // Check if legal tag is valid;
-        if (FeatureFlags.isEnabled(Feature.LEGALTAG) && datasetOUT.ltag) {
+        if (datasetOUT.ltag) {
             await Auth.isLegalTagValid(req.headers.authorization, datasetOUT.ltag,
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]);
         }
 
         // Use the access policy to determine which groups to fetch for read authorization
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            if (open4write) {
-                await Auth.isWriteAuthorized(req.headers.authorization,
-                    DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
-                    tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string);
-            } else {
-                await Auth.isReadAuthorized(req.headers.authorization,
-                    DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.viewer),
-                    tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
-                    req.headers['impersonation-token-context'] as string);
-            }
+        if (open4write) {
+            await Auth.isWriteAuthorized(req.headers.authorization,
+                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
+                tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
+        } else {
+            await Auth.isReadAuthorized(req.headers.authorization,
+                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.viewer),
+                tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
+                req.headers['impersonation-token-context'] as string);
         }
+
 
         // managing read-only datasets
         if (datasetOUT.readonly) {
@@ -816,12 +807,11 @@ export class DatasetHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // check if the caller is authorized
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
-                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isReadAuthorized(req.headers.authorization,
+            SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
+            tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         // Check if the required datasets exist
         const results: boolean[] = [];
@@ -848,12 +838,11 @@ export class DatasetHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // check if the caller is authorized
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
-                tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isReadAuthorized(req.headers.authorization,
+            SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
+            tenant, datasets[0].subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         // Check if the required datasets exist
         const results: number[] = [];
@@ -892,12 +881,11 @@ export class DatasetHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
         // Check authorizations
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isReadAuthorized(req.headers.authorization,
-                SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
-                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isReadAuthorized(req.headers.authorization,
+            SubprojectAuth.getAuthGroups(subproject, AuthRoles.viewer),
+            tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         // list the folder content
         return await DatasetDAO.listContent(journalClient, dataset);
@@ -963,13 +951,12 @@ export class DatasetHandler {
             datasetOUT.gtags = datasetIN.gtags;
         }
 
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            await Auth.isWriteAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
-                tenant, datasetIN.subproject,
-                req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string);
-        }
+        await Auth.isWriteAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, datasetOUT, AuthRoles.admin),
+            tenant, datasetIN.subproject,
+            req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
 
         await DatasetDAO.update(journalClient, datasetOUT, datasetOUTKey);
 
@@ -996,22 +983,19 @@ export class DatasetHandler {
         }
 
         const res = { read: false, write: false, delete: false };
-        if (FeatureFlags.isEnabled(Feature.AUTHORIZATION)) {
-            // Check write authorization
-            res.write = await Auth.isWriteAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
-                tenant, dataset.subproject,
-                req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string, false);
-            // Check read authorization
-            res.read = await Auth.isReadAuthorized(req.headers.authorization,
-                DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
-                tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
-                req.headers['impersonation-token-context'] as string, false);
-        } else {
-            res.write = true;
-            res.read = true;
-        }
+
+        // Check write authorization
+        res.write = await Auth.isWriteAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+            tenant, dataset.subproject,
+            req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string, false);
+        // Check read authorization
+        res.read = await Auth.isReadAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.viewer),
+            tenant, dataset.subproject, req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string, false);
+
         res.delete = res.write;
         return res;
 
