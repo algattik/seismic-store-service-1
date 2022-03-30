@@ -23,10 +23,11 @@ export interface ISeistore {
     checkExtraSubprojectCreateParams(requestBody: any, subproject: SubProjectModel): void;
     getEmailFromTokenPayload(userCredentials: string, internalSwapForSauth: boolean): Promise<string>;
     notifySubprojectCreationStatus(subproject: SubProjectModel, status: string): Promise<string>;
-    getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>
+    getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>;
     getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
     deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
-    handleReadinessCheck(): Promise<boolean>
+    handleReadinessCheck(): Promise<boolean>;
+    validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string): void;
 }
 
 export abstract class AbstractSeistore implements ISeistore {
@@ -36,7 +37,8 @@ export abstract class AbstractSeistore implements ISeistore {
     public abstract getDatasetStorageResource(tenant: TenantModel, subproject: SubProjectModel): Promise<string>;
     public abstract getSubprojectStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
     public abstract deleteStorageResources(tenant: TenantModel, subproject: SubProjectModel): Promise<void>;
-    public abstract handleReadinessCheck(): Promise<boolean>
+    public abstract handleReadinessCheck(): Promise<boolean>;
+    public abstract validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string);
 }
 
 export class SeistoreFactory extends CloudFactory {

@@ -17,7 +17,7 @@ import { AWSStorage } from '.';
 import { Response as expResponse } from 'express';
 import { SubProjectModel } from '../../../services/subproject';
 import { TenantModel } from '../../../services/tenant';
-import { Utils } from '../../../shared';
+import { Error, Utils } from '../../../shared';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 
 @SeistoreFactory.register('aws')
@@ -55,5 +55,11 @@ export class AwsSeistore extends AbstractSeistore {
     }
 
     public async handleReadinessCheck(): Promise<boolean> { return true; }
+
+    public validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string) {
+        if (subproject.access_policy !== accessPolicy) {
+            throw Error.make(Error.Status.BAD_REQUEST, 'Subproject access policy is not ' + accessPolicy);
+        }
+    }
 
 }

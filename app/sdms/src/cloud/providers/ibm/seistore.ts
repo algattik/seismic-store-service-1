@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Cos } from '.';
 import { SubProjectModel } from '../../../services/subproject';
 import { TenantModel } from '../../../services/tenant';
-import { Utils } from '../../../shared';
+import { Error, Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 
@@ -33,17 +33,23 @@ export class IbmSeistore extends AbstractSeistore {
 
     public async getSubprojectStorageResources(_tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
         await new Cos().createBucket(
-                subproject.gcs_bucket, subproject.storage_location, subproject.storage_class);
+            subproject.gcs_bucket, subproject.storage_location, subproject.storage_class);
     }
 
     public async deleteStorageResources(_tenant: TenantModel, subproject: SubProjectModel): Promise<void> {
         const storage = new Cos();
         // probably this line is not needed for ibm implementation.
         // deleting the bucket should be enough (logic abstracted from core)
-        await storage.deleteFiles(subproject.gcs_bucket)
+        await storage.deleteFiles(subproject.gcs_bucket);
         await storage.deleteBucket(subproject.gcs_bucket);
     }
 
     public async handleReadinessCheck(): Promise<boolean> { return true; }
 
+
+    public validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string) {
+        if (subproject.access_policy !== accessPolicy) {
+            throw Error.make(Error.Status.BAD_REQUEST, 'Subproject access policy is not ' + accessPolicy);
+        }
+    }
 }
