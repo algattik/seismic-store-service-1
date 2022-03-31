@@ -99,6 +99,12 @@ export class CloudFactory {
                         'The partition has 2 active databases in cosmos. A migration process is possibly in place.'));
                 }
 
+                // database are not detected most probably due to an issue with cosmos <> 404, example 429 rate-limit
+                if (!CloudFactory.azureDatabase[partition].regular && !CloudFactory.azureDatabase[partition].enhanced) {
+                    throw (Error.make(Error.Status.NOT_AVAILABLE,
+                        'The service could not locate the internal Cosmos DB. Call should be retried'));
+                }
+
                 // load the right implementation. supported is provided for both version of the db.
                 // if no database exist, the new one will be used (newly created partitions)
                 Config.ENFORCE_SCHEMA_BY_KEY = !CloudFactory.azureDatabase[partition].regular

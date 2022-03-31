@@ -35,7 +35,7 @@ export class DatabaseChecker {
         setInterval(DatabaseChecker.collectPartitions, 60 * 1000);
         // refresh database existence list for each partition every 5 seconds.
         // this call hit cosmos and require to be executed more frequently.
-        setInterval(DatabaseChecker.checkDatabaseExistence, 5 * 1000);
+        setInterval(DatabaseChecker.checkDatabaseExistence, 30 * 1000);
     }
 
     // refresh the list of existing partitions
