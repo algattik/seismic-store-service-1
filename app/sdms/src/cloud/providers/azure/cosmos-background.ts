@@ -63,19 +63,30 @@ export class DatabaseChecker {
                     } catch (err: any) { continue; }
                 }
 
+                // record a failure if the failure reason <> 404 Not Found
+                let failure = false;
+
                 // check if the new/enhanced database exist
                 let enhanced = false
                 try {
                     await DatabaseChecker.clients[partition].database('sdms-db').read();
                     enhanced = true
-                } catch (err: any) { /* do nothing */ }
+                } catch (err: any) {
+                    if (!(err instanceof Error) || (err as Error).message.indexOf('StatusCode: 404') === -1) {
+                        failure = true;
+                    }
+                }
 
                 // check if the regular database exist
                 let regular = false;
                 try {
                     await DatabaseChecker.clients[partition].database('seistore-' + partition + '-db').read();
                     regular = true;
-                } catch (err: any) { /* do nothing */ }
+                } catch (err: any) {
+                    if (!(err instanceof Error) || (err as Error).message.indexOf('StatusCode: 404') === -1) {
+                        failure = true;
+                    }
+                }
 
                 if (regular && enhanced) {
                     // retrieve the enhanced database container
@@ -93,11 +104,11 @@ export class DatabaseChecker {
                     // check if the cache clear flag exists in the database
                     if ((await DatabaseChecker.containers[partition].item(
                         'z:cache::clear', 'z:cache::clear').read()).statusCode === 200) {
-                            if(!DatabaseChecker.cache) {
-                                DatabaseChecker.cache = new Cache();
-                            }
-                            await DatabaseChecker.cache.clear('sdms-tenant*');
-                            await DatabaseChecker.cache.clear('sdms-subproject*');
+                        if (!DatabaseChecker.cache) {
+                            DatabaseChecker.cache = new Cache();
+                        }
+                        await DatabaseChecker.cache.clear('sdms-tenant*');
+                        await DatabaseChecker.cache.clear('sdms-subproject*');
                     }
 
                 }
@@ -106,8 +117,9 @@ export class DatabaseChecker {
                 if (partition in CloudFactory.azureDatabase) {
                     CloudFactory.azureDatabase[partition].regular = regular;
                     CloudFactory.azureDatabase[partition].enhanced = enhanced;
+                    CloudFactory.azureDatabase[partition].failure = failure;
                 } else {
-                    CloudFactory.azureDatabase[partition] = { regular, enhanced };
+                    CloudFactory.azureDatabase[partition] = { regular, enhanced, failure };
                 }
 
             }
