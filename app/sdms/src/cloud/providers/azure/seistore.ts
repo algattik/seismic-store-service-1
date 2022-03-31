@@ -18,7 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AzureCloudStorage } from './cloudstorage';
 import { SubProjectModel } from '../../../services/subproject';
 import { TenantModel } from '../../../services/tenant';
-import { Utils } from '../../../shared';
+import { Error, Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractSeistore, SeistoreFactory } from '../../seistore';
 import { AzureConfig, AzureInsightsLogger } from '.';
@@ -71,12 +71,12 @@ export class AzureSeistore extends AbstractSeistore {
         if (subproject.access_policy === Config.UNIFORM_ACCESS_POLICY) {
             // probably this line is not needed for azure implementation.
             // deleting the bucket should be enough (logic abstracted from core)
-            await storage.deleteFiles(subproject.gcs_bucket)
+            await storage.deleteFiles(subproject.gcs_bucket);
             await storage.deleteBucket(subproject.gcs_bucket);
         } else {
             // dataset access policy, delete all containers/buckets (one per dataset)
             storage.deleteBuckets(subproject.gcs_bucket).catch((err) => {
-                new AzureInsightsLogger().error(err)
+                new AzureInsightsLogger().error(err);
             });
         }
     }
@@ -92,4 +92,9 @@ export class AzureSeistore extends AbstractSeistore {
         }
     }
 
+    public validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string) {
+        if (subproject.access_policy !== accessPolicy) {
+            throw Error.make(Error.Status.BAD_REQUEST, 'Subproject access policy is not ' + accessPolicy);
+        }
+    }
 }

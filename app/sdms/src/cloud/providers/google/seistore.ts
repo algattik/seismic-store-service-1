@@ -158,4 +158,8 @@ export class GoogleSeistore extends AbstractSeistore {
 
     public async handleReadinessCheck(): Promise<boolean> { return true; }
 
+    public validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string) {
+        return;
+    }
+
 }

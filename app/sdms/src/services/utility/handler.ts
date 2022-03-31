@@ -159,6 +159,8 @@ export class UtilityHandler {
 
         } else { // dataset access request
 
+            SeistoreFactory.build(Config.CLOUDPROVIDER).validateAccessPolicy(subproject, Config.DATASET_ACCESS_POLICY);
+
             const dataset = subproject.enforce_key ?
                 await DatasetDAO.getByKey(journalClient, inputParams.dataset) :
                 (await DatasetDAO.get(journalClient, inputParams.dataset))[0];

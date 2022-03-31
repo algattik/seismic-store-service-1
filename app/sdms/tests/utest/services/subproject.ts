@@ -66,6 +66,9 @@ export class TestSubProjectSVC {
             },
             async handleReadinessCheck(): Promise<boolean> {
                 return true;
+            },
+            validateAccessPolicy(subproject: SubProjectModel, accessPolicy: string): void {
+                return;
             }
         };
 
