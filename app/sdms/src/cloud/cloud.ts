@@ -34,7 +34,7 @@ export class CloudFactory {
         };
     }
 
-    public static azureDatabase: { [key: string]: { regular: boolean, enhanced: boolean } } = {}
+    public static azureDatabase: { [key: string]: { regular: boolean, enhanced: boolean, failure: boolean } } = {}
 
     public static build(providerLabel: string, referenceAbstraction: any, args: { [key: string]: any } = {}) {
 
@@ -93,19 +93,19 @@ export class CloudFactory {
                     }
                 }
 
+                // database are not detected most probably due to an issue with cosmos <> 404, example 429 rate-limit
+                if (CloudFactory.azureDatabase[partition].failure) {
+                    throw (Error.make(Error.Status.NOT_AVAILABLE,
+                        'The service failed to locate the internal Cosmos DB. Call should be retried'));
+                }
+
                 // both database cannot exist at the same time. the migration process is probably running
                 if (CloudFactory.azureDatabase[partition].regular && CloudFactory.azureDatabase[partition].enhanced) {
                     throw (Error.make(Error.Status.NOT_AVAILABLE,
                         'The partition has 2 active databases in cosmos. A migration process is possibly in place.'));
                 }
 
-                // database are not detected most probably due to an issue with cosmos <> 404, example 429 rate-limit
-                if (!CloudFactory.azureDatabase[partition].regular && !CloudFactory.azureDatabase[partition].enhanced) {
-                    throw (Error.make(Error.Status.NOT_AVAILABLE,
-                        'The service could not locate the internal Cosmos DB. Call should be retried'));
-                }
-
-                // load the right implementation. supported is provided for both version of the db.
+                // load the right implementation. supported is provided for both version of the db
                 // if no database exist, the new one will be used (newly created partitions)
                 Config.ENFORCE_SCHEMA_BY_KEY = !CloudFactory.azureDatabase[partition].regular
                 const cosmosClassName = CloudFactory.azureDatabase[partition].regular ? 'AzureCosmosDbDAORegular' : 'AzureCosmosDbDAO';
