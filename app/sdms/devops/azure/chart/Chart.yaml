@@ -1,5 +1,5 @@
 apiVersion: v2
-name: osdu-ddms
+name: osdu-seismic-ddms
 appVersion: "latest"
 description: Helm Chart for installing sdms service.
 version: 0.1.0
