@@ -42,6 +42,10 @@ sdms-osdu-gcp-deploy-configmap:
   extends: .osdu-gcp-deploy-configmap
   before_script:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{DES_TARGET_AUDIENCE}#|'$TARGET_AUDIENCE'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{SERVICE_CLOUD_PROJECT}#|'$GCLOUD_PROJECT'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{SERVICE_ACCOUNT_SIGNER}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{DES_APPKEY}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
   only:
     changes:
       - devops/**/*
@@ -56,6 +60,10 @@ sdms-osdu-gcp-dev2-deploy-configmap:
   extends: .osdu-gcp-dev2-deploy-configmap
   before_script:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{DES_TARGET_AUDIENCE}#|'$TARGET_AUDIENCE'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{SERVICE_CLOUD_PROJECT}#|'$GCLOUD_PROJECT'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{SERVICE_ACCOUNT_SIGNER}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
+    - sed -i 's|#{DES_APPKEY}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
   rules:
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
