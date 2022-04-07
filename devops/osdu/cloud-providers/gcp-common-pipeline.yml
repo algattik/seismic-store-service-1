@@ -4,7 +4,7 @@
   - gcloud config set project $OSDU_GCP_PROJECT
   - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT
   - curl https://get.helm.sh/helm-v3.5.4-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
-  
+
 .common_dev2: &common_dev2
   - gcloud auth activate-service-account --key-file $OSDU_GCP_DEV2_DEPLOY_FILE
   - gcloud config set project $OSDU_GCP_DEV2_PROJECT
@@ -61,7 +61,7 @@
 
 .osdu-gcp-deploy-configmap:
   stage: deploy
-  tags: ["osdu-medium"]
+  tags: ["osdu-small"]
   extends: .osdu-gcp-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   cache: {}
@@ -84,6 +84,7 @@
       - merge_requests
 
 .osdu-gcp-dev2-deploy-configmap:
+  tags: ["osdu-small"]
   extends: .osdu-gcp-dev2-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   stage: deploy
@@ -107,6 +108,7 @@
       when: on_success
 
 .osdu-gcp-deployment:
+  tags: ["osdu-small"]
   extends: .osdu-gcp-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   stage: deploy
@@ -137,6 +139,7 @@
       - merge_requests
 
 .osdu-gcp-dev2-deploy-deployment:
+  tags: ["osdu-small"]
   extends: .osdu-gcp-dev2-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   stage: deploy
@@ -169,6 +172,7 @@
       when: on_success
 
 .osdu-gcp-test-python:
+  tags: ["osdu-small"]
   extends: .osdu-gcp-variables
   variables:
     # Service Accounts for running integration tests
@@ -183,6 +187,7 @@
       - merge_requests
 
 .osdu-gcp-dev2-test-python:
+  tags: ["osdu-small"]
   extends:
     - .osdu-gcp-dev2-variables
   variables:
