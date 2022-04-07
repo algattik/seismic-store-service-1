@@ -7,14 +7,14 @@ include:
   # scanners
   # fossa
   - local: "devops/osdu/scanners/fossa.yml"
-  
+
   # cloud-providers
   # aws
   - local: "devops/osdu/cloud-providers/aws.yml"
-  
+
   # gcp
   - local: "devops/osdu/cloud-providers/gcp.yml"
-  
+
   # azure
   - local: "devops/osdu/cloud-providers/azure.yml"
 
@@ -26,4 +26,4 @@ include:
   - local: "app/sdms/.gitlab-ci.yml"
 
   # file metadata service
-  - local: "app/filemetadata/.gitlab-ci.yml"  
+  - local: "app/filemetadata/.gitlab-ci.yml"
