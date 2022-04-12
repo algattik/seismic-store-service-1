@@ -153,8 +153,8 @@
       --wait
       --history-max=3
       --set data.imagePullPolicy=Always
-      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:${$CI_COMMIT_REF_SLUG-$CI_COMMIT_TAG-$CI_COMMIT_SHORT_SHA}
-      --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
+      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+      --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s
       --set data.sql_connection_string=$OSDU_GCP_SQL_CONNECTION_STRING
     - echo ----- Verify Deployment -----
     - kubectl rollout status deployment.v1.apps/$SEISMIC_OSDU_GCP_SERVICE -n $OSDU_GCP_HELM_NAMESPACE --timeout=900s
