@@ -814,6 +814,7 @@ export class DatasetHandler {
 
 
         // Check if the required datasets exist
+        Config.disableStrongConsistencyEmulation();
         const results: boolean[] = [];
         if (subproject.enforce_key) {
             for (const dataset of datasets) {
@@ -824,6 +825,8 @@ export class DatasetHandler {
                 results.push((await DatasetDAO.get(journalClient, dataset))[0] !== undefined);
             }
         }
+        Config.enableStrongConsistencyEmulation();
+
         return results;
     }
 
@@ -845,6 +848,7 @@ export class DatasetHandler {
 
 
         // Check if the required datasets exist
+        Config.disableStrongConsistencyEmulation();
         const results: number[] = [];
         if (subproject.enforce_key) {
             for (let dataset of datasets) {
@@ -865,6 +869,7 @@ export class DatasetHandler {
                 results.push(!dataset.filemetadata || !dataset.filemetadata.size ? -1 : dataset.filemetadata.size);
             }
         }
+        Config.enableStrongConsistencyEmulation();
 
         return results;
 
