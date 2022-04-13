@@ -22,7 +22,7 @@ import { TenantModel } from '../../../services/tenant';
 import { AzureDataEcosystemServices } from './dataecosystem';
 import { AzureConfig } from './config';
 import { Config } from '../..';
-import { AzureInsightsLogger } from './insights';
+import { Error } from '../../../shared';
 
 @JournalFactory.register('azure')
 export class AzureCosmosDbDAO extends AbstractJournal {
@@ -88,7 +88,11 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
 
         if (!item.resource) {
-            return [undefined];
+            if(item.statusCode === 404) {
+                return [undefined];
+            } else {
+                throw (Error.make(item.statusCode, 'Internal Cosmos Server Error'));
+            }
         }
 
         const data = item.resource.data;
@@ -263,7 +267,7 @@ export class AzureCosmosDbQuery implements IJournalQueryModel {
 
     start(start: string | Buffer): IJournalQueryModel {
         if (start instanceof Buffer) {
-            throw new Error('Type \'Buffer\' is not supported for CosmosDB Continuation while paging.');
+            throw (Error.make(Error.Status.UNKNOWN, 'Type \'Buffer\' is not supported for CosmosDB Continuation while paging.'));
         }
         this.pagingStart = start as string;
         return this;

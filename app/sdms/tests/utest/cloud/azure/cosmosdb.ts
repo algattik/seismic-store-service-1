@@ -101,7 +101,8 @@ export class TestAzureCosmosDbDAO {
 
         Tx.test(async (done: any) => {
             const mockResult = {
-                resource: undefined
+                resource: undefined,
+                statusCode: 404
             } as any;
 
             this.sandbox.stub(Item.prototype, 'read').returns(Promise.resolve(mockResult));
