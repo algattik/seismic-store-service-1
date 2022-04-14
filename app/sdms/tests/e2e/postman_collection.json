@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9b0fa5fd-c787-412d-a32f-7247ab54f7c3",
+		"_postman_id": "7c65f410-ae0c-479e-8a07-ea61085c863e",
 		"name": "SDMS-E2E ver.M10 - Release 0.14",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -13422,7 +13422,7 @@
 									"",
 									"    pm.test(\"Check imptoken\", function () {",
 									"        postman.setEnvironmentVariable(\"imptoken\", jsonData.impersonation_token);",
-									"        pm.expect(jsonData.expires_in).to.eql(3600);",
+									"        pm.expect(jsonData.expires_in).to.gte(3000);",
 									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
 									"    });",
 									"",
