@@ -20,7 +20,6 @@ sdms-osdu-gcp-helm-charts-release:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
 
 sdms-osdu-gcp-containerize-gitlab:
-  needs: ["sdms_compile-and-unit-test"]
   variables:
     SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "docker/runtime.Dockerfile"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store    
@@ -28,13 +27,25 @@ sdms-osdu-gcp-containerize-gitlab:
   before_script:
     - cd app/$SDMS_SERVICE
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
 
 sdms-osdu-gcp-deploy-configmap:
-  needs: ["sdms_compile-and-unit-test"]
+  needs: ["sdms-osdu-gcp-containerize-gitlab"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
@@ -46,13 +57,20 @@ sdms-osdu-gcp-deploy-configmap:
     - sed -i 's|#{SERVICE_CLOUD_PROJECT}#|'$GCLOUD_PROJECT'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
     - sed -i 's|#{SERVICE_ACCOUNT_SIGNER}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
     - sed -i 's|#{DES_APPKEY}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
       
 sdms-osdu-gcp-dev2-deploy-configmap:
-  needs: ["sdms_compile-and-unit-test"]
+  needs: ["sdms-osdu-gcp-containerize-gitlab"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
@@ -75,12 +93,6 @@ sdms-osdu-gcp-dev2-deploy-configmap:
       changes:
         - devops/**/*
         - app/sdms/**/*
-    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
-    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
-      when: on_success
-      changes:
-        - devops/**/*
-        - app/sdms/**/*
 
 sdms-osdu-gcp-deployment:
   variables:
@@ -92,10 +104,17 @@ sdms-osdu-gcp-deployment:
   needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-deploy-configmap"]
   before_script:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
 
 sdms-osdu-gcp-dev2-deploy-deployment:
   variables:
@@ -114,12 +133,6 @@ sdms-osdu-gcp-dev2-deploy-deployment:
         - devops/**/*
         - app/sdms/**/*
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
-      when: on_success
-      changes:
-        - devops/**/*
-        - app/sdms/**/*
-    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
-    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
       when: on_success
       changes:
         - devops/**/*
@@ -151,10 +164,17 @@ sdms-osdu-gcp-test-python:
     - npm install -g newman
     - chmod +x ./tests/e2e/run_e2e_tests.sh
     - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${OSDU_GCP_SEISTORE_LEGALTAG01}" --legaltag02="${OSDU_GCP_SEISTORE_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
 
 sdms-osdu-gcp-dev2-test-python:
   variables: 
@@ -189,12 +209,6 @@ sdms-osdu-gcp-dev2-test-python:
         - devops/**/*
         - app/sdms/**/*
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
-      when: on_success
-      changes:
-        - devops/**/*
-        - app/sdms/**/*
-    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
-    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
       when: on_success
       changes:
         - devops/**/*
