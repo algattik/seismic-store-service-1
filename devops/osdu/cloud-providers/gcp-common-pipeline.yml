@@ -51,13 +51,13 @@
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
     - docker push $CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
-  only:
-    variables:
-      - $OSDU_GCP == 'true'
-    refs:
-      - branches
-      - main
-      - merge_requests
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+    - if: '$OSDU_GCP == "true"'
+      when: on_success
 
 .osdu-gcp-deploy-configmap:
   stage: deploy
@@ -75,13 +75,11 @@
       --wait
       --history-max=3
       $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE_VARS
-  only:
-    variables:
-      - $OSDU_GCP == 'true'
-    refs:
-      - branches
-      - main
-      - merge_requests
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
 
 .osdu-gcp-dev2-deploy-configmap:
   tags: ["osdu-small"]
@@ -102,9 +100,6 @@
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
-      when: on_success
-    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
-    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
       when: on_success
 
 .osdu-gcp-deployment:
@@ -130,13 +125,11 @@
     - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=600s)
     - echo $STATUS
     - if [[ "$STATUS" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
-  only:
-    variables:
-      - $OSDU_GCP == 'true'
-    refs:
-      - branches
-      - main
-      - merge_requests
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
 
 .osdu-gcp-dev2-deploy-deployment:
   tags: ["osdu-small"]
@@ -167,9 +160,6 @@
       when: on_success
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
       when: on_success
-    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
-    - if: '$OSDU_GCP == "true" && $DEV2 == "true"'
-      when: on_success
 
 .osdu-gcp-test-python:
   tags: ["osdu-small"]
@@ -178,13 +168,11 @@
     # Service Accounts for running integration tests
     INTEGRATION_TESTER: $OSDU_GCP_INTEGRATION_TESTER
   stage: integration
-  only:
-    variables:
-      - $OSDU_GCP == 'true'
-    refs:
-      - branches
-      - main
-      - merge_requests
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
 
 .osdu-gcp-dev2-test-python:
   tags: ["osdu-small"]
@@ -195,10 +183,7 @@
     INTEGRATION_TESTER: $OSDU_GCP_INTEGRATION_TESTER
   stage: integration
   rules:
-    - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $CI_COMMIT_BRANCH =~ /^release/'
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
-    - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $CI_COMMIT_TAG'
-      when: on_success
-    # The variable DEV2="true" should be specified manually in GitLab before running a pipeline to test this job against a protected branch
-    - if: '$OSDU_GCP == "true" && $OSDU_GCP_INT_TEST_TYPE == "python" && $DEV2 == "true"'
+    - if: '$OSDU_GCP == "true" && && $CI_COMMIT_TAG'
       when: on_success
