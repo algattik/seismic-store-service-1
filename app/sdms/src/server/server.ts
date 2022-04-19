@@ -77,13 +77,26 @@ export class Server {
 
     constructor() {
 
-        // set the caller headers to forward to the downstream services
+        // Set the headers in the request to be propagated to the downstream services
         if (Config.CALLER_FORWARD_HEADERS) {
+
+            const headersToPropagate = Config.CALLER_FORWARD_HEADERS.split(',');
+
+            // Add traceparent and Config.CORRELATION_ID headers to the list of headers hpropagate library propagates
+            if (!headersToPropagate.includes('traceparent')) {
+                headersToPropagate.push('traceparent', Config.CORRELATION_ID);
+            }
+
             hpropagate({
-                headersToPropagate: Config.CALLER_FORWARD_HEADERS.split(',')
+                headersToPropagate
             });
         } else {
-            hpropagate();
+            // Avoid the initialization of x-correlation-id and only forward it if present in the request
+            // Add traceparent and Config.CORRELATION_ID headers to the list of headers hpropagate library propagates
+            hpropagate({
+                setAndPropagateCorrelationId: false,
+                headersToPropagate: ['x-correlation-id', 'traceparent', Config.CORRELATION_ID]
+            });
         }
 
         this.app = express();

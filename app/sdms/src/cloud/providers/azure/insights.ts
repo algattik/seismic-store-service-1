@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 import * as appinsights from 'applicationinsights';
+import { DependencyTelemetry } from 'applicationinsights/out/Declarations/Contracts';
 import { Utils } from '../../../shared';
 import { Config } from '../../config';
 import { AbstractLogger, LoggerFactory } from '../../logger';
@@ -22,10 +23,22 @@ import { AzureConfig } from './config';
 @LoggerFactory.register('azure')
 export class AzureInsightsLogger extends AbstractLogger {
 
-    public static logCustomHeaders(
-        envelope: appinsights.Contracts.EnvelopeTelemetry, context: { [name: string]: any }): boolean {
+    public static preProcessTelemetryData(
+        envelope: appinsights.Contracts.EnvelopeTelemetry, context: { [name: string]: any; }): boolean {
 
         const httpRequest = context['http.ServerRequest'];
+
+        if (envelope.data.baseType === 'RemoteDependencyData') {
+            // Log only remote dependency data if there are failures
+            if (envelope.data.baseData.success === true) {
+                return false;
+            }
+        }
+
+        if (envelope.data.baseType === 'RequestData' && envelope.data.baseData.name.includes('svcstatus')) {
+            return false;
+        }
+
         if (httpRequest && appinsights.Contracts.domainSupportsProperties(envelope.data.baseData)) {
 
             // Log the correlation-id
@@ -70,7 +83,7 @@ export class AzureInsightsLogger extends AbstractLogger {
             appinsights.defaultClient.context.tags[
                 appinsights.defaultClient.context.keys.cloudRole] = 'seismic-dms';
 
-            appinsights.defaultClient.addTelemetryProcessor(AzureInsightsLogger.logCustomHeaders);
+            appinsights.defaultClient.addTelemetryProcessor(AzureInsightsLogger.preProcessTelemetryData);
             appinsights.start();
         }
     }
@@ -106,4 +119,5 @@ export class AzureInsightsLogger extends AbstractLogger {
             console.log(data);
         }
     }
+
 }
