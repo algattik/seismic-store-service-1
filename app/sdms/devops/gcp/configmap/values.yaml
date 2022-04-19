@@ -1,4 +1,5 @@
 data:
+  # common configuration
   log_level: "INFO"
   cloudProvider: "google"
   port: "5000"
@@ -8,17 +9,21 @@ data:
   data_partition_rest_header_key: "data-partition-id"
   des_service_host_storage: "http://storage/api/storage/v2"
   des_service_host_compliance: "http://legal/api/legal/v1"
-  seistore_des_target_audience: "#{DES_TARGET_AUDIENCE}#"
-  service_cloud_project: "#{SERVICE_CLOUD_PROJECT}#"
   app_environment_identifier: "dev"
-  imp_service_account_signer: "#{SERVICE_ACCOUNT_SIGNER}#"
   des_service_host_entitlement: "http://entitlements/api"
-  seistore_des_appkey: "#{DES_APPKEY}#"
   des_redis_instance_address: "redis-cache-ddms.redis.svc.cluster.local"
   des_redis_instance_port: "6379"
   locksmap_redis_instance_address: "redis-cache-ddms.redis.svc.cluster.local"
   locksmap_redis_instance_port: "6379"
   url_prefix: #{SDMS_PREFIX}#
+  # gcp configuration
+  imp_service_account_signer: "#{SERVICE_ACCOUNT_SIGNER}#"
+  seistore_des_appkey: "#{DES_APPKEY}#"
+  service_cloud_project: "#{SERVICE_CLOUD_PROJECT}#"
+  seistore_des_target_audience: "#{DES_TARGET_AUDIENCE}#"
+  # onprem configuration
+  api_base_path: "/api/v3"
+  service_env: "dev"
 conf:
   app_name: "seismic-store"
   configmap: "seismic-store-config"

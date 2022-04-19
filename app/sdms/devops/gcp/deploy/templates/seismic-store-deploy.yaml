@@ -24,6 +24,14 @@ spec:
           envFrom:
           - configMapRef:
               name: "{{ .Values.conf.configmap }}"
+          {{- if .Values.conf.on_prem_enabled }}
+          - secretRef:
+              name: "{{ .Values.conf.database}}"
+          - secretRef:
+              name: "{{ .Values.conf.keycloak}}"
+          - secretRef:
+              name: "{{ .Values.conf.minio}}"
+          {{- end }}
           securityContext:
             allowPrivilegeEscalation: false
             runAsUser: 0
