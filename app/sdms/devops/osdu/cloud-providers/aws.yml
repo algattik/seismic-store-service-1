@@ -47,7 +47,7 @@ sdms_aws-containerize:
       - merge_requests
 
 sdms_aws-update-eks:
-  allow_failure: true
+  allow_failure: false
   extends:
     - .aws-update-eks
   needs: ['sdms_aws-containerize']
