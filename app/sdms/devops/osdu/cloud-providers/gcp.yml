@@ -22,7 +22,7 @@ sdms-osdu-gcp-helm-charts-release:
 sdms-osdu-gcp-containerize-gitlab:
   variables:
     SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "docker/runtime.Dockerfile"
-    SEISMIC_OSDU_GCP_SERVICE: seismic-store    
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store 
   extends: .osdu-gcp-containerize-gitlab
   before_script:
     - cd app/$SDMS_SERVICE
@@ -58,12 +58,11 @@ sdms-osdu-gcp-deploy-configmap:
     - sed -i 's|#{SERVICE_ACCOUNT_SIGNER}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
     - sed -i 's|#{DES_APPKEY}#|'NA'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
   rules:
-    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-      changes:
-        - devops/**/*
-        - app/sdms/**/*
-    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$OSDU_GCP == "true"'
       when: on_success
       changes:
         - devops/**/*
@@ -99,18 +98,17 @@ sdms-osdu-gcp-deployment:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s"
   extends: .osdu-gcp-deployment
   needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-deploy-configmap"]
   before_script:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR}/values.yaml
   rules:
-    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-      changes:
-        - devops/**/*
-        - app/sdms/**/*
-    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$OSDU_GCP == "true"'
       when: on_success
       changes:
         - devops/**/*
@@ -121,7 +119,7 @@ sdms-osdu-gcp-dev2-deploy-deployment:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA"
+    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA"
   extends: .osdu-gcp-dev2-deploy-deployment
   needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-dev2-deploy-configmap"]
   before_script:
@@ -165,12 +163,11 @@ sdms-osdu-gcp-test-python:
     - chmod +x ./tests/e2e/run_e2e_tests.sh
     - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${OSDU_GCP_UNIT_HOSTNAME}${GCP_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$OSDU_GCP_INTEGRATION_TESTER" --tenant="${OSDU_GCP_TENANT}" --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${OSDU_GCP_SEISTORE_LEGALTAG01}" --legaltag02="${OSDU_GCP_SEISTORE_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
   rules:
-    - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-      changes:
-        - devops/**/*
-        - app/sdms/**/*
-    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$OSDU_GCP == "true"'
       when: on_success
       changes:
         - devops/**/*

@@ -9,6 +9,3 @@ include:
   # deploy
   # azure
   - local: "app/filemetadata/devops/osdu/cloud-providers/azure.yml"
-  
-  # gcp
-  - local: "app/filemetadata/devops/osdu/cloud-providers/gcp.yml"
