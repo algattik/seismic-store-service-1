@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2022, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 // limitations under the License.
 // ============================================================================
 
+// tslint:disable: no-console
+
+import hpropagate from 'hpropagate';
 import { Config, ConfigFactory, LoggerFactory, TraceFactory } from '../cloud';
 import { StorageJobManager } from '../cloud/shared/queue';
 import { Locker } from '../services/dataset/locker';
@@ -23,25 +26,25 @@ import { SwaggerManager } from './swagger-manager';
 
 async function ServerStart() {
 
+    process.on('unhandledRejection', (reason, promise) => {
+        const mex = 'Unhandled rejection caught at ' + promise + ' due to reason ' + reason;
+        Config.CLOUDPROVIDER ? LoggerFactory.build(Config.CLOUDPROVIDER).error(mex) : console.error(mex);
+    });
+
     try {
 
-        // tslint:disable-next-line
         console.log('- Initializing cloud provider');
         Config.setCloudProvider(process.env.CLOUDPROVIDER);
 
-        // tslint:disable-next-line
         console.log('- Initializing ' + Config.CLOUDPROVIDER + ' configurations');
         await ConfigFactory.build(Config.CLOUDPROVIDER).init();
 
-        // tslint:disable-next-line
         console.log('- Initializing redis locker cache');
         await Locker.init();
 
-        // tslint:disable-next-line
         console.log('- Initializing redis shared cache');
         initSharedCache();
 
-        // tslint:disable-next-line
         console.log('- Initializing storage transfer daemon');
         StorageJobManager.setup({
             ADDRESS: Config.DES_REDIS_INSTANCE_ADDRESS,
@@ -56,17 +59,21 @@ async function ServerStart() {
             TraceFactory.build(Config.CLOUDPROVIDER).start();
         }
 
-        process.on('unhandledRejection', (reason, promise) => {
-            LoggerFactory.build(Config.CLOUDPROVIDER).error('Unhandled rejection caught at ' + promise + ' due to reason ' + reason);
-        });
-
-        // tslint:disable-next-line
         console.log('- Initializing schema managers');
         await SchemaManagerFactory.initialize();
 
-        // tslint:disable-next-line
         console.log('- Initializing swagger-doc manager');
         await SwaggerManager.init();
+
+        console.log('- Initializing caller header forwarding');
+        const callerHeadersToForward = Config.CALLER_FORWARD_HEADERS ? Config.CALLER_FORWARD_HEADERS.split(',') : [];
+        callerHeadersToForward.push('x-correlation-id');
+        callerHeadersToForward.push('traceparent');
+        if (Config.CORRELATION_ID) { callerHeadersToForward.push(Config.CORRELATION_ID); }
+        hpropagate({
+            setAndPropagateCorrelationId: false,
+            headersToPropagate: callerHeadersToForward
+        });
 
         await new (await import('./server')).Server().start();
 

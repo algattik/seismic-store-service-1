@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2022, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 import cors from 'cors';
 import express from 'express';
 import fs from 'fs';
-import hpropagate from 'hpropagate';
 import https from 'https';
 import jwtProxy, { JwtProxyOptions } from 'jwtproxy';
 import swaggerUi from 'swagger-ui-express';
@@ -74,30 +73,7 @@ export class Server {
         ]
     };
 
-
     constructor() {
-
-        // Set the headers in the request to be propagated to the downstream services
-        if (Config.CALLER_FORWARD_HEADERS) {
-
-            const headersToPropagate = Config.CALLER_FORWARD_HEADERS.split(',');
-
-            // Add traceparent and Config.CORRELATION_ID headers to the list of headers hpropagate library propagates
-            if (!headersToPropagate.includes('traceparent')) {
-                headersToPropagate.push('traceparent', Config.CORRELATION_ID);
-            }
-
-            hpropagate({
-                headersToPropagate
-            });
-        } else {
-            // Avoid the initialization of x-correlation-id and only forward it if present in the request
-            // Add traceparent and Config.CORRELATION_ID headers to the list of headers hpropagate library propagates
-            hpropagate({
-                setAndPropagateCorrelationId: false,
-                headersToPropagate: ['x-correlation-id', 'traceparent', Config.CORRELATION_ID]
-            });
-        }
 
         this.app = express();
         this.app.use(express.urlencoded({ extended: false }));
