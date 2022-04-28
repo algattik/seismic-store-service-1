@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "7c65f410-ae0c-479e-8a07-ea61085c863e",
-		"name": "SDMS-E2E ver.M10 - Release 0.14",
+		"_postman_id": "a77d15fa-e17a-48b2-a3d7-862f0d19ce6a",
+		"name": "SDMS-E2E ver.M12 - Release 0.15",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -13173,7 +13173,7 @@
 					"response": []
 				},
 				{
-					"name": "APP REGISTER",
+					"name": "IMPERSONATION  APP REGISTER",
 					"event": [
 						{
 							"listen": "test",
@@ -13241,7 +13241,7 @@
 					"response": []
 				},
 				{
-					"name": "APP REGISTER TRUSTED",
+					"name": "IMPERSONATION  APP REGISTER TRUSTED",
 					"event": [
 						{
 							"listen": "test",
@@ -13307,7 +13307,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN GENERATE",
+					"name": "IMPERSONATION  IMPTOKEN GENERATE",
 					"event": [
 						{
 							"listen": "test",
@@ -13400,7 +13400,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN REFRESH",
+					"name": "IMPERSONATION  IMPTOKEN REFRESH",
 					"event": [
 						{
 							"listen": "test",
@@ -13499,7 +13499,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER",
+					"name": "IMPERSONATION  DATASET REGISTER",
 					"event": [
 						{
 							"listen": "test",
@@ -13580,7 +13580,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE",
+					"name": "IMPERSONATION  DATASET DELETE",
 					"event": [
 						{
 							"listen": "test",
