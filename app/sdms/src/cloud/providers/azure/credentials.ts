@@ -31,7 +31,7 @@ import {ExponentialRetryPolicyOptions} from '@azure/core-rest-pipeline'
 import { AccessToken, GetTokenOptions } from '@azure/core-auth';
 
 const KExpiresMargin = 300; // 5 minutes
-const UserDelegationKeyValidityInMinutes = 60 * 4; // 4 hours
+const UserDelegationKeyValidityInMinutes = 3599; // expires at the same time as the sas token
 const ExpirationLeadInMinutes = 15; // expire 15 minutes before actual date
 const SasExpirationInMinutes = 3599; // shortly under 2.5 days
 
