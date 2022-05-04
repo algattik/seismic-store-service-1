@@ -14,14 +14,6 @@ There are 3 ways to build and test this service: local, docker and GitLab.
     - Activate virtual environment
       `.\venv\scripts\activate.bat`
 
-    - `pip install keyring artifacts-keyring` - required for login and to access Azure artifacts
-
-    - Create `pip.ini` (Windows) or `pip.conf` (Mac/Linux) with Azure package source under **your virtualenv directory**.
-      Note: the personal access token (PAT) in pip.conf only lasts for 3 months.
-
-      For more details, please visit [Get started with Python packages in Azure Artifacts](https://docs.microsoft.com/en-us/azure/devops/artifacts/quickstarts/python-packages?view=azure-devops)
-
-  
     - Install dependencies
       `pip install -r requirements.txt`
     
@@ -35,7 +27,6 @@ There are 3 ways to build and test this service: local, docker and GitLab.
     - fastapi
     - uvicorn
     - segysdk-python==`<latest version>`
-    The latestion version of segysdk-python is `0.0.4827935`
 
 3.	Latest releases
     

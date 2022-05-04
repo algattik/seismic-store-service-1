@@ -26,7 +26,7 @@ internal_server_error = HTTPException(
     detail=strings.INTERNAL_ERROR
 )
 
-@router.get(settings.API_PATH + "segy/revision")
+@router.get(settings.API_PATH + "segy/revision",  tags=["SEGY"])
 async def get_revision(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
@@ -39,7 +39,7 @@ async def get_revision(
 
     return revision
 
-@router.get(settings.API_PATH + "segy/is3D")
+@router.get(settings.API_PATH + "segy/is3D", tags=["SEGY"])
 async def get_is_3d(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
@@ -52,7 +52,7 @@ async def get_is_3d(
 
     return is_3d == 1
 
-@router.get(settings.API_PATH + "segy/traceHeaderFieldCount")
+@router.get(settings.API_PATH + "segy/traceHeaderFieldCount", tags=["SEGY"])
 async def get_trace_header_field_count(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
@@ -65,7 +65,7 @@ async def get_trace_header_field_count(
 
     return count
 
-@router.get(settings.API_PATH + "segy/textualHeader")
+@router.get(settings.API_PATH + "segy/textualHeader", tags=["SEGY"])
 async def get_textual_header(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
@@ -79,7 +79,7 @@ async def get_textual_header(
 
     return {"header": f"{json_header}"}
 
-@router.get(settings.API_PATH + "segy/extendedTextualHeaders")
+@router.get(settings.API_PATH + "segy/extendedTextualHeaders", tags=["SEGY"])
 async def get_extended_textual_headers(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
@@ -93,7 +93,7 @@ async def get_extended_textual_headers(
 
     return {"header": f"{json_header}"}
 
-@router.get(settings.API_PATH + "segy/binaryHeader")
+@router.get(settings.API_PATH + "segy/binaryHeader", tags=["SEGY"])
 async def get_binary_header(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
@@ -106,6 +106,35 @@ async def get_binary_header(
 
     return {"header": f"{header}"}
 
+@router.get(settings.API_PATH + "segy/rawTraceHeaders", tags=["SEGY"])
+async def get_raw_trace_headers(
+        sdpath: str,
+        start_trace: int,
+        traces_to_dump: int,
+        bearer: APIKey = Depends(get_bearer),
+        api_key: APIKey = Depends(get_api_key)):
+    segy = __create_segy_session(bearer, api_key, sdpath)
+    try:
+        header = segy.get_raw_trace_headers_as_json(start_trace, traces_to_dump)
+    except:
+        raise internal_server_error
+
+    return {"header": f"{header}"}
+
+@router.get(settings.API_PATH + "segy/scaledTraceHeaders", tags=["SEGY"])
+async def get_scaled_trace_headers(
+        sdpath: str,
+        start_trace: int,
+        traces_to_dump: int,
+        bearer: APIKey = Depends(get_bearer),
+        api_key: APIKey = Depends(get_api_key)):
+    segy = __create_segy_session(bearer, api_key, sdpath)
+    try:
+        header = segy.get_scaled_trace_headers_as_json(start_trace, traces_to_dump)
+    except:
+        raise internal_server_error
+
+    return {"header": f"{header}"}
 
 def __create_segy_session(bearer, api_key, sdpath):
     try:
