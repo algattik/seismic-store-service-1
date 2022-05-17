@@ -16,3 +16,4 @@ conf:
   keycloak: seismic-store-keycloak-secret
   minio: seismic-store-minio-secret
   on_prem_enabled: false
+  domain: ""
