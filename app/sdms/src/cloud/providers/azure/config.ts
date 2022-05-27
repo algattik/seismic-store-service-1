@@ -106,7 +106,7 @@ export class AzureConfig extends Config {
             await Config.initServiceConfiguration({
                 SERVICE_ENV: process.env.APP_ENVIRONMENT_IDENTIFIER,
                 SERVICE_PORT: +process.env.PORT || 5000,
-                API_BASE_PATH: AzureConfig.API_BASE_URL_PATH,
+                API_BASE_PATH: process.env.SDMS_PREFIX || AzureConfig.API_BASE_URL_PATH,
                 IMP_SERVICE_ACCOUNT_SIGNER: AzureConfig.IMP_SERVICE_ACCOUNT_SIGNER,
                 LOCKSMAP_REDIS_INSTANCE_ADDRESS: AzureConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                 LOCKSMAP_REDIS_INSTANCE_PORT: AzureConfig.LOCKSMAP_REDIS_INSTANCE_PORT,
@@ -156,7 +156,7 @@ export class AzureConfig extends Config {
                 USER_ID_CLAIM_FOR_SDMS: process.env.USER_ID_CLAIM_FOR_SDMS || 'subid',
                 USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC: process.env.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC || 'email',
                 USER_ASSOCIATION_SVC_PROVIDER: process.env.USER_ASSOCIATION_SVC_PROVIDER || 'ccm-internal',
-                SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3'
+                SDMS_PREFIX: process.env.SDMS_PREFIX || AzureConfig.API_BASE_URL_PATH
             });
 
             // initialize app insight
