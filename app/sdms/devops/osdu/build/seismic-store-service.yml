@@ -21,3 +21,4 @@ sdms_compile-and-unit-test:
       - branches
       - main
       - merge_requests
+      - tags

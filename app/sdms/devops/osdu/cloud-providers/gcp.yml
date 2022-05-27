@@ -45,6 +45,23 @@ sdms-osdu-gcp-containerize-gitlab:
         - devops/**/*
         - app/sdms/**/*
 
+sdms-osdu-gcp-containerize-gcr:
+  extends: .osdu-gcp-containerize-gcr
+  variables:
+    SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "docker/runtime.Dockerfile"
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store
+    IMAGE_NAME: osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
+  before_script:
+    - cat $OSDU_GCP_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
+    - cd app/$SDMS_SERVICE
+    - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
+  rules:
+    - if: '$OSDU_GCP == "true" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
 sdms-osdu-gcp-deploy-configmap:
   needs: ["sdms-osdu-gcp-containerize-gitlab"]
   variables:
@@ -68,13 +85,15 @@ sdms-osdu-gcp-deploy-configmap:
       changes:
         - devops/**/*
         - app/sdms/**/*
-      
+
 sdms-osdu-gcp-dev2-deploy-configmap:
   needs: ["sdms-osdu-gcp-containerize-gitlab"]
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE: seismic-store-configmap
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
     SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.domain=$DOMAIN"
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store
+    SEISMIC_OSDU_GCP_CHART: gcp-seismic-store-sdms-configmap #var used only in release and tagged pipelines
   extends: .osdu-gcp-dev2-deploy-configmap
   before_script:
     - sed -i 's|#{SDMS_PREFIX}#|'$GCP_SDMS_PREFIX'|' ${SEISMIC_OSDU_GCP_HELM_CONFIG_DIR}/values.yaml
@@ -120,7 +139,7 @@ sdms-osdu-gcp-dev2-deploy-deployment:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
-    SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE"
+    SEISMIC_OSDU_GCP_CHART: gcp-seismic-store-sdms-deploy #var used only in release and tagged pipelines
   extends: .osdu-gcp-dev2-deploy-deployment
   needs: ["sdms-osdu-gcp-containerize-gitlab", "sdms-osdu-gcp-dev2-deploy-configmap"]
   before_script:
@@ -138,7 +157,7 @@ sdms-osdu-gcp-dev2-deploy-deployment:
         - app/sdms/**/*
 
 sdms-osdu-gcp-test-python:
-  variables: 
+  variables:
     GOOGLE_CREDENTIALS: $OSDU_GCP_R3_INTEGRATION_TESTER
   extends: .osdu-gcp-test-python
   image: node
@@ -152,8 +171,8 @@ sdms-osdu-gcp-test-python:
     - apt-get install -y python3-pip
     - pip install google
     - pip install google-auth
-    - pip install google-api-python-client 
-    - pip install google-auth-httplib2 
+    - pip install google-api-python-client
+    - pip install google-auth-httplib2
     - pip install google-auth-oauthlib
     - export OSDU_GCP_AUDIENCE=$INTEGRATION_TEST_AUDIENCE
     - echo $GOOGLE_CREDENTIALS > google_credentials.json
@@ -175,7 +194,7 @@ sdms-osdu-gcp-test-python:
         - app/sdms/**/*
 
 sdms-osdu-gcp-dev2-test-python:
-  variables: 
+  variables:
     GOOGLE_CREDENTIALS: $OSDU_GCP_R3_INTEGRATION_TESTER
   extends: .osdu-gcp-dev2-test-python
   image: node
@@ -189,8 +208,8 @@ sdms-osdu-gcp-dev2-test-python:
     - apt-get install -y python3-pip
     - pip install google
     - pip install google-auth
-    - pip install google-api-python-client 
-    - pip install google-auth-httplib2 
+    - pip install google-api-python-client
+    - pip install google-auth-httplib2
     - pip install google-auth-oauthlib
     - export OSDU_GCP_AUDIENCE=$INTEGRATION_TEST_AUDIENCE
     - echo $GOOGLE_CREDENTIALS > google_credentials.json

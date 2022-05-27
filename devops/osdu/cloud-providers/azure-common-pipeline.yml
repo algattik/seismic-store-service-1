@@ -27,7 +27,7 @@ azure_test:
       echo 'empty'
   only:
       - $DISABLED == 'true'
-      
+
 azure_code_coverage:
   needs: []
   extends: []
@@ -35,7 +35,7 @@ azure_code_coverage:
       echo 'empty'
   only:
       - $DISABLED == 'true'
-      
+
 azure_test_py:
   needs: []
   extends: []
@@ -43,7 +43,7 @@ azure_test_py:
       echo 'empty'
   only:
       - $DISABLED == 'true'
-      
+
 .azure_containerize:
   tags: ["osdu-medium"]
   image: danielscholl/azure-build-image
@@ -57,7 +57,7 @@ azure_test_py:
   only:
     variables:
       - $AZURE == 'true'
-      
+
 .azure_container_scanning:
   tags: ["osdu-medium"]
   stage: scan
