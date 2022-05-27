@@ -132,7 +132,7 @@ export class SubProjectHandler {
                 'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
                 tenant.esd, req[Config.DE_FORWARD_APPKEY]),
             AuthGroups.createGroup(userToken, viewerGroupName,
-                'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' editor group',
+                'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' viewer group',
                 tenant.esd, req[Config.DE_FORWARD_APPKEY])]
         );
 
