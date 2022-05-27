@@ -50,6 +50,23 @@ sdms_azure_containerize:
       - branches
       - main
       - merge_requests
+      - tags
+
+sdms_azure_container_scanning:
+  extends: .azure_container_scanning
+  needs: ['sdms_azure_containerize']
+  variables: 
+    DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}/${SDMS_PROJECT_NAME}:${CI_COMMIT_SHA}
+  rules:
+    - if: $AZURE == 'true' && $ENFORCE_CONTAINER_SCANNING == 'true'
+      allow_failure: false
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: $AZURE == 'true'
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
   
 sdms_azure_deploy:
   extends: .azure_deploy
@@ -94,6 +111,7 @@ sdms_azure_deploy:
       - branches
       - main
       - merge_requests
+      - tags
       
 sdms_azure_test:
   image: node
@@ -119,3 +137,4 @@ sdms_azure_test:
       - branches
       - main
       - merge_requests
+      - tags

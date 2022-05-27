@@ -5,6 +5,14 @@ azure_containerize:
   only:
       - $DISABLED == 'true'
 
+container_scanning:
+  needs: []
+  script:
+      echo 'empty'
+  rules:
+    - if: $DISABLED == 'true'
+      when: never
+
 azure_deploy:
   needs: []
   script:
@@ -49,6 +57,21 @@ azure_test_py:
   only:
     variables:
       - $AZURE == 'true'
+      
+.azure_container_scanning:
+  tags: ["osdu-medium"]
+  stage: scan
+  image: registry.gitlab.com/security-products/container-scanning/trivy:4
+  allow_failure: true
+  script:
+    - |
+      echo "[INFO] Scanning with trivy";
+      echo "[INFO] Scanning Container Image: $DOCKER_IMAGE"
+      trivy image --ignore-unfixed --exit-code 1 --severity "HIGH,CRITICAL" $DOCKER_IMAGE
+  rules:
+    - if: $AZURE == 'true' && $ENFORCE_CONTAINER_SCANNING == 'true'
+      allow_failure: false
+    - if: $AZURE == 'true'
 
 .azure_deploy:
   image: danielscholl/azure-build-image
