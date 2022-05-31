@@ -15,12 +15,12 @@ data:
   des_redis_instance_port: "6379"
   locksmap_redis_instance_address: "redis-cache-ddms.redis.svc.cluster.local"
   locksmap_redis_instance_port: "6379"
-  url_prefix: #{SDMS_PREFIX}#
+  url_prefix: "/api/seismic-store/v3"
   # gcp configuration
-  imp_service_account_signer: "#{SERVICE_ACCOUNT_SIGNER}#"
-  seistore_des_appkey: "#{DES_APPKEY}#"
-  service_cloud_project: "#{SERVICE_CLOUD_PROJECT}#"
-  seistore_des_target_audience: "#{DES_TARGET_AUDIENCE}#"
+  imp_service_account_signer: "NA"
+  seistore_des_appkey: "NA"
+  service_cloud_project: ""
+  seistore_des_target_audience: ""
   # onprem configuration
   api_base_path: "/api/v3"
   service_env: "dev"

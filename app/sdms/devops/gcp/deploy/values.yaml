@@ -10,10 +10,10 @@ data:
 conf:
   configmap: "seismic-store-config"
   app_name: "seismic-store"
-  url_prefix: #{SDMS_PREFIX}#
+  url_prefix: "/api/seismic-store/v3"
   # onprem configuration
-  database: seismic-store-db-secret
-  keycloak: seismic-store-keycloak-secret
-  minio: seismic-store-minio-secret
+  database: "seismic-store-db-secret"
+  keycloak: "seismic-store-keycloak-secret"
+  minio: "seismic-store-minio-secret"
   on_prem_enabled: false
   domain: ""
