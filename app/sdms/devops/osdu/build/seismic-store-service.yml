@@ -8,6 +8,7 @@ sdms_compile-and-unit-test:
       coverage_report: 
         coverage_format: cobertura
         path: app/$SDMS_SERVICE/coverage/cobertura-coverage.xml
+
     paths:
       - app/$SDMS_SERVICE/coverage/
     expire_in: 15 days

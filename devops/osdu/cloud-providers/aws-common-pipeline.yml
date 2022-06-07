@@ -33,6 +33,7 @@ aws-update-ecs:
     - .aws_variables
     - .aws_common_variables
   stage: deploy
+  retry: 1
   only:
     variables:
       - $AWS_SKIP_DEPLOY != 'true' && $AWS == 'true' && $AWS_DEPLOY_TARGET == 'EKS'
