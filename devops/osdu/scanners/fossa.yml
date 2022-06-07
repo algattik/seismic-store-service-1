@@ -1,3 +1,5 @@
 include:
-    
-  - local: "devops/osdu/scanners/fossa-common-pipeline.yml"
+  
+  # fossa-global
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-global.yml"

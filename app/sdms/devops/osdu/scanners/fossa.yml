@@ -1,36 +1,26 @@
-sdms_fossa-analyze:
-  extends: .fossa-analyze-node
+fossa-analyze:
   needs: ['sdms_compile-and-unit-test']
+  image: $CI_REGISTRY/divido/fossa-with-cache:v0.7
+  stage: scan
+  tags: ['osdu-medium']
   variables:
-    VAR_PROJECT_TITLE: $SDMS_PROJECT_TITLE
-    FOSSA_OUTPUT_DIR: app/$SDMS_SERVICE/fossa-output
-  before_script:
-    - cd app/$SDMS_SERVICE/
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
-
-sdms_fossa-check-notice:
-  extends: .fossa-check-notice
-  needs: ['sdms_fossa-analyze']
+    FOSSA_OUTPUT_DIR: fossa-output
+    ALLOW_FOSSA_CACHE: 'false'
   before_script:
     - cd app/$SDMS_SERVICE
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+  script:
+    # fossa-check-for-licensing-issues needs a CI_COMMIT_BRANCH defined to know how to parse the FOSSA API results
+    # When building tags, this isn't defined by GitLab. In that case, we use the tag name instead. If that's not defined
+    # then things will fail and we'll have to make this smarter
+    - test -z "$CI_COMMIT_BRANCH" && export CI_COMMIT_BRANCH="$CI_COMMIT_TAG"
+    - npm ci --production
+    - fossa-with-cache --merge-with NOTICE
+    - cd ../..
+    - mv app/$SDMS_SERVICE/fossa-output .
   artifacts:
-    when: on_failure
     paths:
-      - app/$SDMS_SERVICE/public
-
-sdms_fossa-report:
-  extends: .fossa-report
-  needs: ['sdms_fossa-analyze']
-  variables:
-    FOSSA_REPORT_URL: https://app.fossa.com/api/revisions/custom%2B12773%2F${SDMS_PROJECT_NAME}%24${CI_COMMIT_SHA}/attribution?access=${FOSSA_ACCESS}&includeProjectLicense=true&includeLicenseScan=true&includeDirectDependencies=true&includeDeepDependencies=true&includeLicenseHeaders=&includeLicenseList=true&format=HTML
-  only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
+      - fossa-output
+    when: always
+    expire_in: 2 days
+  rules:
+    - if: $FOSSA_API_KEY

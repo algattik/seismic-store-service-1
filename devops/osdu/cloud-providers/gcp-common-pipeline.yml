@@ -193,6 +193,7 @@
 
 .osdu-gcp-deployment:
   stage: deploy
+  retry: 1
   tags: ["osdu-small"]
   extends: .osdu-gcp-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -218,6 +219,7 @@
 
 .osdu-gcp-dev2-deploy-deployment:
   stage: deploy
+  retry: 1
   tags: ["osdu-small"]
   extends: .osdu-gcp-dev2-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -245,6 +247,7 @@
 
 .osdu-gcp-anthos-deploy-deployment:
   stage: deploy
+  retry: 1
   tags: ["osdu-small"]
   extends: .osdu-gcp-anthos-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
