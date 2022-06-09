@@ -146,6 +146,8 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 if (filter.operator === 'CONTAINS') {
                     sqlQuery += (' AND (ARRAY_CONTAINS(c.data.' + filter.property + ', ' + '\'' + filter.value + '\'' + ')' +
                         ' OR c.data.' + filter.property + ' = ' + '\'' + filter.value + '\'' + ')')
+                } else if (filter.operator === 'RegexMatch') {
+                    sqlQuery += (' AND (RegexMatch(c.data.' + filter.property + ', \'' + filter.value + '\')' + ')')
                 } else {
                     sqlQuery += (' AND c.data.' + filter.property + ' ' + filter.operator + ' "' + filter.value + '"')
                 }
@@ -236,7 +238,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
 }
 
-declare type Operator = '=' | '<' | '>' | '<=' | '>=' | 'HAS_ANCESTOR' | 'CONTAINS';
+declare type Operator = '=' | '<' | '>' | '<=' | '>=' | 'HAS_ANCESTOR' | 'CONTAINS' | 'RegexMatch';
 
 export class AzureCosmosDbQuery implements IJournalQueryModel {
 

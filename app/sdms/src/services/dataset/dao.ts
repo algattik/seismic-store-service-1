@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2022, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import { Config, IJournal } from '../../cloud';
 import { Utils } from '../../shared';
 import { Locker } from './locker';
 import { PaginatedDatasetList } from './model';
+import { AzureCosmosDbQuery } from '../../cloud/providers/azure'
 
 export class DatasetDAO {
 
@@ -139,9 +140,13 @@ export class DatasetDAO {
         if (wmode !== Config.LS_MODE.DATASETS && !pagination.cursor) {
 
             // Retrieve directories
-            const query = journalClient.createQuery(
-                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-                .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+            const q = journalClient.createQuery(
+                        Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+                        .select(['path']).groupBy('path');
+
+            const query = q instanceof AzureCosmosDbQuery
+                            ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
+                            : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
             const [hierarchicalEntities] = await journalClient.runQuery(query);
             output.datasets = hierarchicalEntities.map(
@@ -223,9 +228,13 @@ export class DatasetDAO {
 
         // Extract all the directories structure and get the subdirectories for the required directory
         if (wmode !== Config.LS_MODE.DATASETS) {
-            const query = journalClient.createQuery(
+            const q = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-                .select(['path']).groupBy('path').filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+                .select(['path']).groupBy('path');
+
+            const query = q instanceof AzureCosmosDbQuery
+                            ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
+                            : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
             const [hierarchicalEntities] = await journalClient.runQuery(query);
             results.directories = hierarchicalEntities.map(
