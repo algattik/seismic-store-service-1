@@ -44,7 +44,6 @@ sdms_ibm-test-py:
   extends:
     - .ibm-test-py
   needs: ["sdms_ibm-deploy"]
-  allow_failure: true
   script:
     - cd app/$SDMS_SERVICE
     - apt-get update

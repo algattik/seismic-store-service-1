@@ -173,11 +173,20 @@ sed -i "s/#{SUBPROJECT}#/${subproject}/g" ./tests/e2e/postman_env.json
 npm ci 
 
 # run tests
-./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \
-    -e ./tests/e2e/postman_env.json \
-    --insecure \
-    --timeout 600000 \
-    --reporters junit,cli
+if [ -f "./node_modules/newman/bin/newman.js" ]; then
+   ./node_modules/newman/bin/newman.js run ./tests/e2e/postman_collection.json \
+      -e ./tests/e2e/postman_env.json \
+      --insecure \
+      --timeout 600000 \
+      --reporters junit,cli
+else
+   npm install -g newman
+   newman run ./tests/e2e/postman_collection.json \
+      -e ./tests/e2e/postman_env.json \
+      --insecure \
+      --timeout 600000 \
+      --reporters junit,cli
+fi
 
 resTest=$?
 

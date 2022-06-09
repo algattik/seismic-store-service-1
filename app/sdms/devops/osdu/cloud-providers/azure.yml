@@ -117,7 +117,6 @@ sdms_azure_test:
   image: node
   extends: .azure_test
   needs: ["sdms_azure_deploy"]
-  allow_failure: true
   variables:
     AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
     AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
