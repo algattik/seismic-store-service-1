@@ -39,11 +39,11 @@ usage() {
 # argument [datapartition] data partition id - required
 # argument [legaltag01] test legal tag - required
 # argument [legaltag02] test legal tag  - required
-# argument [newuser] user email for a new user to add partition id - required
-# argument [VCS-Provider] version control system provider - optional
+# argument [newuser] user email for a new user to add partition id - required if [VCS-Provider] is not 'gitlab'
+# argument [VCS-Provider] valid value is 'gitlab'. Provided will skip USER and IMPTOKEN API endpoints tests - optional
 # argument [de-app-key] DELFI application key - optional
-# argument [admin-email] user credentail email - optional
-# argument [subproject] Subproject name to use in e2e tests - optional
+# argument [admin-email] user credentail email - optional (deprecated)
+# argument [subproject] subproject name to use in e2e tests - optional
 
 for i in "$@"; do
 case $i in
@@ -111,23 +111,16 @@ if [ -z "${legaltag01}" ]; then usage "legaltag01 not defined" && exit 1; fi
 if [ -z "${legaltag02}" ]; then usage "legaltag02 not defined" && exit 1; fi
 
 # required parameter should be skipped for GitLab
-if [ -z "${VCS_Provider}" ]; then
-  if [ -z "${newuser}" ]; then usage "newuser not defined" && exit 1; fi
-fi
-
-if [ "${VCS_Provider}" = false ]; then
-  if [ -z "${newuser}" ]; then usage "newuser not defined" && exit 1; fi
+if [[ "${VCS_Provider}" == true || "${VCS_Provider}" == "true" || "${VCS_Provider}" == "gitlab" ]]; then
+   VCS_Provider="gitlab"
+else
+   if [ -z "${newuser}" ]; then usage "newuser not defined" && exit 1; fi
+   VCS_Provider="any"
 fi
 
 # optional parameters (with defaults)
 if [ -z "${de_app_key}" ]; then
    de_app_key="random_string"
-fi
-
-if [ ${VCS_Provider} ]; then
-   VCS_Provider="gitlab"
-else 
-   VCS_Provider="any"
 fi
 
 if [ -z "${subproject}" ]; then
