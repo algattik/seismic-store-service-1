@@ -23,6 +23,7 @@ import swaggerUi from 'swagger-ui-express';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthProviderFactory } from '../auth';
 import { Config, LoggerFactory } from '../cloud';
+import { AzureConfig } from '../cloud/providers/azure';
 import { ServiceRouter } from '../services';
 import { Cache, Error, Feature, FeatureFlags, Response, Utils } from '../shared';
 import { SwaggerManager } from './swagger-manager';

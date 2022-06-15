@@ -21,6 +21,26 @@ spec:
         nodepool: {{ .Values.global.nodepool }} 
 {{- end }}   
       containers:
+        - name: sidecar
+          image: {{ .Values.sidecarImage.repository }}:{{ .Values.image.tag }}
+          livenessProbe:
+            tcpSocket:
+              port: 7138
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            periodSeconds: 60
+          readinessProbe:
+            tcpSocket:
+              port: 7138
+            initialDelaySeconds: 20
+            timeoutSeconds: 30
+            periodSeconds: 60  
+          ports:
+            - protocol: TCP
+              containerPort: 7138
+          envFrom:
+            - configMapRef:
+                name: seistore-svc-sidecar-properties
         - name: {{ .Release.Name }}
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           resources:

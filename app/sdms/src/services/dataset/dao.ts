@@ -16,6 +16,7 @@
 
 import { DatasetModel, PaginationModel } from '.';
 import { Config, IJournal } from '../../cloud';
+import { AzureConfig } from '../../cloud/providers/azure';
 import { Utils } from '../../shared';
 import { Locker } from './locker';
 import { PaginatedDatasetList } from './model';
@@ -141,12 +142,12 @@ export class DatasetDAO {
 
             // Retrieve directories
             const q = journalClient.createQuery(
-                        Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-                        .select(['path']).groupBy('path');
+                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+                .select(['path']).groupBy('path');
 
             const query = q instanceof AzureCosmosDbQuery
-                            ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
-                            : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+                ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
+                : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
             const [hierarchicalEntities] = await journalClient.runQuery(query);
             output.datasets = hierarchicalEntities.map(
@@ -233,8 +234,8 @@ export class DatasetDAO {
                 .select(['path']).groupBy('path');
 
             const query = q instanceof AzureCosmosDbQuery
-                            ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
-                            : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+                ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
+                : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
 
             const [hierarchicalEntities] = await journalClient.runQuery(query);
             results.directories = hierarchicalEntities.map(

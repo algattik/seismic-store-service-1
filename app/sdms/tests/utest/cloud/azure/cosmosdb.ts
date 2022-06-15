@@ -33,11 +33,11 @@ export class TestAzureCosmosDbDAO {
         describe(Tx.testInit('azure cosmos db dao test'), () => {
             Config.CLOUDPROVIDER = 'azure';
             this.sandbox = sinon.createSandbox();
-            this.cosmos = new AzureCosmosDbDAO({ gcpid: 'gcpid', default_acls:'x', esd: 'gcpid@domain.com', name: 'gcpid'});
+            this.cosmos = new AzureCosmosDbDAO({ gcpid: 'gcpid', default_acls: 'x', esd: 'gcpid@domain.com', name: 'gcpid' });
 
-            beforeEach(()=> {
+            beforeEach(() => {
                 this.sandbox.stub(AzureCosmosDbDAO.prototype, 'getCosmoContainer').resolves(
-                    new Container(undefined, 'id', undefined) );
+                    new Container(undefined, 'id', undefined));
             })
 
             afterEach(() => {
@@ -117,7 +117,7 @@ export class TestAzureCosmosDbDAO {
 
         Tx.test(async (done: any) => {
             this.sandbox.stub(Item.prototype, 'delete').resolves();
-            await this.cosmos.delete('entity');
+            await this.cosmos.delete({ partitionKey: 'entity' });
             done();
         });
     }

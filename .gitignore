@@ -16,3 +16,6 @@
 
 # IDE configurations
 .vscode
+dist/
+node_modules/
+dev/
