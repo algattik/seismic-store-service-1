@@ -54,10 +54,10 @@ steps:
         echo "------------------------------------"
         attempt_counter=0
         max_attempts=30
-        echo $(kubectl get deployment $SERVICE_NAME -n osdu -o=jsonpath='{$.spec.template.spec.containers[:1].image}')
+        echo $(kubectl get deployment $SERVICE_NAME -n osdu -o=jsonpath='{$.spec.template.spec.containers[1:2].image}')
         echo $IMAGE
         echo "------------------------------------"
-        while [ $(kubectl get deployment $SERVICE_NAME -n osdu -o=jsonpath='{$.spec.template.spec.containers[:1].image}') != $IMAGE ]
+        while [ $(kubectl get deployment $SERVICE_NAME -n osdu -o=jsonpath='{$.spec.template.spec.containers[1:2].image}') != $IMAGE ]
         do
           if [ ${attempt_counter} -eq ${max_attempts} ];then
             echo "Deployment Image not updated, integration tests are skipped"

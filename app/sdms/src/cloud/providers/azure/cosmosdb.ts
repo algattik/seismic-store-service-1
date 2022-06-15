@@ -24,12 +24,16 @@ import { AzureConfig } from './config';
 import { Config } from '../..';
 import { Error } from '../../../shared';
 
+// import request from 'request-promise';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+
 @JournalFactory.register('azure')
 export class AzureCosmosDbDAO extends AbstractJournal {
 
     public KEY = Symbol('id');
     private dataPartition: string;
     private static containerCache: { [key: string]: Container; } = {};
+    private static axiosInstance: AxiosInstance;
 
     public async getCosmoContainer(): Promise<Container> {
 
@@ -58,6 +62,39 @@ export class AzureCosmosDbDAO extends AbstractJournal {
     public constructor(tenant: TenantModel) {
         super();
         this.dataPartition = tenant.esd.indexOf('.') !== -1 ? tenant.esd.split('.')[0] : tenant.esd;
+        AzureCosmosDbDAO.axiosInstance = axios.create({
+            httpsAgent: require('https').Agent({
+                rejectUnauthorized: false
+            })
+        });
+    }
+
+    private checkAndParseCosmosError(error: any) {
+        if (axios.isAxiosError(error)) {
+            if (!error.response.data['detail']) {
+                if (error.response.status === 404) { return; }
+                throw (Error.makeForHTTPRequest({
+                    statusCode: error.response.status, message: error.response.statusText
+                }))
+            } else {
+                const detail = error.response.data['detail'];
+                const detailCode = +detail.substring(0, detail.indexOf('-'));
+                if (detailCode === 404) { return; }
+                let detailError = detail;
+                try {
+                    detailError = detail.substring(detail.indexOf('[') + 1);
+                    detailError = detailError.substring(0, detailError.indexOf(']'));
+                    detailError = detailError.replace(/(\r\n|\n|\r)/gm, '').trim();
+                    if (detailError.startsWith('\"')) { detailError = detailError.substring(1); }
+                    if (detailError.endsWith('\"')) { detailError = detailError.substring(0, detailError.length - 2); }
+                } catch (error) { detailError = detail }
+                throw (Error.makeForHTTPRequest({
+                    name: 'StatusCodeError', statusCode: detailCode, message: detailError
+                }))
+            }
+        } else {
+            throw error;
+        }
     }
 
     public async save(datasetEntity: any): Promise<void> {
@@ -72,37 +109,79 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 data: entity.data
             }
             item.data[this.KEY.toString()] = entity.key;
-            await (await this.getCosmoContainer()).items.upsert(item);
-        }
 
+            if (item.id.startsWith('ds-') && AzureConfig.SIDECAR_ENABLE_INSERT) {
+                const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
+                const url = AzureConfig.SIDECAR_URL + '/insert?cs=AccountEndpoint=' + connectionParams.endpoint + ';AccountKey=' + connectionParams.key + ';&item=' + JSON.stringify(item);
+                try {
+                    await AzureCosmosDbDAO.axiosInstance.post(url);
+                } catch (error) {
+                    this.checkAndParseCosmosError(error);
+                }
+            } else {
+                await (await this.getCosmoContainer()).items.upsert(item);
+            }
+        }
     }
 
     public async get(key: any): Promise<[any | any[]]> {
-
-        let retry = 0;
-        let item: ItemResponse<any>;
-        while (retry++ < 5) {
-            item = await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).read();
-            if (item.statusCode !== 404 || !Config.ENABLE_STRONG_CONSISTENCY_EMULATION) { break; }
-            await new Promise((resolve) => setTimeout(resolve, 200));
-        }
-
-        if (!item.resource) {
-            if(item.statusCode === 404) {
+        if ((key.partitionKey as string).startsWith('ds-') && AzureConfig.SIDECAR_ENABLE_GET) {
+            const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
+            const url = AzureConfig.SIDECAR_URL + '/get?cs=AccountEndpoint=' + connectionParams.endpoint + ';AccountKey=' + connectionParams.key + ';&pk=' + key.partitionKey;
+            let response: AxiosResponse<any>;
+            try {
+                response = await AzureCosmosDbDAO.axiosInstance.get(url);
+            } catch (error) {
+                this.checkAndParseCosmosError(error);
                 return [undefined];
-            } else {
-                throw (Error.make(item.statusCode, 'Internal Cosmos Server Error'));
             }
+            const data = response.data.data;
+            Object.keys(data).forEach(key2 => {
+                if (data[key2] === null || data[key2] === undefined) {
+                    delete data[key2];
+                }
+            });
+            data[this.KEY] = data['symbolId'];
+            delete data['symbolId'];
+            delete data[this.KEY.toString()];
+            return [data];
         }
+        else {
+            let retry = 0;
+            let item: ItemResponse<any>;
+            while (retry++ < 5) {
+                item = await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).read();
+                if (item.statusCode !== 404 || !Config.ENABLE_STRONG_CONSISTENCY_EMULATION) { break; }
+                await new Promise((resolve) => setTimeout(resolve, 200));
+            }
 
-        const data = item.resource.data;
-        data[this.KEY] = data[this.KEY.toString()];
-        delete data[this.KEY.toString()];
-        return [data];
+            if (!item.resource) {
+                if (item.statusCode === 404) {
+                    return [undefined];
+                } else {
+                    throw (Error.make(item.statusCode, 'Internal Cosmos Server Error'));
+                }
+            }
+
+            const data = item.resource.data;
+            data[this.KEY] = data[this.KEY.toString()];
+            delete data[this.KEY.toString()];
+            return [data];
+        }
     }
 
     public async delete(key: any): Promise<void> {
-        await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).delete();
+        if (key.partitionKey.startsWith('ds-') && AzureConfig.SIDECAR_ENABLE_DELETE) {
+            const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
+            const url = AzureConfig.SIDECAR_URL + '/delete?cs=AccountEndpoint=' + connectionParams.endpoint + ';AccountKey=' + connectionParams.key + ';&pk=' + key.partitionKey;
+            try {
+                await AzureCosmosDbDAO.axiosInstance.delete(url);
+            } catch (error) {
+                this.checkAndParseCosmosError(error);
+            }
+        } else {
+            await (await this.getCosmoContainer()).item(key.partitionKey, key.partitionKey).delete();
+        }
     }
 
     public createQuery(namespace: string, kind: string): IJournalQueryModel {
@@ -165,14 +244,55 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 sqlQuery += ' GROUP BY ' + groupByList;
             }
 
-            // use paginated query if required
-            if (cosmosQuery.pagingLimit) {
-                response = await (await this.getCosmoContainer()).items.query(sqlQuery, {
-                    continuationToken: cosmosQuery.pagingStart,
-                    maxItemCount: cosmosQuery.pagingLimit
-                }).fetchNext();
+            if (AzureConfig.SIDECAR_ENABLE_QUERY) {
+                const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
+                let url = AzureConfig.SIDECAR_URL + '/query'
+                url = url + '?cs=AccountEndpoint=' + connectionParams.endpoint + ';' +
+                    'AccountKey=' + connectionParams.key + ';';
+                url = url + '&sql=' + sqlQuery
+                if (cosmosQuery.pagingStart) {
+                    cosmosQuery.pagingStart = cosmosQuery.pagingStart.replace(/\\/g, '');
+                    if (cosmosQuery.pagingStart.startsWith('\"[')) {
+                        cosmosQuery.pagingStart = cosmosQuery.pagingStart.replace('\"[', '[');
+                    }
+                    if (cosmosQuery.pagingStart.endsWith(']\"')) {
+                        cosmosQuery.pagingStart = cosmosQuery.pagingStart.replace(']\"', ']');
+                    }
+                    url = url + '&ctoken=' + encodeURIComponent(cosmosQuery.pagingStart)
+                }
+                if (cosmosQuery.pagingLimit) {
+                    url = url + '&limit=' + cosmosQuery.pagingLimit
+                }
+                try {
+                    const result = await AzureCosmosDbDAO.axiosInstance.get(url);
+                    if (!result.data.records) { return; }
+                    const records = result.data.records;
+                    const resultsList = [];
+                    for (const record of records) {
+                        const data = record.data;
+                        Object.keys(data).forEach(key => {
+                            if (data[key] === null || data[key] === undefined) {
+                                delete data[key];
+                            }
+                        });
+                        data[this.KEY] = data['symbolId'];
+                        delete data['symbolId'];
+                        delete data[this.KEY.toString()];
+                        resultsList.push(data);
+                    }
+                    return Promise.resolve([resultsList, { endCursor: result.data.continuationToken }]);
+                } catch (error) {
+                    this.checkAndParseCosmosError(error);
+                }
             } else {
-                response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+                if (cosmosQuery.pagingStart || cosmosQuery.pagingLimit) {
+                    response = await (await this.getCosmoContainer()).items.query(sqlQuery, {
+                        continuationToken: cosmosQuery.pagingStart,
+                        maxItemCount: cosmosQuery.pagingLimit
+                    }).fetchNext();
+                } else {
+                    response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+                }
             }
 
         }

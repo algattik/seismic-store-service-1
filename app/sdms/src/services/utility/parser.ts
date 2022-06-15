@@ -111,13 +111,13 @@ export class UtilityParser {
                 'The \'sdpath\' query parameter must be a subproject or a dataset resource path.'));
         }
 
-        const dataset: DatasetModel = { } as DatasetModel;
+        const dataset: DatasetModel = {} as DatasetModel;
         dataset.name = sdPath.dataset;
         dataset.tenant = sdPath.tenant;
         dataset.subproject = sdPath.subproject;
         dataset.path = sdPath.path;
 
-        return dataset ;
+        return dataset;
 
     }
 

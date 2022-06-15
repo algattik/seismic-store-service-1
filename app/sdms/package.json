@@ -76,6 +76,7 @@
     "applicationinsights": "^2.1.8",
     "applicationinsights-native-metrics": "0.0.6",
     "aws-sdk": "^2.1024.0",
+    "axios": "^0.27.2",
     "bull": "^4.1.0",
     "copyfiles": "^2.4.1",
     "cors": "^2.8.5",

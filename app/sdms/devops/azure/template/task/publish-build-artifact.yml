@@ -8,3 +8,10 @@ steps:
       ArtifactName: '${{ parameters.providerName }}_$(utest_runtime_image)'
       publishLocation: 'Container'
     condition: succeededOrFailed()
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Sidecar Artifact'
+    inputs:
+      PathtoPublish: '$(Build.Repository.LocalPath)/${{ parameters.providerName }}/$(sidecar_runtime_image).tar'
+      ArtifactName: '${{ parameters.providerName }}_$(sidecar_runtime_image)'
+      publishLocation: 'Container'
+    condition: succeededOrFailed()

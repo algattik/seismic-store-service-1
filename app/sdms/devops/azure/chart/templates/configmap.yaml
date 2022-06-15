@@ -10,3 +10,18 @@ data:
   APP_ENVIRONMENT_IDENTIFIER: {{ .Values.configEnv.appEnvironmentIdentifier }}
   PORT: "{{ .Values.configEnv.port }}"
   SDMS_PREFIX: "{{ .Values.configEnv.sdmsPrefix }}"
+  SIDECAR_URL: "{{ .Values.configEnv.sidecarUrl}}"
+  SIDECAR_ENABLE_INSERT: "{{ .Values.configEnv.sidecarEnableInsert}}"
+  SIDECAR_ENABLE_GET: "{{ .Values.configEnv.sidecarEnableGet}}"
+  SIDECAR_ENABLE_DELETE: "{{ .Values.configEnv.sidecarEnableDelete}}"
+  SIDECAR_ENABLE_QUERY: "{{ .Values.configEnv.sidecarEnableQuery}}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seistore-svc-sidecar-properties
+  namespace: {{ .Values.global.namespace }}
+data:
+  ASPNETCORE_URLS: "{{ .Values.configEnv.sidecarUrls }}"
+  ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/aspnetapp.pfx"
+  ASPNETCORE_ENVIRONMENT: {{ .Values.configEnv.sidecarEnvironment }}
