@@ -20,6 +20,7 @@ sdms_ibm-deploy:
       - branches
       - main
       - merge_requests
+      - tags
       
 sdms_ibm-deploy-devpri:
   extends: .ibm-deploy-devpri
@@ -64,6 +65,7 @@ sdms_ibm-test-py:
       - branches
       - main
       - merge_requests
+      - tags
 
 sdms_ibm-preship-promote:
   extends: .ibm-preship-promote
@@ -90,3 +92,6 @@ sdms_ibm-preship-promote-release:
     - oc start-build og-$SDMS_PROJECT_NAME-monthly-ibm --commit=$CI_COMMIT_SHA --follow
   rules:
     - if: '$CI_COMMIT_BRANCH == $IBM_PRESHIP_RELEASE_BRANCH'
+      changes:
+        - devops/**/*
+        - app/sdms/**/*

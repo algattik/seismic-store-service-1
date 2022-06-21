@@ -17,9 +17,6 @@ sdms_compile-and-unit-test:
     - chmod +x devops/scripts/utest_build_run.sh
     - devops/scripts/utest_build_run.sh
   only:
-    changes:
-      - devops/**/*
-      - app/sdms/**/*
     refs:
       - branches
       - main
