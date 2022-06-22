@@ -145,7 +145,7 @@
     - !reference [.define_VER, script]
     - helm repo add $SEISMIC_OSDU_GCP_SERVICE ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable
     - >
-      helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_SERVICE/$SEISMIC_OSDU_GCP_CHART --version $VER
+      helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR --version $VER
       --install
       --create-namespace
       --namespace=$OSDU_GCP_HELM_NAMESPACE
@@ -228,7 +228,7 @@
     - !reference [.define_VER, script]
     - helm repo add $SEISMIC_OSDU_GCP_SERVICE ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable
     - >
-      helm upgrade $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $SEISMIC_OSDU_GCP_SERVICE/$SEISMIC_OSDU_GCP_CHART --version $VER
+      helm upgrade $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR --version $VER
       --install
       --create-namespace
       --namespace=$OSDU_GCP_HELM_NAMESPACE
