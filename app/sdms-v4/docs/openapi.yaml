@@ -188,28 +188,11 @@ paths:
           $ref: "#/components/responses/segy.1.0.0"
     delete:
       operationId: segy-v1-soft-delete
-      summary: soft delete a segy seismic dataset
+      summary: delete a segy seismic dataset
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given segy dataset record. This operation can be reverted later.
-      tags:
-        - File Collection SEGY (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /segy/v1/record/{id}/purge:
-    delete:
-      operationId: segy-v1-delete
-      summary: purge a segy seismic dataset
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given segy dataset record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given segy dataset record.
       tags:
         - File Collection SEGY (Not Implemented)
       parameters:
@@ -236,7 +219,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /segy/v1/record/{id}/versions/{version}:
+  /segy/v1/record/{id}/version/{version}:
     get:
       operationId: segy-v1-get-version
       summary: get a version of the segy dataset
@@ -406,28 +389,11 @@ paths:
           $ref: "#/components/responses/openzgy.1.0.0"
     delete:
       operationId: openzgy-v1-soft-delete
-      summary: soft delete a openzgy seismic dataset
+      summary: delete a openzgy seismic dataset
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given openzgy dataset record. This operation can be reverted later.
-      tags:
-        - File Collection OpenZGY (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /openzgy/v1/record/{id}/purge:
-    delete:
-      operationId: openzgy-v1-delete
-      summary: purge a openzgy seismic dataset
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given openzgy dataset record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given openzgy dataset record.
       tags:
         - File Collection OpenZGY (Not Implemented)
       parameters:
@@ -454,7 +420,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /openzgy/v1/record/{id}/versions/{version}:
+  /openzgy/v1/record/{id}/version/{version}:
     get:
       operationId: openzgy-v1-get-version
       summary: get a version of the openzgy dataset
@@ -624,28 +590,11 @@ paths:
           $ref: "#/components/responses/openvds.1.0.0"
     delete:
       operationId: openvds-v1-soft-delete
-      summary: soft delete a openvds seismic dataset
+      summary: delete a openvds seismic dataset
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given openvds dataset record. This operation can be reverted later.
-      tags:
-        - File Collection OpenVDS (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /openvds/v1/record/{id}/purge:
-    delete:
-      operationId: openvds-v1-delete
-      summary: purge a openvds seismic dataset
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given openvds dataset record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given openvds dataset record
       tags:
         - File Collection OpenVDS (Not Implemented)
       parameters:
@@ -672,7 +621,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /openvds/v1/record/{id}/versions/{version}:
+  /openvds/v1/record/{id}/version/{version}:
     get:
       operationId: openvds-v1-get-version
       summary: get a version of the openvds dataset
@@ -807,7 +756,7 @@ paths:
   /generic/v1/list:
     get:
       operationId: generic-v1-list
-      summary: get the list of generic seismic datasets (not implemented)
+      summary: get the list of generic seismic datasets
       description: |
         Required role: users.datalake.viewers or users.datalake.editors or users.datalake.admin
 
@@ -842,28 +791,11 @@ paths:
           $ref: "#/components/responses/generic.1.0.0"
     delete:
       operationId: generic-v1-soft-delete
-      summary: soft delete a generic seismic dataset (not implemented)
+      summary: delete a generic seismic dataset
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given generic dataset record. This operation can be reverted later.
-      tags:
-        - File Collection Generic
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /generic/v1/record/{id}/purge:
-    delete:
-      operationId: generic-v1-delete
-      summary: purge a generic seismic dataset (not implemented)
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given generic dataset record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given generic dataset record.
       tags:
         - File Collection Generic
       parameters:
@@ -876,7 +808,7 @@ paths:
   /generic/v1/record/{id}/versions:
     get:
       operationId: generic-v1-get-versions
-      summary: get the versions of an generic dataset (not implemented)
+      summary: get the versions of an generic dataset
       description: |
         Required role: users.datalake.viewers or users.datalake.editors or users.datalake.admin
 
@@ -890,7 +822,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /generic/v1/record/{id}/versions/{version}:
+  /generic/v1/record/{id}/version/{version}:
     get:
       operationId: generic-v1-get-version
       summary: get a version of the generic dataset
@@ -993,28 +925,11 @@ paths:
           $ref: "#/components/responses/tracedata.1.1.0"
     delete:
       operationId: tracedata-v1-soft-delete
-      summary: soft delete a trace data seismic component
+      summary: delete a trace data seismic component
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given trace data seismic component. This operation can be reverted later.
-      tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /tracedata/v1/record/{id}/purge:
-    delete:
-      operationId: tracedata-v1-delete
-      summary: purge a trace data seismic component
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given trace data seismic component record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given trace data seismic component.
       tags:
         - Work Product Component Seismic Trace Data (Not Implemented)
       parameters:
@@ -1041,7 +956,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /tracedata/v1/record/{id}/versions/{version}:
+  /tracedata/v1/record/{id}/version/{version}:
     get:
       operationId: tracedata-v1-get-version
       summary: get a version of the trace data dataset
@@ -1126,28 +1041,11 @@ paths:
           $ref: "#/components/responses/bingrid.1.0.0"
     delete:
       operationId: bingrid-v1-soft-delete
-      summary: soft delete a bin grid seismic component
+      summary: delete a bin grid seismic component
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given bin grid seismic component. This operation can be reverted later.
-      tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /bingrid/v1/record/{id}/purge:
-    delete:
-      operationId: bingrid-v1-delete
-      summary: purge a bin grid seismic component
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given bin grid seismic component record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given bin grid seismic component.
       tags:
         - Work Product Component Seismic Bin Grid (Not Implemented)
       parameters:
@@ -1174,7 +1072,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /bingrid/v1/record/{id}/versions/{version}:
+  /bingrid/v1/record/{id}/version/{version}:
     get:
       operationId: bingrid-v1-get-version
       summary: get a version of the bin grid dataset
@@ -1259,28 +1157,11 @@ paths:
           $ref: "#/components/responses/linegeometry.1.0.0"
     delete:
       operationId: linegeometry-v1-soft-delete
-      summary: soft delete a line geometry seismic component
+      summary: delete a line geometry seismic component
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given line geometry seismic component. This operation can be reverted later.
-      tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /linegeometry/v1/record/{id}/purge:
-    delete:
-      operationId: linegeometry-v1-delete
-      summary: purge a line geometry seismic component
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given line geometry seismic component record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given line geometry seismic component.
       tags:
         - Work Product Component Seismic Line Geometry (Not Implemented)
       parameters:
@@ -1307,7 +1188,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /linegeometry/v1/record/{id}/versions/{version}:
+  /linegeometry/v1/record/{id}/version/{version}:
     get:
       operationId: linegeometry-v1-get-version
       summary: get a version of the line geometry dataset
@@ -1396,24 +1277,7 @@ paths:
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given line acquisition survey component. This operation can be reverted later.
-      tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /acquisitionsurvey/v1/record/{id}/purge:
-    delete:
-      operationId: acquisition survey-v1-delete
-      summary: purge an acquisition survey seismic data
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given acquisition survey seismic component record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given line acquisition survey component.
       tags:
         - Master Data Seismic Acquisition Survey (Not Implemented)
       parameters:
@@ -1440,7 +1304,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /acquisitionsurvey/v1/record/{id}/versions/{version}:
+  /acquisitionsurvey/v1/record/{id}/version/{version}:
     get:
       operationId: acquisition survey-v1-get-version
       summary: get a version of the acquisition survey dataset
@@ -1525,28 +1389,11 @@ paths:
           $ref: "#/components/responses/processingproject.1.1.0"
     delete:
       operationId: processingproject-v1-soft-delete
-      summary: soft delete a processing project component
+      summary: delete a processing project component
       description: |
         Required role: users.datalake.admin
 
-        The API performs a logical deletion of the given line processing project component. This operation can be reverted later.
-      tags:
-        - Master Data Seismic Processing Project (Not Implemented)
-      parameters:
-        - $ref: "#/components/parameters/data.partition.id"
-        - $ref: "#/components/parameters/id"
-      responses:
-        200:
-          description: The resource was deleted successfully.
-
-  /processingproject/v1/record/{id}/purge:
-    delete:
-      operationId: processingproject-v1-delete
-      summary: purge an processing project seismic data
-      description: |
-        Required role: users.datalake.admin
-
-        The API performs the physical deletion of the given processing project seismic component record and all of its versions. This operation cannot be undone.
+        The API performs a deletion of the given line processing project component.
       tags:
         - Master Data Seismic Processing Project (Not Implemented)
       parameters:
@@ -1573,7 +1420,7 @@ paths:
         200:
           $ref: "#/components/responses/version.list"
 
-  /processingproject/v1/record/{id}/versions/{version}:
+  /processingproject/v1/record/{id}/version/{version}:
     get:
       operationId: processingproject-v1-get-version
       summary: get a version of the processing project dataset
