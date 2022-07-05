@@ -30,16 +30,16 @@ DatasetRouter.get('/v1/list', async (req: expRequest, res: expResponse) => {
     await DatasetHandler.handler(req, res, Operation.ListDatasets);
 });
 
+DatasetRouter.get('/v1/record/:id', async (req: expRequest, res: expResponse) => {
+    await DatasetHandler.handler(req, res, Operation.Get);
+});
+
 DatasetRouter.delete('/v1/record/:id', async (req: expRequest, res: expResponse) => {
     await DatasetHandler.handler(req, res, Operation.DeleteDataset);
 });
 
 DatasetRouter.get('/v1/record/:id/versions', async (req: expRequest, res: expResponse) => {
     await DatasetHandler.handler(req, res, Operation.GetAllVersionIDsOfDataset);
-});
-
-DatasetRouter.get('/v1/record/:id', async (req: expRequest, res: expResponse) => {
-    await DatasetHandler.handler(req, res, Operation.Get);
 });
 
 DatasetRouter.get('/v1/record/:id/version/:version', async (req: expRequest, res: expResponse) => {

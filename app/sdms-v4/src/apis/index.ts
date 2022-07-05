@@ -24,6 +24,7 @@ const router = Router();
 
 router.use(Config.APIS_BASE_PATH + '/status', StatusRouter);
 router.use(Config.APIS_BASE_PATH + '/generic', DatasetRouter);
+router.use(Config.APIS_BASE_PATH + '/segy', DatasetRouter);
 router.use(Config.APIS_BASE_PATH + '/connection-string', ConnectionStringRouter);
 
 export { router as ServiceRouter };
