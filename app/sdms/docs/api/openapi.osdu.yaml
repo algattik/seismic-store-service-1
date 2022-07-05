@@ -1409,7 +1409,17 @@ paths:
 
     patch:
       summary: "Patch a subproject's metadata."
-      description: "<ul><li>Patch a subproject's metadata in the seismic store.</li><li>Required roles: subproject.admin</li></ul>"
+      description: |
+        <ul>
+          <li>Patch a subproject metadata in seismic store.</li>
+          <li>Required roles: subproject.admin</li>
+          <li>Possible actions:</li>
+          <ul>
+            <li>legal tag and/or ACLs groups can be patched by providing new values</li>
+            <li>access policy can be changed from <i>uniform</i> to <i>dataset</i></li>
+            NOTE: It is not possible to change subproject access policy from <i>dataset</i> to <i>uniform</i>
+          </ul>
+        </ul>
       operationId: subproject-patch
       tags:
         - SubProject
