@@ -141,7 +141,7 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
@@ -161,7 +161,7 @@ paths:
 
         Pagination is supported.
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
@@ -179,7 +179,7 @@ paths:
 
         This api returns the last version of a seismic dataset.
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -194,7 +194,7 @@ paths:
 
         The API performs a deletion of the given segy dataset record.
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -211,7 +211,7 @@ paths:
 
         This api returns the list of versions for a segy seismic dataset.
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -228,7 +228,7 @@ paths:
 
         This api returns a specific version of the segy seismic dataset
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -240,13 +240,13 @@ paths:
   /segy/v1/reindex:
     put:
       operationId: segy-v1-reindex
-      summary: reindex a segy seismic dataset
+      summary: reindex a segy seismic dataset (not implemented)
       description: |
         Required role: users.datalake.editors or users.datalake.admin
 
         This api re-index a list of dataset ingested via sdms V3.
       tags:
-        - File Collection SEGY (Not Implemented)
+        - File Collection SEGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
