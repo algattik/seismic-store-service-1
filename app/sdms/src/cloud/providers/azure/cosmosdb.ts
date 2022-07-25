@@ -218,7 +218,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
             // query using partial partition key
             const partialKey = 'ds' + cosmosQuery.namespace.replace(new RegExp(Config.SEISMIC_STORE_NS, 'g'), '')
-            sqlQuery += ' FROM c WHERE c.id LIKE "' + partialKey + '-%"';
+            sqlQuery += ' FROM c WHERE RegexMatch(c.id, "^(' + partialKey + '-)([a-z0-9]+)$")'
 
             // add filters
             for (const filter of cosmosQuery.filters) {
@@ -249,7 +249,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                 let url = AzureConfig.SIDECAR_URL + '/query'
                 url = url + '?cs=AccountEndpoint=' + connectionParams.endpoint + ';' +
                     'AccountKey=' + connectionParams.key + ';';
-                url = url + '&sql=' + sqlQuery
+                url = url + '&sql=' + encodeURIComponent(sqlQuery)
                 if (cosmosQuery.pagingStart) {
                     cosmosQuery.pagingStart = cosmosQuery.pagingStart.replace(/\\/g, '');
                     if (cosmosQuery.pagingStart.startsWith('\"[')) {
