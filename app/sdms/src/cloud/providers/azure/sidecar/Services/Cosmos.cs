@@ -34,6 +34,48 @@ namespace Sidecar.Services
             await container.DeleteItemAsync<Record>(pk, new PartitionKey(pk));
         }
 
+        public async Task<PaginatedRecordsPath> QueryPath(string cs, string sql, string? ctoken, int? limit)
+        {
+            this.initCosmosClient(cs);
+            Database database = Cosmos.cosmosClients[cs].GetDatabase(this.databaseId);
+            Container container = database.GetContainer(this.containerId);
+            List<RecordPath> records = new List<RecordPath>();
+            QueryRequestOptions options = new QueryRequestOptions() { MaxItemCount = limit != null ? limit : 100 };
+            FeedIterator<RecordPath> query = container.GetItemQueryIterator<RecordPath>(
+                sql,
+                continuationToken: ctoken,
+                requestOptions: options);
+            if (ctoken == null && limit == null) // fetch all
+            {
+                while (query.HasMoreResults) 
+                {
+                    var results = await query.ReadNextAsync();
+                    foreach (RecordPath record in results)
+                    {
+                        records.Add(record);
+                    }
+                }
+                PaginatedRecordsPath paginatedRecords = new PaginatedRecordsPath();
+                paginatedRecords.records = records;
+                paginatedRecords.continuationToken = null;
+                return paginatedRecords;
+            }
+            else // fetch next page
+            {
+                var results = await query.ReadNextAsync();
+                foreach (RecordPath record in results)
+                {
+                    records.Add(record);
+                }
+                PaginatedRecordsPath paginatedRecords = new PaginatedRecordsPath();
+                paginatedRecords.records = records;
+                paginatedRecords.continuationToken = results.ContinuationToken;
+                return paginatedRecords;
+            }
+        }
+
+
+
         public async Task<PaginatedRecords> Query(string cs, string sql, string? ctoken, int? limit)
         {
             this.initCosmosClient(cs);

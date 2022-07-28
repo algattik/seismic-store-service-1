@@ -246,7 +246,7 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
             if (AzureConfig.SIDECAR_ENABLE_QUERY) {
                 const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
-                let url = AzureConfig.SIDECAR_URL + '/query'
+                let url = AzureConfig.SIDECAR_URL + (sqlQuery.indexOf('SELECT *') > -1 ? '/query' : '/query-path')
                 url = url + '?cs=AccountEndpoint=' + connectionParams.endpoint + ';' +
                     'AccountKey=' + connectionParams.key + ';';
                 url = url + '&sql=' + encodeURIComponent(sqlQuery)
@@ -268,17 +268,23 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                     if (!result.data.records) { return; }
                     const records = result.data.records;
                     const resultsList = [];
-                    for (const record of records) {
-                        const data = record.data;
-                        Object.keys(data).forEach(key => {
-                            if (data[key] === null || data[key] === undefined) {
-                                delete data[key];
-                            }
-                        });
-                        data[this.KEY] = data['symbolId'];
-                        delete data['symbolId'];
-                        delete data[this.KEY.toString()];
-                        resultsList.push(data);
+                    if (sqlQuery.indexOf('SELECT *') > -1) {
+                        for (const record of records) {
+                            const data = record.data;
+                            Object.keys(data).forEach(key => {
+                                if (data[key] === null || data[key] === undefined) {
+                                    delete data[key];
+                                }
+                            });
+                            data[this.KEY] = data['symbolId'];
+                            delete data['symbolId'];
+                            delete data[this.KEY.toString()];
+                            resultsList.push(data);
+                        }
+                    } else {
+                        for (const record of records) {
+                            resultsList.push(record);
+                        }
                     }
                     return Promise.resolve([resultsList, { endCursor: result.data.continuationToken }]);
                 } catch (error) {
