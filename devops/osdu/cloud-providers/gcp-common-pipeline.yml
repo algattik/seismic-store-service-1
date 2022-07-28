@@ -125,10 +125,9 @@
       --wait
       --history-max=3
       --set data.cloudProvider="google"
-      --set data.des_redis_instance_address=$REDIS_DDMS_HOST
-      --set data.locksmap_redis_instance_address=$REDIS_DDMS_HOST
-      --set data.service_cloud_project=$OSDU_GCP_PROJECT
-      --set data.seistore_des_target_audience=$TARGET_AUDIENCE
+      --set data.redisDdmsHost=$REDIS_DDMS_HOST
+      --set data.serviceCloudProject=$OSDU_GCP_PROJECT
+      --set data.googleAudiences=$TARGET_AUDIENCE
   rules:
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
@@ -152,10 +151,9 @@
       --wait
       --history-max=3
       --set data.cloudProvider="google"
-      --set data.des_redis_instance_address=$REDIS_DDMS_HOST
-      --set data.locksmap_redis_instance_address=$REDIS_DDMS_HOST
-      --set data.service_cloud_project=$OSDU_GCP_PROJECT
-      --set data.seistore_des_target_audience=$TARGET_AUDIENCE
+      --set data.redisDdmsHost=$REDIS_DDMS_HOST
+      --set data.serviceCloudProject=$OSDU_GCP_PROJECT
+      --set data.googleAudiences=$TARGET_AUDIENCE
   rules:
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
@@ -180,11 +178,10 @@
       --wait
       --history-max=3
       --set data.cloudProvider="anthos"
-      --set data.des_redis_instance_address=$REDIS_DDMS_HOST
-      --set data.locksmap_redis_instance_address=$REDIS_DDMS_HOST
-      --set data.service_cloud_project=$OSDU_GCP_PROJECT
-      --set data.seistore_des_target_audience=$TARGET_AUDIENCE
-      --set conf.on_prem_enabled=true
+      --set data.redisDdmsHost=$REDIS_DDMS_HOST
+      --set data.serviceCloudProject=$OSDU_GCP_PROJECT
+      --set data.googleAudiences=$TARGET_AUDIENCE
+      --set conf.onPremEnabled=true
   rules:
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
@@ -263,7 +260,7 @@
       --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE 
       --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE
       --set data.domain=$DOMAIN
-      --set conf.on_prem_enabled=true
+      --set conf.onPremEnabled=true
     - !reference [.verify_deploy, script]
   rules:
     - if: '$OSDU_GCP == "true" && $CI_COMMIT_BRANCH =~ /^release/'

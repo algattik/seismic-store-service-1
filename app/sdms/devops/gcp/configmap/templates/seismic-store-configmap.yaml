@@ -2,35 +2,31 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: "{{ .Values.conf.app_name }}"
+    app: "{{ .Values.conf.appName }}"
   name: "{{ .Values.conf.configmap }}"
   namespace: "{{ .Release.Namespace }}"
 data:
   CLOUDPROVIDER: "{{ .Values.data.cloudProvider }}"
-  DES_SERVICE_HOST: "{{ .Values.data.des_service_host }}"
-  REDIS_INSTANCE_ADDRESS: "{{ .Values.data.des_redis_instance_address }}"
-  REDIS_INSTANCE_PORT: "{{ .Values.data.des_redis_instance_port }}"
-  APP_ENVIRONMENT_IDENTIFIER: "{{ .Values.data.app_environment_identifier }}"
+  DES_SERVICE_HOST: "{{ .Values.data.desServiceHost }}"
+  APP_ENVIRONMENT_IDENTIFIER: "{{ .Values.data.appEnvironmentIdentifier }}"
   PORT: "{{ .Values.data.port }}"
-  SDMS_PREFIX: "{{ .Values.data.url_prefix }}"
-  LOG_LEVEL: "{{ .Values.data.log_level }}"
-  DES_SERVICE_HOST_PARTITION: "{{ .Values.data.des_service_host_partition }}"
-  ENTITLEMENT_BASE_URL_PATH: "{{ .Values.data.entitlement_base_url_path }}"
-  DATA_PARTITION_REST_HEADER_KEY: "{{ .Values.data.data_partition_rest_header_key }}"
-  DES_SERVICE_HOST_STORAGE: "{{ .Values.data.des_service_host_storage }}"
-  DES_SERVICE_HOST_COMPLIANCE: "{{ .Values.data.des_service_host_compliance }}"
-  {{- if not .Values.conf.on_prem_enabled }}
-  IMP_SERVICE_ACCOUNT_SIGNER: "{{ .Values.data.imp_service_account_signer }}"
-  SEISTORE_DES_APPKEY: "{{ .Values.data.seistore_des_appkey }}"
-  SEISTORE_DES_TARGET_AUDIENCE: "{{ .Values.data.seistore_des_target_audience }}"
-  SERVICE_CLOUD_PROJECT: "{{ .Values.data.service_cloud_project }}"
+  SDMS_PREFIX: "{{ .Values.data.urlPrefix }}"
+  LOG_LEVEL: "{{ .Values.data.logLevel }}"
+  DES_SERVICE_HOST_PARTITION: "{{ .Values.data.partitionHost }}"
+  ENTITLEMENT_BASE_URL_PATH: "{{ .Values.data.entitlementBaseUrlPath }}"
+  DATA_PARTITION_REST_HEADER_KEY: "{{ .Values.data.dataPartitionRestHeaderKey }}"
+  DES_SERVICE_HOST_STORAGE: "{{ .Values.data.storageHost }}"
+  DES_SERVICE_HOST_COMPLIANCE: "{{ .Values.data.legalHost }}"
+  {{- if not .Values.conf.onPremEnabled }}
+  IMP_SERVICE_ACCOUNT_SIGNER: "{{ .Values.data.impServiceAccountSigner }}"
+  SEISTORE_DES_APPKEY: "{{ .Values.data.seistoreDesAppkey }}"
+  SEISTORE_DES_TARGET_AUDIENCE: "{{ .Values.data.googleAudiences }}"
+  SERVICE_CLOUD_PROJECT: "{{ .Values.data.serviceCloudProject }}"
   {{- end }}
-  DES_SERVICE_HOST_ENTITLEMENT: "{{ .Values.data.des_service_host_entitlement }}"
-  DES_REDIS_INSTANCE_ADDRESS: "{{ .Values.data.des_redis_instance_address }}"
-  DES_REDIS_INSTANCE_PORT: "{{ .Values.data.des_redis_instance_port }}"
-  LOCKSMAP_REDIS_INSTANCE_ADDRESS: "{{ .Values.data.locksmap_redis_instance_address }}"
-  LOCKSMAP_REDIS_INSTANCE_PORT: "{{ .Values.data.locksmap_redis_instance_port }}"
-  {{- if .Values.conf.on_prem_enabled }}
-  SERVICE_ENV: "{{ .Values.data.service_env }}"
-  API_BASE_PATH: "{{ .Values.data.api_base_path }}"
+  DES_SERVICE_HOST_ENTITLEMENT: "{{ .Values.data.entitlementsHost }}"
+  DES_REDIS_INSTANCE_ADDRESS: "{{ .Values.data.redisDdmsHost }}"
+  DES_REDIS_INSTANCE_PORT: "{{ .Values.data.redisPort }}"
+  {{- if .Values.conf.onPremEnabled }}
+  SERVICE_ENV: "{{ .Values.data.serviceEnv }}"
+  API_BASE_PATH: "{{ .Values.data.apiBasePath }}"
   {{- end }}

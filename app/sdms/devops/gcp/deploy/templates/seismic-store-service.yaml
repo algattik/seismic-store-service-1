@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Values.conf.app_name }}"
-  {{- if not .Values.conf.on_prem_enabled }}
+  name: "{{ .Values.conf.appName }}"
+  {{- if not .Values.conf.onPremEnabled }}
   annotations:
     cloud.google.com/neg: '{"ingress": true}'
   {{- end }}
   namespace: "{{ .Release.Namespace }}"
   labels:
-    app: "{{ .Values.conf.app_name }}"
-    service: "{{ .Values.conf.app_name }}"
+    app: "{{ .Values.conf.appName }}"
+    service: "{{ .Values.conf.appName }}"
 spec:
   ports:
     - protocol: TCP
@@ -17,4 +17,4 @@ spec:
       targetPort: 5000
       name: http
   selector:
-    app: "{{ .Values.conf.app_name }}"
+    app: "{{ .Values.conf.appName }}"
