@@ -76,14 +76,14 @@ export class TestTenantSVC {
         Tx.sectionInit('get');
 
         Tx.testExp(async (done: any) => {
-            this.journal.get.resolves([{}] as never);
+            this.journal.get.resolves([{ esd: 'partition.something' }] as never);
             await TenantDAO.get('tnx');
             done();
         });
 
         Tx.testExp(async (done: any) => {
             process.env.GCLOUD_PROJECT = 'ON';
-            this.journal.get.resolves([{ name: 'name' }] as never);
+            this.journal.get.resolves([{ name: 'name', esd: 'partition.something' }] as never);
             await TenantDAO.get('tnx');
             delete process.env.GCLOUD_PROJECT;
             done();

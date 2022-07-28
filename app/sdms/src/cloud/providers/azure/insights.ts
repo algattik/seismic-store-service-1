@@ -47,12 +47,17 @@ export class AzureInsightsLogger extends AbstractLogger {
                     httpRequest.headers[AzureConfig.CORRELATION_ID];
             }
 
+            // Log requested data partition ID
+            if (Config.DATA_PARTITION_ID) {
+                envelope.data.baseData.properties['data-partition-id'] = Config.DATA_PARTITION_ID;
+            }
+
             // Log party to which the JWT was originally issued
             if ('authorization' in httpRequest.headers) {
                 try {
                     const azp = Utils.getAzpFromPayload(httpRequest.headers.authorization);
                     if (azp) {
-                        envelope.data.baseData.properties['client-id'] = azp;
+                        envelope.data.baseData.properties['user-id'] = azp;
                     }
                 } catch (e) {
                     console.error('Telemetry process error - unrecognized header format');
