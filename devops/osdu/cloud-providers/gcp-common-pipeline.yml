@@ -204,7 +204,7 @@
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
       --history-max=3
-      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE 
+      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA 
       --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s
       --set data.domain=$DOMAIN
     - !reference [.verify_deploy, script]
@@ -257,7 +257,7 @@
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
       --history-max=3
-      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE 
+      --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA 
       --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE
       --set data.domain=$DOMAIN
       --set conf.onPremEnabled=true
