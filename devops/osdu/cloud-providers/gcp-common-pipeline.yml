@@ -124,6 +124,7 @@
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
       --history-max=3
+      --set data.appEnvironmentIdentifier=$OSDU_GCP_TENANT
       --set data.cloudProvider="google"
       --set data.redisDdmsHost=$REDIS_DDMS_HOST
       --set data.serviceCloudProject=$OSDU_GCP_PROJECT
@@ -150,6 +151,7 @@
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
       --history-max=3
+      --set data.appEnvironmentIdentifier=$OSDU_TENANT
       --set data.cloudProvider="google"
       --set data.redisDdmsHost=$REDIS_DDMS_HOST
       --set data.serviceCloudProject=$OSDU_GCP_PROJECT
@@ -177,6 +179,7 @@
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
       --history-max=3
+      --set data.appEnvironmentIdentifier=$OSDU_TENANT
       --set data.cloudProvider="anthos"
       --set data.redisDdmsHost=$REDIS_DDMS_HOST
       --set data.serviceCloudProject=$OSDU_GCP_PROJECT
