@@ -9,6 +9,21 @@ public class PaginatedRecords
 
 }
 
+public class PaginatedRecordsPath
+{
+
+    public List<RecordPath>? records { get; set; }
+
+    public string? continuationToken { get; set; }
+
+}
+
+public class RecordPath
+{
+    [JsonProperty(PropertyName = "path")]
+    public string? Path { get; set; }
+}
+
 public class Record
 {
     [JsonProperty(PropertyName = "id")]
@@ -107,10 +122,10 @@ public class Data
 public class DatasetAcl
 {
     [JsonProperty(PropertyName = "admins")]
-    public string? Admins { get; set; }
+    public List<string>? Admins { get; set; }
 
     [JsonProperty(PropertyName = "viewers")]
-    public string? Viewers { get; set; }
+    public List<string>? Viewers { get; set; }
 }
 
 public class SymbolId
