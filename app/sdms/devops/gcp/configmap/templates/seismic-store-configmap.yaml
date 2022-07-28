@@ -12,20 +12,22 @@ data:
   PORT: "{{ .Values.data.port }}"
   SDMS_PREFIX: "{{ .Values.data.urlPrefix }}"
   LOG_LEVEL: "{{ .Values.data.logLevel }}"
-  DES_SERVICE_HOST_PARTITION: "{{ .Values.data.partitionHost }}"
+  DES_SERVICE_HOST_PARTITION: {{ ternary .Values.data.partitionHost (printf "%s/api/partition/v1/" .Values.data.partitionHost) .Values.conf.onPremEnabled | quote}}
   ENTITLEMENT_BASE_URL_PATH: "{{ .Values.data.entitlementBaseUrlPath }}"
   DATA_PARTITION_REST_HEADER_KEY: "{{ .Values.data.dataPartitionRestHeaderKey }}"
-  DES_SERVICE_HOST_STORAGE: "{{ .Values.data.storageHost }}"
-  DES_SERVICE_HOST_COMPLIANCE: "{{ .Values.data.legalHost }}"
+  DES_SERVICE_HOST_STORAGE: {{ ternary .Values.data.storageHost (printf "%s/api/storage/v2" .Values.data.storageHost) .Values.conf.onPremEnabled | quote}}
+  DES_SERVICE_HOST_COMPLIANCE: {{ ternary .Values.data.legalHost (printf "%s/api" .Values.data.legalHost) .Values.conf.onPremEnabled | quote}}
   {{- if not .Values.conf.onPremEnabled }}
   IMP_SERVICE_ACCOUNT_SIGNER: "{{ .Values.data.impServiceAccountSigner }}"
   SEISTORE_DES_APPKEY: "{{ .Values.data.seistoreDesAppkey }}"
   SEISTORE_DES_TARGET_AUDIENCE: "{{ .Values.data.googleAudiences }}"
   SERVICE_CLOUD_PROJECT: "{{ .Values.data.serviceCloudProject }}"
   {{- end }}
-  DES_SERVICE_HOST_ENTITLEMENT: "{{ .Values.data.entitlementsHost }}"
+  DES_SERVICE_HOST_ENTITLEMENT: {{ ternary .Values.data.entitlementsHost (printf "%s/api" .Values.data.entitlementsHost) .Values.conf.onPremEnabled | quote}}
   DES_REDIS_INSTANCE_ADDRESS: "{{ .Values.data.redisDdmsHost }}"
   DES_REDIS_INSTANCE_PORT: "{{ .Values.data.redisPort }}"
+  LOCKSMAP_REDIS_INSTANCE_ADDRESS: "{{ .Values.data.redisDdmsHost }}"
+  LOCKSMAP_REDIS_INSTANCE_PORT: "{{ .Values.data.redisPort }}"
   {{- if .Values.conf.onPremEnabled }}
   SERVICE_ENV: "{{ .Values.data.serviceEnv }}"
   API_BASE_PATH: "{{ .Values.data.apiBasePath }}"

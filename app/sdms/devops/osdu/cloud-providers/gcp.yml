@@ -165,6 +165,8 @@ sdms-osdu-gcp-anthos-deploy-deployment:
       changes:
         - devops/**/*
         - app/sdms/**/*
+  # Fix it!: delete this after MR 322 feat:ANTHOS merged
+  allow_failure: true
 
 sdms-osdu-gcp-test-python:
   variables:
