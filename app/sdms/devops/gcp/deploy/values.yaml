@@ -1,19 +1,19 @@
 data:
-  requests_cpu: "0.1"
-  requests_memory: "256M"
-  limits_cpu: "1"
-  limits_memory: "1G"
+  requestsCpu: "0.1"
+  requestsMemory: "256M"
+  limitsCpu: "1"
+  limitsMemory: "1G"
   serviceAccountName: "seismic-store"
   imagePullPolicy: "IfNotPresent"
   image: ""
 
 conf:
   configmap: "seismic-store-config"
-  app_name: "seismic-store"
-  url_prefix: "/api/seismic-store/v3"
+  appName: "seismic-store"
+  urlPrefix: "/api/seismic-store/v3"
   # onprem configuration
   database: "seismic-store-db-secret"
   keycloak: "seismic-store-keycloak-secret"
   minio: "seismic-store-minio-secret"
-  on_prem_enabled: false
+  onPremEnabled: false
   domain: ""
