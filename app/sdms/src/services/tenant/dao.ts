@@ -16,6 +16,7 @@
 
 import { TenantModel } from '.';
 import { Config, JournalFactoryServiceClient } from '../../cloud';
+import { DESUtils } from '../../dataecosystem';
 import { Cache, Error } from '../../shared';
 
 export class TenantDAO {
@@ -26,7 +27,10 @@ export class TenantDAO {
     public static async get(tenantName: string): Promise<TenantModel> {
 
         const res = await this._cache.get(tenantName);
-        if (res !== undefined && res) { return res; };
+        if (res !== undefined && res) {
+            Config.DATA_PARTITION_ID = DESUtils.getDataPartitionID(res.esd);
+            return res;
+        };
 
         const serviceClient = JournalFactoryServiceClient.get(
             Config.TENANT_JOURNAL_ON_DATA_PARTITION ? {
@@ -52,6 +56,8 @@ export class TenantDAO {
         if (!entity.name) { entity.name = tenantName; }
 
         await this._cache.set(entity.name, entity);
+
+        Config.DATA_PARTITION_ID = DESUtils.getDataPartitionID(entity.esd);
 
         return entity;
 

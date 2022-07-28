@@ -96,6 +96,7 @@ export class Server {
 
                 // activate optional consistency emulation
                 Config.enableStrongConsistencyEmulation();
+                Config.DATA_PARTITION_ID = undefined;
 
                 // If required, exchange the caller credentials to include the DE target audience
                 if (Config.ENABLE_DE_TOKEN_EXCHANGE) {

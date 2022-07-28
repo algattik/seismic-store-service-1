@@ -214,6 +214,9 @@ export abstract class Config implements IConfig {
     // strong consistency emulation
     public static ENABLE_STRONG_CONSISTENCY_EMULATION: boolean;
 
+    // data partition id association
+    public static DATA_PARTITION_ID: string;
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -352,7 +355,6 @@ export abstract class Config implements IConfig {
     public static disableStrongConsistencyEmulation(): void {
         Config.ENABLE_STRONG_CONSISTENCY_EMULATION = false;
     }
-
 
 }
 
