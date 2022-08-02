@@ -53,6 +53,9 @@
     "npm": ">= 3"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.49.0",
+    "@aws-sdk/client-sts": "^3.49.0",
+    "@aws-sdk/signature-v4": "^3.49.0",
     "@azure/cosmos": "^3.14.1",
     "@azure/identity": "^2.0.1",
     "@azure/keyvault-secrets": "^4.3.0",
@@ -66,6 +69,7 @@
     "@google-cloud/storage": "^6.1.0",
     "@google-cloud/trace-agent": "^5.1.6",
     "@mapbox/node-pre-gyp": "^1.0.6",
+    "@prisma/client": "^3.8.0",
     "@types/ioredis": "^4.28.1",
     "@types/js-yaml": "^4.0.5",
     "@types/redlock": "^4.0.2",
@@ -78,6 +82,7 @@
     "aws-sdk": "^2.1024.0",
     "axios": "^0.27.2",
     "bull": "^4.1.0",
+    "colors": "^1.4.0",
     "copyfiles": "^2.4.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -95,6 +100,7 @@
     "logform": "^2.3.0",
     "minimist": "^1.2.6",
     "mkdirp": "^1.0.4",
+    "prisma": "^3.8.0",
     "redlock": "^4.2.0",
     "replace-in-file": "^6.3.2",
     "request": "2.88.2",
@@ -154,5 +160,8 @@
     "commitizen": {
       "path": "./app/sdms/node_modules/cz-conventional-changelog"
     }
+  },
+  "prisma": {
+    "schema": "src/cloud/providers/anthos/schema.prisma"
   }
 }

@@ -171,6 +171,7 @@ sdms_azure_test:
     - cd app/$SDMS_SERVICE
     - echo $svctoken > /dev/null
     - npm install -g newman
+    - npm install -g husky
     - chmod +x ./tests/e2e/run_e2e_tests.sh
     - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"  --subproject="${E2E_SUBPROJECT}"
   only:
