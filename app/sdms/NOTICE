@@ -10,6 +10,7 @@ The following software have components provided under the terms of this license:
 
 - @azure/msal-browser (from https://www.npmjs.com/package/@azure/msal-browser)
 - @azure/msal-common (from https://www.npmjs.com/package/@azure/msal-common)
+- prisma (from https://www.npmjs.com/package/prisma)
 - tslib (from https://www.npmjs.com/package/tslib)
 
 ========================================================================
@@ -18,6 +19,11 @@ AFL-3.0
 The following software have components provided under the terms of this license:
 
 - json-schema
+
+========================================================================
+AML
+========================================================================
+- aws-sdk (from https://www.npmjs.com/package/aws-sdk)
 
 ========================================================================
 Apache-1.1
@@ -31,6 +37,86 @@ Apache-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- @aws-crypto/crc32 (from https://www.npmjs.com/package/@aws-crypto/crc32)
+- @aws-crypto/ie11-detection (from https://www.npmjs.com/package/@aws-crypto/ie11-detection)
+- @aws-crypto/sha256-browser (from https://www.npmjs.com/package/@aws-crypto/sha256-browser)
+- @aws-crypto/sha256-js (from https://www.npmjs.com/package/@aws-crypto/sha256-js)
+- @aws-crypto/supports-web-crypto (from https://www.npmjs.com/package/@aws-crypto/supports-web-crypto)
+- @aws-crypto/util (from https://www.npmjs.com/package/@aws-crypto/util)
+- @aws-sdk/abort-controller (from https://www.npmjs.com/package/@aws-sdk/abort-controller)
+- @aws-sdk/chunked-blob-reader (from https://www.npmjs.com/package/@aws-sdk/chunked-blob-reader)
+- @aws-sdk/chunked-blob-reader-native (from https://www.npmjs.com/package/@aws-sdk/chunked-blob-reader-native)
+- @aws-sdk/client-s3 (from https://www.npmjs.com/package/@aws-sdk/client-s3)
+- @aws-sdk/client-sso (from https://www.npmjs.com/package/@aws-sdk/client-sso)
+- @aws-sdk/client-sts (from https://www.npmjs.com/package/@aws-sdk/client-sts)
+- @aws-sdk/config-resolver (from https://www.npmjs.com/package/@aws-sdk/config-resolver)
+- @aws-sdk/credential-provider-env (from https://www.npmjs.com/package/@aws-sdk/credential-provider-env)
+- @aws-sdk/credential-provider-imds (from https://www.npmjs.com/package/@aws-sdk/credential-provider-imds)
+- @aws-sdk/credential-provider-ini (from https://www.npmjs.com/package/@aws-sdk/credential-provider-ini)
+- @aws-sdk/credential-provider-node (from https://www.npmjs.com/package/@aws-sdk/credential-provider-node)
+- @aws-sdk/credential-provider-process (from https://www.npmjs.com/package/@aws-sdk/credential-provider-process)
+- @aws-sdk/credential-provider-sso (from https://www.npmjs.com/package/@aws-sdk/credential-provider-sso)
+- @aws-sdk/credential-provider-web-identity (from https://www.npmjs.com/package/@aws-sdk/credential-provider-web-identity)
+- @aws-sdk/eventstream-marshaller (from https://www.npmjs.com/package/@aws-sdk/eventstream-marshaller)
+- @aws-sdk/eventstream-serde-browser (from https://www.npmjs.com/package/@aws-sdk/eventstream-serde-browser)
+- @aws-sdk/eventstream-serde-config-resolver (from https://www.npmjs.com/package/@aws-sdk/eventstream-serde-config-resolver)
+- @aws-sdk/eventstream-serde-node (from https://www.npmjs.com/package/@aws-sdk/eventstream-serde-node)
+- @aws-sdk/eventstream-serde-universal (from https://www.npmjs.com/package/@aws-sdk/eventstream-serde-universal)
+- @aws-sdk/fetch-http-handler (from https://www.npmjs.com/package/@aws-sdk/fetch-http-handler)
+- @aws-sdk/hash-blob-browser (from https://www.npmjs.com/package/@aws-sdk/hash-blob-browser)
+- @aws-sdk/hash-node (from https://www.npmjs.com/package/@aws-sdk/hash-node)
+- @aws-sdk/hash-stream-node (from https://www.npmjs.com/package/@aws-sdk/hash-stream-node)
+- @aws-sdk/invalid-dependency (from https://www.npmjs.com/package/@aws-sdk/invalid-dependency)
+- @aws-sdk/is-array-buffer (from https://www.npmjs.com/package/@aws-sdk/is-array-buffer)
+- @aws-sdk/md5-js (from https://www.npmjs.com/package/@aws-sdk/md5-js)
+- @aws-sdk/middleware-apply-body-checksum (from https://www.npmjs.com/package/@aws-sdk/middleware-apply-body-checksum)
+- @aws-sdk/middleware-bucket-endpoint (from https://www.npmjs.com/package/@aws-sdk/middleware-bucket-endpoint)
+- @aws-sdk/middleware-content-length (from https://www.npmjs.com/package/@aws-sdk/middleware-content-length)
+- @aws-sdk/middleware-expect-continue (from https://www.npmjs.com/package/@aws-sdk/middleware-expect-continue)
+- @aws-sdk/middleware-header-default (from https://www.npmjs.com/package/@aws-sdk/middleware-header-default)
+- @aws-sdk/middleware-host-header (from https://www.npmjs.com/package/@aws-sdk/middleware-host-header)
+- @aws-sdk/middleware-location-constraint (from https://www.npmjs.com/package/@aws-sdk/middleware-location-constraint)
+- @aws-sdk/middleware-logger (from https://www.npmjs.com/package/@aws-sdk/middleware-logger)
+- @aws-sdk/middleware-retry (from https://www.npmjs.com/package/@aws-sdk/middleware-retry)
+- @aws-sdk/middleware-sdk-s3 (from https://www.npmjs.com/package/@aws-sdk/middleware-sdk-s3)
+- @aws-sdk/middleware-sdk-sts (from https://www.npmjs.com/package/@aws-sdk/middleware-sdk-sts)
+- @aws-sdk/middleware-serde (from https://www.npmjs.com/package/@aws-sdk/middleware-serde)
+- @aws-sdk/middleware-signing (from https://www.npmjs.com/package/@aws-sdk/middleware-signing)
+- @aws-sdk/middleware-ssec (from https://www.npmjs.com/package/@aws-sdk/middleware-ssec)
+- @aws-sdk/middleware-stack (from https://www.npmjs.com/package/@aws-sdk/middleware-stack)
+- @aws-sdk/middleware-user-agent (from https://www.npmjs.com/package/@aws-sdk/middleware-user-agent)
+- @aws-sdk/node-config-provider (from https://www.npmjs.com/package/@aws-sdk/node-config-provider)
+- @aws-sdk/node-http-handler (from https://www.npmjs.com/package/@aws-sdk/node-http-handler)
+- @aws-sdk/property-provider (from https://www.npmjs.com/package/@aws-sdk/property-provider)
+- @aws-sdk/protocol-http (from https://www.npmjs.com/package/@aws-sdk/protocol-http)
+- @aws-sdk/querystring-builder (from https://www.npmjs.com/package/@aws-sdk/querystring-builder)
+- @aws-sdk/querystring-parser (from https://www.npmjs.com/package/@aws-sdk/querystring-parser)
+- @aws-sdk/service-error-classification (from https://www.npmjs.com/package/@aws-sdk/service-error-classification)
+- @aws-sdk/shared-ini-file-loader (from https://www.npmjs.com/package/@aws-sdk/shared-ini-file-loader)
+- @aws-sdk/signature-v4 (from https://www.npmjs.com/package/@aws-sdk/signature-v4)
+- @aws-sdk/signature-v4-crt (from https://www.npmjs.com/package/@aws-sdk/signature-v4-crt)
+- @aws-sdk/smithy-client (from https://www.npmjs.com/package/@aws-sdk/smithy-client)
+- @aws-sdk/types (from https://www.npmjs.com/package/@aws-sdk/types)
+- @aws-sdk/url-parser (from https://www.npmjs.com/package/@aws-sdk/url-parser)
+- @aws-sdk/util-arn-parser (from https://www.npmjs.com/package/@aws-sdk/util-arn-parser)
+- @aws-sdk/util-base64-browser (from https://www.npmjs.com/package/@aws-sdk/util-base64-browser)
+- @aws-sdk/util-base64-node (from https://www.npmjs.com/package/@aws-sdk/util-base64-node)
+- @aws-sdk/util-body-length-browser (from https://www.npmjs.com/package/@aws-sdk/util-body-length-browser)
+- @aws-sdk/util-body-length-node (from https://www.npmjs.com/package/@aws-sdk/util-body-length-node)
+- @aws-sdk/util-buffer-from (from https://www.npmjs.com/package/@aws-sdk/util-buffer-from)
+- @aws-sdk/util-config-provider (from https://www.npmjs.com/package/@aws-sdk/util-config-provider)
+- @aws-sdk/util-credentials (from https://www.npmjs.com/package/@aws-sdk/util-credentials)
+- @aws-sdk/util-defaults-mode-browser (from https://www.npmjs.com/package/@aws-sdk/util-defaults-mode-browser)
+- @aws-sdk/util-defaults-mode-node (from https://www.npmjs.com/package/@aws-sdk/util-defaults-mode-node)
+- @aws-sdk/util-hex-encoding (from https://www.npmjs.com/package/@aws-sdk/util-hex-encoding)
+- @aws-sdk/util-locate-window (from https://www.npmjs.com/package/@aws-sdk/util-locate-window)
+- @aws-sdk/util-uri-escape (from https://www.npmjs.com/package/@aws-sdk/util-uri-escape)
+- @aws-sdk/util-user-agent-browser (from https://www.npmjs.com/package/@aws-sdk/util-user-agent-browser)
+- @aws-sdk/util-user-agent-node (from https://www.npmjs.com/package/@aws-sdk/util-user-agent-node)
+- @aws-sdk/util-utf8-browser (from https://www.npmjs.com/package/@aws-sdk/util-utf8-browser)
+- @aws-sdk/util-utf8-node (from https://www.npmjs.com/package/@aws-sdk/util-utf8-node)
+- @aws-sdk/util-waiter (from https://www.npmjs.com/package/@aws-sdk/util-waiter)
+- @aws-sdk/xml-builder (from https://www.npmjs.com/package/@aws-sdk/xml-builder)
 - @cloudant/cloudant (from https://www.npmjs.com/package/@cloudant/cloudant)
 - @google-cloud/common (from https://www.npmjs.com/package/@google-cloud/common)
 - @google-cloud/datastore (from https://www.npmjs.com/package/@google-cloud/datastore)
@@ -51,8 +137,12 @@ The following software have components provided under the terms of this license:
 - @opentelemetry/api (from https://www.npmjs.com/package/@opentelemetry/api)
 - @opentelemetry/core (from https://www.npmjs.com/package/@opentelemetry/core)
 - @opentelemetry/resources (from https://www.npmjs.com/package/@opentelemetry/resources)
+- @opentelemetry/sdk-trace-base (from https://www.npmjs.com/package/@opentelemetry/sdk-trace-base)
 - @opentelemetry/semantic-conventions (from https://www.npmjs.com/package/@opentelemetry/semantic-conventions)
 - @opentelemetry/tracing (from https://www.npmjs.com/package/@opentelemetry/tracing)
+- @prisma/client (from https://www.npmjs.com/package/@prisma/client)
+- @prisma/engines (from https://www.npmjs.com/package/@prisma/engines)
+- @prisma/engines-version (from https://www.npmjs.com/package/@prisma/engines-version)
 - aws-sdk (from https://www.npmjs.com/package/aws-sdk)
 - aws-sign2 (from https://www.npmjs.com/package/aws-sign2)
 - boto3 (from https://github.com/boto/boto3)
@@ -70,6 +160,7 @@ The following software have components provided under the terms of this license:
 - gcp-metadata (from https://www.npmjs.com/package/gcp-metadata)
 - google-auth-library (from https://www.npmjs.com/package/google-auth-library)
 - google-gax (from https://www.npmjs.com/package/google-gax)
+- gtoken (from https://www.npmjs.com/package/gtoken)
 - hex2dec (from https://www.npmjs.com/package/hex2dec)
 - jmespath (from https://www.npmjs.com/package/jmespath)
 - jsbi (from https://www.npmjs.com/package/jsbi)
@@ -80,6 +171,7 @@ The following software have components provided under the terms of this license:
 - long (from https://www.npmjs.com/package/long)
 - nano (from https://www.npmjs.com/package/nano)
 - oauth-sign (from https://www.npmjs.com/package/oauth-sign)
+- prisma (from https://www.npmjs.com/package/prisma)
 - proto3-json-serializer (from https://www.npmjs.com/package/proto3-json-serializer)
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
 - request (from https://www.npmjs.com/package/request)
@@ -114,6 +206,7 @@ The following software have components provided under the terms of this license:
 - continuation-local-storage (from https://www.npmjs.com/package/continuation-local-storage)
 - dotenv (from https://www.npmjs.com/package/dotenv)
 - emitter-listener (from https://www.npmjs.com/package/emitter-listener)
+- entities (from https://www.npmjs.com/package/entities)
 - esprima (from https://www.npmjs.com/package/esprima)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
@@ -205,6 +298,13 @@ The following software have components provided under the terms of this license:
 - node-forge (from https://www.npmjs.com/package/node-forge)
 
 ========================================================================
+GPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
 ISC
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -217,6 +317,7 @@ The following software have components provided under the terms of this license:
 - cliui (from https://www.npmjs.com/package/cliui)
 - color-support (from https://www.npmjs.com/package/color-support)
 - console-control-strings (from https://www.npmjs.com/package/console-control-strings)
+- dezalgo (from https://www.npmjs.com/package/dezalgo)
 - flatted (from https://www.npmjs.com/package/flatted)
 - fs-minipass (from https://www.npmjs.com/package/fs-minipass)
 - fs.realpath (from https://www.npmjs.com/package/fs.realpath)
@@ -260,6 +361,48 @@ The following software have components provided under the terms of this license:
 - yargs-parser (from https://www.npmjs.com/package/yargs-parser)
 
 ========================================================================
+LGPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+LPL-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+LPL-1.02
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+LPPL-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+LPPL-1.1
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+LPPL-1.2
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
 MIT
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -282,7 +425,11 @@ The following software have components provided under the terms of this license:
 - @azure/msal-common (from https://www.npmjs.com/package/@azure/msal-common)
 - @azure/msal-node (from https://www.npmjs.com/package/@azure/msal-node)
 - @azure/storage-blob (from https://www.npmjs.com/package/@azure/storage-blob)
+- @colors/colors (from https://www.npmjs.com/package/@colors/colors)
 - @dabh/diagnostics (from https://www.npmjs.com/package/@dabh/diagnostics)
+- @opentelemetry/core (from https://www.npmjs.com/package/@opentelemetry/core)
+- @prisma/client (from https://www.npmjs.com/package/@prisma/client)
+- @prisma/engines (from https://www.npmjs.com/package/@prisma/engines)
 - @tootallnate/once (from https://www.npmjs.com/package/@tootallnate/once)
 - @types/bluebird (from https://www.npmjs.com/package/@types/bluebird)
 - @types/body-parser (from https://www.npmjs.com/package/@types/body-parser)
@@ -302,6 +449,7 @@ The following software have components provided under the terms of this license:
 - @types/node-fetch (from https://www.npmjs.com/package/@types/node-fetch)
 - @types/qs (from https://www.npmjs.com/package/@types/qs)
 - @types/range-parser (from https://www.npmjs.com/package/@types/range-parser)
+- @types/redis (from https://www.npmjs.com/package/@types/redis)
 - @types/redlock (from https://www.npmjs.com/package/@types/redlock)
 - @types/request (from https://www.npmjs.com/package/@types/request)
 - @types/serve-static (from https://www.npmjs.com/package/@types/serve-static)
@@ -310,6 +458,7 @@ The following software have components provided under the terms of this license:
 - @types/tunnel (from https://www.npmjs.com/package/@types/tunnel)
 - @types/yamljs (from https://www.npmjs.com/package/@types/yamljs)
 - PyJWT (from http://github.com/jpadilla/pyjwt, https://github.com/jpadilla/pyjwt)
+- abbrev (from https://www.npmjs.com/package/abbrev)
 - abort-controller (from https://www.npmjs.com/package/abort-controller)
 - accepts (from https://www.npmjs.com/package/accepts)
 - agent-base (from https://www.npmjs.com/package/agent-base)
@@ -323,6 +472,7 @@ The following software have components provided under the terms of this license:
 - argparse (from https://www.npmjs.com/package/argparse)
 - array-flatten (from https://www.npmjs.com/package/array-flatten)
 - arrify (from https://www.npmjs.com/package/arrify)
+- asap (from https://www.npmjs.com/package/asap)
 - asn1 (from https://www.npmjs.com/package/asn1)
 - assert-plus (from https://www.npmjs.com/package/assert-plus)
 - async (from https://www.npmjs.com/package/async)
@@ -338,6 +488,7 @@ The following software have components provided under the terms of this license:
 - bignumber.js (from https://www.npmjs.com/package/bignumber.js)
 - bluebird (from https://www.npmjs.com/package/bluebird)
 - body-parser (from https://www.npmjs.com/package/body-parser)
+- bowser (from https://www.npmjs.com/package/bowser)
 - brace-expansion (from https://www.npmjs.com/package/brace-expansion)
 - buffer (from https://www.npmjs.com/package/buffer)
 - buffer-from (from https://www.npmjs.com/package/buffer-from)
@@ -408,6 +559,7 @@ The following software have components provided under the terms of this license:
 - fast-deep-equal (from https://www.npmjs.com/package/fast-deep-equal)
 - fast-json-stable-stringify (from https://www.npmjs.com/package/fast-json-stable-stringify)
 - fast-safe-stringify (from https://www.npmjs.com/package/fast-safe-stringify)
+- fast-xml-parser (from https://www.npmjs.com/package/fast-xml-parser)
 - fecha (from https://www.npmjs.com/package/fecha)
 - filter-obj (from https://www.npmjs.com/package/filter-obj)
 - finalhandler (from https://www.npmjs.com/package/finalhandler)
@@ -435,6 +587,7 @@ The following software have components provided under the terms of this license:
 - has-flag (from https://www.npmjs.com/package/has-flag)
 - has-symbols (from https://www.npmjs.com/package/has-symbols)
 - has-tostringtag (from https://www.npmjs.com/package/has-tostringtag)
+- hexoid (from https://www.npmjs.com/package/hexoid)
 - hpropagate (from https://www.npmjs.com/package/hpropagate)
 - http-errors (from https://www.npmjs.com/package/http-errors)
 - http-proxy-agent (from https://www.npmjs.com/package/http-proxy-agent)
@@ -503,6 +656,7 @@ The following software have components provided under the terms of this license:
 - lodash.snakecase (from https://www.npmjs.com/package/lodash.snakecase)
 - logform (from https://www.npmjs.com/package/logform)
 - lru-memoizer (from https://www.npmjs.com/package/lru-memoizer)
+- luxon (from https://www.npmjs.com/package/luxon)
 - make-dir (from https://www.npmjs.com/package/make-dir)
 - media-typer (from https://www.npmjs.com/package/media-typer)
 - merge-descriptors (from https://www.npmjs.com/package/merge-descriptors)
@@ -517,12 +671,15 @@ The following software have components provided under the terms of this license:
 - moment (from https://www.npmjs.com/package/moment)
 - moment-timezone (from https://www.npmjs.com/package/moment-timezone)
 - ms (from https://www.npmjs.com/package/ms)
+- msgpackr (from https://www.npmjs.com/package/msgpackr)
+- msgpackr-extract (from https://www.npmjs.com/package/msgpackr-extract)
 - nan (from https://www.npmjs.com/package/nan)
 - native-promise-only (from https://www.npmjs.com/package/native-promise-only)
 - negotiator (from https://www.npmjs.com/package/negotiator)
 - node-abort-controller (from https://www.npmjs.com/package/node-abort-controller)
 - node-fetch (from https://www.npmjs.com/package/node-fetch)
 - node-forge (from https://www.npmjs.com/package/node-forge)
+- node-gyp-build (from https://www.npmjs.com/package/node-gyp-build)
 - number-is-nan (from https://www.npmjs.com/package/number-is-nan)
 - object-assign (from https://www.npmjs.com/package/object-assign)
 - object-hash (from https://www.npmjs.com/package/object-hash)
@@ -546,6 +703,7 @@ The following software have components provided under the terms of this license:
 - path-to-regexp (from https://www.npmjs.com/package/path-to-regexp)
 - performance-now (from https://www.npmjs.com/package/performance-now)
 - priorityqueuejs (from https://www.npmjs.com/package/priorityqueuejs)
+- prisma (from https://www.npmjs.com/package/prisma)
 - process (from https://www.npmjs.com/package/process)
 - process-nextick-args (from https://www.npmjs.com/package/process-nextick-args)
 - promise.prototype.finally (from https://www.npmjs.com/package/promise.prototype.finally)
@@ -607,6 +765,7 @@ The following software have components provided under the terms of this license:
 - stubs (from https://www.npmjs.com/package/stubs)
 - superagent (from https://www.npmjs.com/package/superagent)
 - supports-color (from https://www.npmjs.com/package/supports-color)
+- supports-preserve-symlinks-flag (from https://www.npmjs.com/package/supports-preserve-symlinks-flag)
 - swagger-ui-express (from https://www.npmjs.com/package/swagger-ui-express)
 - text-hex (from https://www.npmjs.com/package/text-hex)
 - through2 (from https://www.npmjs.com/package/through2)
@@ -643,10 +802,36 @@ The following software have components provided under the terms of this license:
 - yocto-queue (from https://www.npmjs.com/package/yocto-queue)
 
 ========================================================================
-Protobuf
+MITNFA
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- bowser (from https://www.npmjs.com/package/bowser)
+
+========================================================================
+OGTSL
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+OLDAP-1.1
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+OLDAP-1.2
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+Protobuf
+========================================================================
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
 
 ========================================================================
@@ -676,3 +861,33 @@ W3C-20150513
 The following software have components provided under the terms of this license:
 
 - typescript (from https://www.npmjs.com/package/typescript)
+
+========================================================================
+WTFPL
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+ogl-uk-3.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+wxWindows
+========================================================================
+The following software have components provided under the terms of this license:
+
+- @prisma/client (from https://www.npmjs.com/package/@prisma/client)
+- prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+zlib-acknowledgement
+========================================================================
+The following software have components provided under the terms of this license:
+
+- @prisma/client (from https://www.npmjs.com/package/@prisma/client)
+- prisma (from https://www.npmjs.com/package/prisma)

@@ -14,8 +14,12 @@
 // limitations under the License.
 // ============================================================================
 
-export * as google from './google';
-export * as azure from './azure';
-export * as ibm from './ibm';
-export * as aws from './aws';
-export * as anthos from './anthos';
+import { AbstractTrace, TraceFactory } from '../../trace';
+
+@TraceFactory.register('anthos')
+export class AnthosTrace extends AbstractTrace {
+
+    // [TODO] this method should start a call tracer using CSP SDK
+    public start() { return; }
+
+}
