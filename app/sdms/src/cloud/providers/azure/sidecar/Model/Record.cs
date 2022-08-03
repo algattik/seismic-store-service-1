@@ -79,7 +79,7 @@ public class Data
     public object? metadata { get; set; }
 
     [JsonProperty(PropertyName = "filemetadata")]
-    public object? filemetadata { get; set; }
+    public FileMetadata? filemetadata { get; set; }
 
     [JsonProperty(PropertyName = "type")]
     public string? type { get; set; }
@@ -118,6 +118,20 @@ public class Data
     public SymbolId? SymbolId { get; set; }
 
 }
+
+public class FileMetadata
+{
+    [JsonProperty(PropertyName = "nobjects")]
+    public long? nobjects { get; set; }
+
+    [JsonProperty(PropertyName = "size")]
+    public long? size { get; set; }
+
+    [JsonProperty(PropertyName = "type")]
+    public string? type { get; set; }
+
+}
+
 
 public class DatasetAcl
 {
