@@ -43,6 +43,14 @@ azure_test_py:
       echo 'empty'
   only:
       - $DISABLED == 'true'
+      
+azure-publish:
+  needs: []
+  script:
+      echo 'empty'
+  rules:
+    - if: $DISABLED == 'true'
+      when: never
 
 .azure_containerize:
   tags: ["osdu-medium"]
