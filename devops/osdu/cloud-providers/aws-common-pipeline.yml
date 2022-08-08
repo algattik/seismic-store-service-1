@@ -25,7 +25,7 @@ aws-update-ecs:
   stage: containerize
   only:
     variables:
-      - $AWS == 'true'
+      - $AWS == '1'
 
 .aws-update-eks:
   extends:
@@ -36,4 +36,4 @@ aws-update-ecs:
   retry: 1
   only:
     variables:
-      - $AWS_SKIP_DEPLOY != 'true' && $AWS == 'true' && $AWS_DEPLOY_TARGET == 'EKS'
+      - $AWS_SKIP_DEPLOY != 'true' && $AWS == '1' && $AWS_DEPLOY_TARGET == 'EKS'
