@@ -4,6 +4,13 @@ azure_containerize:
       echo 'empty'
   only:
       - $DISABLED == 'true'
+      
+azure_containerize_helm:
+  needs: []
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
 
 container_scanning:
   needs: []
@@ -61,10 +68,53 @@ azure-publish:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - az --version
-    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID
+    - az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID --query '[*].name'
   only:
     variables:
-      - $AZURE == 'true'
+      - $AZURE == '1'
+
+.azure_containerize_helm:
+  tags: ["osdu-medium"]
+  image: mcr.microsoft.com/azure-cli:2.38.0
+  allow_failure: true
+  stage: containerize
+  extends:
+    - .azure_variables
+  before_script:
+    - |
+      az login --service-principal -u $AZURE_PRINCIPAL_ID -p $AZURE_PRINCIPAL_SECRET --tenant $AZURE_TENANT_ID --query '[*].name'
+      export COMMUNITY_HELM_BRANCH=$(echo ${CI_COMMIT_REF_NAME} | sed -e 's/^trusted-//')
+      echo "[INFO] Trying helm-charts-azure repo | branch: $COMMUNITY_HELM_BRANCH";
+      if ! git clone --single-branch --branch ${COMMUNITY_HELM_BRANCH} --depth 1 https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure.git helm-charts-azure ; then
+        echo "[WARN] Branch name ${COMMUNITY_HELM_BRANCH} not found, using default for helm-charts-azure.git";
+        git clone --single-branch --depth 1 https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure.git helm-charts-azure
+      fi
+      echo "[INFO] (AZURE_HELM_SUBDIR) : $AZURE_HELM_SUBDIR";
+      if [[ -z $AZURE_HELM_SUBDIR ]]; then
+        if [[ $CI_PROJECT_NAME =~ service ]]; then
+          export AZURE_HELM_SUBDIR=osdu-azure/$(echo $CI_PROJECT_NAME | sed "s/\(-\)\?service\(s\)\?//")
+        else
+          export AZURE_HELM_SUBDIR=osdu-azure/$CI_PROJECT_NAME
+        fi
+        echo "[WARN] No (AZURE_HELM_SUBDIR) defined for this service using $AZURE_HELM_SUBDIR";
+      fi
+      helm_dir="helm-charts-azure/${AZURE_HELM_SUBDIR}"
+      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash -s -- --version v3.9.1
+      helm_version=$(helm show chart ${helm_dir} | awk '/^version/{print $2}')-${CI_COMMIT_SHORT_SHA}
+      helm_app_version=$(helm show chart ${helm_dir} | awk '/^appVersion/{print $2}')-${CI_COMMIT_SHORT_SHA}
+      chart_name=$(helm show chart ${helm_dir} | awk '/^name/{print $2}')
+      echo "[INFO] Helm package dir: $helm_dir | Name: ${chart_name}"
+      echo "[INFO] version: $helm_version      | appVersion: $helm_app_version"
+      helm_chart_section=${AZURE_HELM_SUBDIR%/*}   # Converts osdu-azure/service -> osdu-azure
+      helm registry login ${AZURE_REGISTRY}.azurecr.io \
+        --username "00000000-0000-0000-0000-000000000000" \
+        --password "$(az acr login -n $AZURE_REGISTRY --expose-token --query 'accessToken' -otsv)"
+  only:
+    variables:
+      - $AZURE == '1'
+  artifacts:
+    reports:
+      dotenv: helm.env
 
 .azure_container_scanning:
   tags: ["osdu-medium"]
@@ -77,9 +127,9 @@ azure-publish:
       echo "[INFO] Scanning Container Image: $DOCKER_IMAGE"
       trivy image --ignore-unfixed --exit-code 1 --severity "HIGH,CRITICAL" $DOCKER_IMAGE
   rules:
-    - if: $AZURE == 'true' && $ENFORCE_CONTAINER_SCANNING == 'true'
+    - if: $AZURE == '1' && $ENFORCE_CONTAINER_SCANNING == 'true'
       allow_failure: false
-    - if: $AZURE == 'true'
+    - if: $AZURE == '1'
 
 .azure_deploy:
   image: danielscholl/azure-build-image
@@ -92,7 +142,7 @@ azure-publish:
     - az aks get-credentials -g $AZURE_UNIQUE-rg -n $AZURE_UNIQUE-aks
   only:
     variables:
-      - $AZURE == 'true'
+      - $AZURE == '1'
   except:
     variables:
       - $AZURE_SKIP_DEPLOY == 'true'
@@ -110,4 +160,15 @@ azure-publish:
     - export svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/azure_jwt_client.py)
   only:
     variables:
-      - $AZURE == 'true'
+      - $AZURE == '1'
+
+.azure_code_coverage:
+  stage: coverage
+  extends:
+    - .azure_variables
+  allow_failure: true
+  artifacts:
+    reports:
+      dotenv: azure_code_coverage.env
+    paths:
+      - $AZURE_BUILD_SUBDIR/target/site/

@@ -77,6 +77,9 @@ sdms_azure_containerize:
         docker tag $CI_REGISTRY_IMAGE/$SHA_SIDECAR_IMAGE ${AZURE_REGISTRY}.azurecr.io/$RELEASE_SIDECAR_IMAGE
         docker push ${AZURE_REGISTRY}.azurecr.io/$RELEASE_SIDECAR_IMAGE
       fi
+    - |
+      echo "AZURE_REGISTRY_TOKEN=$(az acr login -n $AZURE_REGISTRY --expose-token --query 'accessToken' -otsv)" >> acr_tokens.env
+      echo "DST_REGISTRY_TOKEN=$(az acr login -n msosdu --expose-token --query 'accessToken' -otsv)" >> acr_tokens.env
   only:
     changes:
       - devops/**/*
@@ -86,6 +89,52 @@ sdms_azure_containerize:
       - main
       - merge_requests
       - tags
+  artifacts:
+    reports:
+      dotenv: app/$SDMS_SERVICE/acr_tokens.env
+
+sdms_azure_containerize_helm:
+  extends: .azure_containerize_helm
+  needs: 
+    - job: sdms_compile-and-unit-test
+      artifacts: false
+      optional: true
+  script:
+    - |
+      helm package --dependency-update --version ${helm_version} --app-version ${helm_app_version} \
+      --destination ${helm_dir} ${helm_dir};
+      packaged_file=$(find $helm_dir -name "$chart_name*.tgz")
+      echo "[INFO] Publishing helm package: ${packaged_file}"
+      helm push $packaged_file oci://${AZURE_REGISTRY}.azurecr.io/helm/${helm_chart_section}
+      helm show chart oci://${AZURE_REGISTRY}.azurecr.io/helm/${helm_chart_section}/${chart_name} --version ${helm_version} | head -20
+      echo "HELM_CHART_OCI=oci://${AZURE_REGISTRY}.azurecr.io/helm/${helm_chart_section}/${chart_name}" >> helm.env
+      echo "HELM_CHART_OCI_VERSION=${helm_version}" >> helm.env
+      echo "HELM_CHART_SUBDIR=${AZURE_HELM_SUBDIR}" >> helm.env
+    - |
+      if [[ ! -z $CI_COMMIT_TAG ]] || [[ $CI_COMMIT_BRANCH =~ ^release\/[0-9]{1,2}.[0-9]{1,2}$ ]]; then
+        echo "[INFO] Release branch or tag detected"
+        if [[ -z $CI_COMMIT_TAG ]] && [[ $CI_COMMIT_BRANCH =~ ^release\/[0-9]{1,2}.[0-9]{1,2}$ ]]; 
+          then
+              RELEASE_VER=$(echo $CI_COMMIT_BRANCH | sed "s?^release/??");
+              AZ_VER="$RELEASE_VER.0"
+          elif [[ $CI_COMMIT_TAG =~ ^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}$ ]]; 
+          then
+              AZ_VER=$(echo $CI_COMMIT_TAG | sed "s/^v//");
+          else
+            AZ_VER=0.0.0-unknown;
+            echo "[ERROR] Not able to parse release version";
+          fi;
+        find $helm_dir -name "$chart_name*.tgz" -exec rm -v {} \;
+        helm_release_version=$(echo $AZ_VER | sed 's/^0./1./')
+        helm package --dependency-update --version ${helm_release_version} --app-version ${AZ_VER} \
+          --destination ${helm_dir} ${helm_dir};
+        release_packaged_file=$(find $helm_dir -name "$chart_name*.tgz")
+        helm push $release_packaged_file oci://${AZURE_REGISTRY}.azurecr.io/helm/release-${AZ_VER}/${helm_chart_section}
+        > helm.env
+        echo "HELM_CHART_OCI=oci://${AZURE_REGISTRY}.azurecr.io/helm/release-${AZ_VER}/${helm_chart_section}/${chart_name}" >> helm.env
+        echo "HELM_CHART_OCI_VERSION=${helm_release_version}" >> helm.env
+        echo "HELM_CHART_SUBDIR=${AZURE_HELM_SUBDIR}" >> helm.env
+      fi
 
 sdms_azure_container_scanning:
   extends: .azure_container_scanning
