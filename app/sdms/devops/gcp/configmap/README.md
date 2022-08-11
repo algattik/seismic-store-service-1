@@ -28,7 +28,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 ### Common variables
 
-| Name | Description | Type | Default |Required |
+| Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
 **logLevel** | logging level | string | "INFO" | yes
 **cloudProvider** | cloud provider | string | "google" | yes
@@ -47,7 +47,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 ### GCP variables
 
-| Name | Description | Type | Default |Required |
+| Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
 **impServiceAccountSigner** | imp SA signer | string | "NA" | yes
 **seistoreDesAppkey** | seismic-store app key | string | "NA" | yes
@@ -56,14 +56,14 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 ### On-prem variables
 
-| Name | Description | Type | Default |Required |
+| Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
 **apiBasePath** | base api url path | string | "/api/v3" | yes
 **serviceEnv** | service environment | string | "dev" | yes
 
 ### Config variables
 
-| Name | Description | Type | Default |Required |
+| Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
 **appName** | name of the app | string | "seismic-store" | yes
 **configmap** | configmap to be used | string | "seismic-store-config" | yes

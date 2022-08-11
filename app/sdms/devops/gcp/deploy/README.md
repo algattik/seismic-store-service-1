@@ -29,7 +29,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 ### Common variables
 
-| Name | Description | Type | Default |Required |
+| Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
 **requestsCpu** | amount of requested CPU | string | "0.1" | yes
 **requestsMemory** | amount of requested memory| string | "256M" | yes
@@ -41,7 +41,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 ### Config variables
 
-| Name | Description | Type | Default |Required |
+| Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
 **configmap** | configmap to be used | string | "seismic-store-config" | yes
 **appName** | name of the app | string | "seismic-store" | yes
@@ -49,6 +49,8 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 ### On-prem variables
 
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|---------|
 **database** | secret for database | string | "seismic-store-db-secret" | yes
 **keycloak** | secret for keycloak | string | "seismic-store-keycloak-secret" | yes
 **minio** | secret for minio | string | "seismic-store-minio-secret" | yes
