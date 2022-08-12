@@ -19,6 +19,7 @@ export { DatasetDAO } from './dao';
 export {
   IDatasetModel as DatasetModel,
   IPaginationModel as PaginationModel,
+  IDatasetListRequest as DatasetListRequest,
   SchemaTransformModel
 } from './model';
 export { DatasetUtils } from './utils'

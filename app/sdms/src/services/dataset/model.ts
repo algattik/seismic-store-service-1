@@ -42,6 +42,12 @@ export interface IDatasetModel {
 
 }
 
+export interface IDatasetListRequest {
+    dataset: IDatasetModel,
+    pagination: IPaginationModel,
+    userInfo: boolean
+}
+
 export interface IPaginationModel {
     limit: number;
     cursor: string;

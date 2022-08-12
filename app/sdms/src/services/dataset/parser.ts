@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { Request as expRequest } from 'express';
-import { DatasetModel } from '.';
+import { DatasetListRequest, DatasetModel } from '.';
 import { Config } from '../../cloud';
 import { Error, Params, Utils } from '../../shared';
 import { SchemaManagerFactory } from './schema-manager';
@@ -103,38 +103,77 @@ export class DatasetParser {
 
     }
 
-    public static list(req: expRequest): any {
+    public static list(req: expRequest): DatasetListRequest {
+        return req.method === 'POST' ? this.listPost(req) : this.listGet(req);
+    }
 
-        const dataset = this.createDatasetModelFromRequest(req);
+    public static listGet(req: expRequest): DatasetListRequest {
 
-        if(req.query.gtag) {
+        const input = {
+            dataset: this.createDatasetModelFromRequest(req),
+            pagination: null,
+            userInfo: req.query['translate-user-info'] !== 'false' || req.query['subid-to-email'] !== 'false'
+        } as DatasetListRequest;
+
+        if (req.query.gtag) {
             if (!(req.query.gtag instanceof Array)) {
-                dataset.gtags = [req.query.gtag as string]
+                input.dataset.gtags = [req.query.gtag as string]
             } else {
-                dataset.gtags = req.query.gtag as string[]
+                input.dataset.gtags = req.query.gtag as string[]
             }
         }
 
-        const limit = parseInt(req.query.limit as string, 10);
-        if (limit < 0) {
+        if (req.query.limit || req.query.cursor) {
+            input.pagination = {
+                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
+                cursor: req.query.cursor as string
+            };
+        }
+
+        if (input.pagination?.limit < 0) {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'limit\' query parameter can not be less than zero.'));
         }
-        const cursor = req.query.cursor as string;
-        if (cursor === '') {
+
+        if (input.pagination?.cursor === '') {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'The \'cursor\' query parameter can not be empty if supplied'));
         }
-        let pagination = null;
-        if (limit || cursor) {
-            pagination = { limit, cursor };
+        return input;
+
+    }
+
+    public static listPost(req: expRequest): DatasetListRequest {
+
+        const input = {
+            dataset: this.createDatasetModelFromRequest(req),
+            pagination: null,
+            userInfo: req.query['translate-user-info'] !== 'false' || req.query['subid-to-email'] !== 'false'
+        } as DatasetListRequest;
+
+        if (!req.body) return input;
+
+        Params.checkArray(req.body.gtag, 'gtag', false);
+        Params.checkString(req.body.limit, 'limit', false);
+        Params.checkString(req.body.cursor, 'cursor', false);
+
+        if (req.body.gtag) {
+            input.dataset.gtags = req.body.gtag;
         }
 
-        const userInfo = req.query['translate-user-info'] !== 'false' || req.query['subid-to-email'] !== 'false';
+        if (req.body.limit || req.body.cursor) {
+            input.pagination = { limit: +req.body.limit, cursor: req.body.cursor };
+        }
+        if (input.pagination?.limit < 0) {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The \'limit\' body field cannot be less than zero.'));
+        }
+        if (input.pagination?.cursor === '') {
+            throw (Error.make(Error.Status.BAD_REQUEST,
+                'The \'cursor\' body field cannot be empty if supplied'));
+        }
 
-        // Retrieve the list of datasets metadata
-        return { dataset, pagination, userInfo };
-
+        return input;
     }
 
     public static delete(req: expRequest): DatasetModel {

@@ -246,10 +246,11 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
             if (AzureConfig.SIDECAR_ENABLE_QUERY) {
                 const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
-                let url = AzureConfig.SIDECAR_URL + (sqlQuery.indexOf('SELECT *') > -1 ? '/query' : '/query-path')
-                url = url + '?cs=AccountEndpoint=' + connectionParams.endpoint + ';' +
-                    'AccountKey=' + connectionParams.key + ';';
-                url = url + '&sql=' + encodeURIComponent(sqlQuery)
+                const url = AzureConfig.SIDECAR_URL + (sqlQuery.indexOf('SELECT *') > -1 ? '/query' : '/query-path')
+                const payload = {};
+                payload['cs'] = 'AccountEndpoint=' + connectionParams.endpoint + ';' +
+                    'AccountKey=' + connectionParams.key + ';'
+                payload['sql'] = sqlQuery;
                 if (cosmosQuery.pagingStart) {
                     cosmosQuery.pagingStart = cosmosQuery.pagingStart.replace(/\\/g, '');
                     if (cosmosQuery.pagingStart.startsWith('\"[')) {
@@ -258,13 +259,13 @@ export class AzureCosmosDbDAO extends AbstractJournal {
                     if (cosmosQuery.pagingStart.endsWith(']\"')) {
                         cosmosQuery.pagingStart = cosmosQuery.pagingStart.replace(']\"', ']');
                     }
-                    url = url + '&ctoken=' + encodeURIComponent(cosmosQuery.pagingStart)
+                    payload['ctoken'] = cosmosQuery.pagingStart
                 }
                 if (cosmosQuery.pagingLimit) {
-                    url = url + '&limit=' + cosmosQuery.pagingLimit
+                    payload['limit'] = cosmosQuery.pagingLimit
                 }
                 try {
-                    const result = await AzureCosmosDbDAO.axiosInstance.get(url);
+                    const result = await AzureCosmosDbDAO.axiosInstance.post(url, payload);
                     if (!result.data.records) { return; }
                     const records = result.data.records;
                     const resultsList = [];

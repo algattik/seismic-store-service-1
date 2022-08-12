@@ -48,7 +48,7 @@ schemes:
 paths:
   /api/v3/svcstatus:
     get:
-      summary: "Seismic store service status (fast check)"
+      summary: "Seismic store service status (fast check)."
       description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
       security:
         - api-key: []
@@ -57,67 +57,67 @@ paths:
         - General
       responses:
         200:
-          description: "service status"
+          description: "Service status."
           schema:
             type: string
             example: "service OK"
 
   /api/v3/svcstatus/access:
     get:
-      summary: "Seismic store service access check"
-      description: "<ul><li>Validates if the token audience is allowed</li></ul>"
+      summary: "Seismic store service access check."
+      description: "<ul><li>Validates if the token audience is allowed</li><li>Required roles: none</li></ul>"
       operationId: service-status-check
       tags:
         - General
       responses:
         200:
-          description: "User token audience is allowed by seismic store service"
+          description: "User token audience is allowed by seismic store service."
           schema:
             $ref: "#/definitions/Status"
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}:
     post:
-      summary: "Register a new dataset"
-      description: "<ul><li>Register a new dataset in seismic store.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      summary: "Register a new dataset."
+      description: "<ul><li>Register a new dataset in the seismic store.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: dataset-register
       tags:
         - Dataset
       parameters:
-        - description: "Legal tag of the dataset"
-          in: header
-          name: ltag
-          type: string
-          required: false
-          default: "Slb-Private-USA-EHC"
         - description: "The impersonation token context (required only with impersonation token credentials)"
           in: header
           name: impersonation-token-context
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Legal tag of the dataset."
+          in: header
+          name: ltag
+          type: string
+          required: false
+          default: "Slb-Private-USA-EHC"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: "common"
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: "carbon"
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: "a/b/c"
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
@@ -131,25 +131,36 @@ paths:
             $ref: "#/definitions/DatasetRegisterBody"
       responses:
         200:
-          description: "Registered dataset metadata"
+          description: "Registered dataset metadata."
           schema:
             $ref: "#/definitions/Dataset"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         409:
-          description: "Conflict"
+          description: "Conflict."
         423:
-          description: "Locked"
-
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are:
+            <li> WL (Write Locked). </li>
+            <li> RL (Read Locked). </li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
     get:
-      summary: "Retrieve a dataset"
-      description: "<ul><li>Return the dataset metadata from seismic store.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      summary: "Retrieve a dataset."
+      description: "<ul>
+        <li>Return the dataset metadata from seismic store.</li>
+        <li>Required roles:
+          <ul>
+            <li>subproject.admin, subproject.viewer: if the applied subproject policy is 'uniform'</li>
+            <li>dataset.admin, dataset.viewer: if the applied subproject policy is 'dataset'</li>
+          </ul>
+        </li></ul>"
       operationId: dataset-get
       tags:
         - Dataset
@@ -160,40 +171,40 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           default: common
           type: string
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: "a/b/c"
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
           type: string
           default: "slb-dataset"
-        - description: "Include the seismic storage metadata record if it exists"
+        - description: "Include the seismic storage metadata record if it exists."
           in: query
           name: seismicmeta
           required: false
           type: boolean
         - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
-          default: true
           in: query
           type: boolean
+          default: true
           enum:
             - true
             - false
@@ -204,21 +215,28 @@ paths:
           required: false
       responses:
         200:
-          description: "Metadata of the dataset"
+          description: "Metadata of the dataset."
           schema:
             $ref: "#/definitions/Dataset"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     delete:
-      summary: "Delete a dataset"
-      description: "<ul><li>Delete a dataset in seismic store.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      summary: "Delete a dataset."
+      description: "<ul>
+        <li>Delete a dataset in the seismic store.</li>
+        <li>Required roles:
+          <ul>
+            <li>subproject.admin: if the applied subproject policy is 'uniform'</li>
+            <li>dataset.admin: if the applied subproject policy is 'dataset'</li>
+          </ul>
+        </li></ul>"
       operationId: dataset-delete
       tags:
         - Dataset
@@ -229,25 +247,25 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: "a/b/c"
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
@@ -257,17 +275,32 @@ paths:
         200:
           description: "The resource was deleted successfully."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     patch:
-      summary: "Patch the dataset metadata"
-      description: "<ul><li>Update the dataset meta information in seismic store or close(unlock) the dataset. If the endpoint is used without the close parameter, at least one body field is required or the endpoint will return an error.</li><li>Required roles: subproject.admin, subproject.editor</li><li>Patchable fields: <ul><li><b>dataset_new_name:</b> new name to use for the dataset (rename)</li><li><b>filemetadata:</b> this is a seistore specific field and describe how the physical data are stored in the cloud storage system (GCS/AzureContainer etc etc). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nObject: N, totalSize: 1024, objsize: 64, sizeUnit: MB }”.</li><li><b>last_modified_date:</b> mark this field as true to update the dataset last modified date</li><li><b>gtags:</b> upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then new gtags are appended to this list.</li><li><b>ltag:</b> update the existing legalTag value</b></li><li><b>readonly:</b> update the dataset mode to readonly(true) or to read/write(false)</li><li><b>seismicmeta:</b> update the DataEcosystem storage metadata (refer to the DataEcosystem storage service tutorial for more help)</b></li></ul></li></ul>"
+      summary: "Patch the dataset metadata."
+      description: |
+        <ul>
+        <li>Update the dataset meta information in the seismic store or close (unlock) the dataset. If the endpoint is used without the close parameter, at least one body field is required or the endpoint will return an error.</li>
+        <li>Required roles:
+          <ul>
+            <li>subproject.admin: if the applied subproject policy is 'uniform'</li>
+            <li>dataset.admin: if the applied subproject policy is 'dataset'</li>
+          </ul>
+        </li>
+        <li>Patchable fields: <ul>
+        <li><b>dataset_new_name:</b> new name to use for the dataset (rename).</li>
+        <li><b>filemetadata:</b> This is a seismic store specific field and describes how the physical data is stored in the cloud storage system (GCS/AzureContainer etc.). This metadata is mainly used by client libraries to correctly reconstruct the dataset. For example you can store a dataset as truncated in multiple objects of 64MB each, name them from 0 to N and save the filemetadata = “{nObject: N, totalSize: 1024, objsize: 64, sizeUnit: MB}”.</li>
+        <li><b>last_modified_date:</b> Mark this field as true to update the dataset last modified date.</li>
+        <li><b>gtags:</b> Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then new gtags are appended to this list.</li>
+        <li><b>ltag:</b> Update the existing legalTag value.</b></li>
+        <li><b>readonly:</b> Update the dataset mode to readonly (true) or to read/write (false).</li></ul></li></ul>
       operationId: dataset-patch
       tags:
         - Dataset
@@ -278,25 +311,25 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: a/b/c
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
@@ -307,33 +340,53 @@ paths:
           name: request body
           schema:
             $ref: "#/definitions/DatasetPatch"
-        - description: "Non null sbit value of the dataset. Using this value here will close the dataset"
+        - description: "Non null sbit value of the dataset. Using this value here will close the dataset."
           in: query
           name: close
           required: false
           type: string
       responses:
         200:
-          description: "Metadata of the patched dataset"
+          description: "Metadata of the patched dataset."
           schema:
             $ref: "#/definitions/Dataset"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         409:
-          description: "Conflict"
+          description: "Conflict."
         423:
-          description: "Locked"
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked).</li>
+            <li>RL (Read Locked).</li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/lock:
     put:
       summary: "Acquire a lock for a dataset id"
-      description: "<ul><li>Open a dataset for read or write and lock its state.</li><li>Required roles open lock for write: subproject.admin, subproject.editor</li><li>Required roles open lock for read: subproject.admin, subproject.editor, subproject.viewer</ul>"
+      description: |
+        <ul>
+          <li>Open a dataset for read or write and lock its state.</li>
+          <li>Required roles open lock for write:
+            <ul>
+              <li>subproject.admin: if the applied subproject policy is 'uniform'</li>
+              <li>dataset.admin: if the applied subproject policy is 'dataset'</li>
+            </ul>
+          </li>
+          <li>Required roles open lock for read:
+            <ul>
+              <li>subproject.admin, subproject.viewer: if the applied subproject policy is 'uniform'</li>
+              <li>dataset.admin, dataset.viewer: if the applied subproject policy is 'dataset'</li>
+            </ul>
+          </li>
+        </ul>
       operationId: dataset-lock
       tags:
         - Dataset
@@ -344,60 +397,74 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: a/b/c
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
           type: string
           default: slb-dataset
-        - description: "Type of the lock which can be set to 'read' (default) or 'write'"
+        - description: "Type of the lock which can be set to 'read' (default) or 'write'."
           in: query
           name: openmode
           required: false
           type: string
-        - description: "Session identifier issued for a previous write lock acquisition operation"
+        - description: "Session identifier issued for a previous write lock acquisition operation."
           in: query
           name: wid
           required: false
           type: number
       responses:
         200:
-          description: "Acquired a lock and the return value is the dataset metadata with session identifier stored in 'sbit' attribute"
+          description: "Acquired a lock and the return value is the dataset metadata with session identifier stored in the 'sbit' attribute."
           schema:
             $ref: "#/definitions/Dataset"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         423:
-          description: "Locked"
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked).</li>
+            <li>RL (Read Locked).</li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/unlock:
     put:
       summary: "Remove the lock associated with a dataset id."
-      description: "<ul><li>Removes the lock for a dataset id.</li><li>Required roles: subproject.admin</li></ul>"
+      description: |
+        <ul>
+          <li>Removes the lock for a dataset id.</li>
+          <li>Required roles:
+            <ul>
+              <li>subproject.admin: if the applied subproject policy is 'uniform'</li>
+              <li>dataset.admin: if the applied subproject policy is 'dataset'</li>
+            </ul>
+          </li>
+        </ul>
       operationId: dataset-lock-rm
       tags:
         - Dataset
@@ -408,25 +475,25 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path for the dataset"
+        - description: "Hierarchical path for the dataset."
           in: query
           name: path
           required: true
           type: string
           default: a/b/c
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
@@ -434,22 +501,36 @@ paths:
           default: slb-dataset
       responses:
         200:
-          description: "Removed the lock value associated with dataset id"
+          description: "Removed the lock value associated with dataset id."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         423:
-          description: "Locked"
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked).</li>
+            <li>RL (Read Locked).</li>
+            <li>CL (Cannot be Locked).</li>
+            <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/permission:
     get:
       summary: "Retrieve the access permissions of a user on a dataset id."
-      description: "<ul><li>Retrieve the access permission of a user on a dataset.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+          <li>Retrieve the access permission of a user on a dataset.</li>
+          <li>Required roles:
+            <ul>
+              <li>subproject.admin, subproject.viewer: if the applied subproject policy is 'uniform'</li>
+              <li>dataset.admin, dataset.viewer: if the applied subproject policy is 'dataset'</li>
+            </ul>
+          </li>
+        </ul>
       operationId: dataset-permission
       tags:
         - Dataset
@@ -460,25 +541,25 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path for the dataset"
+        - description: "Hierarchical path for the dataset."
           in: query
           name: path
           required: true
           type: string
           default: a/b/c
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
@@ -490,18 +571,18 @@ paths:
           schema:
             $ref: "#/definitions/DatasetPermission"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/ctagcheck:
     get:
       summary: "Validate if a dataset ctag matches the pre-existing ctag in metadata catalog."
-      description: "<ul><li>Check if the provided dataset cTag match the one stored in the metadata catalog.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: "<ul><li>Check if the provided dataset cTag match the one stored in the metadata catalog.</li><li>Required roles: subproject.admin, subproject.viewer</li></ul>"
       operationId: ctag-check
       tags:
         - Dataset
@@ -512,31 +593,31 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: a/b/c
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
           type: string
           default: slb-dataset
-        - description: "Ctag to be validated"
+        - description: "Ctag to be validated."
           in: query
           name: ctag
           required: true
@@ -544,23 +625,32 @@ paths:
           default: slb-dataset-ctag
       responses:
         200:
-          description: "Return true if the ctag is valid or false if it is invalid"
+          description: "Return true if the ctag is valid or false if it is invalid."
           schema:
             type: boolean
             example: "true"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/gtags:
     put:
-      summary: "Upsert tags to a dataset"
-      description: "<ul><li>Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then  new gtags are appended to this list.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      summary: "Upsert tags to a dataset."
+      description: |
+        <ul>
+          <li>Upsert tags to an existing dataset metadata. If the dataset metadata already has gtags, then  new gtags are appended to this list.</li>
+          <li>Required roles:
+            <ul>
+              <li>subproject.admin: if the applied subproject policy is 'uniform'</li>
+              <li>dataset.admin: if the applied subproject policy is 'dataset'</li>
+            </ul>
+          </li>
+        </ul>
       operationId: add-tag
       tags:
         - Dataset
@@ -571,31 +661,31 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Hierarchical path of the dataset"
+        - description: "Hierarchical path of the dataset."
           in: query
           name: path
           required: true
           type: string
           default: a/b/c
-        - description: "Name of the dataset"
+        - description: "Name of the dataset."
           in: path
           name: datasetid
           required: true
           type: string
           default: slb-dataset
-        - description: "Gtags array list"
+        - description: "Gtags array list."
           in: query
           name: gtag
           required: true
@@ -608,19 +698,22 @@ paths:
         200:
           description: "Gtags were upserted to the dataset metadata."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   # To deprecate in favor of /utility/ls
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
     get:
-      summary: "content list"
-      description: "<ul><li>List datasets and sub-directories for a directory path.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      summary: "Content list."
+      description: |
+        <ul>
+        <li>List datasets and sub-directories for a directory path.</li>
+        <li>Required roles: subproject.admin, subproject.viewer</li></ul>
       operationId: dataset-read-directory
       tags:
         - Dataset
@@ -631,17 +724,17 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "The tenant project name"
+        - description: "The tenant project name."
           in: path
           name: tenantid
           required: true
           type: string
-        - description: "The sub-project name"
+        - description: "The sub-project name."
           in: path
           name: subprojectid
           required: true
           type: string
-        - description: "The hierarchy path"
+        - description: "The hierarchy path."
           in: query
           name: path
           required: true
@@ -655,7 +748,11 @@ paths:
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}:
     get:
       summary: "Get the list of datasets in a subproject."
-      description: "<ul><li>Return the list of datasets in a sub-project.If gtags are in the request parameters, then get only those datasets that have the exact list of gtags.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      description: |
+        <ul>
+          <li>Return the list of datasets in a sub-project. The list can be filtered by gtags. Support pagination.</li>
+          <li>Required roles: subproject.admin, subproject.viewer</li>
+        </ul>
       operationId: dataset-list
       tags:
         - Dataset
@@ -666,19 +763,19 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Gtags associated with dataset metadata"
+        - description: "Gtags associated with dataset metadata."
           in: query
           name: gtag
           type: array
@@ -703,29 +800,78 @@ paths:
             - false
       responses:
         200:
-          description: "The list of all datasets in the subproject if no gtags are in the request parameters. If gtags exist in the request parameters, then datasets that have the same list of gtags."
-          schema:
-            type: array
-            items:
-              $ref: "#/definitions/Dataset"
-
-        201:
-          description: "Paginated dataset list with nextPageCursor. For documentation purposes, if limit or cursor is given, status code here is 200."
+          description: "Paginated dataset list with nextPageCursor. If the request does not provide limit or cursor the results will be the whole path conent and the response is a plain array of datasets [ {dataset1}, {datase2}, ... ]"
           schema:
             $ref: "#/definitions/PaginatedDatasets"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
+    post:
+      summary: Get the list of datasets in a subproject.
+      description:  |
+        <ul>
+          <li>Return the list of datasets in a sub-project. The list can be filtered by gtags. Support pagination.</li>
+          <li>Required roles: subproject.admin, subproject.viewer</li>
+        </ul>
+      operationId: dataset-list-post
+      tags:
+        - Dataset
+      parameters:
+        - description: The impersonation token context (required only with impersonation token credentials)
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""
+        - description: Name of the tenant.
+          in: path
+          name: tenantid
+          required: true
+          type: string
+        - description: Name of the subproject.
+          in: path
+          name: subprojectid
+          required: true
+          type: string
+        - description: Request body
+          in: body
+          name: request body
+          schema:
+            $ref: "#/definitions/DatasetListBody"
+        - description: translate the user-id to a more human readable user info
+          name: translate-user-info
+          in: query
+          type: boolean
+          default: true
+          enum:
+            - true
+            - false
+      responses:
+        200:
+          description: "Paginated dataset list with nextPageCursor. If the request does not provide limit or cursor the results will be the whole path conent and the response is a plain array of datasets [ {dataset1}, {datase2}, ... ]"
+          schema:
+            $ref: "#/definitions/PaginatedDatasets"
+        400:
+          description: Bad request.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        404:
+          description: Not found.
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/exist:
     post:
-      summary: "Check if list of datasets exists in the subproject."
-      description: "<ul><li>Check if the dataset exists.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      summary: "Check to see if a list of datasets exists in the subproject."
+      description: |
+        <ul>
+        <li>Check if the dataset exists.</li>
+        <li>Required roles: subproject.admin, subproject.viewer</li></ul>
       operationId: dataset-exist
       tags:
         - Dataset
@@ -736,13 +882,13 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
@@ -756,25 +902,28 @@ paths:
             $ref: "#/definitions/DatasetCheckList"
       responses:
         200:
-          description: "A list of boolean values for all the input datasets in the request body. If a value is true, then corresponding dataset exists and if it is false, then the dataset does not exist"
+          description: "A list of Boolean values for all the input datasets in the request body. If a value is true, then the corresponding dataset exists and if it is false, then the dataset does not exist."
           schema:
             type: array
             items:
               type: boolean
             example: [true, false]
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/sizes:
     post:
-      summary: "Retrieve the size of datasets"
-      description: "<ul><li>Return a list with the sizes of the requested datasets.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      summary: "Retrieve the size of datasets."
+      description: |
+        <ul>
+        <li>Return a list with the sizes of the requested datasets.</li>
+        <li>Required roles: subproject.admin, subproject.viewer</li></ul>
       operationId: dataset-sizes
       tags:
         - Dataset
@@ -785,13 +934,13 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
@@ -805,25 +954,28 @@ paths:
             $ref: "#/definitions/DatasetCheckList"
       responses:
         200:
-          description: "The sizes list of all the datasets. If the dataset does not exist, the size would be -1"
+          description: "The list of sizes of all the datasets. If the dataset does not exist, the size returns -1."
           schema:
             type: array
             items:
               type: number
             example: [1024, -1]
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/utility/ls:
     get:
-      summary: "Retrieve list of datasets and sub-directories inside a seismic store path"
-      description: "<ul><li>Return the list of datasets and sub-directories of a seismic store path.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      summary: "Retrieve the list of datasets and sub-directories inside a seismic store path."
+      description: |
+        <ul>
+        <li>Return the list of datasets and sub-directories of a seismic store path.</li>
+        <li>Required roles: subproject.admin, subproject.viewer</li></ul>
       operationId: ls
       tags:
         - Utility
@@ -834,44 +986,43 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Seismic store path, sd://tenant/sub-project/path"
+        - description: "Seismic store path, sd://tenant/sub-project/path."
           in: query
           name: sdpath
           required: true
           type: string
-        - description: "Working mode, dirs or datasets or undefined for both"
+        - description: "Working mode, directories or datasets or undefined for both."
           in: query
           name: wmode
           required: false
           type: string
-        - description: "Limits total number of datasets to be returned"
+        - description: "Limits the total number of datasets to return."
           in: query
           name: limit
           required: false
           type: number
-        - description: "Pagination token - this query parameter can be omitted on first call"
+        - description: "Pagination token - this query parameter can be omitted on first call."
           in: query
           name: cursor
           required: false
           type: string
       responses:
         200:
-          description: "Seismic store path content"
+          description: "Seismic store path content."
           schema:
             $ref: "#/definitions/LsDatasets"
         201:
-          description: "Paginated seismic store path content - For documentation purpose if limit or cursor is given status code here is 200"
+          description: "Paginated seismic store path content - For documentation purposes, if limit or cursor is given, status code here is 200."
           schema:
             $ref: "#/definitions/LsPaginatedDatasets"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
-
+          description: "Not found."
   /api/v3/utility/storage-tiers:
     get:
       summary: "Retrieve the list of supported storage tiers"
@@ -883,18 +1034,27 @@ paths:
         200:
           description: "Supported storage tiers"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/utility/cp:
     post:
-      summary: "Copy dataset"
-      description: "<ul><li>Copy a seismic store dataset. The source and destination dataset must be in the same sub-project.</li><li>Required roles: subproject.admin, subproject.editor</li></ul>"
+      summary: "Copy dataset."
+      description: |
+        <ul>
+        <li>Copy a seismic store dataset. The source and destination dataset must be in the same sub-project.</li>
+        <li>Required roles:
+          <ul>
+            <li>subproject.admin, subproject.viewer: if the applied subproject policy is 'uniform'</li>
+            <li>dataset.admin, dataset.viewer: if the applied subproject policy is 'dataset'</li>
+          </ul>
+        </li>
+        </ul>
       operationId: cp
       tags:
         - Utility
@@ -905,45 +1065,59 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Seismic store source dataset path"
+        - description: "Seismic store source dataset path."
           in: query
           name: sdpath_from
           required: true
           type: string
           default: sd://common/carbon/a/b/c/slb-dataset
-        - description: "Seismic store destination dataset path"
+        - description: "Seismic store destination dataset path."
           in: query
           name: sdpath_to
           required: true
           type: string
           default: sd://common/carbon/a/b/c/slb-dataset-copy
-        - description: "Lock source and destination while copying"
+        - description: "Lock source and destination while copying."
           in: query
           name: lock
           required: false
           type: boolean
       responses:
         200:
-          description: "Copy operation succeeded"
+          description: "Copy operation succeeded."
           schema:
             type: object
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         409:
-          description: "Conflict"
+          description: "Conflict."
         423:
-          description: "Locked"
+          description: |
+            Locked. The error message contains the Reason in the form <b>[RCODE:REASON(2-char-code)TTL(sec-number)]</b>. Possible Reasons code are: <ul>
+            <li>WL (Write Locked)</li>
+            <li>RL (Read Locked)</li>
+            <li>CL (Cannot be Locked)</li>
+            <li>UL (Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
   /api/v3/utility/gcs-access-token:
     get:
-      summary: "Generate a GCS access token"
-      description: "<ul><li>Generate a GCS access token for a specified seismic store resource. The source and destination dataset must be in the same sub-project.</li><li>Required roles: subproject.admin, subproject.editor, subproject.viewer</li></ul>"
+      summary: "Generate a GCS access token."
+      description: |
+        <ul>
+          <li>Generate a GCS access token for a specified seismic store resource. The source and destination dataset must be in the same sub-project.</li>
+          <li>Required roles:
+            <ul>
+              <li>subproject.admin, subproject.viewer: if the applied subproject policy is 'uniform'</li>
+              <li>dataset.admin, dataset.viewer: if the applied subproject policy is 'dataset'</li>
+            </ul>
+          </li>
+        </ul>
       operationId: gcs-access-token
       tags:
         - Utility
@@ -954,34 +1128,197 @@ paths:
           type: string
           required: false
           default: ""
-        - description: "Seismic store path in the format sd://tenant/sub-project"
+        - description: "Seismic store path in the format sd://tenant/sub-project."
           in: query
           name: sdpath
           type: string
           required: true
           default: sd://common/carbon
-        - description: "Readonly access, true(default) or false"
+        - description: "Readonly access, true(default) or false."
           in: query
           name: readonly
           type: boolean
       responses:
         200:
-          description: "The GCS access token"
+          description: "The GCS access token."
           schema:
             $ref: "#/definitions/AccessToken"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
+
+  /api/v3/utility/upload-connection-string:
+    get:
+      summary: "Generate the upload connection credentials string"
+      description: "<ul>
+                      <li>Generate the upload connection credential string for a subproject collection or a dataset, depending of the applied access policy (uniform/dataset).
+                      <li>These credentials can be used via CSP SDK, on client side, to perform bulk upload.</li>
+                      <li>
+                        The endpoint response is CSP (Cloud Solution Provider) dependent:
+                        <ul>
+                          <br/><li><b>Azure</b>: shared access signature (SaS) Url token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'https://{accountName}.blob.core.windows.net/{containerName}?{SASQueryParameters}`'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'SasUrl'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>Google</b>: standard access token credential signed and down-scoped by google
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'google_signed_access_token'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3600
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>AWS</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>IBM</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 7200
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                        </ul>
+                      </li>
+                      <li>Required roles:
+                        <ul>
+                          <li>subproject.admin: if the applied subproject policy is 'uniform'</li>
+                          <li>dataset.admin: if the applied subproject policy is 'dataset'</li>
+                        </ul>
+                      </li>
+                    </ul>"
+      operationId: upload-connection-string
+      tags:
+        - Utility
+      parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""
+        - description: "Seismic store path in the format sd://tenant/subproject (for uniform applied policies) or sd://tenant/subproject/dataset (for dataset applied policies)"
+          in: query
+          name: sdpath
+          type: string
+          required: true
+          default: "sd://opendes/sandbox"
+      responses:
+        200:
+          description: "The upload connection credential string."
+          schema:
+            $ref: "#/definitions/AccessToken"
+        400:
+          description: "Bad request."
+        401:
+          description: "Unauthorized."
+        403:
+          description: "Forbidden."
+        404:
+          description: "Not found."
+
+  /api/v3/utility/download-connection-string:
+    get:
+      summary: "Generate the download connection credentials string"
+      description: "<ul>
+                      <li>Generate the download connection credential string for a subproject collection or a dataset, depending of the applied access policy (uniform/dataset).
+                      <li>These credentials can be used via CSP SDK, on client side, to perform bulk download.</li>
+                      <li>
+                        The endpoint response is CSP (Cloud Solution Provider) dependent:
+                        <ul>
+                          <br/><li><b>Azure</b>: shared access signature (SaS) Url token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'https://{accountName}.blob.core.windows.net/{containerName}?{SASQueryParameters}`'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'SasUrl'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>Google</b>: standard access token credential signed and down-scoped by google
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'google_signed_access_token'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3600
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>AWS</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 3599
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                          <li><b>IBM</b>: double column separated string containing access key id, the access key secret and the session token
+                          <br/>
+                            <br/>{
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_token: 'accessKeyId:secretAccessKey:sessionToken'
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expires_in: 7200
+                              <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;token_type: 'Bearer'
+                            <br/>}
+                          <br/><br/></li>
+                        </ul>
+                      </li>
+                      <li>Required roles:
+                        <ul>
+                          <li>subproject.admin, subproject.viewer: if the applied subproject policy is 'uniform'</li>
+                          <li>dataset.admin, dataset.viewer: if the applied subproject policy is 'dataset'</li>
+                        </ul>
+                      </li>
+                    </ul>"
+      operationId: download-connection-string
+      tags:
+        - Utility
+      parameters:
+        - description: "The impersonation token context (required only with impersonation token credentials)"
+          in: header
+          name: impersonation-token-context
+          type: string
+          required: false
+          default: ""
+        - description: "Seismic store path in the format sd://tenant/subproject (for uniform applied policies) or sd://tenant/subproject/dataset (for dataset applied policies)"
+          in: query
+          name: sdpath
+          type: string
+          required: true
+          default: "sd://opendes/sandbox"
+      responses:
+        200:
+          description: "The download connection credential string."
+          schema:
+            $ref: "#/definitions/AccessToken"
+        400:
+          description: "Bad request."
+        401:
+          description: "Unauthorized."
+        403:
+          description: "Forbidden."
+        404:
+          description: "Not found."
 
   /api/v3/imptoken:
     post:
-      summary: "Generate impersonation credentials token"
-      description: "<ul><li>Generate an impersonation credential token of a user for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"
+      summary: "Generate impersonation credentials token."
+      description: |
+        <ul>
+        <li>Generate an impersonation credential token of a user for a set of subproject resources.</li>
+        <li>Required roles: app.trusted</li></ul>
       operationId: imp-token
       tags:
         - Impersonation Token (Obsolete)
@@ -994,20 +1331,20 @@ paths:
             $ref: "#/definitions/ImpTokenRequest"
       responses:
         200:
-          description: "Generated a impersonation credentials token successfully"
+          description: "Generated a impersonation credentials token successfully."
           schema:
             $ref: "#/definitions/ImpersonationToken"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     put:
-      summary: "Refresh an impersonation credential token"
+      summary: "Refresh an impersonation credential token."
       description: "<ul><li>Refresh an impersonation credential token.</li><li>Required roles: none</li></ul>"
       security:
         - api-key: []
@@ -1023,21 +1360,24 @@ paths:
             $ref: "#/definitions/RefreshTokenRequest"
       responses:
         200:
-          description: "Refreshed impersonation credential token successfully"
+          description: "Refreshed impersonation credential token successfully."
           schema:
             $ref: "#/definitions/ImpersonationToken"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     patch:
-      summary: "Patch an impersonation credential token's refresh url and generate a new impersonation token"
-      description: "<ul><li>Patch an impersonation credential token's refresh url and generate a new impersonation token.</li><li>Required roles: none</li></ul>"
+      summary: "Patch an impersonation credential token's refresh url and generate a new impersonation token."
+      description: |
+        <ul>
+        <li>Patch an impersonation credential token's refresh url and generate a new impersonation token.</li>
+        <li>Required roles: none</li></ul>
       operationId: imp-token-patch
       tags:
         - Impersonation Token (Obsolete)
@@ -1050,17 +1390,17 @@ paths:
             $ref: "#/definitions/ImpTokenPatchRequest"
       responses:
         200:
-          description: "Generated impersonation token successfully and its refresh url is updated"
+          description: "Generated impersonation token successfully and its refresh url is updated."
           schema:
             $ref: "#/definitions/ImpersonationToken"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/impersonation-token:
     post:
@@ -1088,13 +1428,13 @@ paths:
           schema:
             $ref: "#/definitions/ImpersonationToken"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
     put:
       summary: "Refresh the impersonation credential token."
       description: "<ul><li>Refresh an impersonation credential token.</li><li>Required roles: app.trusted</li></ul>"
@@ -1120,34 +1460,37 @@ paths:
           schema:
             $ref: "#/definitions/ImpersonationToken"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/subproject/tenant/{tenantid}/subproject/{subprojectid}:
     post:
-      summary: "Create a new subproject"
-      description: "<ul><li>Creates a new sub-project resource in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
+      summary: "Create a new subproject."
+      description: |
+        <ul>
+        <li>Creates a new sub-project resource in seismic store.</li>
+        <li>Required roles: users.datalake.admin</li></ul>
       operationId: subproject-create
       tags:
         - SubProject
       parameters:
-        - description: "Legal tag of the datapartition/tenant"
+        - description: "Legal tag of the datapartition/tenant."
           in: header
           name: ltag
           type: string
           default: "Slb-Private-USA-EHC"
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           type: string
           required: true
           default: carbon
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           type: string
@@ -1165,29 +1508,29 @@ paths:
           schema:
             $ref: "#/definitions/SubProject"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         409:
-          description: "Conflict"
+          description: "Conflict."
     get:
-      summary: "Retrieve the subproject metadata"
+      summary: "Retrieve the subproject metadata."
       description: "<ul><li>Return the metadata for a requested sub-project.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: subproject-get
       tags:
         - SubProject
       parameters:
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
@@ -1195,40 +1538,40 @@ paths:
           default: common
         - description: "translate the user-id to a more human readable user info"
           name: translate-user-info
-          default: true
           in: query
           type: boolean
+          default: true
           enum:
             - true
             - false
       responses:
         200:
-          description: "Retrieved subproject metadata successfully"
+          description: "Retrieved subproject metadata successfully."
           schema:
             $ref: "#/definitions/SubProject"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     delete:
-      summary: "Delete a subproject"
+      summary: "Delete a subproject."
       description: "<ul><li>Delete a subproject in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: subproject-delete
       tags:
         - SubProject
       parameters:
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
@@ -1236,18 +1579,18 @@ paths:
           default: common
       responses:
         200:
-          description: "Deletion of the subproject completed"
+          description: "Deletion of the subproject completed."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     patch:
-      summary: "Patch a subproject metadata"
+      summary: "Patch a subproject's metadata."
       description: |
         <ul>
           <li>Patch a subproject metadata in seismic store.</li>
@@ -1263,25 +1606,25 @@ paths:
       tags:
         - SubProject
       parameters:
-        - description: "Legal tag of the subproject"
+        - description: "Legal tag of the subproject."
           in: header
           name: ltag
           type: string
           required: true
           default: "Slb-Private-USA-EHC"
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
           type: string
           default: common
-        - description: "Name of the subproject"
+        - description: "Name of the subproject."
           in: path
           name: subprojectid
           required: true
           type: string
           default: carbon
-        - description: "True if the legal tags of all datasets in a subproject needs to be updated"
+        - description: "True if the legal tags of all datasets in a subproject needs to be updated."
           in: query
           name: recursive
           required: false
@@ -1293,27 +1636,27 @@ paths:
             $ref: "#/definitions/SubProjectPatchBody"
       responses:
         200:
-          description: "Updated subproject metadata successfully"
+          description: "Updated subproject metadata successfully."
           schema:
             $ref: "#/definitions/SubProject"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/subproject/tenant/{tenantid}:
     get:
-      summary: "List subprojects in a tenant"
-      description: "<ul><li>Return the list of sub-project in a tenant.</li><li>Required roles: users.datalake.admin</li></ul>"
+      summary: "List subprojects in a tenant."
+      description: "<ul><li>Return the list of sub-projects in a tenant.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: sub-project-list
       tags:
         - SubProject
       parameters:
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           required: true
@@ -1327,23 +1670,23 @@ paths:
             items:
               $ref: "#/definitions/SubProject"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/tenant/{tenantid}:
     post:
-      summary: "Register a seismic-dms tenant"
-      description: "<ul><li>Register a seismic-dms tenant in a data partition.</li><li>Required roles: seistore.system.admin</li></ul>"
+      summary: "Register a seismic-dms tenant."
+      description: "<ul><li>Register a data partition in seismic-dms.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: tenant-create
       tags:
         - Tenant
       parameters:
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           type: string
@@ -1360,74 +1703,74 @@ paths:
           schema:
             $ref: "#/definitions/Tenant"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
         409:
-          description: "Conflict"
+          description: "Conflict."
 
     get:
-      summary: "Retrieve the tenant metadata"
+      summary: "Retrieve the tenant metadata."
       description: "<ul><li>Return the tenant metadata.</li><li>Required roles: seistore.system.admin</li></ul>"
       operationId: tenant-get
       tags:
         - Tenant
       parameters:
-        - description: "Name of the tenant"
+        - description: "Name of the tenant."
           in: path
           name: tenantid
           type: string
           required: true
       responses:
         200:
-          description: "Retrieved subproject metadata successfully"
+          description: "Retrieved subproject metadata successfully."
           schema:
             $ref: "#/definitions/Tenant"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/tenant/sdpath:
     get:
-      summary: "Retrieve the tenant seismic store path"
+      summary: "Retrieve the tenant seismic store path."
       description: "<ul><li>Return the seistore path to a tenant associated with the data partition.</li><li>Required roles: none</li></ul>"
       operationId: tenant-sdpath
       tags:
         - Tenant (Obsolete)
       parameters:
-        - description: "Datapartition of the tenant"
+        - description: "Datapartition of the tenant."
           in: query
           name: datapartition
           type: string
           required: true
       responses:
         200:
-          description: "Seismic store path to the tenant retrieved successfully"
+          description: "Seismic store path to the tenant retrieved successfully."
           schema:
             type: string
             example: "sd://tenant01"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/user:
     put:
-      summary: "Add an user to a seismic store subproject authorization group"
-      description: "<ul><li>Add an user to a subproject authorization group.</li><li>Required roles: subproject.admin</li></ul>"
+      summary: "Add a user to a seismic store subproject authorization group."
+      description: "<ul><li>Add a user to a subproject authorization group.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-add
       tags:
         - Users
@@ -1442,22 +1785,22 @@ paths:
         200:
           description: "User was successfully added to a sub-project authorization group."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     get:
-      summary: "List users in subproject's role based authorization groups"
-      description: "<ul><li>List users in subproject's role based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"
+      summary: "List users in a subproject's role-based authorization groups."
+      description: "<ul><li>List users in subproject's role-based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-list
       tags:
         - Users
       parameters:
-        - description: "Seismic store path, sd://tenant/sub-project"
+        - description: "Seismic store path, sd://tenant/sub-project."
           in: query
           name: sdpath
           required: true
@@ -1465,7 +1808,7 @@ paths:
           default: sd://common/carbon
       responses:
         200:
-          description: "Retrieved sub-project users in admin, viewer, editor groups successfully"
+          description: "Retrieved sub-project users in admin, viewer, and editor groups successfully."
           schema:
             type: array
             items:
@@ -1475,17 +1818,17 @@ paths:
               example: ["userA@email", "admin"]
             example: [["userA@email", "admin"], ["userB@email", "editor"]]
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     delete:
-      summary: "Remove user from subproject's role based authorization groups"
-      description: "<ul><li>Remove user from subproject's role based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"
+      summary: "Remove a user from a subproject's role-based authorization groups."
+      description: "<ul><li>Remove a user from a subproject's role based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-rm
       tags:
         - Users
@@ -1497,25 +1840,25 @@ paths:
             $ref: "#/definitions/UserRemoveRequest"
       responses:
         200:
-          description: Deletion of user email in subproject's role based authorization groups completed."
+          description: Deletion of user's email in the subproject's role-based authorization groups completed."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/user/roles:
     get:
-      summary: "Retrieve user role in all subprojects of the tenant"
+      summary: "Retrieve user role in all subprojects of the tenant."
       description: "<ul><li>Retrieve user role in all subprojects of the tenant.</li><li>Required roles: none/li></ul>"
       operationId: user-roles
       tags:
         - Users
       parameters:
-        - description: "Seismic store tenant path, sd://tenant"
+        - description: "Seismic store tenant path, sd://tenant."
           in: query
           name: sdpath
           required: true
@@ -1526,28 +1869,28 @@ paths:
           schema:
             $ref: "#/definitions/UserRoles"
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/app:
     post:
-      summary: "Register a new application"
-      description: "<ul><li>Register a new application in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
+      summary: "Register a new application."
+      description: "<ul><li>Register a new application in the seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
       operationId: app-register
       tags:
         - Apps
       parameters:
-        - description: "Service account email of the application"
+        - description: "Service account email of the application."
           in: query
           name: email
           required: true
           type: string
-        - description: "Seismic store tenant path, sd://tenant"
+        - description: "Seismic store tenant path, sd://tenant."
           in: query
           name: sdpath
           required: true
@@ -1556,22 +1899,25 @@ paths:
         200:
           description: "Registration of the application was successful."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
     get:
-      summary: "Retrieve the list of registered applications"
-      description: "<ul><li>Retrieve the list of the registered application in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
+      summary: "Retrieve the list of registered applications."
+      description: |
+        <ul>
+        <li>Retrieve the list of the registered applications in the seismic store.</li>
+        <li>Required roles: users.datalake.admin</li></ul>
       operationId: app-list
       tags:
         - Apps
       parameters:
-        - description: "Seismic store tenant path, sd://tenant"
+        - description: "Seismic store tenant path, sd://tenant."
           in: query
           name: sdpath
           required: true
@@ -1579,36 +1925,39 @@ paths:
           type: string
       responses:
         200:
-          description: "Retrieved list of all the registered applications successfully."
+          description: "Retrieved a list of all the registered applications successfully."
           schema:
             type: array
             items:
               type: string
             example: ["app01@email", "app02@email"]
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
   /api/v3/app/trusted:
     post:
-      summary: "Set a registered application as a trusted application"
-      description: "<ul><li>Set a registered application as a trusted application in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
+      summary: "Set a registered application as a trusted application."
+      description: |
+        <ul>
+        <li>Set a registered application as a trusted application in the seismic store.</li>
+        <li>Required roles: users.datalake.admin</li></ul>
       operationId: trustedapp-register
       tags:
         - Apps
       parameters:
-        - description: "Service account email of the application"
+        - description: "Service account email of the application."
           in: query
           name: email
           required: true
           default: tester-carbon.slbservice.com@slb.com
           type: string
-        - description: "Seismic store tenant path, sd://tenant"
+        - description: "Seismic store tenant path, sd://tenant."
           in: query
           name: sdpath
           required: true
@@ -1618,21 +1967,24 @@ paths:
         200:
           description: "Marking the application as a trusted application was successful."
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
     get:
-      summary: "List the trusted applications in a seismic store tenant"
-      description: "<ul><li>Return the list of the trusted application in seismic store tenant.</li><li>Required roles: users.datalake.admin</li></ul>"
+      summary: "List the trusted applications in a seismic store tenant."
+      description: |
+        <ul>
+        <li>Return the list of the trusted application in seismic store tenant.
+        </li><li>Required roles: users.datalake.admin</li></ul>
       operationId: trustedapp-list
       tags:
         - Apps
       parameters:
-        - description: "Seismic store tenant path in the format sd://tenant"
+        - description: "Seismic store tenant path in the format sd://tenant."
           in: query
           name: sdpath
           required: true
@@ -1640,20 +1992,20 @@ paths:
           default: sd://common
       responses:
         200:
-          description: "Retrieved the list of all the trusted applications in the tenant"
+          description: "Retrieved the list of all the trusted applications in the tenant."
           schema:
             type: array
             items:
               type: string
             example: ["app01@email", "app02@email"]
         400:
-          description: "Bad request"
+          description: "Bad request."
         401:
-          description: "Unauthorized"
+          description: "Unauthorized."
         403:
-          description: "Forbidden"
+          description: "Forbidden."
         404:
-          description: "Not found"
+          description: "Not found."
 
 # ===========================================================================
 # Endpoints Models Section
@@ -1670,26 +2022,63 @@ definitions:
       status: "running"
 
   # OK
-  DatasetRegisterBody:
+  DatasetListBody:
+    type: object
     properties:
       type:
         type: string
       gtags:
         type: array
+        description: "Array of global tags associated with the dataset metadata.
+          Once assigned, they can be used to filter datasets."
+      limit:
+        type: number
+        description: "the max limit of datasets in the response"
+      cursor:
+        type: string
+        description: "the cursor value required to retrieve the next page of result"
+    example:
+      gtags:
+        - tagA
+        - tagB
+      limit: 10
+      cursor: 'next-page-token-931fvm19vm1-vm1v1'
+
+  # OK
+  DatasetRegisterBody:
+    type: object
+    properties:
+      type:
+        type: string
+      gtags:
+        type: array
+        description: Array of global tags associated with the dataset metadata.
+          Once assigned, they can be used to filter datasets.
         items:
           type: string
-        description: Array of global tags associated with the dataset metadata. Once assigned, they can be used to filter datasets
       seismicmeta:
         type: object
-        description: Seismic metadata to be stored as dataecosystem storage record
         properties:
           kind:
             type: string
           data:
             type: object
+            properties: {}
+        description: Seismic metadata to be stored as dataecosystem storage record.
+      openzgy_v1:
+        $ref: "../schemas/openzgy/FileCollection.Slb.OpenZGY.1.0.0.json"
+        description: |
+          <b> This attribute can be used only in OSDU environments</b>
+          openzgy_v1 value to be stored as a record in dataecosystem storage
+      segy_v1:
+        $ref: "../schemas/segy/FileCollection.SEGY.1.0.0.json"
+        example:
+          $ref: "../schemas/segy/example.json"
+        description: |
+          <b> This attribute can be used only in OSDU environments </b>
+          segy_v1 value to be stored as a record in dataecosystem storage.
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the dataset
         properties:
           admins:
             type: array
@@ -1699,27 +2088,26 @@ definitions:
             type: array
             items:
               type: string
+        description: ACLs with admin groups and viewer groups for the dataset.
     example:
-      type: "segy"
-      gtags: ["tagA", "tagB", "tagC"]
+      gtags:
+        - tagA
+        - tagB
+        - tagC
       seismicmeta:
-        {
-          "kind": "slb:seistore:seismic2d:1.0.0",
-          "legal": { "legaltags": ["Slb-Private-USA-EHC"], "otherRelevantDataCountries": ["US"] },
-          "data": { "msg": "sample data" },
-        }
+        kind: osdu:sdms:seismic3d:1.0.0
+        legal:
+          legaltags:
+            - legal-tag
+          otherRelevantDataCountries:
+            - US
+        data:
+          msg: sample data
       acls:
-        {
-          "admins":
-            [
-              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com",
-            ],
-          "viewers":
-            [
-              "data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com",
-            ],
-        }
-
+        admins:
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
+        viewers:
+          - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
   # OK
   Dataset:
     required:
@@ -1737,55 +2125,55 @@ definitions:
     properties:
       name:
         type: string
-        description: Name of the dataset
+        description: Name of the dataset.
       tenant:
         type: string
-        description: Name of the tenant
+        description: Name of the tenant.
       subproject:
         type: string
-        description: Name of the subproject
+        description: Name of the subproject.
       path:
         type: string
-        description: Path to the dataset inside a subproject
+        description: Path to the dataset inside a subproject.
       created_by:
         type: string
-        description: Creator of the dataset
+        description: Creator of the dataset.
       created_date:
         type: string
-        description: Date when the dataset was created
+        description: Date when the dataset was created.
       last_modified_date:
         type: string
-        description: Date when the dataset was last modified
+        description: Date when the dataset was last modified.
       filemetadata:
         type: object
-        description: Number of objects and the size in bytes of the dataset
+        description: Number of objects and the size in bytes of the dataset.
       metadata:
         type: object
-        description: Generic information stored as key,value pairs for the dataset
+        description: Generic information stored as key,value pairs for the dataset.
       gcsurl:
         type: string
-        description: Cloud storage object identifier
+        description: Cloud storage object identifier.
       readonly:
         type: boolean
-        description: True if the dataset is readonly
+        description: True if the dataset is readonly.
       ltag:
         type: string
-        description: Legal tag associated with the dataset
+        description: Legal tag associated with the dataset.
       ctag:
         type: string
-        description: The coherency tag associated with the dataset (it changed every time the dataset is update)
+        description: The coherency tag associated with the dataset. (It changes every time the dataset is updated.)
       seismicmeta_guid:
         type: string
-        description: Seismic storage record identifier
+        description: Seismic storage record identifier.
       sbit:
         type: string
-        description: The session lockID
+        description: The session lockID.
       sbit_count:
         type: number
         description: The number of sessions associated to the dataset.
       seismicmeta:
         type: object
-        description: Seismic metadata associated with the dataset which is used to create a data ecosystem storage record
+        description: Seismic metadata associated with the dataset which is used to create a data ecosystem storage record.
         properties:
           kind:
             type: string
@@ -1821,31 +2209,31 @@ definitions:
     properties:
       dataset_new_name:
         type: string
-        description: New name for the dataset
+        description: New name for the dataset.
       metadata:
         type: object
-        description: Generic information about the dataset stored as key value pairs
+        description: Generic information about the dataset stored as key value pairs.
       filemetadata:
         type: object
-        description: Number of objects and the size in bytes of the dataset
+        description: Number of objects and the size in bytes of the dataset.
       last_modified_date:
-        type: boolean
-        description: Date when the dataset was last modified
+        type: string
+        description: Date when the dataset was last modified.
       gtags:
         type: array
-        description: Array of tags associated with the dataset. After patching these tags, they can be used to filter the datasets
+        description: Array of tags associated with the dataset. After patching these tags, they can be used to filter the datasets.
         items:
           type: string
         default: []
       ltag:
         type: string
-        description: Legal tag associated with the dataset
+        description: Legal tag associated with the dataset.
       readonly:
         type: boolean
-        description: True if the dataset is readonly
+        description: True if the dataset is read only.
       seismicmeta:
         type: object
-        description: Seismic metadata associated with the dataset which is used to create a data ecosystem storage record
+        description: Seismic metadata associated with the dataset which is used to create a data ecosystem storage record.
         properties:
           kind:
             type: string
@@ -1853,7 +2241,7 @@ definitions:
             type: object
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the dataset
+        description: ACLs with admin groups and viewer groups for the dataset.
         properties:
           admins:
             type: array
@@ -1867,9 +2255,9 @@ definitions:
       dataset_new_name: "dsx02"
       metadata: { "f1": "v1", "f2": "v2", "f3": "v3" }
       filemetadata: { "f1": "v1", "f2": "v2", "f3": "v3" }
-      last_modified_date: true
+      last_modified_date: "Thu Jul 16 2020 04:37:41 GMT+0000 (Coordinated Universal Time)"
       gtags: ["tag01", "tag02", "tag03"]
-      ltag: "legal-tag"
+      ltag: "Slb-Private-USA-EHC"
       readonly: false
       seismicmeta:
         {
@@ -1895,13 +2283,13 @@ definitions:
     properties:
       read:
         type: boolean
-        description: True if the user has read permission on the dataset
+        description: True if the user has read permission on the dataset.
       write:
         type: boolean
-        description: True if the user has write permission on the dataset
+        description: True if the user has write permission on the dataset.
       delete:
         type: boolean
-        description: True if the user has delete permission on the dataset
+        description: True if the user has delete permission on the dataset.
     example:
       read: true
       write: false
@@ -1913,12 +2301,12 @@ definitions:
     properties:
       datasets:
         type: array
-        description: Array of datasets inside the subproject
+        description: Array of datasets inside the subproject.
         items:
           type: string
       directories:
         type: array
-        description: Array of directories inside the subproject
+        description: Array of directories inside the subproject.
         items:
           type: string
     example:
@@ -1931,7 +2319,7 @@ definitions:
     properties:
       datasets:
         type: array
-        description: Array of datasets inside the subproject
+        description: Array of datasets inside the subproject.
         items:
           type: string
     example:
@@ -2059,21 +2447,21 @@ definitions:
     properties:
       admin:
         type: string
-        description: Administrator for the subproject
+        description: Administrator for the subproject.
       storage_class:
         type: string
-        description: Storage class for the bucket
+        description: Storage class for the bucket.
       storage_location:
         type: string
-        description: Storage location for the bucket
+        description: Storage location for the bucket.
       access_policy:
         type: string
-        description: Access policy for the subproject
+        description: Access policy for the subproject.
         default: "uniform"
         enum: [uniform, dataset]
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the subproject
+        description: ACLs with admin groups and viewer groups for the subproject.
         properties:
           admins:
             type: array
@@ -2098,11 +2486,11 @@ definitions:
     properties:
       access_policy:
         type: string
-        description: Access Policy for the subproject
+        description: Access Policy for the subproject.
         default: "dataset"
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the subproject. Existing acls will be replaced with the provided acls.
+        description: ACLs with admin groups and viewer groups. Existing acls will be replaced with the provided acls.
         properties:
           admins:
             type: array
@@ -2117,7 +2505,7 @@ definitions:
       acls:
         admins:
           - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
-          - data.sdms.tenant.subproject.1zr317e5-fb0e-402a-b725-123942f42f23.admin@slb.p4d.cloud.slb-ds.com
+          - data.sdms.tenant.subproject.1f1tr7fe-fb0e-402a-b725-606723e5356n.admin@slb.p4d.cloud.slb-ds.com
         viewers:
           - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
 
@@ -2127,28 +2515,28 @@ definitions:
     properties:
       name:
         type: string
-        description: Name of the subproject
+        description: Name of the subproject.
       tenant:
         type: string
-        description: Name of the tenant
+        description: Name of the tenant.
       storage_class:
         type: string
-        description: Storage class for the bucket
+        description: Storage class for the bucket.
       storage_location:
         type: string
-        description: Storage location for the bucket
+        description: Storage location for the bucket.
       admin:
         type: string
         description: Administrator for the subproject. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       ltag:
         type: string
-        description: Legal tag for the subproject
+        description: Legal tag for the subproject.
       gcs_bucket:
         type: string
-        description: Cloud storage bucket associated with the subproject
+        description: Cloud storage bucket associated with the subproject.
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the subproject
+        description: ACLs with admin groups and viewer groups for the subproject.
         properties:
           admins:
             type: array
@@ -2169,23 +2557,22 @@ definitions:
       acls:
         admins:
           - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
-          - data.sdms.tenant.subproject.1zr317e5-fb0e-402a-b725-123942f42f23.admin@slb.p4d.cloud.slb-ds.com
         viewers:
           - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.viewer@slb.p4d.cloud.slb-ds.com
 
   # OK
   TenantCreateBody:
-    required: ["gcpid", "des", "default_acl"]
+    required: ["gcpid", "esd", "default_acls"]
     properties:
       gcpid:
         type: string
-        description: Google cloud project id associated with the tenant
-      des:
+        description: Google cloud project id associated with the tenant. For other providers, name of the data partition.
+      esd:
         type: string
-        description: Entitlements group sub domain. For instance, if the entitlements group is group-a.slb.env.cloud.com, the esd value is slb.env.cloud.com
-      default_acl:
+        description: Entitlements group Sub Domain (ESD). For instance, if the entitlements group is users.datalake.viewers@{datapartition}.{domain}.com, the esd value is {datapartition}.{domain}.com. It must start with the name of the data partition.
+      default_acls:
         type: string
-        description: Entitlements authorization group to manage tenant administrators
+        description: Entitlements authorization group to manage tenant administrators.
     example:
       gcpid: "google_project_id"
       esd: "slb.env.cloud.slb-ds.com"
@@ -2193,18 +2580,25 @@ definitions:
 
   # OK
   Tenant:
-    required: ["name", "esd", "gcpid"]
+    required: ["name", "esd", "gcpid", "default_acls"]
     properties:
       name:
         type: string
+        description: Name of the tenant.
       esd:
         type: string
+        description: Entitlements group Sub Domain (ESD). For instance, if the entitlements group is users.datalake.viewers@{datapartition}.{domain}.com, the esd value is {datapartition}.{domain}.com. It has to start with the name of the data partition.
       gcpid:
         type: string
+        description: Google cloud project id associated with the tenant.
+      default_acls:
+        type: string
+        description: Entitlements authorization group to manage tenant administrators.
     example:
       name: "tnx01"
       esd: "slb.env.cloud.slb-ds.com"
       gcpid: "google_project_id"
+      default_acls: "authgroup@data_partition.com"
 
   # OK
   UserAddRequest:
@@ -2215,7 +2609,7 @@ definitions:
         description: Email address of the user. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       path:
         type: string
-        description: Seismic store path in the format sd://tenant/subproject
+        description: Seismic store path in the format sd://tenant/subproject.
       group:
         type: string
         description: Role to be assigned to the user.
@@ -2234,7 +2628,7 @@ definitions:
         description: Email address of the user. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       path:
         type: string
-        description: Seismic store path in the format sd://tenant/subproject
+        description: Seismic store path in the format sd://tenant/subproject.
     example:
       email: "test@email"
       path: "sd://slb/test_project"
@@ -2245,7 +2639,7 @@ definitions:
     properties:
       roles:
         type: array
-        description: Array of arrays with each array containing subproject and role of the user for the subproject
+        description: Array of arrays with each array containing subproject and role of the user for the subproject.
         items:
           type: array
           items:
@@ -2256,7 +2650,7 @@ definitions:
   # OK
   LsDatasets:
     type: array
-    description: Array of directories and datasets inside a subproject
+    description: Array of directories and datasets inside a subproject.
     items:
       type: string
     example: ["folderA/", "folderB/", "dataset01", "dataset02", "dataset03"]
@@ -2267,15 +2661,15 @@ definitions:
     properties:
       datasets:
         type: array
-        description: Array of datasets inside the subproject
+        description: Array of datasets inside the subproject.
         items:
           type: string
       nextPageCursor:
         type: string
-        description: Next cursor for pagination
+        description: Next cursor for pagination.
     example: { datasets: ["folderA/", "folderB/", "dataset01"], nextPageCursor: "abc1234" }
 
-    # PaginatedDatasets
+  # PaginatedDatasets
   PaginatedDatasets:
     properties:
       datasets:
@@ -2284,6 +2678,7 @@ definitions:
           $ref: "#/definitions/Dataset"
       nextPageCursor:
         type: string
+        example: 'next-page-token-3rt431v41-4515351'
 
 # ===========================================================================
 # Endpoints Security Section
