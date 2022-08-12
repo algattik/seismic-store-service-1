@@ -142,12 +142,12 @@ sdms_azure_container_scanning:
   variables:
     DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}/${SDMS_PROJECT_NAME}:${CI_COMMIT_SHA}
   rules:
-    - if: $AZURE == 'true' && $ENFORCE_CONTAINER_SCANNING == 'true'
+    - if: $AZURE == '1' && $ENFORCE_CONTAINER_SCANNING == 'true'
       allow_failure: false
       changes:
         - devops/**/*
         - app/sdms/**/*
-    - if: $AZURE == 'true'
+    - if: $AZURE == '1'
       changes:
         - devops/**/*
         - app/sdms/**/*

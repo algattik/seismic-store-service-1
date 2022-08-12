@@ -32,8 +32,14 @@ router.get('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid',
         await DatasetHandler.handler(req, res, DatasetOP.Get);
     });
 
-// list all datasets in a subproject
+// list all datasets in a subproject (url query params)
 router.get('/tenant/:tenantid/subproject/:subprojectid',
+    async (req: expRequest, res: expResponse) => {
+        await DatasetHandler.handler(req, res, DatasetOP.List);
+    });
+
+// list all datasets in a subproject (body query params)
+router.post('/tenant/:tenantid/subproject/:subprojectid',
     async (req: expRequest, res: expResponse) => {
         await DatasetHandler.handler(req, res, DatasetOP.List);
     });
@@ -65,7 +71,7 @@ router.put('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/unlock
 // check if a list of datasets exist in a subproject
 router.post('/tenant/:tenantid/subproject/:subprojectid/exist',
     async (req: expRequest, res: expResponse) => {
-       await DatasetHandler.handler(req, res, DatasetOP.Exists);
+        await DatasetHandler.handler(req, res, DatasetOP.Exists);
     });
 
 // retrieve the dataset size for a list of datasets

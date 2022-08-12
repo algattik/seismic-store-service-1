@@ -1,5 +1,15 @@
 ﻿using Newtonsoft.Json;
 
+public class QueryPaginatedRequestBody
+{
+
+    public string? cs { get; set; }
+    public string? sql { get; set; }
+    public string? ctoken { get; set; }
+    public int? limit { get; set; }
+
+}
+
 public class PaginatedRecords
 {
 

@@ -59,13 +59,13 @@ namespace Sidecar.Controllers
             }
         }
 
-        [HttpGet("/query")]
+        [HttpPost("/query")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaginatedRecords))]
-        public async Task<IActionResult> Query(string cs, string sql, string? ctoken, int? limit)
+        public async Task<IActionResult> Query([FromBody] QueryPaginatedRequestBody body)
         {
             try
             {
-                return Ok(await _dataAccess.Query(cs, sql, ctoken, limit));
+                return Ok(await _dataAccess.Query(body.cs, body.sql, body.ctoken, body.limit));
             }
             catch (CosmosException ex)
             {
@@ -73,13 +73,13 @@ namespace Sidecar.Controllers
             }
         }
 
-        [HttpGet("/query-path")]
+        [HttpPost("/query-path")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaginatedRecordsPath))]
-        public async Task<IActionResult> QueryPath(string cs, string sql, string? ctoken, int? limit)
+        public async Task<IActionResult> QueryPath([FromBody] QueryPaginatedRequestBody body)
         {
             try
             {
-                return Ok(await _dataAccess.QueryPath(cs, sql, ctoken, limit));
+                return Ok(await _dataAccess.QueryPath(body.cs, body.sql, body.ctoken, body.limit));
             }
             catch (CosmosException ex)
             {

@@ -123,7 +123,7 @@ sdms_aws-test-newman:
     - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url=${AWS_BASE_URL}${AWS_SDMS_PREFIX} --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --user-idtoken="$svctoken" --tenant=opendes --admin-email="${AWS_COGNITO_AUTH_PARAMS_USER}" --datapartition=opendes --legaltag01=opendes-sdmstestlegaltag --legaltag02=opendes-sdmstestlegaltag --VCS-Provider="${ISGITLAB}" --subproject=awsdemosubproject
   only:
     variables:
-      -  $AWS == 'true'
+      -  $AWS == '1'
     changes:
       - devops/**/*
       - app/sdms/**/*
