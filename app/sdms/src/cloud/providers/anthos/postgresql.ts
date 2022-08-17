@@ -57,8 +57,8 @@ const datastorePSQLMapper: object = {
     '<': 'lt',
     '>': 'gt',
     '<=': 'lte',
-    '>=': 'gte'
-
+    '>=': 'gte',
+    'CONTAINS': 'array_contains'
 }
 
 
@@ -227,7 +227,7 @@ export class PostgreSQLDAO extends AbstractJournal {
     }
 
     public getQueryFilterSymbolContains(): string {
-        return '=';
+        return 'CONTAINS';
     }
 
 }
@@ -394,7 +394,12 @@ class PostgreJSONDataSQLFilter {
         }
 
         const psqlOperator = datastorePSQLMapper[this.operator];
-        filter['data'][psqlOperator] = this.value;
+        // Prisma for PostgreSQL requires a value to be an array if the operator is 'array_contains'
+        if (this.operator === 'CONTAINS') {
+            filter['data'][psqlOperator] = [this.value];
+        } else {
+            filter['data'][psqlOperator] = this.value;
+        }
 
         return filter as FilterExpression;
     }

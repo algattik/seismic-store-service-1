@@ -13,10 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { getLogger } from 'log4js';
-
 import { AbstractLogger, LoggerFactory } from '../../logger';
-import { AnthosConfig } from './config';
 
 // fetch logger and export
 @LoggerFactory.register('anthos')
@@ -24,26 +21,21 @@ export class AnthosLogger extends AbstractLogger {
 
     public info(data: any): void {
         // tslint:disable-next-line:no-logger
-        logger.info(data);
+        console.log(data);
     }
 
     public debug(data: any): void {
         // tslint:disable-next-line:no-logger
-        logger.debug(data);
+        console.debug(data);
     }
 
     public error(data: any): void {
-        logger.error(data);
+        // tslint:disable-next-line:no-logger
+        console.error(data);
     }
 
     // [TODO] this method should report a metrics using CSP SDK
     public metric(key: string, data: any): void {
         return;
     }
-}
-
-export const logger = getLogger();
-
-export function config() {
-    logger.level = AnthosConfig.LOGGER_LEVEL;
 }
