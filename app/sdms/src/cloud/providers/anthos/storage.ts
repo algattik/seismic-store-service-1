@@ -185,7 +185,7 @@ export class MinIOStorage extends AbstractStorage {
                 }
             );
             const listedObjects = await this.s3.send(listCommand);
-            if (listedObjects.Contents.length === 0)
+            if (typeof(listedObjects.Contents) === 'undefined' || listedObjects.Contents.length === 0)
                 return;
 
             const deleteParams = {
@@ -263,7 +263,8 @@ export class MinIOStorage extends AbstractStorage {
             const listCommand = new ListObjectsCommand(params);
             const listedObjects = await this.s3.send(listCommand);
 
-            if (listedObjects.Contents.length === 0) return;
+            if (typeof(listedObjects.Contents) === 'undefined' || listedObjects.Contents.length === 0)
+                return;
 
             const deleteParams = {
                 Bucket: this.minioBucket,
@@ -342,7 +343,7 @@ export class MinIOStorage extends AbstractStorage {
         try {
             const listCommand = new ListObjectsCommand(params);
             const listedObjects = await this.s3.send(listCommand);
-            if (listedObjects.Contents.length === 0)
+            if (typeof(listedObjects.Contents) === 'undefined' || listedObjects.Contents.length === 0)
                 return false;
             return true;
         } catch (err) {
