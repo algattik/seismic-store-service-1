@@ -19,6 +19,7 @@
     - gcloud container clusters get-credentials $OSDU_GCP_CLUSTER --zone $OSDU_GCP_ZONE --project $OSDU_GCP_PROJECT
     - curl https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
 
+
 .define_VER: 
   script:
     - >
@@ -38,7 +39,7 @@
     - echo ----- Verify Deployment -----
     - kubectl rollout status deployment.v1.apps/$SEISMIC_OSDU_GCP_SERVICE -n $OSDU_GCP_HELM_NAMESPACE --timeout=900s
     - POD=$(kubectl get pod --sort-by=.metadata.creationTimestamp -n $OSDU_GCP_HELM_NAMESPACE | grep $SEISMIC_OSDU_GCP_SERVICE | tail -1 | awk '{print $1}')
-    - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=300s)
+    - STATUS=$(kubectl wait -n $OSDU_GCP_HELM_NAMESPACE --for=condition=Ready pod/$POD --timeout=1200s)
     - echo $STATUS
     - >
       if [[ "$STATUS" != *"met"* ]];
@@ -163,6 +164,8 @@
       when: on_success
 
 .osdu-gcp-anthos-deploy-configmap:
+  environment:
+    name: GCP
   stage: deploy
   extends: .osdu-gcp-anthos-variables
   tags: ["osdu-small"]
@@ -170,14 +173,15 @@
   retry: 1
   allow_failure: true
   script:
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_ANTHOS_DEPLOY_FILE
     - !reference [.common-anthos, script]
-    - !reference [.define_VER, script]
     - >
       helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR
       --install
       --create-namespace
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
+      --timeout=1200s
       --history-max=3
       --set data.appEnvironmentIdentifier=$OSDU_TENANT
       --set data.cloudProvider="anthos"
@@ -206,6 +210,7 @@
       --create-namespace
       --namespace=$OSDU_GCP_HELM_NAMESPACE
       --wait
+      --timeout=1200s
       --history-max=3
       --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA 
       --set data.serviceAccountName=$SEISMIC_OSDU_GCP_SERVICE-k8s
@@ -252,6 +257,7 @@
   extends: .osdu-gcp-anthos-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk
   script:
+    - gcloud auth activate-service-account --key-file $OSDU_GCP_ANTHOS_DEPLOY_FILE
     - !reference [.common-anthos, script]
     - >
       helm upgrade $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_SERVICE $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR
