@@ -5,6 +5,9 @@ uvicorn==0.14.0
 #for segy library
 segysdk-python==0.0.120275
 
+#for zgy to bingrid
+vector==0.8.5
+
 #for static files
 aiofiles==0.5.0
 
