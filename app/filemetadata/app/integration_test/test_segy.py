@@ -1,9 +1,10 @@
 import requests
 
-from tests.conftest import Settings
+from integration_test.conftest import Settings
 
 
 def test_service_status(settings: Settings):
+    print(settings.SERVICE_URL + "service-status")
     response = requests.get(settings.SERVICE_URL + "service-status")
     assert response.status_code == 200
 

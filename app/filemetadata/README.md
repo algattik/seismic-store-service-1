@@ -62,11 +62,7 @@ Replace environment variable `<SDMS_SERVICE_HOST>` with the url of [seismic stor
 3. [Test web url](https://osdu-glab.msft-osdu-test.org/seismic-file-metadata/api/v1/swagger-ui.html)
 
 # Run Unit Tests
-1. Set the following environment variables
-`TOKEN_SVC_URL`
-`SAUTH_SVC_ACC_SECRET`
-`TOKEN_SVC_APPKEY`
-`SAUTH_SVC_ACC_ID`
-`SAUTH_SVC_PROJECT_ID`
 
-2. Run `pytest tests/` 
+1. Navigate to `seismic-store-service/app/filemetadata/app`
+
+2. Run command `python -m unittest discover -s test -p "test_*" -v`
