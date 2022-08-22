@@ -27,6 +27,7 @@ WORKDIR /app/openzgy-bundle/wrapper
 RUN pip install -r requirements.txt
 WORKDIR /app/openzgy-bundle/wrapper/focal-gcc94
 RUN pip install *.whl
+WORKDIR /app
 
 # Install node js
 ENV NODE_VERSION 14.17.4
@@ -41,4 +42,6 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN npm install --unsafe-perm
 
 EXPOSE 8000
+
+
 CMD [ "python", "./main.py"]

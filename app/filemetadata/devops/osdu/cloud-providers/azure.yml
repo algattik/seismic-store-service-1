@@ -14,7 +14,7 @@ filemetadata_azure_containerize:
   script:
     - cd app/$FILEMETADATA_SERVICE
     - sed -i "s/SEGY_LIBRARY_PAT/$SEGY_LIBRARY_FEED_PAT/g" pip.conf
-    - docker build -t $FILEMETADATA_LOCAL_SERVICE_NAME --file devops/azure/Dockerfile .
+    - docker build -t $FILEMETADATA_LOCAL_SERVICE_NAME --file Dockerfile .
     # Gitlab Container Registry
     - docker tag $FILEMETADATA_LOCAL_SERVICE_NAME $CI_REGISTRY_IMAGE/$SHA_IMAGE
     - docker push ${CI_REGISTRY_IMAGE}/$SHA_IMAGE
@@ -51,6 +51,7 @@ filemetadata_azure_deploy:
     TAG: ${CI_COMMIT_SHA}
   script:
     # Replace values in config file
+    - kubectl logs deployment.v1.apps/$FILEMETADATA_SERVICE_NAME -n osdu -c $FILEMETADATA_SERVICE_NAME
     - cd app/$FILEMETADATA_SERVICE
     - cp ${CHART_PATH}/helm-config.yaml ${CHART_PATH}/values.yaml
     - sed -i 's,#{CONTAINER_REGISTRY_NAME}#,'$IMAGE',' ${CHART_PATH}/values.yaml
@@ -66,7 +67,7 @@ filemetadata_azure_deploy:
     - helm upgrade $FILEMETADATA_AZURE_SERVICE ${CHART_PATH} --install --dry-run --values $CHART_PATH/values.yaml 
     - helm upgrade $FILEMETADATA_AZURE_SERVICE ${CHART_PATH} --install --values $CHART_PATH/values.yaml 
     # Wait for service to be running to start
-    - kubectl rollout status deployment.v1.apps/$FILEMETADATA_SERVICE_NAME -n osdu --timeout=900s
+    - kubectl rollout status deployment.v1.apps/$FILEMETADATA_SERVICE_NAME -n osdu --timeout=20m
     - pod=$(kubectl get pod -n osdu|grep $FILEMETADATA_LOCAL_SERVICE_NAME |tail -1 |awk '{print $1}')
     - status=$(kubectl wait -n osdu --for=condition=Ready pod/$pod --timeout=600s)
     - if [[ "$status" != *"met"* ]]; then echo "POD didn't start correctly" ; exit 1 ; fi
