@@ -240,3 +240,44 @@ sdms-osdu-gcp-dev2-test-python:
       changes:
         - devops/**/*
         - app/sdms/**/*
+
+sdms-osdu-gcp-anthos-test-python:
+  extends: .osdu-gcp-anthos-test-python
+  image: node
+  needs: ["sdms-osdu-gcp-anthos-deploy-deployment"]
+  before_script:
+    - cd app/$SDMS_SERVICE
+  script:
+    - apt-get update
+    - apt-get install -yq jq curl
+    - >
+      OSDU_GCP_ID_TOKEN=$(curl --location --silent --request POST "${TEST_OPENID_PROVIDER_URL}/protocol/openid-connect/token"
+      --header "data-partition-id: ${DATA_PARTITION_ID}"
+      --header 'Content-Type: application/x-www-form-urlencoded'
+      --data-urlencode grant_type=client_credentials
+      --data-urlencode scope=openid
+      --data-urlencode client_id=${TEST_OPENID_PROVIDER_CLIENT_ID}
+      --data-urlencode client_secret=${TEST_OPENID_PROVIDER_CLIENT_SECRET} | jq -r .id_token)
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - >
+      ./tests/e2e/run_e2e_tests.sh
+      --seistore-svc-url="${OSDU_GCP_SDMS_HOST}${GCP_SDMS_PREFIX}" 
+      --seistore-svc-api-key="NA"
+      --user-idtoken="$OSDU_GCP_ID_TOKEN"
+      --tenant="${OSDU_GCP_SDMS_TENANT}"
+      --admin-email="${OSDU_GCP_SEISTORE_ADMIN_EMAIL}"
+      --datapartition="${DATA_PARTITION_ID}"
+      --legaltag01="${OSDU_GCP_SEISTORE_LEGALTAG01}"
+      --legaltag02="${OSDU_GCP_SEISTORE_LEGALTAG02}"
+      --VCS-Provider="${ISGITLAB}"
+  rules:
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$OSDU_GCP == "1"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*

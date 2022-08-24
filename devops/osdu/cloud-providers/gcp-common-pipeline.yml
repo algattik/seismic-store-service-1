@@ -295,5 +295,15 @@
   rules:
     - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
-    - if: '$OSDU_GCP == "1" && && $CI_COMMIT_TAG'
+    - if: '$OSDU_GCP == "1" && $CI_COMMIT_TAG'
+      when: on_success
+
+.osdu-gcp-anthos-test-python:
+  stage: integration
+  tags: ["osdu-small"]
+  extends: .osdu-gcp-anthos-variables
+  rules:
+    - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$OSDU_GCP == "1" && $CI_COMMIT_TAG'
       when: on_success
