@@ -15,6 +15,10 @@ spec:
       to:
         - operation:
             notPaths: ["/",
-                       "*/swagger-ui.html*",
+                       "*/swagger-ui.html/",
+                       "*/swagger-ui.html/swagger-ui-bundle.js",
+                       "*/swagger-ui.html/swagger-ui-init.js",
+                       "*/swagger-ui.html/swagger-ui-standalone-preset.js",
+                       "*/swagger-ui.html/swagger-ui.css",
                        "*/svcstatus",
                        "*/svcstatus/readiness"]
