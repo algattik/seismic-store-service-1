@@ -21,4 +21,4 @@ export { TraceLog } from './tracelog';
 export { Response } from './response';
 export { SDPath, ISDPathModel as SDPathModel } from './sdpath';
 export { FeatureFlags, Feature } from './featureflags';
-export { Cache, initSharedCache } from '../shared/cache';
+export { getInMemoryCacheInstance } from './node-cache';

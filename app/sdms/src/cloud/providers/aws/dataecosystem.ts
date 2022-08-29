@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import request from 'request-promise';
-import { Cache } from '../../../shared';
+import { getInMemoryCacheInstance } from '../../../shared';
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
@@ -25,7 +25,6 @@ interface PartitionInfoAws {
     tenantId: string;
     expires_in: number;
 }
-const ExpiresMargin = 3600; // 60 minutes
 @DataEcosystemCoreFactory.register('aws')
 export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
@@ -35,7 +34,6 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
     public static getPartitionBaseUrlPath(): string { return '/api/partition/v1/partitions/'; };
     public getPolicySvcBaseUrlPath(): string { return 'api/policy/v1'; }
-    private static _cache: Cache<PartitionInfoAws>;
 
     public async getAuthorizationHeader(userToken: string): Promise<string> {
         return userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken;
@@ -54,12 +52,11 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
     }
 
     public static async getTenantIdFromPartitionID(dataPartitionID: string): Promise<string> {
-        if (!this._cache) {
-            this._cache = new Cache<PartitionInfoAws>('partitionInfo');
-        };
-        const res = await this._cache.get(dataPartitionID);
-        if (res !== undefined && res.expires_in > Math.floor(Date.now() / 1000)) {
-            return res.tenantId;
+        const cache = getInMemoryCacheInstance();
+        const cacheKey = 'aws-tenant' + dataPartitionID;
+        const res = cache.get<string>(cacheKey);
+        if (res !== undefined) {
+            return res;
         };
 
         const token = await AWSCredentials.getServiceCredentials();
@@ -77,9 +74,7 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
         try {
             const response = JSON.parse(await request.get(options));
             const tenantInfo = response['tenantId']['value'];
-            const expiresIn = Math.floor(Date.now() / 1000) + ExpiresMargin;
-            const infoaws: PartitionInfoAws = { tenantId: tenantInfo, expires_in: expiresIn };
-            await this._cache.set(dataPartitionID, infoaws);
+            cache.set<string>(cacheKey, tenantInfo, 3600);
             return tenantInfo;
         }
         catch (err) {

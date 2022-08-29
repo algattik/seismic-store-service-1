@@ -1599,7 +1599,8 @@ paths:
           <ul>
             <li>legal tag and/or ACLs groups can be patched by providing new values</li>
             <li>access policy can be changed from <i>uniform</i> to <i>dataset</i></li>
-            NOTE: It is not possible to change subproject access policy from <i>dataset</i> to <i>uniform</i>
+            <li><b>NOTE:</b> It is not possible to change subproject access policy from <i>dataset</i> to <i>uniform</i></li>
+            <li><b>NOTE:</b> This operation is eventual consistent and it can take up to 5s before it gets completely applied</li>
           </ul>
         </ul>
       operationId: subproject-patch

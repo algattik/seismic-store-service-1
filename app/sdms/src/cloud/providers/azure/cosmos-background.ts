@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { Container, CosmosClient } from '@azure/cosmos';
-import { Cache } from '../../../shared';
+import { getInMemoryCacheInstance } from '../../../shared';
 import { CloudFactory } from '../../cloud';
 import { AzureDataEcosystemServices } from './dataecosystem';
 
@@ -27,7 +27,6 @@ export class DatabaseChecker {
     private static partitions: string[];
     private static clients: { [key: string]: CosmosClient } = {};
     private static containers: { [key: string]: Container } = {};
-    private static cache: Cache<string>;
 
     public static async run(): Promise<void> {
         // refresh the list of existing partitions every 60 seconds.
@@ -104,11 +103,7 @@ export class DatabaseChecker {
                     // check if the cache clear flag exists in the database
                     if ((await DatabaseChecker.containers[partition].item(
                         'z:cache::clear', 'z:cache::clear').read()).statusCode === 200) {
-                        if (!DatabaseChecker.cache) {
-                            DatabaseChecker.cache = new Cache();
-                        }
-                        await DatabaseChecker.cache.clear('sdms-tenant*');
-                        await DatabaseChecker.cache.clear('sdms-subproject*');
+                        getInMemoryCacheInstance().flushAll();
                     }
 
                 }

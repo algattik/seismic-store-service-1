@@ -38,7 +38,9 @@ Apache-2.0
 The following software have components provided under the terms of this license:
 
 - @aws-crypto/crc32 (from https://www.npmjs.com/package/@aws-crypto/crc32)
+- @aws-crypto/crc32c (from https://www.npmjs.com/package/@aws-crypto/crc32c)
 - @aws-crypto/ie11-detection (from https://www.npmjs.com/package/@aws-crypto/ie11-detection)
+- @aws-crypto/sha1-browser (from https://www.npmjs.com/package/@aws-crypto/sha1-browser)
 - @aws-crypto/sha256-browser (from https://www.npmjs.com/package/@aws-crypto/sha256-browser)
 - @aws-crypto/sha256-js (from https://www.npmjs.com/package/@aws-crypto/sha256-js)
 - @aws-crypto/supports-web-crypto (from https://www.npmjs.com/package/@aws-crypto/supports-web-crypto)
@@ -57,6 +59,7 @@ The following software have components provided under the terms of this license:
 - @aws-sdk/credential-provider-process (from https://www.npmjs.com/package/@aws-sdk/credential-provider-process)
 - @aws-sdk/credential-provider-sso (from https://www.npmjs.com/package/@aws-sdk/credential-provider-sso)
 - @aws-sdk/credential-provider-web-identity (from https://www.npmjs.com/package/@aws-sdk/credential-provider-web-identity)
+- @aws-sdk/eventstream-codec (from https://www.npmjs.com/package/@aws-sdk/eventstream-codec)
 - @aws-sdk/eventstream-marshaller (from https://www.npmjs.com/package/@aws-sdk/eventstream-marshaller)
 - @aws-sdk/eventstream-serde-browser (from https://www.npmjs.com/package/@aws-sdk/eventstream-serde-browser)
 - @aws-sdk/eventstream-serde-config-resolver (from https://www.npmjs.com/package/@aws-sdk/eventstream-serde-config-resolver)
@@ -73,10 +76,12 @@ The following software have components provided under the terms of this license:
 - @aws-sdk/middleware-bucket-endpoint (from https://www.npmjs.com/package/@aws-sdk/middleware-bucket-endpoint)
 - @aws-sdk/middleware-content-length (from https://www.npmjs.com/package/@aws-sdk/middleware-content-length)
 - @aws-sdk/middleware-expect-continue (from https://www.npmjs.com/package/@aws-sdk/middleware-expect-continue)
+- @aws-sdk/middleware-flexible-checksums (from https://www.npmjs.com/package/@aws-sdk/middleware-flexible-checksums)
 - @aws-sdk/middleware-header-default (from https://www.npmjs.com/package/@aws-sdk/middleware-header-default)
 - @aws-sdk/middleware-host-header (from https://www.npmjs.com/package/@aws-sdk/middleware-host-header)
 - @aws-sdk/middleware-location-constraint (from https://www.npmjs.com/package/@aws-sdk/middleware-location-constraint)
 - @aws-sdk/middleware-logger (from https://www.npmjs.com/package/@aws-sdk/middleware-logger)
+- @aws-sdk/middleware-recursion-detection (from https://www.npmjs.com/package/@aws-sdk/middleware-recursion-detection)
 - @aws-sdk/middleware-retry (from https://www.npmjs.com/package/@aws-sdk/middleware-retry)
 - @aws-sdk/middleware-sdk-s3 (from https://www.npmjs.com/package/@aws-sdk/middleware-sdk-s3)
 - @aws-sdk/middleware-sdk-sts (from https://www.npmjs.com/package/@aws-sdk/middleware-sdk-sts)
@@ -95,6 +100,7 @@ The following software have components provided under the terms of this license:
 - @aws-sdk/shared-ini-file-loader (from https://www.npmjs.com/package/@aws-sdk/shared-ini-file-loader)
 - @aws-sdk/signature-v4 (from https://www.npmjs.com/package/@aws-sdk/signature-v4)
 - @aws-sdk/signature-v4-crt (from https://www.npmjs.com/package/@aws-sdk/signature-v4-crt)
+- @aws-sdk/signature-v4-multi-region (from https://www.npmjs.com/package/@aws-sdk/signature-v4-multi-region)
 - @aws-sdk/smithy-client (from https://www.npmjs.com/package/@aws-sdk/smithy-client)
 - @aws-sdk/types (from https://www.npmjs.com/package/@aws-sdk/types)
 - @aws-sdk/url-parser (from https://www.npmjs.com/package/@aws-sdk/url-parser)
@@ -110,6 +116,9 @@ The following software have components provided under the terms of this license:
 - @aws-sdk/util-defaults-mode-node (from https://www.npmjs.com/package/@aws-sdk/util-defaults-mode-node)
 - @aws-sdk/util-hex-encoding (from https://www.npmjs.com/package/@aws-sdk/util-hex-encoding)
 - @aws-sdk/util-locate-window (from https://www.npmjs.com/package/@aws-sdk/util-locate-window)
+- @aws-sdk/util-middleware (from https://www.npmjs.com/package/@aws-sdk/util-middleware)
+- @aws-sdk/util-stream-browser (from https://www.npmjs.com/package/@aws-sdk/util-stream-browser)
+- @aws-sdk/util-stream-node (from https://www.npmjs.com/package/@aws-sdk/util-stream-node)
 - @aws-sdk/util-uri-escape (from https://www.npmjs.com/package/@aws-sdk/util-uri-escape)
 - @aws-sdk/util-user-agent-browser (from https://www.npmjs.com/package/@aws-sdk/util-user-agent-browser)
 - @aws-sdk/util-user-agent-node (from https://www.npmjs.com/package/@aws-sdk/util-user-agent-node)
@@ -427,6 +436,7 @@ The following software have components provided under the terms of this license:
 - @azure/storage-blob (from https://www.npmjs.com/package/@azure/storage-blob)
 - @colors/colors (from https://www.npmjs.com/package/@colors/colors)
 - @dabh/diagnostics (from https://www.npmjs.com/package/@dabh/diagnostics)
+- @ioredis/commands (from https://www.npmjs.com/package/@ioredis/commands)
 - @opentelemetry/core (from https://www.npmjs.com/package/@opentelemetry/core)
 - @prisma/client (from https://www.npmjs.com/package/@prisma/client)
 - @prisma/engines (from https://www.npmjs.com/package/@prisma/engines)
@@ -498,6 +508,7 @@ The following software have components provided under the terms of this license:
 - call-bind (from https://www.npmjs.com/package/call-bind)
 - camelize (from https://www.npmjs.com/package/camelize)
 - chalk (from https://www.npmjs.com/package/chalk)
+- clone (from https://www.npmjs.com/package/clone)
 - code-point-at (from https://www.npmjs.com/package/code-point-at)
 - color (from https://www.npmjs.com/package/color)
 - color-convert (from https://www.npmjs.com/package/color-convert)
@@ -677,6 +688,7 @@ The following software have components provided under the terms of this license:
 - native-promise-only (from https://www.npmjs.com/package/native-promise-only)
 - negotiator (from https://www.npmjs.com/package/negotiator)
 - node-abort-controller (from https://www.npmjs.com/package/node-abort-controller)
+- node-cache (from https://www.npmjs.com/package/node-cache)
 - node-fetch (from https://www.npmjs.com/package/node-fetch)
 - node-forge (from https://www.npmjs.com/package/node-forge)
 - node-gyp-build (from https://www.npmjs.com/package/node-gyp-build)
@@ -832,6 +844,8 @@ The following software have components provided under the terms of this license:
 ========================================================================
 Protobuf
 ========================================================================
+The following software have components provided under the terms of this license:
+
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
 
 ========================================================================

@@ -1,24 +1,19 @@
 import request from 'request-promise';
 import { AuthProviderFactory } from '../../auth';
 import { Config, DataEcosystemCoreFactory } from '../../cloud';
-import { Cache, Error } from '../../shared';
+import { Error, getInMemoryCacheInstance } from '../../shared';
 import { AbstractUserAssociationSvcProvider, UserAssociationServiceFactory } from '../user-association';
 
 // this impl is used when the USER_ASSOCIATION_SVC_PROVIDER env variable is set to decorator identifier ccm-internal
 @UserAssociationServiceFactory.register('ccm-internal')
 export class DESUserAssociation extends AbstractUserAssociationSvcProvider {
 
-   private static _cache: Cache<string>;
-
    public async convertPrincipalIdentifierToUserInfo(principalIdentifier: string,
       dataPartitionID: string): Promise<string> {
 
-      if (!DESUserAssociation._cache) {
-         DESUserAssociation._cache = new Cache<string>('ccm-user-exchange');
-      }
-
-      const cacheKey = principalIdentifier;
-      const cacheLookupResult = await DESUserAssociation._cache.get(cacheKey);
+      const cache = getInMemoryCacheInstance();
+      const cacheKey = 'ccm-' + principalIdentifier;
+      const cacheLookupResult = cache.get<string>(cacheKey);
       if (cacheLookupResult) {
          return cacheLookupResult;
       }
@@ -46,14 +41,14 @@ export class DESUserAssociation extends AbstractUserAssociationSvcProvider {
          const results = await request.get(options);
          const userEmail = JSON.parse(results)['email'];
 
-         await DESUserAssociation._cache.set(cacheKey, userEmail);
+         cache.set<string>(cacheKey, userEmail, 3600);
 
          return userEmail;
 
       } catch (error) {
 
          if (error && error.statusCode === 404 && error.message.includes('User not found')) {
-            await DESUserAssociation._cache.set(cacheKey, principalIdentifier);
+            cache.set<string>(cacheKey, principalIdentifier, 3600);
             return principalIdentifier;
          }
          throw (Error.makeForHTTPRequest(error, '[ccm-user-association-service]'));

@@ -17,16 +17,15 @@
 import { TenantModel } from '.';
 import { Config, JournalFactoryServiceClient } from '../../cloud';
 import { DESUtils } from '../../dataecosystem';
-import { Cache, Error } from '../../shared';
+import { Error, getInMemoryCacheInstance } from '../../shared';
 
 export class TenantDAO {
-
-    private static _cache = new Cache<TenantModel>('sdms-tenant');
 
     // get tenant metadata (throw if not exist)
     public static async get(tenantName: string): Promise<TenantModel> {
 
-        const res = await this._cache.get(tenantName);
+        const cache = getInMemoryCacheInstance();
+        const res = cache.get<TenantModel>(this.getCacheKey(tenantName));
         if (res !== undefined && res) {
             Config.DATA_PARTITION_ID = DESUtils.getDataPartitionID(res.esd);
             return res;
@@ -55,7 +54,7 @@ export class TenantDAO {
         entity = entity as TenantModel;
         if (!entity.name) { entity.name = tenantName; }
 
-        await this._cache.set(entity.name, entity);
+        cache.set<TenantModel>(this.getCacheKey(tenantName), entity, 3600);
 
         Config.DATA_PARTITION_ID = DESUtils.getDataPartitionID(entity.esd);
 
@@ -97,7 +96,7 @@ export class TenantDAO {
 
         await serviceClient.save({ data: tenant, key: entityKey });
 
-        await this._cache.set(tenant.name, tenant);
+        getInMemoryCacheInstance().set<TenantModel>(this.getCacheKey(tenant.name), tenant, 3600);
 
     }
 
@@ -116,13 +115,14 @@ export class TenantDAO {
             namespace: Config.ORGANIZATION_NS,
             path: [Config.TENANTS_KIND, tenantName],
         }));
-        await this._cache.del(tenantName);
+        getInMemoryCacheInstance().delete(this.getCacheKey(tenantName));
     }
 
     // check if a tenant exist
     public static async exist(tenant: TenantModel): Promise<boolean> {
 
-        const res = await this._cache.get(tenant.name);
+        const cache = getInMemoryCacheInstance();
+        const res = cache.get<TenantModel>(this.getCacheKey(tenant.name));
         if (res !== undefined && res) { return true; };
 
         const serviceClient = JournalFactoryServiceClient.get(
@@ -134,10 +134,14 @@ export class TenantDAO {
         }));
 
         if (entity) {
-            await this._cache.set(entity.name, entity);
+            cache.set<TenantModel>(this.getCacheKey(entity.name), entity, 3600);
         }
 
         return entity !== undefined;
+    }
+
+    private static getCacheKey(tenantName: string): string {
+        return 'tenant-' + tenantName;
     }
 
 }

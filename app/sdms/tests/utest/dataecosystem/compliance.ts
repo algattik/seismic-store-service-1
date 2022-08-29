@@ -20,7 +20,6 @@ import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
 import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESCompliance } from '../../../src/dataecosystem/compliance';
-import { Cache } from '../../../src/shared';
 import { Tx } from '../utils';
 
 
@@ -61,13 +60,12 @@ export class TestCompliance {
       Tx.sectionInit('legal tag validity');
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(Cache.prototype, 'set').resolves();
          const requestStub = this.sandbox.stub(request, 'post');
          requestStub.resolves({
             invalidLegalTags: [],
          });
 
-         const result = await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a','appkey');
+         const result = await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
 
          requestStub.calledWith(this.options);
          Tx.checkTrue(result && requestStub.calledWith(this.options), done);
@@ -75,7 +73,6 @@ export class TestCompliance {
       });
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(Cache.prototype, 'set').resolves();
          const requestStub = this.sandbox.stub(request, 'post');
          requestStub.resolves({
             invalidLegalTags: ['ltag'],
@@ -85,17 +82,6 @@ export class TestCompliance {
          requestStub.calledWith(this.options);
          Tx.checkFalse(result && requestStub.calledWith(this.options), done);
 
-      });
-
-      Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'post').throws();
-         this.sandbox.stub(Cache.prototype, 'get').resolves();
-
-         try {
-            await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
-         } catch (e) {
-            Tx.check500(500, done);
-         }
       });
 
    }

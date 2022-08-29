@@ -175,6 +175,7 @@ sdms_azure_deploy:
     - sed -i 's/#{PORT}#/'${SDMS_PORT}'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{PROVIDER_NAME}#/'$CLOUD_PROVIDER'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REDIS_HOST}#/'$REDIS_INSTANCE_ADDRESS'/' ${CHART_PATH}/values.yaml
+    - sed -i 's/#{REDIS_KEY}#/'$REDIS_INSTANCE_KEY'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REDIS_PORT}#/'$REDIS_INSTANCE_PORT'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{REPLICA_COUNT}#/'$SDMS_REPLICA'/' ${CHART_PATH}/values.yaml
     - sed -i 's/#{SDMS_MIN_REPLICAS}#/'$SDMS_MIN_REPLICAS'/' ${CHART_PATH}/values.yaml

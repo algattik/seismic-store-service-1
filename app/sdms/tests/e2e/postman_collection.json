@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a77d15fa-e17a-48b2-a3d7-862f0d19ce6a",
+		"_postman_id": "caf7d857-0f63-4333-9f09-2a30c8b2c3ee",
 		"name": "SDMS-E2E ver.M12 - Release 0.15",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -912,6 +912,12 @@
 									"    var key = request.name + '_counter';",
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}",
+									"",
+									"var sleepDuration = 15 * 1000;",
+									"var waitUntilTime = new Date().getTime() + sleepDuration;",
+									"while (new Date().getTime() < waitUntilTime) {",
+									"    // Do Nothing -> Wait",
 									"}"
 								],
 								"type": "text/javascript"
@@ -996,6 +1002,12 @@
 									"    var key = request.name + '_counter';",
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}",
+									"",
+									"var sleepDuration = 15 * 1000;",
+									"var waitUntilTime = new Date().getTime() + sleepDuration;",
+									"while (new Date().getTime() < waitUntilTime) {",
+									"    // Do Nothing -> Wait",
 									"}"
 								],
 								"type": "text/javascript"

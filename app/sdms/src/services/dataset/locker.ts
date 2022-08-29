@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import IORedis from 'ioredis';
+import Redis from 'ioredis';
 import Redlock from 'redlock';
 import { Config, LoggerFactory } from '../../cloud';
 import { Error, Utils } from '../../shared';
@@ -27,13 +27,13 @@ export interface IWriteLockSession { idempotent: boolean, wid: string, mutex: an
 
 export class Locker {
 
-    private static TTL = 20000; // max lock time in ms
+    private static TTL = 6000; // max lock time in ms
     private static EXP_WRITELOCK = 86400; // after 24h writelock entry will be removed
     private static EXP_READLOCK = 3600; // after 1h  readlock entry will be removed
     private static TIME_5MIN = 300; // exp time margin to use in the main read locks
 
-    private static redisClient: IORedis.Redis;
-    private static redisSubscriptionClient: IORedis.Redis;
+    private static redisClient: Redis;
+    private static redisSubscriptionClient: Redis;
     private static redlock: Redlock;
 
     public static getWriteLockTTL(): number { return this.EXP_WRITELOCK; };
@@ -55,60 +55,55 @@ export class Locker {
 
             if (Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
                 Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE ?
-                    this.redisClient = new IORedis({
+                    this.redisClient = new Redis({
                         host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                         port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                         password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
-
-                        /* Retry failed requests only once*/
                         maxRetriesPerRequest: 10,
-
-                        /* Exponential backOff retry strategy */
                         retryStrategy: this.retryStrategy,
-
-                        /* Max time for a single command after which a timeout occurs.
-                        Without this the client waits indefinitely*/
                         commandTimeout: 60000,
-
-
+                        connectionName: 'sdms-locker'
                     }) :
-                    this.redisClient = new IORedis({
+                    this.redisClient = new Redis({
                         host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                         port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                         password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
                         tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
-                        maxRetriesPerRequest: 5,
+                        maxRetriesPerRequest: 10,
                         retryStrategy: this.retryStrategy,
-                        commandTimeout: 60000
+                        commandTimeout: 60000,
+                        connectionName: 'sdms-locker'
                     }
                     );
-                this.redisSubscriptionClient = new IORedis({
+                this.redisSubscriptionClient = new Redis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
                     password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
                     tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
-                    maxRetriesPerRequest: 5,
+                    maxRetriesPerRequest: 10,
                     retryStrategy: this.retryStrategy,
-                    commandTimeout: 60000
+                    commandTimeout: 60000,
+                    connectionName: 'sdms-locker-subscription'
                 });
 
             }
             else {
 
-                this.redisClient = new IORedis({
+                this.redisClient = new Redis({
                     host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                     port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    maxRetriesPerRequest: 5,
-                    retryStrategy: this.retryStrategy,
-                    commandTimeout: 60000
-                });
-                this.redisSubscriptionClient = new IORedis({
-                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    maxRetriesPerRequest: 5,
+                    maxRetriesPerRequest: 10,
                     retryStrategy: this.retryStrategy,
                     commandTimeout: 60000,
-
+                    connectionName: 'sdms-locker'
+                });
+                this.redisSubscriptionClient = new Redis({
+                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                    maxRetriesPerRequest: 10,
+                    retryStrategy: this.retryStrategy,
+                    commandTimeout: 60000,
+                    connectionName: 'sdms-locker-subscription'
                 });
             }
 
@@ -170,27 +165,19 @@ export class Locker {
     }
 
     private static async get(key: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            this.redisClient.get(key, (err, res) => { err ? reject(err) : resolve(res); });
-        });
+        return await this.redisClient.get(key);
     }
 
     private static async set(key: string, value: string, expireTime: number): Promise<string> {
-        return new Promise((resolve, reject) => {
-            this.redisClient.setex(key, expireTime, value, (err, res) => { err ? reject(err) : resolve(res); });
-        });
+        return await this.redisClient.setex(key, expireTime, value);
     }
 
     public static async del(key: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            this.redisClient.del(key, (err, resp) => { err ? reject(err) : resolve(resp); });
-        });
+        return await this.redisClient.del(key);
     }
 
     private static async getTTL(key: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            this.redisClient.ttl(key, (err, res) => { err ? reject(err) : resolve(res); });
-        });
+        return await this.redisClient.ttl(key);
     }
 
     // create a write lock for new resources. This is a locking operation!
@@ -229,7 +216,7 @@ export class Locker {
     // remove both lock and mutex
     public static async removeWriteLock(writeLockSession: IWriteLockSession, keepTheLock = false): Promise<void> {
         if (writeLockSession && writeLockSession.mutex) {
-            await Locker.releaseMutex(writeLockSession.mutex, writeLockSession.key);
+            await Locker.releaseMutex(writeLockSession.mutex);
         }
         if (!keepTheLock) {
             if (writeLockSession && writeLockSession.wid) {
@@ -252,12 +239,12 @@ export class Locker {
 
         // Already write locked but the idempotentWriteLock match the once in cache (idempotent call)
         if (lockValue && idempotentWriteLock && lockValue === idempotentWriteLock) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return { id: idempotentWriteLock, cnt: 0 };
         }
 
         if (lockValue && wid && wid !== lockValue && this.isWriteLock(lockValue)) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             throw (Error.make(Error.Status.LOCKED,
                 lockKey + ' is locked for write with different id ' + Error.get423WriteLockReason()));
         }
@@ -271,7 +258,7 @@ export class Locker {
             // create a new write lock and save in cache
             const lockID = idempotentWriteLock || this.generateWriteLockID();
             await Locker.set(lockKey, lockID, this.EXP_WRITELOCK);
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return { id: lockID, cnt: 1 };
         }
 
@@ -281,7 +268,7 @@ export class Locker {
 
         // wid not specified - impossible lock
         if (!wid) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             throw (Error.make(Error.Status.LOCKED,
                 lockKey + ' is locked for ' + (this.isWriteLock(lockValue) ?
                     'write ' + Error.get423WriteLockReason() :
@@ -290,19 +277,19 @@ export class Locker {
 
         // write locked and different wid
         if (this.isWriteLock(lockValue) && wid !== lockValue) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             throw (Error.make(Error.Status.LOCKED,
                 lockKey + ' is locked for write with different id ' + Error.get423WriteLockReason()));
         }
 
         if (!this.isWriteLock(lockValue) && lockValue.indexOf(wid) === -1) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             throw (Error.make(Error.Status.LOCKED,
                 lockKey + ' is locked for read with different ids ' + + Error.get423ReadLockReason()));
         }
 
         // Trusted Open
-        await this.releaseMutex(cacheLock, lockKey);
+        await this.releaseMutex(cacheLock);
         return { id: wid, cnt: this.isWriteLock(lockValue) ? 1 : (lockValue as string[]).length };
 
     }
@@ -322,7 +309,7 @@ export class Locker {
 
         if (lockValue && idempotentReadLock && !this.isWriteLock(lockValue) &&
             (lockValue as string[]).indexOf(idempotentReadLock) > -1) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return { id: idempotentReadLock, cnt: (lockValue as string[]).length };
         }
 
@@ -330,25 +317,25 @@ export class Locker {
 
             // wid not specified -> error locked for write
             if (!wid) {
-                await this.releaseMutex(cacheLock, lockKey);
+                await this.releaseMutex(cacheLock);
                 throw (Error.make(Error.Status.LOCKED,
                     lockKey + ' is locked for write ' + Error.get423WriteLockReason()));
             }
 
             // wid different -> error different wid
             if (wid !== lockValue) {
-                await this.releaseMutex(cacheLock, lockKey);
+                await this.releaseMutex(cacheLock);
                 throw (Error.make(Error.Status.LOCKED,
                     lockKey + ' is locked for write with different wid ' + Error.get423WriteLockReason()));
             }
 
             // wid match -> TRUSTED OPEN
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return { id: lockValue, cnt: 1 };
         }
 
         if (lockValue && wid && lockValue.indexOf(wid) === -1) {
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             throw (Error.make(Error.Status.LOCKED,
                 lockKey + ' is locked for read with different ids ' + Error.get423ReadLockReason()));
         }
@@ -367,7 +354,7 @@ export class Locker {
             this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID)
                 .catch((error) => LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)));
 
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return { id: lockID, cnt: 1 };
         }
 
@@ -381,7 +368,7 @@ export class Locker {
             (lockValue as string[]).push(lockID);
             await Locker.setLock(lockKey + '/' + lockID, lockID, this.EXP_READLOCK);
             await Locker.setLock(lockKey, lockValue, this.EXP_READLOCK + this.TIME_5MIN);
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             // when the session key expired i have to remove the wid/lockid from the main read lock
             this.redisSubscriptionClient.subscribe('__keyevent@0__:expired', lockKey + '/' + lockID)
                 .catch((error) => LoggerFactory.build(Config.CLOUDPROVIDER).error(JSON.stringify(error)));
@@ -389,7 +376,7 @@ export class Locker {
         }
 
         // wid present and found in read lock ids -> TRUSTED OPEN
-        await this.releaseMutex(cacheLock, lockKey);
+        await this.releaseMutex(cacheLock);
         return { id: wid, cnt: (lockValue as string[]).length };
 
     }
@@ -405,14 +392,14 @@ export class Locker {
             if (this.isWriteLock(lockValue)) {
                 // wrong close id
                 if (lockValue !== wid) {
-                    await this.releaseMutex(cacheLock, lockKey);
+                    await this.releaseMutex(cacheLock);
                     throw (Error.make(Error.Status.NOT_FOUND,
                         lockKey + ' has been locked with different ID'));
                 }
 
                 // unlock in cache
                 await Locker.del(lockKey);
-                await this.releaseMutex(cacheLock, lockKey);
+                await this.releaseMutex(cacheLock);
                 return { id: null, cnt: 0 };
             }
         }
@@ -435,13 +422,13 @@ export class Locker {
 
                 // remove main lock from cache
                 await Locker.del(lockKey);
-                await this.releaseMutex(cacheLock, lockKey);
+                await this.releaseMutex(cacheLock);
                 return { id: null, cnt: 0 };
 
             }
 
             // dataset already unlocked
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return { id: null, cnt: 0 };
         }
 
@@ -456,7 +443,7 @@ export class Locker {
 
             // wrong close id
             if (lockIndex === -1) {
-                await this.releaseMutex(cacheLock, lockKey);
+                await this.releaseMutex(cacheLock);
                 throw (Error.make(Error.Status.NOT_FOUND,
                     lockKey + ' has been locked with different IDs'));
             }
@@ -470,7 +457,7 @@ export class Locker {
             } else {
                 await Locker.del(lockKey);
             }
-            await this.releaseMutex(cacheLock, lockKey);
+            await this.releaseMutex(cacheLock);
             return {
                 cnt: lockValueNew.length > 0 ? lockValueNew.length : 0,
                 id: lockValueNew.length > 0 ? lockValueNew.join(',') : null,
@@ -482,7 +469,7 @@ export class Locker {
         // ------------------------------------------------
 
         // case 2: dataset already unlocked
-        await this.releaseMutex(cacheLock, lockKey);
+        await this.releaseMutex(cacheLock);
         return { id: null, cnt: 0 };
     }
 
@@ -503,7 +490,7 @@ export class Locker {
             }
         }
 
-        await this.releaseMutex(cacheLock, key);
+        await this.releaseMutex(cacheLock);
 
     }
 
@@ -511,7 +498,7 @@ export class Locker {
     public static async acquireMutex(key: string): Promise<any> {
 
         try {
-            const cacheLock = await this.redlock.lock('locks:' + key, this.TTL);
+            const cacheLock = await this.redlock.acquire(['locks:' + key], this.TTL);
             return cacheLock;
         } catch (error) {
             throw Error.make(Error.Status.LOCKED, key +
@@ -521,15 +508,18 @@ export class Locker {
 
     }
 
-    public static async releaseMutex(cacheLock: any, key: string): Promise<void> {
+    public static async releaseMutex(cacheLock: any): Promise<void> {
 
-        try {
-            await this.redlock.unlock(cacheLock);
-        } catch (error) {
-            throw Error.make(Error.Status.LOCKED, key +
-                ' cannot be unlocked at the moment. ' +
-                Error.get423CannotUnlockReason());
-        }
+        // attempt to unlock the resource, retry in case of error or let the redlock release it
+        let retry = 4;
+        do {
+            try {
+                await this.redlock.release(cacheLock);
+                return;
+            } catch (error) {
+                await new Promise((resolve) => { setTimeout(resolve, 200); });
+            }
+        } while (retry--)
     }
 
 }

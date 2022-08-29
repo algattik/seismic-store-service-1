@@ -15,7 +15,7 @@
 // ============================================================================
 
 import request from 'request-promise';
-import { Cache, Error } from '../../../shared';
+import { Error, getInMemoryCacheInstance } from '../../../shared';
 import {
     AbstractDataEcosystemCore,
     DataEcosystemCoreFactory,
@@ -27,9 +27,6 @@ import { Keyvault } from './keyvault';
 
 @DataEcosystemCoreFactory.register('azure')
 export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
-
-    private static _storageConfigs: Cache<string>;
-    private static _cosmosConfigs: Cache<string>;
 
     public getUserAssociationSvcBaseUrlPath(): string { return 'userAssociation/v1'; }
     public getDataPartitionIDRestHeaderName(): string { return 'data-partition-id'; }
@@ -92,11 +89,9 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
 
     public static async getStorageResourceName(dataPartitionID: string): Promise<string> {
 
-        if (!this._storageConfigs) {
-            this._storageConfigs = new Cache<string>('storage');
-        }
-
-        const res = await this._storageConfigs.get(dataPartitionID);
+        const cache = getInMemoryCacheInstance();
+        const cacheKey = 'azure-storage-' + dataPartitionID;
+        const res = cache.get<string>(cacheKey);
         if (res !== undefined) { return res; };
 
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
@@ -106,18 +101,16 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         if (storageConfigs.sensitive) {
             storageConfigs.value = (await Keyvault.CreateSecretClient().getSecret(storageConfigs.value)).value;
         }
-        await this._storageConfigs.set(dataPartitionID, storageConfigs.value);
+        cache.set<string>(cacheKey, storageConfigs.value, 3600);
         return storageConfigs.value;
     }
 
     public static async getCosmosConnectionParams(
         dataPartitionID: string): Promise<{ endpoint: string, key: string; }> {
 
-        if (!this._cosmosConfigs) {
-            this._cosmosConfigs = new Cache<string>('cosmos');
-        }
-
-        const res = await this._cosmosConfigs.get(dataPartitionID);
+        const cache = getInMemoryCacheInstance();
+        const cacheKey = 'azure-cosmos-' + dataPartitionID;
+        const res = cache.get<string>(cacheKey);
         if (res !== undefined) { return JSON.parse(res); };
 
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
@@ -138,9 +131,9 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
                 cosmosKeyConfigs.value)).value;
         }
 
-        await this._cosmosConfigs.set(dataPartitionID, JSON.stringify({
+        cache.set<string>(dataPartitionID, JSON.stringify({
             endpoint: cosmosEndpointConfigs.value, key: cosmosKeyConfigs.value
-        }));
+        }), 3600);
 
         // return storageConfigs.value;
         return { endpoint: cosmosEndpointConfigs.value, key: cosmosKeyConfigs.value };
