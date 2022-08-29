@@ -23,9 +23,8 @@ import swaggerUi from 'swagger-ui-express';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthProviderFactory } from '../auth';
 import { Config, LoggerFactory } from '../cloud';
-import { AzureConfig } from '../cloud/providers/azure';
 import { ServiceRouter } from '../services';
-import { Cache, Error, Feature, FeatureFlags, Response, Utils } from '../shared';
+import { Error, Feature, FeatureFlags, getInMemoryCacheInstance, Response, Utils } from '../shared';
 import { SwaggerManager } from './swagger-manager';
 // -------------------------------------------------------------------
 // Seismic Store Service
@@ -37,8 +36,6 @@ export class Server {
 
     private httpServer: import('http').Server;
     private httpsServer: import('https').Server;
-
-    private static _exchangedTokenCache: Cache<string>;
 
     private corsOptions = {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -102,19 +99,13 @@ export class Server {
                 if (Config.ENABLE_DE_TOKEN_EXCHANGE) {
                     if (Config.DES_TARGET_AUDIENCE) {
 
-                        // init the cache
-                        if (!Server._exchangedTokenCache) {
-                            Server._exchangedTokenCache = new Cache<string>('tkex');
-                        }
-
                         if (req.headers.authorization) {
 
                             // use the token signature as unique key
-                            const originalAuthorizationHeaderSignature = req.headers.authorization.split('.')[2];
+                            const cacheKey = 'token-' + req.headers.authorization.split('.')[2];
 
                             // check if in cache before
-                            const cachedExchangedToken = await Server._exchangedTokenCache.get(
-                                originalAuthorizationHeaderSignature);
+                            const cachedExchangedToken = getInMemoryCacheInstance().get<string>(cacheKey);
 
                             if (cachedExchangedToken) {
                                 req.headers.authorization = cachedExchangedToken;
@@ -126,8 +117,7 @@ export class Server {
                                         req.headers.authorization, Config.DES_TARGET_AUDIENCE);
 
                                 // cache the exchanged credential for 5 minute
-                                await Server._exchangedTokenCache.set(
-                                    originalAuthorizationHeaderSignature, req.headers.authorization, 300);
+                                getInMemoryCacheInstance().set<string>(cacheKey, req.headers.authorization, 300);
                             }
 
                         }

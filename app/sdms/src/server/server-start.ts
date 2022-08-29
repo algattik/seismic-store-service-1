@@ -19,7 +19,7 @@ import { Config, ConfigFactory, LoggerFactory, TraceFactory } from '../cloud';
 import { StorageJobManager } from '../cloud/shared/queue';
 import { Locker } from '../services/dataset/locker';
 import { SchemaManagerFactory } from '../services/dataset/schema-manager';
-import { Feature, FeatureFlags, initSharedCache } from '../shared';
+import { Feature, FeatureFlags } from '../shared';
 import { SwaggerManager } from './swagger-manager';
 
 async function ServerStart() {
@@ -39,9 +39,6 @@ async function ServerStart() {
 
         console.log('- Initializing redis locker cache');
         await Locker.init();
-
-        console.log('- Initializing redis shared cache');
-        initSharedCache();
 
         console.log('- Initializing storage transfer daemon');
         StorageJobManager.setup({

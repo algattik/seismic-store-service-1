@@ -22,7 +22,7 @@ import { ImpTokenDAO } from '../services/imptoken';
 import { AppsDAO } from '../services/svcapp/dao';
 import { TenantModel } from '../services/tenant';
 import { ITenantModel } from '../services/tenant/model';
-import { Cache, Error, Utils } from '../shared';
+import { Error, getInMemoryCacheInstance, Utils } from '../shared';
 import { AuthGroups } from './groups';
 
 // ===============================================================================================
@@ -91,9 +91,6 @@ export class AuthProviderFactory extends AuthProviderFactoryBuilder {
 // ===============================================================================================
 export class Auth {
 
-    private static _cache: Cache<boolean>;
-    private static _cacheItemTTL = 60; // cache item expire after
-
     public static async isUserRegistered(userToken: string, esd: string, appkey: string) {
         await AuthGroups.getUserGroups(userToken, esd, appkey);
     }
@@ -102,17 +99,14 @@ export class Auth {
         authToken: string, authGroupEmails: string[],
         esd: string, appkey: string, mustThrow = true): Promise<boolean> {
 
-        if (!this._cache) {
-            this._cache = new Cache<boolean>('auth');
-        }
-
-        const cacheKey = (
+        const cacheKey = 'auth-' + (
             createHash('sha1').update(authToken).digest('base64') + ',' + authGroupEmails.sort().join(','));
 
-        let isAuthorized = await this._cache.get(cacheKey);
+        const cache = getInMemoryCacheInstance();
+        let isAuthorized = cache.get<boolean>(cacheKey);
         if (isAuthorized === undefined) { // key not exist in cache -> call entitlement
             isAuthorized = await AuthGroups.isMemberOfAtLeastOneGroup(authToken, authGroupEmails, esd, appkey);
-            await this._cache.set(cacheKey, isAuthorized, this._cacheItemTTL);
+            cache.set<boolean>(cacheKey, isAuthorized, 60);
         }
 
         if (mustThrow && !isAuthorized) {

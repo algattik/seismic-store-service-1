@@ -18,7 +18,7 @@ import { TestAppSVC } from './app';
 import { TestDatasetSVC } from './dataset';
 import { TestGeneralSVC } from './general';
 import { TestImpTokenSVC } from './imptoken';
-import { TestLocker } from './locker';
+// import { TestLocker } from './locker';
 import { TestSubProjectSVC } from './subproject';
 import { TestTenantSVC } from './tenant';
 import { TestUserSVC } from './user';
@@ -37,7 +37,7 @@ export class TestServices {
 			TestAppSVC.run();
 			TestUserSVC.run();
 			TestUtilitySVC.run();
-			TestLocker.run();
+			// TestLocker.run();
 		});
 	}
 }

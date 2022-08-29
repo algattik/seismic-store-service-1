@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { TokenCredential } from '@azure/identity';
-import { BlobServiceClient } from '@azure/storage-blob';
+import { BlobBatchClient, BlobServiceClient } from '@azure/storage-blob';
 import { BlockBlobTier } from '@azure/storage-blob';
 import { Readable } from 'stream';
 import { AzureInsightsLogger } from '.';
@@ -30,6 +30,7 @@ import { AzureDataEcosystemServices } from './dataecosystem';
 export class AzureCloudStorage extends AbstractStorage {
     private AZURE_CONTAINER_PREFIX = 'ss-' + Config.SERVICE_ENV;
     private blobServiceClient: BlobServiceClient;
+    private blobBatchClient: BlobBatchClient;
     private defaultAzureCredential: TokenCredential;
     private dataPartition: string;
 
@@ -43,6 +44,15 @@ export class AzureCloudStorage extends AbstractStorage {
         }
         return this.blobServiceClient;
     }
+
+
+    private async getBlobBatchClient() {
+        if (!this.blobBatchClient) {
+            this.blobBatchClient = (await this.getBlobServiceClient()).getBlobBatchClient();
+        }
+        return this.blobBatchClient;
+    }
+
 
     public constructor(tenant: TenantModel) {
         super();
@@ -78,8 +88,10 @@ export class AzureCloudStorage extends AbstractStorage {
         if (!blobUrls.length) {
             return;
         }
-        const batchClient = (await this.getBlobServiceClient()).getBlobBatchClient();
-        await batchClient.deleteBlobs(blobUrls, this.defaultAzureCredential);
+        const batchClient = await this.getBlobBatchClient();
+        batchClient.deleteBlobs(blobUrls, this.defaultAzureCredential).catch((error) => {
+            console.error(error)
+        });
     }
 
     // Generate array of blob URLs used when deleting in batch
@@ -116,8 +128,10 @@ export class AzureCloudStorage extends AbstractStorage {
         if (prefix) { // datasets managed as subfolder path into the container
             const blobUrls = await this.generateBlobUrls(bucketName, prefix);
             if (blobUrls.length) {
-                const batchClient = (await this.getBlobServiceClient()).getBlobBatchClient();
-                await batchClient.deleteBlobs(blobUrls, this.defaultAzureCredential);
+                const batchClient = await this.getBlobBatchClient();
+                batchClient.deleteBlobs(blobUrls, this.defaultAzureCredential).catch((error) => {
+                    console.error(error)
+                });
             }
         } else {  // datasets managed as separate containers
             await this.deleteBucket(bucketName);

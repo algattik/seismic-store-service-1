@@ -9,6 +9,7 @@ configEnv:
   desServiceHost: #{DNS_HOST}#
   seistoreSystemAdmins: #{SEISTORE_SYSTEM_ADMINS}#
   redisInstanceAddress: #{REDIS_HOST}#
+  redisInstanceKey: #{REDIS_KEY}#
   redisInstancePort: #{REDIS_PORT}#
   appEnvironmentIdentifier: #{ENVIRONMENT_NAME}#
   port: #{PORT}#

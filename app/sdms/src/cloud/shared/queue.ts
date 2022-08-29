@@ -20,6 +20,7 @@ import { Locker } from '../../services/dataset/locker';
 import { SubProjectModel } from '../../services/subproject';
 import { Config } from '../config';
 import { LoggerFactory } from '../logger';
+import * as Redis from 'ioredis';
 
 import Bull from 'bull';
 
@@ -30,16 +31,17 @@ export class StorageJobManager {
 
    public static setup(cacheParams: { ADDRESS: string, PORT: number, KEY?: string, DISABLE_TLS?: boolean; }) {
 
-      const redisOptions = {
+      const redisOptions: Redis.RedisOptions = {
          host: cacheParams.ADDRESS,
-         port: cacheParams.PORT
+         port: cacheParams.PORT,
+         connectionName: 'sdms-copy-agent'
       };
 
       if (cacheParams.KEY) {
          // pragma: allowlist nextline secret
-         redisOptions['password'] = cacheParams.KEY;
+         redisOptions.password = cacheParams.KEY;
          if (!cacheParams.DISABLE_TLS) {
-            redisOptions['tls'] = { servername: cacheParams.ADDRESS };
+            redisOptions.tls = { servername: cacheParams.ADDRESS };
          }
       }
 
@@ -145,7 +147,7 @@ export class StorageJobManager {
 
          await DatasetDAO.update(journalClient, registeredDataset, registeredDatasetKey);
 
-         await Locker.releaseMutex(cacheMutex, datasetToPath);
+         await Locker.releaseMutex(cacheMutex);
 
          const lockKeyFrom = input.data.datasetFrom.tenant + '/' + input.data.datasetFrom.subproject +
             input.data.datasetFrom.path + input.data.datasetFrom.name;
@@ -167,7 +169,7 @@ export class StorageJobManager {
          if (cacheMutex) {
             await Locker.del(datasetToPath);
             await Locker.del(datasetFromPath);
-            await Locker.releaseMutex(cacheMutex, datasetToPath);
+            await Locker.releaseMutex(cacheMutex);
          }
 
          // try to update the status to aborted if possible

@@ -15,22 +15,18 @@
 // ============================================================================
 
 import { Config, DataEcosystemCoreFactory } from '../cloud';
-import { Error, Cache } from '../shared';
+import { Error, getInMemoryCacheInstance } from '../shared';
 
 import request from 'request-promise';
 
 export class DESCompliance {
 
-    private static _cache: Cache<boolean>;
-
     public static async isLegalTagValid(
         userToken: string, ltag: string, dataPartitionID: string, appkey: string): Promise<boolean> {
 
-        if (!this._cache) {
-            this._cache = new Cache<boolean>('ltag')
-        }
-
-        const res = await this._cache.get(ltag);
+        const cache = getInMemoryCacheInstance();
+        const cacheKey = 'ltag-' + ltag;
+        const res = cache.get<boolean>(cacheKey);
         if (res !== undefined && res) { return res };
 
         const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
@@ -52,7 +48,7 @@ export class DESCompliance {
         try {
 
             const results = await request.post(options);
-            await this._cache.set(ltag, results.invalidLegalTags.length === 0);
+            cache.set(cacheKey, results.invalidLegalTags.length === 0, 3600);
             return results.invalidLegalTags.length === 0;
 
         } catch (error) {

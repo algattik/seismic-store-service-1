@@ -16,12 +16,10 @@
 
 import { SubprojectGroups, SubProjectModel } from '.';
 import { Config, IJournal } from '../../cloud';
-import { Cache, Error } from '../../shared';
+import { Error, getInMemoryCacheInstance } from '../../shared';
 import { TenantDAO } from '../tenant';
 
 export class SubProjectDAO {
-
-    private static _cache = new Cache<SubProjectModel>('sdms-subproject');
 
     // register a new subproject under a given Tenant Project (existence check must be done externally)
     public static async register(journalClient: IJournal, subproject: SubProjectModel) {
@@ -33,7 +31,8 @@ export class SubProjectDAO {
 
         await journalClient.save({ data: subproject, key: entityKey });
 
-        await this._cache.set(this.getCacheKey(subproject.tenant, subproject.name), subproject);
+        getInMemoryCacheInstance().set<SubProjectModel>(
+            this.getCacheKey(subproject.tenant, subproject.name), subproject, 10);
 
     }
 
@@ -41,7 +40,8 @@ export class SubProjectDAO {
     public static async get(
         journalClient: IJournal, tenantName: string, subprojectName: string): Promise<SubProjectModel> {
 
-        const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
+        const cache = getInMemoryCacheInstance();
+        const res = cache.get<SubProjectModel>(this.getCacheKey(tenantName, subprojectName));
         if (res !== undefined && res) { return res; };
 
         const entityKey = journalClient.createKey({
@@ -73,7 +73,7 @@ export class SubProjectDAO {
             entity.access_policy = Config.UNIFORM_ACCESS_POLICY;
         }
 
-        await this._cache.set(this.getCacheKey(entity.tenant, entity.name), entity);
+        cache.set<SubProjectModel>(this.getCacheKey(entity.tenant, entity.name), entity, 10);
 
         return entity;
 
@@ -86,7 +86,7 @@ export class SubProjectDAO {
             path: [Config.SUBPROJECTS_KIND, subprojectName],
         });
         await journalClient.delete(entityKey);
-        await this._cache.del(this.getCacheKey(tenantName, subprojectName));
+        getInMemoryCacheInstance().delete(this.getCacheKey(tenantName, subprojectName));
     }
 
     // get all tenant metadata (throw if not exist)
@@ -129,7 +129,7 @@ export class SubProjectDAO {
 
     // check if a subproject exists
     public static async exist(journalClient: IJournal, tenantName: string, subprojectName: string): Promise<boolean> {
-        const res = await this._cache.get(this.getCacheKey(tenantName, subprojectName));
+        const res = getInMemoryCacheInstance().get<SubProjectModel>(this.getCacheKey(tenantName, subprojectName));
         if (res !== undefined && res) { return true; };
 
         const entityKey = journalClient.createKey({
@@ -160,7 +160,7 @@ export class SubProjectDAO {
     }
 
     private static getCacheKey(tenant: string, subproject: string): string {
-        return tenant + '/' + subproject;
+        return 'subproject-' + tenant + '/' + subproject;
     }
 
 }
