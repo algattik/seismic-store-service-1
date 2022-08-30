@@ -20,8 +20,8 @@ import { AzureCredentials } from './credentials';
 
 export class Keyvault {
     public static AI_INSTRUMENTATION_KEY = 'appinsights-key';
-    public static REDIS_HOST = 'redis-hostname';
-    public static REDIS_KEY = 'redis-password';
+    public static REDIS_HOST = 'redis-queue-hostname';
+    public static REDIS_KEY = 'redis-queue-password';
     public static SP_TENANT_ID = 'app-dev-sp-tenant-id';
     public static SP_CLIENT_ID = 'app-dev-sp-username';
     // pragma: allowlist nextline secret
