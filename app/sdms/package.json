@@ -23,8 +23,7 @@
     "copy-schemas": "copyfiles --up 1 ./docs/schemas/**/*.json ./dist/docs",
     "copy-rego-policies": "copyfiles --up 1 ./docs/policies/*.rego ./dist/docs",
     "postbuild": "npm run copy-static-files && npm run copy-schemas && npm run copy-rego-policies",
-    "prepare": "cd ../.. && husky install ./app/sdms/.husky",
-    "postinstall": "sed -i 's/body.UserConsistencyPolicy/body.userConsistencyPolicy/g' node_modules/@azure/cosmos/dist/index.js"
+    "prepare": "cd ../.. && husky install ./app/sdms/.husky"
   },
   "nyc": {
     "include": [
@@ -104,8 +103,6 @@
     "node-cache": "^5.1.2",
     "redlock": "^5.0.0-beta.2",
     "replace-in-file": "^6.3.2",
-    "request": "2.88.2",
-    "request-promise": "4.2.6",
     "swagger-ui-express": "^4.3.0",
     "typescript": "^4.4.4",
     "uuid": "^8.3.2",
@@ -126,8 +123,6 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.7",
     "@types/redis": "^2.8.32",
-    "@types/request": "^2.48.7",
-    "@types/request-promise": "^4.1.48",
     "@types/sinon": "^10.0.6",
     "@types/swagger-ui-express": "^4.1.3",
     "@types/uuid": "^8.3.1",

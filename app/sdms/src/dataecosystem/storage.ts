@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Error } from '../shared';
 import { DESUtils } from './utils';
@@ -32,25 +32,19 @@ export class DESStorage {
                 'Accept': 'application/json',
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Content-Type': 'application/json'
-            },
-            json: seismicMeta,
-            url: Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records',
+            }
         };
+        const data = seismicMeta
+
+        const url = Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records';
 
         // tslint:disable-next-line: no-string-literal
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = DESUtils.getDataPartitionID(esd);
 
-        try {
-
-            await request.put(options);
-
-        } catch (error) {
-
+        await axios.put(url, data, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[storage-service]'));
-
-        }
-
+        });
     }
 
     public static async deleteRecord(
@@ -63,23 +57,17 @@ export class DESStorage {
                 'Accept': 'application/json',
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Content-Type': 'application/json',
-            },
-            url: Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid + ':delete',
+            }
         };
+        const url = Config.DES_SERVICE_HOST_STORAGE + dataecosystem.getStorageBaseUrlPath() + '/records/' + seismicUid + ':delete';
 
         // tslint:disable-next-line: no-string-literal
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = DESUtils.getDataPartitionID(esd);
 
-        try {
-
-            await request.post(options);
-
-        } catch (error) {
-
+        await axios.post(url, '', options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[storage-service]'));
-
-        }
+        });
     }
 
 
@@ -95,27 +83,18 @@ export class DESStorage {
             headers: {
                 'Accept': 'application/json',
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
-            },
-            url: recordVersion ? httpUrl + '/' + recordVersion : httpUrl
+            }
         };
+        const url = recordVersion ? httpUrl + '/' + recordVersion : httpUrl;
 
         // tslint:disable-next-line: no-string-literal
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = DESUtils.getDataPartitionID(esd);
 
-
-        try {
-
-            const results = await request.get(options);
-            return JSON.parse(results);
-
-        } catch (error) {
-
+        const results = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[storage-service]'));
-
-        }
-
-
+        });
+        return results.data;
     }
 
 

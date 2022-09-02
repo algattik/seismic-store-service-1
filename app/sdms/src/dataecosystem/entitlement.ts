@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { IDESEntitlementGroupModel, IDESEntitlementMemberModel } from '../cloud/dataecosystem';
@@ -34,31 +34,25 @@ export class DESEntitlement {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json',
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + group + '/members',
+            }
         };
+        let url = Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + group + '/members';
 
-        if (prevCursor !== undefined) { options.url += ('?cursor=' + prevCursor); }
+        if (prevCursor !== undefined) { url += ('?cursor=' + prevCursor); }
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        try {
-
-            const res = dataecosystem.fixGroupMembersResponse(JSON.parse(await request.get(options)));
-            const members = res.members;
-            const nextCursor = res.cursor;
-            return { members, nextCursor };
-
-        } catch (error) {
-
+        const res = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
-
-        }
+        });
+        const members = res.data.members;
+        const nextCursor = res.data.cursor;
+        return { members, nextCursor };
     }
 
     public static async getUserGroups(
-        userToken: string, dataPartitionID: string, appkey: string): Promise<IDESEntitlementGroupModel[]> {
 
+        userToken: string, dataPartitionID: string, appkey: string): Promise<IDESEntitlementGroupModel[]> {
         const dataecosystem = DataEcosystemCoreFactory.build(Config.CLOUDPROVIDER);
 
         const options = {
@@ -67,23 +61,16 @@ export class DESEntitlement {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
+            }
         };
+        const url = Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups';
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        try {
-
-            const results = await request.get(options);
-            return JSON.parse(results).groups;
-
-        } catch (error) {
-
+        const results = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
-
-        }
-
+        });
+        return results.data.groups;
     }
 
     // ensure strong consistency on cascade operation createGroup -> addMEmber
@@ -103,13 +90,14 @@ export class DESEntitlement {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
-            },
-            json: undefined,
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT
-                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members',
+            }
         };
+        const url = Config.DES_SERVICE_HOST_ENTITLEMENT
+        + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members';
 
-        options.json = dataecosystem.getUserAddBodyRequest(userEmail, role);
+        const data = {
+            json: dataecosystem.getUserAddBodyRequest(userEmail, role)
+        };
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
@@ -119,16 +107,15 @@ export class DESEntitlement {
             // to ensure the group is created before add a user (if explicitly required)
             let counter = 0;
             while (counter < 10) {
-                try {
-                    await request.post(options);
+                await axios.post(url, data, options).then((response) =>{
                     return;
-                } catch (error) { // check eventual consistency
+                  }).catch((error) => { // check eventual consistency
                     if (!(checkConsistencyForCreateGroup && error && error.error &&
                         error.error.code && error.error.code === 404 &&
                         error.error.reason && (error.error.reason as string).toLocaleLowerCase() === 'not found')) {
                         throw (error);
                     }
-                }
+                });
                 await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s constant (no exp backOff required)
                 counter = counter + 1;
             }
@@ -172,24 +159,18 @@ export class DESEntitlement {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT
-                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail,
+            }
         };
+        const url = Config.DES_SERVICE_HOST_ENTITLEMENT
+                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail;
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        try {
-
-            await request.delete(options);
-
-        } catch (error) {
-
+        await axios.delete(url, options).catch((error) => {
             if (error.statusCode !== 409) {
                 throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
             }
-        }
-
+        });
     }
 
     public static async createGroup(
@@ -203,26 +184,19 @@ export class DESEntitlement {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
-            },
-            json: {
-                description: groupDesc,
-                name: groupName,
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups',
+            }
         };
+        const data = {
+            description: groupDesc,
+            name: groupName,
+        };
+        const url = Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath() + '/groups';
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        try {
-
-            await request.post(options);
-
-        } catch (error) {
-
+        await axios.post(url, data, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
-
-        }
-
+        });
     }
 
     public static async deleteGroup(userToken: string, groupEmail: string, dataPartitionID: string, appkey: string) {
@@ -235,23 +209,16 @@ export class DESEntitlement {
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Authorization': userToken.startsWith('Bearer') ? userToken : 'Bearer ' + userToken,
                 'Content-Type': 'application/json'
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath()
-                + Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH + groupEmail
+            }
         };
+        const url = Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath()
+                + Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH + groupEmail;
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
-        try {
-
-            await request.delete(options);
-
-        } catch (error) {
-
+        await axios.delete(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
-
-        }
-
+        });
     }
 
 }

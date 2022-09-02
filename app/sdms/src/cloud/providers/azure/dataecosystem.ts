@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 import { Error, getInMemoryCacheInstance } from '../../../shared';
 import {
     AbstractDataEcosystemCore,
@@ -59,14 +59,13 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
                     AzureConfig.SP_CLIENT_ID, AzureConfig.SP_CLIENT_SECRET,
                     AzureConfig.SP_TENANT_ID, AzureConfig.SP_APP_RESOURCE_ID)).access_token,
                 'Content-Type': 'application/json'
-            },
-            url: AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions/' + dataPartitionID
+            }
         };
-        try {
-            return JSON.parse(await request.get(options));
-        } catch (error) {
+        const url = AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions/' + dataPartitionID;
+        const results = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error));
-        }
+        });
+        return results.data;
     }
 
     public static async getPartitions(): Promise<string[]> {
@@ -77,14 +76,13 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
                     AzureConfig.SP_CLIENT_ID, AzureConfig.SP_CLIENT_SECRET,
                     AzureConfig.SP_TENANT_ID, AzureConfig.SP_APP_RESOURCE_ID)).access_token,
                 'Content-Type': 'application/json'
-            },
-            url: AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions'
+            }
         };
-        try {
-            return JSON.parse(await request.get(options));
-        } catch (error) {
+        const  url = AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions';
+        const results = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error));
-        }
+        });
+        return results.data;
     }
 
     public static async getStorageResourceName(dataPartitionID: string): Promise<string> {

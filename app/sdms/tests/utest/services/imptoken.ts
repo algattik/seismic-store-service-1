@@ -16,7 +16,7 @@
 
 import { Request as expRequest, Response as expResponse } from 'express';
 import jwt from 'jsonwebtoken';
-import request from 'request-promise';
+import axios from 'axios';
 import sinon from 'sinon';
 import { Auth } from '../../../src/auth';
 import { Config, google } from '../../../src/cloud';
@@ -225,8 +225,8 @@ export class TestImpTokenSVC {
                 access_token: 'token', expires_in: 3600, token_type: 'Bearer'
             });
             this.spy.stub(jwt, 'sign').resolves('jwt-token');
-            this.spy.stub(request, 'get').resolves('{\"signedJwt\": \"token\"}');
-            this.spy.stub(request, 'post').resolves('{\"signedJwt\": \"token\"}');
+            this.spy.stub(axios, 'get').resolves({status: 200, data: {signedJwt: "token"}});
+            this.spy.stub(axios, 'post').resolves({status: 200, data: {signedJwt: "token"}});
             const resourceModel: IResourceModel = {
                 readonly: false,
                 resource: 'resource',
@@ -288,7 +288,7 @@ export class TestImpTokenSVC {
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves();
+            this.spy.stub(axios, 'get').resolves();
             await ImpTokenDAO.canBeRefreshed('https://google.com');
             done();
         });
@@ -301,41 +301,41 @@ export class TestImpTokenSVC {
         // });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves('["my_secret"]');
             await ImpTokenDAO.validate(this.tokenOK);
             done();
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').rejects(this.requestError);
+            this.spy.stub(axios, 'get').rejects(this.requestError);
             try {
                 await ImpTokenDAO.validate(this.tokenOK);
             } catch (e) { Tx.check500(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves('["my_secret"]');
             try {
                 await ImpTokenDAO.validate(this.tokenNoKid);
             } catch (e) { Tx.check400(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('[]');
+            this.spy.stub(axios, 'get').resolves('[]');
             try {
                 await ImpTokenDAO.validate(this.tokenOK);
             } catch (e) { Tx.check400(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves('["my_secret"]');
             this.spy.stub(jwt, 'verify').throws({ name: 'TokenExpiredError' });
             await ImpTokenDAO.validate(this.tokenOK, true);
             done();
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves('["my_secret"]');
             this.spy.stub(jwt, 'verify').throws({ name: 'TokenExpiredError' });
             try {
                 await ImpTokenDAO.validate(this.tokenOK, false);
@@ -343,14 +343,14 @@ export class TestImpTokenSVC {
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves('["my_secret"]');
             try {
                 await ImpTokenDAO.validate(this.tokenWrongIss);
             } catch (e) { Tx.check400(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(request, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves('["my_secret"]');
             try {
                 await ImpTokenDAO.validate(this.tokenWrong);
             } catch (e) { Tx.check400(e.error.code, done); }

@@ -20,7 +20,7 @@ import { Config, CredentialsFactory } from '../../cloud';
 import { Error } from '../../shared';
 import { IImpTokenBodyModel as ImpTokenBodyModel, IRefreshUrl } from './model';
 
-import request from 'request-promise';
+import axios from 'axios';
 
 export class ImpTokenDAO {
 
@@ -33,31 +33,31 @@ export class ImpTokenDAO {
         }
 
         const credentials = CredentialsFactory.build(Config.CLOUDPROVIDER);
-        const options = {
-            form: {
-                payload: JSON.stringify({
-                    aud: credentials.getAudienceForImpCredentials(),
-                    email: serviceSigner,
-                    exp: (impTokenBody.iat + 3600),
-                    iat: impTokenBody.iat,
-                    iss: serviceSigner,
-                    obo: impTokenBody.user,
-                    rsrc: impTokenBody.resources,
-                    rurl: impTokenBody.refreshUrl,
-                    sub: serviceSigner,
-                }),
-            },
+        const data = {
+            payload: JSON.stringify({
+                aud: credentials.getAudienceForImpCredentials(),
+                email: serviceSigner,
+                exp: (impTokenBody.iat + 3600),
+                iat: impTokenBody.iat,
+                iss: serviceSigner,
+                obo: impTokenBody.user,
+                rsrc: impTokenBody.resources,
+                rurl: impTokenBody.refreshUrl,
+                sub: serviceSigner,
+            }),
+        };
+        const headers = {
             headers: {
                 'Authorization': 'Bearer ' + (await credentials.getServiceAccountAccessToken()).access_token,
                 'Content-Type': 'application/json',
-            },
-            url: credentials.getIAMResourceUrl(serviceSigner),
+            }
         };
 
         try {
-
+            const url = credentials.getIAMResourceUrl(serviceSigner);
+            const results = await axios.post(url, data, headers);
             const impToken = {} as ImpTokenModel;
-            impToken.impersonation_token = JSON.parse(await request.post(options)).signedJwt;
+            impToken.impersonation_token = JSON.parse(JSON.stringify(results.data.signedJwt));
             impToken.expires_in = 3600;
             impToken.token_type = 'Bearer';
             return impToken;
@@ -70,7 +70,7 @@ export class ImpTokenDAO {
 
     public static async canBeRefreshed(refreshUrl: string) {
 
-        const options: request.Options = { method: 'GET', url: '' };
+        const options = { method: 'GET', url: '', headers: {}, json: {} };
 
         if (refreshUrl.startsWith('https://') || refreshUrl.startsWith('http://')) {
             options.method = 'GET';
@@ -89,7 +89,7 @@ export class ImpTokenDAO {
         }
 
         try {
-            await request(options);
+            await axios(options);
         } catch (error) {
             // For any code different than 4xx the imptoken can be refreshed
             // This is a temporary fix to handle unavailability of client infrastructure
@@ -107,16 +107,14 @@ export class ImpTokenDAO {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-            },
-            url: credentials.getPublicKeyCertificatesUrl(),
+            }
         };
+        const url = credentials.getPublicKeyCertificatesUrl();
 
         let result: any;
-        try {
-            result = await request.get(options);
-        } catch (error) {
+        result = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error));
-        }
+        });
 
         let pubkey: string;
         let decodedToken: any;

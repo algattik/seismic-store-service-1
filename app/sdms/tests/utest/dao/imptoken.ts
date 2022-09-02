@@ -15,7 +15,7 @@
 // ============================================================================
 
 import jsonwebtoken from 'jsonwebtoken';
-import request from 'request-promise';
+import axios from 'axios';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
@@ -50,7 +50,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
          this.sandbox.stub(google.Credentials.prototype, 'getServiceAccountAccessToken').resolves(
             { access_token: 'access_token', expires_in: 100, token_type: 'token' });
-         this.sandbox.stub(request, 'post').resolves(JSON.stringify({ signedJwt: 'signed_jwt' }));
+         this.sandbox.stub(axios, 'post').resolves(JSON.stringify({ signedJwt: 'signed_jwt' }));
          const result = await ImpTokenDAO.create({
             iat: 100,
             refreshUrl: 'refresh-url',
@@ -70,7 +70,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
          this.sandbox.stub(google.Credentials.prototype, 'getServiceAccountAccessToken').resolves(
             { access_token: 'access_token', expires_in: 100, token_type: 'token' });
-         this.sandbox.stub(request, 'post').throws();
+         this.sandbox.stub(axios, 'post').throws();
 
          try {
             await ImpTokenDAO.create({
@@ -96,13 +96,13 @@ export class TestImpToken {
       Tx.sectionInit('can be refreshed');
 
       Tx.testExp(async (done: any) => {
-         this.sandbox.stub(request, 'get').resolves();
+         this.sandbox.stub(axios, 'get').resolves();
          await ImpTokenDAO.canBeRefreshed('https://google.com');
          done();
       });
 
       Tx.testExp(async (done: any) => {
-         this.sandbox.stub(request, 'get').throws();
+         this.sandbox.stub(axios, 'get').throws();
          try {
             await ImpTokenDAO.canBeRefreshed('https://refresh-url');
          } catch (e) {
@@ -127,7 +127,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
+         this.sandbox.stub(axios, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          this.sandbox.stub(jsonwebtoken, 'verify').returns(
             {
                iss: Config.IMP_SERVICE_ACCOUNT_SIGNER,
@@ -142,7 +142,7 @@ export class TestImpToken {
 
       Tx.testExp(async (done: any) => {
          try {
-            this.sandbox.stub(request, 'get').throws();
+            this.sandbox.stub(axios, 'get').throws();
             await ImpTokenDAO.validate('token');
          } catch (e) {
             Tx.check500(e.error.code, done);
@@ -152,7 +152,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').throws();
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
+         this.sandbox.stub(axios, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          try {
             await ImpTokenDAO.validate('token');
          } catch (e) {
@@ -163,7 +163,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
+         this.sandbox.stub(axios, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          this.sandbox.stub(jsonwebtoken, 'verify').throws();
          try {
             await ImpTokenDAO.validate('token');
@@ -175,7 +175,7 @@ export class TestImpToken {
       Tx.testExp(async (done: any) => {
 
          this.sandbox.stub(jsonwebtoken, 'decode').returns({ header: { kid: 'kid' } });
-         this.sandbox.stub(request, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
+         this.sandbox.stub(axios, 'get').resolves(JSON.stringify({ kid: 'public_key' }));
          this.sandbox.stub(jsonwebtoken, 'verify').returns(
             {
                iss: Config.IMP_SERVICE_ACCOUNT_SIGNER,

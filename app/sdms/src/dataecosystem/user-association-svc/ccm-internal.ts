@@ -1,4 +1,4 @@
-import request from 'request-promise';
+import axios from 'axios';
 import { AuthProviderFactory } from '../../auth';
 import { Config, DataEcosystemCoreFactory } from '../../cloud';
 import { Error, getInMemoryCacheInstance } from '../../shared';
@@ -30,16 +30,16 @@ export class DESUserAssociation extends AbstractUserAssociationSvcProvider {
             'AppKey': Config.DES_SERVICE_APPKEY,
             'Authorization': 'Bearer ' + credential.access_token,
             'Content-Type': 'application/json'
-         },
-         url: Config.CCM_SERVICE_URL + '/' + dataecosystem.getUserAssociationSvcBaseUrlPath()
-            + '/users/' + principalIdentifier + '/information',
+         }
       };
+      const url = Config.CCM_SERVICE_URL + '/' + dataecosystem.getUserAssociationSvcBaseUrlPath()
+      + '/users/' + principalIdentifier + '/information';
 
       options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
       try {
-         const results = await request.get(options);
-         const userEmail = JSON.parse(results)['email'];
+         const results = await axios.get(url, options);
+         const userEmail = results.data['email'];
 
          cache.set<string>(cacheKey, userEmail, 3600);
 

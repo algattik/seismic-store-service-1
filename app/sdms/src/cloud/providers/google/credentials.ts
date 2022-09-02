@@ -15,7 +15,8 @@
 // ============================================================================
 
 import jwttoken from 'jsonwebtoken';
-import request from 'request-promise';
+import axios from 'axios';
+import qs from 'qs';
 import { Config } from '../../../cloud';
 import { Error, Utils } from '../../../shared';
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
@@ -76,23 +77,25 @@ export class Credentials extends AbstractCredentials {
                 };
             }
 
-            const requestOptions = {
-                form: {
-                    'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
-                    'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
-                    'requested_token_type': 'urn:ietf:params:oauth:token-type:access_token',
-                    'subject_token': accessToken,
-                    'options': JSON.stringify({
-                        'accessBoundary': accessBoundary
-                    })
-                },
+            const data = qs.stringify({
+                grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+                subject_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+                requested_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+                subject_token: accessToken,
+                options: JSON.stringify({
+                    'accessBoundary': accessBoundary
+                })
+            });
+            const headers = {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                url: 'https://sts.googleapis.com/v1beta/token',
+                }
             };
+            const url = 'https://sts.googleapis.com/v1beta/token';
 
-            return JSON.parse(await request.post(requestOptions));
+            const results = await axios.post(url, data, headers);
+
+            return results.data;
 
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
@@ -109,27 +112,28 @@ export class Credentials extends AbstractCredentials {
         Credentials.serviceAccountEmail = await this.getServiceAccountEmail();
         const svcToken = (await this.getServiceAccountAccessToken()).access_token;
 
-        const options = {
-            form: {
-                payload: JSON.stringify({
-                    aud: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
-                    exp: (now + 3600),
-                    iat: now,
-                    iss: Credentials.serviceAccountEmail,
-                    target_audience: ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE,
-                }),
-            },
+        const data = qs.stringify({
+            payload: JSON.stringify({
+                aud: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
+                exp: (now + 3600),
+                iat: now,
+                iss: Credentials.serviceAccountEmail,
+                target_audience: ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE,
+            }),
+        });
+        const headers = {
             headers: {
                 'Authorization': 'Bearer ' + svcToken,
                 'Content-Type': 'application/json',
-            },
-            url: ConfigGoogle.GOOGLE_EP_IAM + '/projects/' +
-                ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' + Credentials.serviceAccountEmail + ':signJwt',
+            }
         };
+        const url = ConfigGoogle.GOOGLE_EP_IAM + '/projects/' +
+        ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' + Credentials.serviceAccountEmail + ':signJwt';
 
         try {
+            const results = await axios.post(url, data, headers);
             const idToken = await this.signJWT(
-                JSON.parse(await request.post(options)).signedJwt) as IDTokenModel;
+                results.data.signedJwt) as IDTokenModel;
 
             Credentials.serviceAccountIdToken = idToken.id_token;
             Credentials.serviceAccountIdTokenExpiresIn =
@@ -174,12 +178,13 @@ export class Credentials extends AbstractCredentials {
         }
 
         const options = {
-            headers: { 'Metadata-Flavor': 'Google' },
-            url: ConfigGoogle.GOOGLE_EP_METADATA + '/instance/service-accounts/default/token',
+            headers: { 'Metadata-Flavor': 'Google' }
         };
+        const url = ConfigGoogle.GOOGLE_EP_METADATA + '/instance/service-accounts/default/token';
 
         try {
-            Credentials.serviceAccountAccessToken = JSON.parse(await request.get(options));
+            const results = await axios.get(url, options);
+            Credentials.serviceAccountAccessToken = results.data;
             Credentials.serviceAccountAccessTokenExpiresIn =
                 Math.floor(Date.now() / 1000) + Credentials.serviceAccountAccessToken.expires_in - KExpiresMargin;
             return Credentials.serviceAccountAccessToken;
@@ -198,13 +203,13 @@ export class Credentials extends AbstractCredentials {
         }
 
         const options = {
-            headers: { 'Metadata-Flavor': 'Google' },
-            url: ConfigGoogle.GOOGLE_EP_METADATA + '/instance/service-accounts/default/email',
+            headers: { 'Metadata-Flavor': 'Google' }
         };
+        const url = ConfigGoogle.GOOGLE_EP_METADATA + '/instance/service-accounts/default/email';
 
-        try {
-            return await request.get(options);
-        } catch (error) {
+        try  {
+            await axios.get(url, options);
+        } catch(error) {
             throw (Error.makeForHTTPRequest(error));
         }
     }
@@ -234,19 +239,22 @@ export class Credentials extends AbstractCredentials {
 
     public async signJWT(jwt: string): Promise<IDTokenModel | IAccessTokenModel> {
 
-        const options = {
+        const data = {
             form: {
                 assertion: jwt,
                 grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-            },
+            }
+        };
+        const headers = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            url: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
+            }
         };
+        const url = ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token';
 
         try {
-            return JSON.parse(await request.post(options));
+            const results = await axios.post(url, data, headers);
+            return results.data;
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
         }

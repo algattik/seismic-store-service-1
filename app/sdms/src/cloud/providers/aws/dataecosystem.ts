@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import request from 'request-promise';
+import axios from 'axios';
 import { getInMemoryCacheInstance } from '../../../shared';
 import {
     AbstractDataEcosystemCore,
@@ -65,14 +65,15 @@ export class AWSDataEcosystemServices extends AbstractDataEcosystemCore {
                 'Accept': 'application/json',
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
-            },
-            url: AWSConfig.DES_SERVICE_HOST_PARTITION +
-                AWSDataEcosystemServices.getPartitionBaseUrlPath() + dataPartitionID
+            }
             // url: 'https://kogliny.dev.osdu.aws/api/partition/v1/partitions/' + dataPartitionID
         };
+        const url = AWSConfig.DES_SERVICE_HOST_PARTITION +
+        AWSDataEcosystemServices.getPartitionBaseUrlPath() + dataPartitionID;
 
         try {
-            const response = JSON.parse(await request.get(options));
+            const results = await axios.get(url, options);
+            const response = results.data;
             const tenantInfo = response['tenantId']['value'];
             cache.set<string>(cacheKey, tenantInfo, 3600);
             return tenantInfo;

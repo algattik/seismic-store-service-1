@@ -17,7 +17,8 @@ import { AWSConfig } from './config';
 import {AWSSSMhelper} from './ssmhelper';
 import {AWSSTShelper} from './stshelper';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
-import request from 'request-promise';
+import axios from 'axios';
+import qs from 'qs';
 import aws from 'aws-sdk';
 import {AWSDataEcosystemServices} from './dataecosystem';
 
@@ -135,18 +136,19 @@ export class AWSCredentials extends AbstractCredentials {
         const decoded = (str: string):string => Buffer.from(str, 'base64').toString('binary');
         const encodedAuth = encoded(auth);
 
-        const options = {
-            form: {
-                grant_type: 'client_credentials',
-                scope: oauthCustomScope
-            },
+        const data = qs.stringify({
+            grant_type: 'client_credentials',
+            scope: oauthCustomScope
+        });
+        const headers = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': 'Basic '+encodedAuth
-            },
-            url: tokenUrl,
+            }
         };
-        const response = JSON.parse(await request.post(options));
+        const url = tokenUrl;
+        const results = await axios.post(url, data, headers);
+        const response = results.data;
         AWSCredentials.servicePrincipalCredential = response as IAccessTokenModel;
         AWSCredentials.servicePrincipalCredential.expires_in = Math.floor(Date.now() / 1000) +
             +AWSCredentials.servicePrincipalCredential.expires_in - KExpiresMargin;

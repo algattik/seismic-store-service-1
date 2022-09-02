@@ -17,7 +17,7 @@
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Error, getInMemoryCacheInstance } from '../shared';
 
-import request from 'request-promise';
+import axios from 'axios';
 
 export class DESCompliance {
 
@@ -36,10 +36,12 @@ export class DESCompliance {
                 'Accept': 'application/json',
                 'AppKey': appkey || Config.DES_SERVICE_APPKEY,
                 'Content-Type': 'application/json'
-            },
-            json: { names: [ltag] },
-            url: Config.DES_SERVICE_HOST_COMPLIANCE + dataecosystem.getComplianceBaseUrlPath() + '/legaltags:validate',
+            }
         };
+        const data = {
+            'names': [ltag]
+        };
+        const url = Config.DES_SERVICE_HOST_COMPLIANCE + dataecosystem.getComplianceBaseUrlPath() + '/legaltags:validate';
 
         // tslint:disable-next-line: no-string-literal
         options.headers['Authorization'] = await dataecosystem.getAuthorizationHeader(userToken);
@@ -47,16 +49,14 @@ export class DESCompliance {
 
         try {
 
-            const results = await request.post(options);
-            cache.set(cacheKey, results.invalidLegalTags.length === 0, 3600);
-            return results.invalidLegalTags.length === 0;
+            const results = await axios.post(url, data, options);
+            cache.set(cacheKey, results.data.invalidLegalTags.length === 0, 3600);
+            return results.data.invalidLegalTags.length === 0;
 
         } catch (error) {
 
             throw (Error.makeForHTTPRequest(error, '[compliance-service]'));
-
-        }
-
+        };
     }
 
 }

@@ -14,7 +14,8 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
+import qs from 'qs';
 
 import { Error } from '../../../shared';
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
@@ -79,30 +80,29 @@ export class AzureCredentials extends AbstractCredentials {
             return AzureCredentials.servicePrincipalCredential;
         }
 
-        const options = {
-            form: {
-                grant_type: 'client_credentials',
-                client_id: clientID,
-                // pragma: allowlist nextline secret
-                client_secret: clientSecret,
-                resource: appResourceID
-            },
+        const data = qs.stringify({
+            grant_type: 'client_credentials',
+            client_id: clientID,
+            // pragma: allowlist nextline secret
+            client_secret: clientSecret,
+            resource: appResourceID
+        });
+        const headers = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            url: 'https://login.microsoftonline.com/' + tenantID + '/oauth2/token',
+            }
         };
+        const url = 'https://login.microsoftonline.com/' + tenantID + '/oauth2/token';
 
-        try {
-            AzureCredentials.servicePrincipalCredential = JSON.parse(await request.post(options)) as IAccessTokenModel;
-            AzureCredentials.servicePrincipalCredential.expires_in = Math.floor(Date.now() / 1000) +
-                +AzureCredentials.servicePrincipalCredential.expires_in - KExpiresMargin;
-            AzureCredentials.servicePrincipalCredential.token_type =
-                'internal;' + clientID + ';' + clientSecret + ';' + tenantID + ';' + appResourceID;
-            return AzureCredentials.servicePrincipalCredential;
-        } catch (error) {
+        const results = await axios.post(url, data, headers).catch((error) => {
             throw (Error.makeForHTTPRequest(error));
-        }
+        });
+        AzureCredentials.servicePrincipalCredential = results.data as IAccessTokenModel;
+        AzureCredentials.servicePrincipalCredential.expires_in = Math.floor(Date.now() / 1000) +
+            +AzureCredentials.servicePrincipalCredential.expires_in - KExpiresMargin;
+        AzureCredentials.servicePrincipalCredential.token_type =
+            'internal;' + clientID + ';' + clientSecret + ';' + tenantID + ';' + appResourceID;
+        return AzureCredentials.servicePrincipalCredential;
     }
 
     public async getStorageCredentials(

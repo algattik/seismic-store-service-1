@@ -1,6 +1,7 @@
 import * as f from 'fs';
 import path from 'path';
-import request from 'request-promise';
+import axios from 'axios';
+import qs from 'qs';
 import { AuthProviderFactory } from '../auth';
 import { Config, DataEcosystemCoreFactory } from '../cloud';
 import { Error } from '../shared';
@@ -31,19 +32,18 @@ export class PolicyService {
             'AppKey': Config.DES_SERVICE_APPKEY,
             'Authorization': credential.access_token,
             'Content-Type': 'text/plain',
-         },
-         url
+         }
       };
-      try {
-         const authRegoPolicyFile = path.join(__dirname, '..', 'docs', 'policies', policyFile);
-         const contents = f.readFileSync(authRegoPolicyFile).toString();
-         options['body'] = contents.replace('DES_POLICY_SERVICE_HOST', Config.DES_POLICY_SERVICE_HOST);
 
-         await request.post(options);
+      const authRegoPolicyFile = path.join(__dirname, '..', 'docs', 'policies', policyFile);
+      const contents = f.readFileSync(authRegoPolicyFile).toString();
+      const data = qs.stringify({
+         body: contents.replace('DES_POLICY_SERVICE_HOST', Config.DES_POLICY_SERVICE_HOST)
+      });
 
-      } catch (error) {
+      await axios.post(url, data, options).catch((error) => {
          throw (Error.makeForHTTPRequest(error, '[policy-service]'));
-      }
+      });
    }
 
    public static async evaluatePolicy(datapartitionId: string, userToken: string, groupEmails: string[])
@@ -58,17 +58,9 @@ export class PolicyService {
          }
       };
 
-      const options = {
-         url: dataPolicyURL,
-         json: payload
-      };
-
-      try {
-         const response = await request.post(options);
-         return response.result[0] as IPolicyServiceResponse;
-      }
-      catch (error) {
+      const response = await axios.post(dataPolicyURL, payload).catch((error) => {
          throw (Error.makeForHTTPRequest(error, '[policy-service]'));
-      }
+      });
+      return response.data as IPolicyServiceResponse;
    }
 }
