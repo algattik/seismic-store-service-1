@@ -24,7 +24,6 @@ import { AzureConfig } from './config';
 import { Config } from '../..';
 import { Error } from '../../../shared';
 
-// import request from 'request-promise';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
 @JournalFactory.register('azure')

@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import request from 'request-promise';
+import axios from 'axios';
+import qs from 'qs';
 
 import { AbstractCredentials, CredentialsFactory, IAccessTokenModel } from '../../credentials';
 import { AnthosConfig } from './config';
@@ -62,13 +63,14 @@ export class AnthosCredentials extends AbstractCredentials {
                 'Accept': 'application/json',
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
-            },
-            url: AnthosConfig.DES_SERVICE_HOST_PARTITION +
-                AnthosDataEcosystemServices.getPartitionBaseUrlPath() + dataPartitionID
+            }
         };
+        const url = AnthosConfig.DES_SERVICE_HOST_PARTITION +
+        AnthosDataEcosystemServices.getPartitionBaseUrlPath() + dataPartitionID;
 
         try {
-            const response = JSON.parse(await request.get(options));
+            const results = await axios.get(url, options);
+            const response = results.data;
 
             const endpoint: string = response['properties']['obm.minio.endpoint']['value'];
             const accessKey: string = response['properties']['obm.minio.accessKey']['value'];
@@ -140,19 +142,20 @@ export class AnthosCredentials extends AbstractCredentials {
             return AnthosCredentials.servicePrincipalCredential.access_token;
         }
 
-        const options = {
-            form: {
-                grant_type: 'client_credentials',
-                scope: 'openid partition-and-entitlements',
-                client_id: AnthosConfig.KEYCLOAK_CLIENT_ID,
-                client_secret: AnthosConfig.KEYCLOAK_CLIENT_SECRET
-            },
+        const data = qs.stringify({
+            grant_type: 'client_credentials',
+            scope: 'openid partition-and-entitlements',
+            client_id: AnthosConfig.KEYCLOAK_CLIENT_ID,
+            client_secret: AnthosConfig.KEYCLOAK_CLIENT_SECRET
+        });
+        const headers = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            url: AnthosConfig.KEYCLOAK_URL
+            }
         };
-        const response = JSON.parse(await request.post(options));
+        const url = AnthosConfig.KEYCLOAK_URL;
+        const results = await axios.post(url, data, headers);
+        const response = results.data;
         AnthosCredentials.servicePrincipalCredential = response as IAccessTokenModel;
         AnthosCredentials.servicePrincipalCredential.expires_in = Math.floor(Date.now() / 1000) +
             +AnthosCredentials.servicePrincipalCredential.expires_in - KExpiresMargin;

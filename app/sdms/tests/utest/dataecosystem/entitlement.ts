@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
@@ -58,8 +58,8 @@ export class TestDESEntitlement {
 
       Tx.test(async (done: any) => {
 
-         const requestStub = this.sandbox.stub(request, 'get');
-         requestStub.resolves(JSON.stringify({ groups: ['group1,', 'group2'] }));
+         const requestStub = this.sandbox.stub(axios, 'get');
+         requestStub.resolves({ status: 200, data: { groups: ['group1,', 'group2'] } });
 
          await DESEntitlement.getUserGroups('usertoken', 'tenant-one','appkey');
 
@@ -70,14 +70,14 @@ export class TestDESEntitlement {
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
                'data-partition-id': 'tenant-one',
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups',
+            }
          };
-         Tx.checkTrue(requestStub.calledWith(options), done);
+         const url = Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups';
+         Tx.checkTrue(requestStub.calledWith(url, options), done);
       });
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'get');
+         const requestStub = this.sandbox.stub(axios, 'get');
          requestStub.throws(Error.make(500, 'Error', 'mprefix'));
          try {
             await DESEntitlement.getUserGroups('usertoken', 'tenant-one', 'appkey');
@@ -93,7 +93,7 @@ export class TestDESEntitlement {
       Tx.sectionInit('add user to group');
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post');
+         const requestStub = this.sandbox.stub(axios, 'post');
          requestStub.resolves();
          await DESEntitlement.addUserToGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'role-a','appkey');
 
@@ -108,16 +108,16 @@ export class TestDESEntitlement {
             json: {
                email: 'user@email',
                role: 'role-a',
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups' + '/group-a' + '/members',
+            }
          };
+         const url = Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups' + '/group-a' + '/members';
 
-         Tx.checkTrue(requestStub.calledWith(options), done);
+         Tx.checkTrue(requestStub.calledWith(url, options), done);
 
       });
-
+ 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'post').throws();
+         this.sandbox.stub(axios, 'post').throws();
          try {
             await DESEntitlement.addUserToGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'role-a', 'appkey');
          } catch (e) {
@@ -130,7 +130,7 @@ export class TestDESEntitlement {
       Tx.sectionInit('remove user from group');
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'delete');
+         const requestStub = this.sandbox.stub(axios, 'delete');
          requestStub.resolves();
 
          await DESEntitlement.removeUserFromGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'appkey');
@@ -142,15 +142,15 @@ export class TestDESEntitlement {
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
                'data-partition-id': 'tenant-a',
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/groups/' + 'group-a' + '/members/' + 'user@email',
+            }
          };
+         const url = Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/groups/' + 'group-a' + '/members/' + 'user@email';
 
-         Tx.checkTrue(requestStub.calledWith(options), done);
+         Tx.checkTrue(requestStub.calledWith(url, options), done);
       });
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'delete').throws();
+         this.sandbox.stub(axios, 'delete').throws();
          try {
             await DESEntitlement.removeUserFromGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'appkey');
          } catch (e) {
@@ -163,7 +163,7 @@ export class TestDESEntitlement {
       Tx.sectionInit('create group');
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post');
+         const requestStub = this.sandbox.stub(axios, 'post');
          requestStub.resolves();
 
          await DESEntitlement.createGroup('usertoken', 'group-a', 'group desc', 'tenant-a','appkey');
@@ -175,20 +175,20 @@ export class TestDESEntitlement {
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
                'data-partition-id': 'tenant-a',
-            },
-            json: {
-               description: 'group desc',
-               name: 'group-a',
-            },
-            url: Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/groups',
+            }
          };
+         const data = {
+            description: 'group desc',
+            name: 'group-a',
+         }
+         const url = Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements/groups';
 
-         Tx.checkTrue(requestStub.calledWith(options), done);
+         Tx.checkTrue(requestStub.calledWith(url, data, options), done);
 
       });
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post');
+         const requestStub = this.sandbox.stub(axios, 'post');
          requestStub.throws();
 
          try {
@@ -204,8 +204,8 @@ export class TestDESEntitlement {
       Tx.sectionInit('get group members');
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'get');
-         requestStub.resolves(JSON.stringify(
+         const requestStub = this.sandbox.stub(axios, 'get');
+         requestStub.resolves({ status: 200, data: 
             {
                cursor: 'cursor',
                members: [{
@@ -218,8 +218,8 @@ export class TestDESEntitlement {
                },
 
                ],
-            },
-         ));
+            }}
+         );
 
          const results = await DESEntitlement.listUsersInGroup('userToken', 'group-a', 'tenant-a', undefined);
          Tx.checkTrue(results.members.length === 2 && results.nextCursor === 'cursor', done);
@@ -227,7 +227,7 @@ export class TestDESEntitlement {
       });
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'get');
+         const requestStub = this.sandbox.stub(axios, 'get');
          requestStub.throws();
          try {
             await DESEntitlement.listUsersInGroup('userToken', 'group-a', 'tenant-a', undefined);

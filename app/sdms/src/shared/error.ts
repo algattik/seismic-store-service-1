@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { Locker } from '../services/dataset/locker';
+import axios from 'axios';
 
 export class ErrorModel {
     public error: {
@@ -50,7 +51,9 @@ export class Error {
     }
 
     public static makeForHTTPRequest(error: any, mexPrefix: string = '[seismic-store-service]'): ErrorModel {
-        if (typeof error === 'object' && error.name === 'StatusCodeError') {
+        if (axios.isAxiosError(error)) {
+            return this.make(error.response.status, error.response.statusText, mexPrefix)
+        } else if (typeof error === 'object' && error.name === 'StatusCodeError') {
             return this.make(
                 error.statusCode || 500,
                 typeof error.error === 'object' ? error.error.message || error.message : error.message || error,

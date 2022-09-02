@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 import sinon from 'sinon';
 
 import { google } from '../../../src/cloud/providers';
@@ -49,13 +49,13 @@ export class TestCredentials {
     Tx.sectionInit('service account email');
 
     Tx.testExp(async (done: any) => {
-      this.sandbox.stub(request, 'get').resolves();
+      this.sandbox.stub(axios, 'get').resolves();
       await this.credentials.getServiceAccountEmail();
       done();
     });
 
     Tx.testExp(async (done: any) => {
-      this.sandbox.stub(request, 'get').throws();
+      this.sandbox.stub(axios, 'get').throws();
       try {
         await this.credentials.getServiceAccountEmail();
       } catch (e) {
@@ -112,7 +112,7 @@ export class TestCredentials {
         access_token: 'access_token',
         expires_in: 100, token_type: 'access_token',
       });
-      this.sandbox.stub(request, 'post').resolves(JSON.stringify({ singedJwt: 'signed_jwt' }));
+      this.sandbox.stub(axios, 'post').resolves({ status: 200, data: { signedJwt: "signed_jwt" }});
       this.sandbox.stub(google.Credentials.prototype, 'signJWT' as any).resolves({ id_token: 'id_token' });
       this.sandbox.stub(Utils, 'getExpTimeFromPayload').resolves(400);
 
@@ -128,11 +128,11 @@ export class TestCredentials {
     Tx.sectionInit('service access token');
 
     Tx.testExp(async (done: any) => {
-      this.sandbox.stub(request, 'get').resolves(JSON.stringify({
+      this.sandbox.stub(axios, 'get').resolves({ status: 200, data: {
         access_token: 'acces_token',
         expires_in: 1000,
         token_type: 'token-a',
-      }));
+      }});
 
       const result = await this.credentials.getServiceAccountAccessToken();
       Tx.checkTrue(result.access_token === 'acces_token', done);

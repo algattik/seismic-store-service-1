@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
@@ -50,19 +50,19 @@ export class TestStorage {
       Tx.sectionInit('create put record');
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'put').resolves();
+         this.sandbox.stub(axios, 'put').resolves();
          await DESStorage.insertRecord('usertoken', JSON.stringify({ seismetadata: 'data' }), 'esd', 'appkey');
          done();
       });
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'put').resolves();
+         this.sandbox.stub(axios, 'put').resolves();
          await DESStorage.insertRecord('usertoken', undefined, 'esd', 'appkey');
          done();
       });
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'put');
+         const requestStub = this.sandbox.stub(axios, 'put');
          requestStub.resolves();
          await DESStorage.insertRecord('usertoken', JSON.stringify({ seismetadata: 'data' }), 'esd', 'appkey');
 
@@ -73,15 +73,16 @@ export class TestStorage {
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
                'data-partition-id': 'tenant-a',
-            },
-            json: JSON.stringify({ seismetadata: 'data' }),
-            url: Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records',
+            }
          };
-         Tx.checkTrue(requestStub.calledWith(options), done);
+         const  data = JSON.stringify({ seismetadata: 'data' })
+         
+         const url = Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records';
+         Tx.checkTrue(requestStub.calledWith(url, data, options), done);
       });
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'put').throws();
+         this.sandbox.stub(axios, 'put').throws();
          try {
             await DESStorage.insertRecord('usertoken', JSON.stringify({ seismetadata: 'data' }), 'esd', 'appkey');
          } catch (e) {
@@ -95,20 +96,20 @@ export class TestStorage {
       Tx.sectionInit('delete record');
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post');
+         const requestStub = this.sandbox.stub(axios, 'post');
          requestStub.resolves();
          await DESStorage.deleteRecord('usertoken', 'uid', 'esd', 'appkey');
          done();
       });
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'post').resolves();
+         this.sandbox.stub(axios, 'post').resolves();
          await DESStorage.deleteRecord('usertoken', 'uid', 'esd', 'appkey');
          done();
       });
 
       Tx.test(async (done: any) => {
-         this.sandbox.stub(request, 'post').throws();
+         this.sandbox.stub(axios, 'post').throws();
          try {
             await DESStorage.deleteRecord('usertoken', 'uid', 'esd', 'appkey');
          } catch (e) {
@@ -117,7 +118,7 @@ export class TestStorage {
       });
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post').resolves();
+         const requestStub = this.sandbox.stub(axios, 'post').resolves();
          requestStub.resolves();
          await DESStorage.deleteRecord('usertoken', 'uid', 'esd', 'appkey');
 
@@ -128,11 +129,11 @@ export class TestStorage {
                'Authorization': 'Bearer usertoken',
                'Content-Type': 'application/json',
                'data-partition-id': 'tenant-a',
-            },
-            url: Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records/uid' + ':delete',
+            }
          };
+         const url = Config.DES_SERVICE_HOST_STORAGE + '/storage/v2/records/uid' + ':delete';
 
-         Tx.checkTrue(requestStub.calledWith(options), done);
+         Tx.checkTrue(requestStub.calledWith(url, '', options), done);
 
       });
    }

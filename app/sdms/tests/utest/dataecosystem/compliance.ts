@@ -14,7 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
-import request from 'request-promise';
+import axios from 'axios';
 import sinon from 'sinon';
 import { Config } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
@@ -51,36 +51,38 @@ export class TestCompliance {
          'Authorization': 'Bearer usertoken',
          'Content-Type': 'application/json',
          'data-partition-id': 'tenant-a',
-      },
-      json: { names: ['ltag'] },
-      url: Config.DES_SERVICE_HOST_COMPLIANCE + '/legal/v1/legaltags:validate',
+      }
    };
+   private static data = {
+      names: ['ltag']
+   };
+   private static url = Config.DES_SERVICE_HOST_COMPLIANCE + '/legal/v1/legaltags:validate';
 
    private static isLegalTagValid() {
       Tx.sectionInit('legal tag validity');
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post');
-         requestStub.resolves({
+         const requestStub = this.sandbox.stub(axios, 'post');
+         requestStub.resolves({ status: 200, data: {
             invalidLegalTags: [],
-         });
+         }});
 
          const result = await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
 
-         requestStub.calledWith(this.options);
-         Tx.checkTrue(result && requestStub.calledWith(this.options), done);
+         requestStub.calledWith(this.url, this.data, this.options);
+         Tx.checkTrue(result && requestStub.calledWith(this.url, this.data, this.options), done);
 
       });
 
       Tx.test(async (done: any) => {
-         const requestStub = this.sandbox.stub(request, 'post');
-         requestStub.resolves({
+         const requestStub = this.sandbox.stub(axios, 'post');
+         requestStub.resolves({ status: 200, data: {
             invalidLegalTags: ['ltag'],
-         });
+         }});
 
          const result = await DESCompliance.isLegalTagValid('usertoken', 'ltag', 'tenant-a', 'appkey');
-         requestStub.calledWith(this.options);
-         Tx.checkFalse(result && requestStub.calledWith(this.options), done);
+         requestStub.calledWith(this.url, this.data, this.options);
+         Tx.checkFalse(result && requestStub.calledWith(this.url, this.data, this.options), done);
 
       });
 
