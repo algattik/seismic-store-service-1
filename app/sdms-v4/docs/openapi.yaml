@@ -187,7 +187,7 @@ paths:
         200:
           $ref: "#/components/responses/segy.1.0.0"
     delete:
-      operationId: segy-v1-soft-delete
+      operationId: segy-v1-delete
       summary: delete a segy seismic dataset
       description: |
         Required role: users.datalake.admin
@@ -342,7 +342,7 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
@@ -362,7 +362,7 @@ paths:
 
         Pagination is supported.
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
@@ -380,7 +380,7 @@ paths:
 
         This api returns the last version of an openzgy seismic dataset.
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -388,14 +388,14 @@ paths:
         200:
           $ref: "#/components/responses/openzgy.1.0.0"
     delete:
-      operationId: openzgy-v1-soft-delete
+      operationId: openzgy-v1-delete
       summary: delete a openzgy seismic dataset
       description: |
         Required role: users.datalake.admin
 
         The API performs a deletion of the given openzgy dataset record.
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -412,7 +412,7 @@ paths:
 
         This api returns the list of versions for an openzgy seismic dataset.
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -429,7 +429,7 @@ paths:
 
         This api returns a specific version of the openzgy seismic dataset
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -447,7 +447,7 @@ paths:
 
         This api re-index a list of dataset ingested via sdms V3.
       tags:
-        - File Collection OpenZGY (Not Implemented)
+        - File Collection OpenZGY
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
@@ -543,7 +543,7 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
@@ -563,7 +563,7 @@ paths:
 
         Pagination is supported.
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
@@ -581,7 +581,7 @@ paths:
 
         This api returns the last version of an openvds seismic dataset.
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -589,14 +589,14 @@ paths:
         200:
           $ref: "#/components/responses/openvds.1.0.0"
     delete:
-      operationId: openvds-v1-soft-delete
+      operationId: openvds-v1-delete
       summary: delete a openvds seismic dataset
       description: |
         Required role: users.datalake.admin
 
         The API performs a deletion of the given openvds dataset record
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -613,7 +613,7 @@ paths:
 
         This api returns the list of versions for an openvds seismic dataset.
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -630,7 +630,7 @@ paths:
 
         This api returns a specific version of the openvds seismic dataset
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -648,7 +648,7 @@ paths:
 
         This api re-index a list of dataset ingested via sdms V3.
       tags:
-        - File Collection OpenVDS (Not Implemented)
+        - File Collection OpenVDS
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
@@ -790,7 +790,7 @@ paths:
         200:
           $ref: "#/components/responses/generic.1.0.0"
     delete:
-      operationId: generic-v1-soft-delete
+      operationId: generic-v1-delete
       summary: delete a generic seismic dataset
       description: |
         Required role: users.datalake.admin
@@ -924,7 +924,7 @@ paths:
         200:
           $ref: "#/components/responses/tracedata.1.1.0"
     delete:
-      operationId: tracedata-v1-soft-delete
+      operationId: tracedata-v1-delete
       summary: delete a trace data seismic component
       description: |
         Required role: users.datalake.admin
@@ -1040,7 +1040,7 @@ paths:
         200:
           $ref: "#/components/responses/bingrid.1.0.0"
     delete:
-      operationId: bingrid-v1-soft-delete
+      operationId: bingrid-v1-delete
       summary: delete a bin grid seismic component
       description: |
         Required role: users.datalake.admin
@@ -1156,7 +1156,7 @@ paths:
         200:
           $ref: "#/components/responses/linegeometry.1.0.0"
     delete:
-      operationId: linegeometry-v1-soft-delete
+      operationId: linegeometry-v1-delete
       summary: delete a line geometry seismic component
       description: |
         Required role: users.datalake.admin
@@ -1272,7 +1272,7 @@ paths:
         200:
           $ref: "#/components/responses/acquisitionsurvey.1.1.0"
     delete:
-      operationId: acquisitionsurvey-v1-soft-delete
+      operationId: acquisitionsurvey-v1-delete
       summary: delete an acquisition survey component
       description: |
         Required role: users.datalake.admin
@@ -1388,7 +1388,7 @@ paths:
         200:
           $ref: "#/components/responses/processingproject.1.1.0"
     delete:
-      operationId: processingproject-v1-soft-delete
+      operationId: processingproject-v1-delete
       summary: delete a processing project component
       description: |
         Required role: users.datalake.admin
