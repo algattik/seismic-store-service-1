@@ -57,7 +57,7 @@ export class DatasetHandler {
         const records = await Parser.register(req);
         const recordIds = await StorageCoreService.insertRecords(req.headers.authorization!, records, dataPartition);
         for (let ii = 0; ii < records.length; ii++) {
-            const bucketId = this.constructBucketID(records[ii], recordIds[ii]);
+            const bucketId = this.constructBucketID(recordIds[ii].substring(0, recordIds[ii].lastIndexOf(':')));
             if (!(await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).bucketExists(bucketId))) {
                 await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).createBucket(bucketId);
             }
@@ -65,6 +65,12 @@ export class DatasetHandler {
         return recordIds;
     }
 
+    /**
+     * Get a dataset storage record
+     * @param req
+     * @param dataPartition
+     * @returns dataset storage record
+     */
     private static async get(req: expRequest, dataPartition: string) {
         const recordId = Parser.get(req);
         return await StorageCoreService.getRecord(req.headers.authorization, recordId, dataPartition);
@@ -88,15 +94,16 @@ export class DatasetHandler {
      */
     private static async delete(req: expRequest, dataPartition: string) {
         const inputRecordID = Parser.get(req);
-        const storageRecord = await StorageCoreService.getRecord(
-            req.headers.authorization,
-            inputRecordID,
-            dataPartition
-        );
-        const storageRecordID = inputRecordID + ':' + storageRecord['version'];
-        const bucketID = this.constructBucketID(storageRecord, storageRecordID);
 
-        await StorageCoreService.deleteRecord(req.headers.authorization, inputRecordID, dataPartition);
+        try {
+            await StorageCoreService.deleteRecord(req.headers.authorization, inputRecordID, dataPartition);
+        } catch (error) {
+            if (error?.error?.code !== 404) {
+                throw error;
+            }
+        }
+
+        const bucketID = this.constructBucketID(inputRecordID);
         await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).deleteBucket(bucketID);
     }
 
@@ -127,12 +134,12 @@ export class DatasetHandler {
         );
     }
 
-    private static constructBucketID(record: any, recordID: string) {
-        const hash = crypto
-            .createHash('sha512')
-            .update(record['data']['DatasetProperties']['FileCollectionPath'])
-            .digest('hex')
-            .substring(0, 12);
-        return recordID.split(':').at(-2) + '-' + hash;
+    /**
+     * Construct a BucketId from a recordId
+     * @param recordID the dataset storage record Id
+     * @returns the bucket id
+     */
+    private static constructBucketID(recordID: string) {
+        return crypto.createHash('sha256').update(recordID).digest('hex').slice(0, -1);
     }
 }
