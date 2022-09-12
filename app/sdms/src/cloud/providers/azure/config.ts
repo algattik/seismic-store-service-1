@@ -108,7 +108,7 @@ export class AzureConfig extends Config {
             AzureConfig.COSMO_MAX_THROUGHPUT = +process.env.COSMO_MAX_THROUGHPUT || 40000;
 
             // logging
-            AzureConfig.ENABLE_LOGGING_INFO = process.env.ENABLE_LOGGING_INFO === 'true'; // disabled by default
+            AzureConfig.ENABLE_LOGGING_INFO = process.env.ENABLE_LOGGING_INFO !== 'false'; // enabled by default
             AzureConfig.ENABLE_LOGGING_ERROR = process.env.ENABLE_LOGGING_ERROR !== 'false'; // enabled by default
             AzureConfig.ENABLE_LOGGING_METRIC = process.env.ENABLE_LOGGING_METRIC === 'true'; // disabled by default
 

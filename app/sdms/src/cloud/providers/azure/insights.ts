@@ -82,7 +82,7 @@ export class AzureInsightsLogger extends AbstractLogger {
                 .setAutoCollectExceptions(true)
                 .setAutoCollectDependencies(true)
                 .setAutoCollectConsole(true)
-                .setUseDiskRetryCaching(true, 30 * 1000, 104857600)
+                .setUseDiskRetryCaching(true, 30 * 1000, 2 * 104857600)
                 .setDistributedTracingMode(appinsights.DistributedTracingModes.AI_AND_W3C);
 
             appinsights.defaultClient.context.tags[
