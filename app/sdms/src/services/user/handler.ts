@@ -402,9 +402,6 @@ export class UserHandler {
 
         const journalClient = JournalFactoryTenantClient.get(tenant);
 
-        const registeredSubprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant));
-
-
         if (sdPath.dataset) {
 
             const subproject = await SubProjectDAO.get(journalClient, sdPath.tenant, sdPath.subproject);
@@ -438,51 +435,28 @@ export class UserHandler {
                 'roles': roles
             };
 
-        } else if (sdPath.tenant) {
+        } else if (sdPath.tenant) { // list subprojects roles
 
-            // Concatenate all valid subproject admin groups
-            const registeredSubprojectAdminGroups = registeredSubprojects.map(subproject =>
-                subproject.acls.admins).flat(1);
-            const registeredSubprojectViewerGroups = registeredSubprojects.map(
-                subproject => subproject.acls.viewers).flat(1);
-
-            // Find intersection of admin groups of all registered subprojects and the user group emails
-            const validAdminGroupsForUser = registeredSubprojectAdminGroups.filter(grp =>
-                groupEmailsOfUser.includes(grp));
-            const validViewerGroupsForUser = registeredSubprojectViewerGroups.filter(
-                grp => groupEmailsOfUser.includes(grp));
-
+            // find all subprojects in which the users is at least member of an ACL group
             let roles = [];
-            for (const validAdminGroup of validAdminGroupsForUser) {
-                if (validAdminGroup.startsWith('service')) {
-                    roles.push(['/' + validAdminGroup.split('.')[4], 'admin']);
-                    roles.push(['/' + validAdminGroup.split('.')[4], 'editor']);
+            const subprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant));
+            for(const subproject of subprojects) {
+                for(const admin of subproject.acls?.admins) {
+                    if (groupEmailsOfUser.includes(admin)) {
+                        roles.push(['/' + subproject.name, 'admin']);
+                        break;
+                    }
                 }
-                else if (validAdminGroup.startsWith('data')) {
-                    roles.push(['/' + validAdminGroup.split('.')[3], 'admin']);
-                    roles.push(['/' + validAdminGroup.split('.')[3], 'editor']);
-                }
-            }
-
-            for (const validViewerGroup of validViewerGroupsForUser) {
-                if (validViewerGroup.startsWith('service')) {
-                    roles.push(['/' + validViewerGroup.split('.')[4], 'viewer']);
-                }
-                else if (validViewerGroup.startsWith('data')) {
-                    roles.push(['/' + validViewerGroup.split('.')[3], 'viewer']);
+                for(const viewer of subproject.acls?.viewers) {
+                    if (groupEmailsOfUser.includes(viewer)) {
+                        roles.push(['/' + subproject.name, 'viewer']);
+                        break;
+                    }
                 }
             }
-
-            // Remove duplicates from roles array where each element is array by itself
-            const stringRolesArray = roles.map(role => JSON.stringify(role));
-            const uniqueRolesStringArray = new Set(stringRolesArray);
-            roles = Array.from(uniqueRolesStringArray, (ele) => JSON.parse(ele));
 
             if (sdPath.subproject) {
-                const subprojectRoles = roles.filter((role) => role[0] === '/' + sdPath.subproject);
-                return {
-                    'roles': subprojectRoles
-                };
+                roles = roles.filter((role) => role[0] === '/' + sdPath.subproject);
             }
 
             return {
