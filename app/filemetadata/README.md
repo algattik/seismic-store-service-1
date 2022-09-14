@@ -66,3 +66,11 @@ Replace environment variable `<SDMS_SERVICE_HOST>` with the url of [seismic stor
 1. Navigate to `seismic-store-service/app/filemetadata/app`
 
 2. Run command `python -m unittest discover -s test -p "test_*" -v`
+
+# Run integration tests locally
+
+> ENV variables needed for CI/CD, `svctoken (eg. Bearer eyJ...)`, `LEGAL_TAG (eg. opendes-public-usa-dataset-7643990)`, `SVC_API_KEY (Working API key)`, `TENANT_NAME (eg. opendes)`, `DNS (Defaults to localhost and qa)`
+
+1. Navigate to `seismic-store-service/app/filemetadata/app/integration_test`
+
+3. Run command `python -m behave -v`

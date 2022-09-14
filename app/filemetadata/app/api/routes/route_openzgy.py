@@ -31,6 +31,7 @@ internal_server_error = HTTPException(
     detail=strings.INTERNAL_ERROR
 )
 
+
 class P6Bin(enum.Enum):
     P6BinGridOriginI = 1
     P6BinGridOriginJ = 2
@@ -146,34 +147,26 @@ class ZGYToBinGrid:
 
         return json.dumps(m, indent=2)
 
+
 @router.get(settings.API_PATH + "openzgy/bingrid", tags=["OPENZGY"])
 async def get_bingrid(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
         api_key: APIKey = Depends(get_api_key)):
-    reader = zgy.ZgyReader(sdpath,
-                           {"sdurl": os.environ.get("SDMS_SERVICE_HOST"), "sdapikey": api_key, "sdtoken": bearer})
-    point1 = Point(reader.indexcorners[0][0], reader.indexcorners[0][1],
-                   reader.annotcorners[0][0], reader.annotcorners[0][1],
-                   reader.corners[0][0], reader.corners[0][1])
-    point2 = Point(reader.indexcorners[1][0], reader.indexcorners[1][1],
-                   reader.annotcorners[1][0], reader.annotcorners[1][1],
-                   reader.corners[1][0], reader.corners[1][1])
-    point3 = Point(reader.indexcorners[2][0], reader.indexcorners[2][1],
-                   reader.annotcorners[2][0], reader.annotcorners[2][1],
-                   reader.corners[2][0], reader.corners[2][1])
-    point4 = Point(reader.indexcorners[3][0], reader.indexcorners[3][1],
-                   reader.annotcorners[3][0], reader.annotcorners[3][1],
-                   reader.corners[3][0], reader.corners[3][1])
-    inline = Line(reader.annotstart[0], reader.annotinc[0], reader.annotcorners[3][0])
-    xline = Line(reader.annotstart[1], reader.annotinc[1], reader.annotcorners[3][1])
-    try:
-
-        zgyToBinGrid = ZGYToBinGrid(point1, point2, point3, point4, inline, xline)
-        bingrid = zgyToBinGrid.getValusAsJson()
-    except:
-        raise internal_server_error
-    finally:
-        reader.close()
-
-    return bingrid
+    with zgy.ZgyReader(sdpath, iocontext={"sdurl": os.environ.get("SDMS_SERVICE_HOST"), "sdapikey": api_key,
+                                          "sdtoken": bearer}) as r:
+        try:
+            inline = Line(r.annotstart[0], r.annotinc[0], r.size[0])
+            xline = Line(r.annotstart[1], r.annotinc[1], r.size[1])
+            point1 = Point(r.indexcorners[0][0], r.indexcorners[0][1], r.annotcorners[0][0], r.annotcorners[0][1],
+                           round(r.corners[0][0], 2), round(r.corners[0][1], 2))
+            point2 = Point(r.indexcorners[1][0], r.indexcorners[1][1], r.annotcorners[1][0], r.annotcorners[1][1],
+                           round(r.corners[1][0], 2), round(r.corners[1][1], 2))
+            point3 = Point(r.indexcorners[2][0], r.indexcorners[2][1], r.annotcorners[2][0], r.annotcorners[2][1],
+                           round(r.corners[2][0], 2), round(r.corners[2][1], 2))
+            point4 = Point(r.indexcorners[3][0], r.indexcorners[3][1], r.annotcorners[3][0], r.annotcorners[3][1],
+                           round(r.corners[3][0], 2), round(r.corners[3][1], 2))
+            zgyToBinGrid = ZGYToBinGrid(point1, point2, point3, point4, inline, xline)
+            return zgyToBinGrid.getValusAsJson()
+        except:
+            raise internal_server_error
