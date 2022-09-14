@@ -59,7 +59,7 @@ async def get_trace_header_field_count(
         api_key: APIKey = Depends(get_api_key)):
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
-        count = segy.get_trace_header_field_count()
+        count = segy.get_trace_header_fields()
     except:
         raise internal_server_error
 
