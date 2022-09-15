@@ -46,10 +46,11 @@ export class DESUserAssociation extends AbstractUserAssociationSvcProvider {
          return userEmail;
 
       } catch (error) {
-
-         if (error && error.statusCode === 404 && error.message.includes('User not found')) {
-            cache.set<string>(cacheKey, principalIdentifier, 3600);
-            return principalIdentifier;
+         if (axios.isAxiosError(error)) {
+            if (error?.response?.status === 404 && error?.response?.statusText === 'Not Found') {
+               cache.set<string>(cacheKey, principalIdentifier, 3600);
+               return principalIdentifier;
+            }
          }
          throw (Error.makeForHTTPRequest(error, '[ccm-user-association-service]'));
       }

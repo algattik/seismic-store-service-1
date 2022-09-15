@@ -66,11 +66,6 @@ class Client {
 
     private dbClient = undefined;
 
-    constructor() {
-        // tslint:disable-next-line:no-logger
-        logger.info('Init DB CLient');
-    }
-
     public getClient() {
         try {
             if (this.dbClient === undefined) {

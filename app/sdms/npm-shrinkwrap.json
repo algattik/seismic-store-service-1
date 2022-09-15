@@ -3506,6 +3506,7 @@
       "version": "0.0.6",
       "resolved": "https://registry.npmjs.org/applicationinsights-native-metrics/-/applicationinsights-native-metrics-0.0.6.tgz",
       "integrity": "sha512-5Z9l9PW9WTNkR9yLQt/sZT98XNN1DCAFSy3OKoXH4lXADcYTwh7YATM/VEnWzTE7tMyiyUsGFAXEl24AyFROww==",
+      "hasInstallScript": true,
       "dependencies": {
         "@mapbox/node-pre-gyp": "^1.0.0",
         "nan": "^2.14.0"
