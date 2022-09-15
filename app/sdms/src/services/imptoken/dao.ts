@@ -70,7 +70,7 @@ export class ImpTokenDAO {
 
     public static async canBeRefreshed(refreshUrl: string) {
 
-        const options = { method: 'GET', url: '', headers: {}, json: {} };
+        const options = { method: 'GET', url: '', headers: {}, data: {} };
 
         if (refreshUrl.startsWith('https://') || refreshUrl.startsWith('http://')) {
             options.method = 'GET';
@@ -85,7 +85,7 @@ export class ImpTokenDAO {
             options.method = refreshUrlOptions.method;
             options.url = refreshUrlOptions.url;
             if (refreshUrlOptions.headers) options.headers = refreshUrlOptions.headers;
-            if (refreshUrlOptions.body) options.json = refreshUrlOptions.body;
+            if (refreshUrlOptions.body) options.data = JSON.stringify(refreshUrlOptions.body);
         }
 
         try {

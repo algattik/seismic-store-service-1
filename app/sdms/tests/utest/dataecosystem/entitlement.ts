@@ -105,10 +105,10 @@ export class TestDESEntitlement {
                'Content-Type': 'application/json',
                'data-partition-id': 'tenant-a',
             },
-            json: {
+            data: JSON.stringify({
                email: 'user@email',
                role: 'role-a',
-            }
+            })
          };
          const url = Config.DES_SERVICE_HOST_ENTITLEMENT + '/entitlements' + '/groups' + '/group-a' + '/members';
 
@@ -221,7 +221,7 @@ export class TestDESEntitlement {
             }}
          );
 
-         const results = await DESEntitlement.listUsersInGroup('userToken', 'group-a', 'tenant-a', undefined);
+         const results = await DESEntitlement.listUsersInGroup('userToken', 'group-a', 'tenant-a', '');
          Tx.checkTrue(results.members.length === 2 && results.nextCursor === 'cursor', done);
 
       });
@@ -230,7 +230,7 @@ export class TestDESEntitlement {
          const requestStub = this.sandbox.stub(axios, 'get');
          requestStub.throws();
          try {
-            await DESEntitlement.listUsersInGroup('userToken', 'group-a', 'tenant-a', undefined);
+            await DESEntitlement.listUsersInGroup('userToken', 'group-a', 'tenant-a', '');
          } catch (e) {
             Tx.check500(500, done);
          }

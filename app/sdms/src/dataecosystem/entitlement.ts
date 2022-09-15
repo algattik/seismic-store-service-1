@@ -93,11 +93,9 @@ export class DESEntitlement {
             }
         };
         const url = Config.DES_SERVICE_HOST_ENTITLEMENT
-        + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members';
+            + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members';
 
-        const data = {
-            json: dataecosystem.getUserAddBodyRequest(userEmail, role)
-        };
+        const data = JSON.stringify(dataecosystem.getUserAddBodyRequest(userEmail, role));
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
@@ -107,15 +105,16 @@ export class DESEntitlement {
             // to ensure the group is created before add a user (if explicitly required)
             let counter = 0;
             while (counter < 10) {
-                await axios.post(url, data, options).then((response) =>{
+                try {
+                    await axios.post(url, data, options);
                     return;
-                  }).catch((error) => { // check eventual consistency
+                } catch (error) { // check eventual consistency
                     if (!(checkConsistencyForCreateGroup && error && error.error &&
                         error.error.code && error.error.code === 404 &&
                         error.error.reason && (error.error.reason as string).toLocaleLowerCase() === 'not found')) {
                         throw (error);
                     }
-                });
+                }
                 await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s constant (no exp backOff required)
                 counter = counter + 1;
             }
@@ -162,7 +161,7 @@ export class DESEntitlement {
             }
         };
         const url = Config.DES_SERVICE_HOST_ENTITLEMENT
-                + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail;
+            + dataecosystem.getEntitlementBaseUrlPath() + '/groups/' + groupName + '/members/' + userEmail;
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
@@ -212,7 +211,7 @@ export class DESEntitlement {
             }
         };
         const url = Config.DES_SERVICE_HOST_ENTITLEMENT + dataecosystem.getEntitlementBaseUrlPath()
-                + Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH + groupEmail;
+            + Config.DES_ENTITLEMENT_DELETE_ENDPOINT_PATH + groupEmail;
 
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
