@@ -40,8 +40,7 @@ export class SubProjectParser {
         Params.checkString(subproject.admin, 'admin', false);
         Params.checkString(subproject.ltag, 'ltag', false);
 
-        subproject.admin = Utils.getPropertyFromTokenPayload(req.headers.authorization,
-            Config.USER_ID_CLAIM_FOR_SDMS) || Utils.getSubFromPayload(req.headers.authorization) || undefined;
+        subproject.admin = Utils.getUserIdFromUserToken(req.headers.authorization);
 
         // This method is temporary required by slb during the migration of sauth from v1 to v2
         // The method replace slb.com domain name with delfiserviceaccount.com

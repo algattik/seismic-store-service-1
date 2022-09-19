@@ -149,9 +149,8 @@ export class SubProjectHandler {
         await SubProjectDAO.register(journalClient, subproject);
 
         // if additional admin user is passed in the request body
-        if (req.body && req.body.admin && req.body.admin !==
-            Utils.getPropertyFromTokenPayload(req.headers.authorization,
-                Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC)) {
+        if (req.body?.admin && req.body?.admin !== Utils.getPropertyFromTokenPayload(
+            userToken, Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC)) {
             await Promise.all([
                 AuthGroups.addUserToGroup(userToken, adminGroup, req.body.admin,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true),
@@ -177,7 +176,8 @@ export class SubProjectHandler {
 
         // init journalClient client
         const journalClient = JournalFactoryTenantClient.get(tenant);
-        const convertSubIdToEmail = req.query['subid-to-email'] === 'false';
+        // [NOTE OF DEPRECATION] subid-to-email to deprecated in favor of translate-user-info
+        const convertSubIdToEmail = req.query['translate-user-info'] !== 'false' && req.query['subid-to-email'] !== 'false';
 
         // get subproject
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, req.params.subprojectid);

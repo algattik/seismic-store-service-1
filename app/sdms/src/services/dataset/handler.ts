@@ -306,7 +306,8 @@ export class DatasetHandler {
             tenant, datasetIN.subproject, req[Config.DE_FORWARD_APPKEY],
             req.headers['impersonation-token-context'] as string);
 
-        // Convert subid to email if user input query param subid_to_email is true
+        // [NOTE OF DEPRECATION] subid-to-email to deprecated in favor of translate-user-info
+        // Convert userId to email if translate-user-info or subid-to-email is not false
         if (FeatureFlags.isEnabled(Feature.CCM_INTERACTION) && convertUserInfo) {
             if (!Utils.isEmail(datasetOUT.created_by)) {
                 const dataPartition = DESUtils.getDataPartitionID(tenant.esd);
