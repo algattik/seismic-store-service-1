@@ -42,6 +42,11 @@ export class Utils {
         return property in payload ? payload[property] : undefined;
     }
 
+    public static getUserIdFromUserToken(token: string): string {
+        return Utils.getPropertyFromTokenPayload(
+            token, Config.USER_ID_CLAIM_FOR_SDMS) || Utils.getSubFromPayload(token);
+    }
+
     // This method is temporary required by slb during the migration of sauth from v1 to v2
     // The method replace slb.com domain name with delfiserviceaccount.com.t
     // Temporary hardcoded can be removed on 01/22 when sauth v1 will be dismissed.
@@ -70,11 +75,6 @@ export class Utils {
     // Authorized party - The party to which the token was issued to
     public static getAzpFromPayload(base64JwtPayload: string): string {
         return this.getPayloadFromStringToken(base64JwtPayload).azp;
-    }
-
-
-    public static getSubIDFromPayload(base64JwtPayload: string): string {
-        return this.getPayloadFromStringToken(base64JwtPayload).subid;
     }
 
     public static makeID(len: number): string {
