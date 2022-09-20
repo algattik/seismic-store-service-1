@@ -148,6 +148,45 @@ class ZGYToBinGrid:
         return json.dumps(m, indent=2)
 
 
+@router.get(settings.API_PATH + "openzgy/headers", tags=["OPENZGY"])
+async def get_headers(
+        sdpath: str,
+        bearer: APIKey = Depends(get_bearer),
+        api_key: APIKey = Depends(get_api_key)):
+    with zgy.ZgyReader(sdpath, iocontext={"sdurl": os.environ.get("SDMS_SERVICE_HOST"), "sdapikey": api_key,
+                                          "sdtoken": bearer}) as reader:
+        try:
+            headers = {
+                'Guid':                    str(reader.verid),
+                'Size':                    reader.size,
+                'BrickSize':               reader.bricksize,
+                'DataType':                str(reader.datatype),
+                'DataRange':               reader.datarange,
+                'ZUnitDimension':          str(reader.zunitdim),
+                'ZUnitName':               reader.zunitname,
+                'ZUnitFactor':             reader.zunitfactor,
+                'ZStart':                  reader.zstart,
+                'ZIncrement':              reader.zinc,
+                'XYUnitDimension':         str(reader.hunitdim),
+                'XYUnitName':              reader.hunitname,
+                'XYUnitFactor':            reader.hunitfactor,
+                'InlineStart':             reader.annotstart[0],
+                'InlineIncrement':         reader.annotinc[0],
+                'CrosslineStart':          reader.annotstart[1],
+                'CrosslineIncrement':      reader.annotinc[1],
+                'WorldCorners':            reader.corners,
+                'IndexCorners':            reader.indexcorners,
+                'AnnotationCorners':       reader.annotcorners,
+                'AmountOfLevelsOfDetail':  reader.nlods,
+                'BricksPerLevelsOfDetail': reader.brickcount,
+                'Statistics':              {'Count': reader.statistics[0], 'Sum': reader.statistics[1], 'SumOfSquares': reader.statistics[2], 'Minimum': reader.statistics[3],'Maximum': reader.statistics[4]},
+                'Histogram':               {'Count': reader.histogram[0], 'Minimum': reader.histogram[1], 'Maximum':reader.histogram[2], 'Bins': reader.histogram[3]}
+            }
+            return json.dumps(headers, indent=2)
+        except:
+            raise internal_server_error
+
+
 @router.get(settings.API_PATH + "openzgy/bingrid", tags=["OPENZGY"])
 async def get_bingrid(
         sdpath: str,
