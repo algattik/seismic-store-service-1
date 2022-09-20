@@ -6,20 +6,12 @@ RUN apt-get update \
     && ln -s /usr/bin/python3 python \
     && pip3 install --upgrade pip
 
-ADD pip.conf /etc
-
-COPY ./app /app
-
-WORKDIR /app
-
-RUN pip install -r requirements.txt
-
 # OpenZgy Bundle packages available on https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/seismic/open-zgy/-/packages
 # Current version 2158481 OpenZGY.focal.sdms-bundle-azure-curl.aws.ibm.0.2.901.tar.gz
 ARG OPENZGY_BUNDLE_URL="https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/seismic/open-zgy/-/package_files/2158481/download"
 
 #Get openzgy bundle
-RUN mkdir -p /tmp/openzgy-bundle
+RUN mkdir -p /app/openzgy-bundle
 WORKDIR /app/openzgy-bundle
 RUN curl ${OPENZGY_BUNDLE_URL} -o /app/openzgy-bundle/openzgy.bundle.tar.gz
 RUN tar zxvf openzgy.bundle.tar.gz
@@ -28,6 +20,11 @@ RUN pip install -r requirements.txt
 WORKDIR /app/openzgy-bundle/wrapper/focal-gcc94
 RUN pip install *.whl
 WORKDIR /app
+
+ADD pip.conf /etc
+COPY ./app .
+
+RUN pip install -r requirements.txt
 
 # Install node js
 ENV NODE_VERSION 14.17.4
