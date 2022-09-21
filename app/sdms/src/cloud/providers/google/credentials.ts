@@ -110,32 +110,30 @@ export class Credentials extends AbstractCredentials {
         }
 
         Credentials.serviceAccountEmail = await this.getServiceAccountEmail();
-        const svcToken = (await this.getServiceAccountAccessToken()).access_token;
-
-        const data = qs.stringify({
-            payload: JSON.stringify({
-                aud: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
-                exp: (now + 3600),
-                iat: now,
-                iss: Credentials.serviceAccountEmail,
-                target_audience: ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE,
-            }),
-        });
-        const headers = {
-            headers: {
-                'Authorization': 'Bearer ' + svcToken,
-                'Content-Type': 'application/json',
-            }
-        };
-        const url = ConfigGoogle.GOOGLE_EP_IAM + '/projects/' +
-        ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' + Credentials.serviceAccountEmail + ':signJwt';
 
         try {
-            const results = await axios.post(url, data, headers);
-            const idToken = await this.signJWT(
-                results.data.signedJwt) as IDTokenModel;
 
-            Credentials.serviceAccountIdToken = idToken.id_token;
+            const signedToken = (await axios.request({
+                url: ConfigGoogle.GOOGLE_EP_IAM + '/projects/' +
+                    ConfigGoogle.SERVICE_CLOUD_PROJECT + '/serviceAccounts/' +
+                    Credentials.serviceAccountEmail + ':signJwt',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + (await this.getServiceAccountAccessToken()).access_token,
+                    'Content-Type': 'application/json',
+                },
+                data: {
+                    payload: JSON.stringify({
+                        aud: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
+                        exp: (now + 3600),
+                        iat: now,
+                        iss: Credentials.serviceAccountEmail,
+                        target_audience: ConfigGoogle.DES_SERVICE_TARGET_AUDIENCE,
+                    }),
+                }
+            })).data.signedJwt
+
+            Credentials.serviceAccountIdToken = (await this.signJWT(signedToken) as IDTokenModel).id_token;
             Credentials.serviceAccountIdTokenExpiresIn =
                 Utils.getExpTimeFromPayload(Credentials.serviceAccountIdToken) - KExpiresMargin;
 
@@ -207,9 +205,9 @@ export class Credentials extends AbstractCredentials {
         };
         const url = ConfigGoogle.GOOGLE_EP_METADATA + '/instance/service-accounts/default/email';
 
-        try  {
+        try {
             await axios.get(url, options);
-        } catch(error) {
+        } catch (error) {
             throw (Error.makeForHTTPRequest(error));
         }
     }
@@ -238,23 +236,18 @@ export class Credentials extends AbstractCredentials {
     private static serviceAccountIdTokenExpiresIn = 0;
 
     public async signJWT(jwt: string): Promise<IDTokenModel | IAccessTokenModel> {
-
-        const data = {
-            form: {
-                assertion: jwt,
-                grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-            }
-        };
-        const headers = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        };
-        const url = ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token';
-
         try {
-            const results = await axios.post(url, data, headers);
-            return results.data;
+            return (await axios.request({
+                url: ConfigGoogle.GOOGLE_EP_OAUTH2 + '/token',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                data: qs.stringify({
+                    assertion: jwt,
+                    grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                })
+            })).data;
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
         }

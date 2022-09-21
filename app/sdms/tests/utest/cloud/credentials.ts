@@ -59,7 +59,7 @@ export class TestCredentials {
       try {
         await this.credentials.getServiceAccountEmail();
       } catch (e) {
-        ConfigGoogle.SERVICE_IDENTITY_EMAIL = undefined;
+        ConfigGoogle.SERVICE_IDENTITY_EMAIL = '';
         Tx.check500(e.error.code, done);
       }
     });
@@ -67,7 +67,7 @@ export class TestCredentials {
     Tx.testExp(async (done: any) => {
       ConfigGoogle.SERVICE_IDENTITY_EMAIL = 'test@email.com';
       const result = await this.credentials.getServiceAccountEmail();
-      ConfigGoogle.SERVICE_IDENTITY_EMAIL = undefined;
+      ConfigGoogle.SERVICE_IDENTITY_EMAIL = '';
       Tx.checkTrue(result === 'test@email.com', done);
     });
 
@@ -112,7 +112,7 @@ export class TestCredentials {
         access_token: 'access_token',
         expires_in: 100, token_type: 'access_token',
       });
-      this.sandbox.stub(axios, 'post').resolves({ status: 200, data: { signedJwt: "signed_jwt" }});
+      this.sandbox.stub(axios, 'request').resolves({ status: 200, data: { signedJwt: 'signed_jwt' }});
       this.sandbox.stub(google.Credentials.prototype, 'signJWT' as any).resolves({ id_token: 'id_token' });
       this.sandbox.stub(Utils, 'getExpTimeFromPayload').resolves(400);
 
