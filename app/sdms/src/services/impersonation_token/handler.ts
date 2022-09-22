@@ -126,11 +126,14 @@ export class ImpersonationTokenHandler {
         const impersonationToken = authProvider.convertToImpersonationTokenModel(
             await authProvider.generateScopedAuthCredential(scopes));
 
+        const impersonatedBy = Utils.getUserIdFromUserToken(req.headers.authorization);
+
         // Build and sign the impersonation token context
         const context = {
             user,
             metadata: requestBody.metadata,
             resources: requestBody.resources,
+            impersonated_by: impersonatedBy,
         } as ImpersonationTokenContextModel;
 
         const authClientSecret = AuthProviderFactory.build(

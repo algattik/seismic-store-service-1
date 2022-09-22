@@ -40,4 +40,5 @@ export interface ImpersonationTokenContextModel {
     resources: ImpersonationTokenResourceModel[];
     metadata: object;
     user: string;
+    impersonated_by: string;
 }
