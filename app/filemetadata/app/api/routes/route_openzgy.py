@@ -1,6 +1,6 @@
 import openzgycpp as zgy
 import os
-
+import re
 import enum
 import math
 import json
@@ -8,29 +8,24 @@ import vector
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
-from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from api.dependencies.authentication import get_bearer, get_api_key, configure_remote_access
 from core.config import settings
-from resources import strings
 
 router = APIRouter()
 
-authorization_error = HTTPException(
-    status_code=HTTP_401_UNAUTHORIZED,
-    detail=strings.AUTHENTICATION_ERROR
-)
+def internal_server_error(e: Exception): 
+    return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-input_error = HTTPException(
-    status_code=HTTP_400_BAD_REQUEST,
-    detail=strings.INCORRECT_SDPATH_ERROR
-)
-
-internal_server_error = HTTPException(
-    status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-    detail=strings.INTERNAL_ERROR
-)
-
+def zgy_error(ze: zgy.ZgyError):
+    message = str(ze)
+    matched = re.search('HTTP [0-9][0-9][0-9]', message)
+    if(matched):
+        http_error = int(matched.group().split()[1])
+        return HTTPException(status_code=http_error, detail=message)
+    
+    return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=message)
 
 class P6Bin(enum.Enum):
     P6BinGridOriginI = 1
@@ -153,9 +148,9 @@ async def get_headers(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
         api_key: APIKey = Depends(get_api_key)):
-    with zgy.ZgyReader(sdpath, iocontext={"sdurl": os.environ.get("SDMS_SERVICE_HOST"), "sdapikey": api_key,
+    try:
+        with zgy.ZgyReader(sdpath, iocontext={"sdurl": settings.SDMS_URL, "sdapikey": api_key,
                                           "sdtoken": bearer}) as reader:
-        try:
             headers = {
                 'Guid':                    str(reader.verid),
                 'Size':                    reader.size,
@@ -183,8 +178,10 @@ async def get_headers(
                 'Histogram':               {'Count': reader.histogram[0], 'Minimum': reader.histogram[1], 'Maximum':reader.histogram[2], 'Bins': reader.histogram[3]}
             }
             return json.dumps(headers, indent=2)
-        except:
-            raise internal_server_error
+    except zgy.ZgyError as ze:
+        raise zgy_error(ze)
+    except Exception as e:
+        raise internal_server_error(e)
 
 
 @router.get(settings.API_PATH + "openzgy/bingrid", tags=["OPENZGY"])
@@ -192,9 +189,9 @@ async def get_bingrid(
         sdpath: str,
         bearer: APIKey = Depends(get_bearer),
         api_key: APIKey = Depends(get_api_key)):
-    with zgy.ZgyReader(sdpath, iocontext={"sdurl": os.environ.get("SDMS_SERVICE_HOST"), "sdapikey": api_key,
-                                          "sdtoken": bearer}) as r:
-        try:
+    try:
+        with zgy.ZgyReader(sdpath, iocontext={"sdurl": settings.SDMS_URL, "sdapikey": api_key,
+                                          "sdtoken": bearer}) as r:        
             inline = Line(r.annotstart[0], r.annotinc[0], r.size[0])
             xline = Line(r.annotstart[1], r.annotinc[1], r.size[1])
             point1 = Point(r.indexcorners[0][0], r.indexcorners[0][1], r.annotcorners[0][0], r.annotcorners[0][1],
@@ -207,5 +204,7 @@ async def get_bingrid(
                            round(r.corners[3][0], 2), round(r.corners[3][1], 2))
             zgyToBinGrid = ZGYToBinGrid(point1, point2, point3, point4, inline, xline)
             return zgyToBinGrid.getValusAsJson()
-        except:
-            raise internal_server_error
+    except zgy.ZgyError as ze:
+        raise zgy_error(ze)
+    except Exception as e:
+        raise internal_server_error(e)

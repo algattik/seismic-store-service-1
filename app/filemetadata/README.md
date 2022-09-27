@@ -46,7 +46,7 @@ There are 3 ways to build and test this service: local, docker and GitLab.
 1. Build the docker image. `docker build -t seismic-metadata-image . `
 
 ## Build and Test
-1. Run the docker image. `docker run --env SDMS_SERVICE_HOST=<SDMS_SERVICE_HOST> -d -it --rm --name segycontainer -p 8080:8000 seismic-metadata-image`
+1. Run the docker image. `docker run --env SDMS_SERVICE_HOST=<SDMS_SERVICE_HOST> -d -it --rm --name seismic-metadata-container -p 8080:8000 seismic-metadata-image`
 Replace environment variable `<SDMS_SERVICE_HOST>` with the url of [seismic store service]
 
 2. Open `http://localhost:8080/seismic-file-metadata/api/v1/swagger-ui.html` in web browser
