@@ -1,30 +1,27 @@
 import json
-
+import re
 import segysdk
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.api_key import APIKey
-from starlette.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from api.dependencies.authentication import get_bearer, get_api_key, configure_remote_access
 from core.config import settings
-from resources import strings
 
 router = APIRouter()
 
-authorization_error = HTTPException(
-    status_code=HTTP_401_UNAUTHORIZED,
-    detail=strings.AUTHENTICATION_ERROR
-)
+def internal_server_error(e: Exception): 
+    return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-input_error = HTTPException(
-    status_code=HTTP_400_BAD_REQUEST,
-    detail=strings.INCORRECT_SDPATH_ERROR
-)
-
-internal_server_error = HTTPException(
-    status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-    detail=strings.INTERNAL_ERROR
-)
+def segy_error(se: segysdk.SegyException):
+    message = str(se)
+    matched = re.search('HTTP [0-9][0-9][0-9]', message)
+    if(matched):
+        http_error = int(matched.group().split()[1])
+        return HTTPException(status_code=http_error, detail=message)
+    
+    return HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=message)
 
 @router.get(settings.API_PATH + "segy/revision",  tags=["SEGY"])
 async def get_revision(
@@ -34,8 +31,10 @@ async def get_revision(
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
         revision = segy.get_revision()
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return revision
 
@@ -47,8 +46,10 @@ async def get_is_3d(
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
         is_3d = segy.is_3d()
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return is_3d == 1
 
@@ -60,8 +61,10 @@ async def get_trace_header_field_count(
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
         count = segy.get_trace_header_fields()
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return count
 
@@ -74,8 +77,10 @@ async def get_textual_header(
     try:
         ascii_headers_as_json = segy.get_ascii_headers_as_json()
         json_header = json.loads(ascii_headers_as_json)["Textualheader"]
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return {"header": f"{json_header}"}
 
@@ -88,8 +93,10 @@ async def get_extended_textual_headers(
     try:
         get_extended_ascii_headers_as_json = segy.get_extended_ascii_headers_as_json()
         json_header = json.loads(get_extended_ascii_headers_as_json)
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return {"header": f"{json_header}"}
 
@@ -101,8 +108,10 @@ async def get_binary_header(
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
         header = segy.get_binary_header_as_json()
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return {"header": f"{header}"}
 
@@ -116,8 +125,10 @@ async def get_raw_trace_headers(
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
         header = segy.get_raw_trace_headers_as_json(start_trace, traces_to_dump)
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return {"header": f"{header}"}
 
@@ -131,17 +142,18 @@ async def get_scaled_trace_headers(
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
         header = segy.get_scaled_trace_headers_as_json(start_trace, traces_to_dump)
-    except:
-        raise internal_server_error
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
 
     return {"header": f"{header}"}
 
 def __create_segy_session(bearer, api_key, sdpath):
     try:
         configure_remote_access(bearer, api_key)
-    except Exception:
-        raise authorization_error
-    try:
-        return segysdk.create_session(sdpath, '{}')
-    except:
-        raise input_error
+        return segysdk.create_session(sdpath, '{}')    
+    except segysdk.SegyException as se:
+        raise segy_error(se)
+    except Exception as e:
+        raise internal_server_error(e)
