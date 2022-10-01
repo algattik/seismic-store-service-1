@@ -46,7 +46,7 @@ sdms_aws-containerize:
       - main
       - merge_requests
 
-sdms_aws-update-eks:
+sdms_aws-update-tf:
   allow_failure: false
   extends:
     - .aws-update-eks
@@ -54,12 +54,9 @@ sdms_aws-update-eks:
   script:
     - cd app/$SDMS_SERVICE
     - export KUBECONFIG=/tmp/kubeconfig-${RANDOM}.yaml
-    - export EKS_CLUSTER_MGMT_ROLE=$(aws cloudformation describe-stacks --region $AWS_REGION --stack-name $AWS_INFRA_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='MainEKSClusterManagementRole'].OutputValue" --output text)
-    - export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --region $AWS_REGION --stack-name $AWS_INFRA_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='MainEKSClusterName'].OutputValue" --output text)
-    - echo Using Role -- $EKS_CLUSTER_MGMT_ROLE
     - aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME --role-arn $EKS_CLUSTER_MGMT_ROLE
-    #Some CLIs require a restrictive KUBECONFIG file
-    - chmod 644 $KUBECONFIG
+
+    - chmod 600 $KUBECONFIG
     - export CONTAINER_IMAGE=`kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} get deployment/${AWS_EKS_DEPLOYMENT_NAME} -o jsonpath='{.spec.template.spec.containers[0].name}'`
     - kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} set image deployment/${AWS_EKS_DEPLOYMENT_NAME} $CONTAINER_IMAGE=$AWS_IMAGE_TAG_BASE:$CI_COMMIT_SHA
     - kubectl -n ${AWS_SERVICE_NAMESPACE:-osdu-services} rollout restart deployment/${AWS_EKS_DEPLOYMENT_NAME}
@@ -81,7 +78,7 @@ sdms_aws-test-newman:
     - .aws_variables
   stage: integration
   image: $CI_REGISTRY/osdu/platform/deployment-and-operations/base-containers-aws/aws-node/aws-node:v1.0-node14
-  needs: [{ job: 'sdms_aws-update-eks', optional: true }]
+  needs: [{ job: 'sdms_aws-update-tf', optional: true }]
   script:
     - cd app/$SDMS_SERVICE
     - pip3 install -r devops/aws/requirements.txt
