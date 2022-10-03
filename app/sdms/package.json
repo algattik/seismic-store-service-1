@@ -26,6 +26,12 @@
     "prepare": "cd ../.. && husky install ./app/sdms/.husky"
   },
   "nyc": {
+    "check-coverage": true,
+    "branches": 24,
+    "functions": 30,
+    "lines": 34,
+    "statements": 37,
+    
     "include": [
       "src/**/*.ts"
     ],
