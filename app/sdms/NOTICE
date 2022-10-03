@@ -844,8 +844,6 @@ The following software have components provided under the terms of this license:
 ========================================================================
 Protobuf
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - protobufjs (from https://www.npmjs.com/package/protobufjs)
 
 ========================================================================
@@ -889,6 +887,13 @@ ogl-uk-3.0
 The following software have components provided under the terms of this license:
 
 - prisma (from https://www.npmjs.com/package/prisma)
+
+========================================================================
+unknown
+========================================================================
+The following software have components provided under the terms of this license:
+
+- querystring (from https://www.npmjs.com/package/querystring)
 
 ========================================================================
 wxWindows
