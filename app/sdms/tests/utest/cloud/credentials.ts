@@ -49,7 +49,7 @@ export class TestCredentials {
     Tx.sectionInit('service account email');
 
     Tx.testExp(async (done: any) => {
-      this.sandbox.stub(axios, 'get').resolves();
+      this.sandbox.stub(axios, 'get').resolves({data: 'email'});
       await this.credentials.getServiceAccountEmail();
       done();
     });
