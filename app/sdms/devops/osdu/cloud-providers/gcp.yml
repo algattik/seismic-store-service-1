@@ -245,6 +245,7 @@ sdms-osdu-gcp-anthos-test-python:
   extends: .osdu-gcp-anthos-test-python
   image: node
   needs: ["sdms-osdu-gcp-anthos-deploy-deployment"]
+  allow_failure: true
   before_script:
     - cd app/$SDMS_SERVICE
   script:

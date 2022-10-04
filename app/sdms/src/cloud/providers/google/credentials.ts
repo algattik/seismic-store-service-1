@@ -206,7 +206,7 @@ export class Credentials extends AbstractCredentials {
         const url = ConfigGoogle.GOOGLE_EP_METADATA + '/instance/service-accounts/default/email';
 
         try {
-            await axios.get(url, options);
+            return (await axios.get(url, options)).data;
         } catch (error) {
             throw (Error.makeForHTTPRequest(error));
         }
