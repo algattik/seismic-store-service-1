@@ -26,7 +26,9 @@ export class IbmConfig extends Config {
     public static COS_SIGNATUREVERSION: string;
     public static COS_SUBUSER_ACCESS_KEY_ID: string;
     public static COS_SUBUSER_SECRET_ACCESS_KEY: string;
-    public static COS_TEMP_CRED_EXPITY: string;
+    public static COS_TEMP_CRED_EXPIRY: string;
+    public static COS_ROLE_ARN: string;
+    public static COS_ROLE_SESSION_NAME: string;
 
     // IBM KeyCloak
     public static KEYCLOAK_BASEURL: string;
@@ -95,7 +97,9 @@ export class IbmConfig extends Config {
         IbmConfig.COS_SIGNATUREVERSION = process.env.COS_SIGNATUREVERSION;
         IbmConfig.COS_SUBUSER_ACCESS_KEY_ID = process.env.COS_SUBUSER_ACCESS_KEY_ID;
         IbmConfig.COS_SUBUSER_SECRET_ACCESS_KEY = process.env.COS_SUBUSER_SECRET_ACCESS_KEY;
-        IbmConfig.COS_TEMP_CRED_EXPITY = process.env.COS_TEMP_CRED_EXPITY;
+        IbmConfig.COS_TEMP_CRED_EXPIRY = process.env.COS_TEMP_CRED_EXPIRY || '7200';
+        IbmConfig.COS_ROLE_ARN = process.env.COS_ROLE_ARN || 'arn:aws:iam:::role/osdurolearn';
+        IbmConfig.COS_ROLE_SESSION_NAME = process.env.COS_ROLE_SESSION_NAME || 'Bob';
 
         // IBM Keycloak
         IbmConfig.KEYCLOAK_BASEURL = process.env.KEYCLOAK_BASEURL;
