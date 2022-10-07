@@ -18,7 +18,7 @@ export class IBMSTShelper{
     }
 
     public async getCredentials(bucketName: string, keyPath: string,
-        roleArn: string, flagUpload: boolean, exp: string): Promise<string> {
+        roleArn: string, roleSessionName: string, flagUpload: boolean, exp: string): Promise<string> {
         let policy: any;
 
         if(flagUpload === true)
@@ -35,7 +35,7 @@ export class IBMSTShelper{
             ExternalId: 'OSDUAWS',
             Policy: policy,
             RoleArn: roleArn,
-            RoleSessionName: 'OSDUAWSAssumeRoleSession',
+            RoleSessionName: roleSessionName,
             DurationSeconds: expDuration
         };
         const roleCredentials =  await this.sts.assumeRole(stsParams).promise();

@@ -48,8 +48,9 @@ export class Credentials extends AbstractCredentials {
         tenant: string, subproject: string,
         bucket: string, readonly: boolean, _partition: string): Promise<IAccessTokenModel> {
 
-        const expDuration = IbmConfig.COS_TEMP_CRED_EXPITY;
+        const expDuration = IbmConfig.COS_TEMP_CRED_EXPIRY;
         let roleArn = '';
+        let roleSessionName = '';
         let credentials = '';
 
         let flagUpload = true;
@@ -58,19 +59,21 @@ export class Credentials extends AbstractCredentials {
         // this can start getting folder from gcs url along with bucket
         const s3bucket = keyPath;
 
+        roleArn = IbmConfig.COS_ROLE_ARN;
+        roleSessionName = IbmConfig.COS_ROLE_SESSION_NAME;
+
         if (readonly) { // readOnly True
-            roleArn = 'arn:123:456:789:1234';
             flagUpload = false;
         } else {// readOnly False
-            roleArn = 'arn:123:456:789:1234';
             flagUpload = true;
         }
 
-        credentials = await this.ibmSTSHelper.getCredentials(s3bucket, keyPath, roleArn, flagUpload, expDuration);
+        credentials = await this.ibmSTSHelper.getCredentials(s3bucket, keyPath,
+            roleArn, roleSessionName, flagUpload, expDuration);
 
         const result = {
             access_token: credentials,
-            expires_in: 7200,
+            expires_in: parseInt(expDuration, 10),
             token_type: 'Bearer',
         };
 
