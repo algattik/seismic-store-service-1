@@ -23,6 +23,7 @@ RUN dotnet dev-certs https --trust
 FROM build AS publish
 RUN dotnet publish "Sidecar.csproj" -c Release -o /app/publish /p:UseAppHost=false
 RUN cp ~/.aspnet/https/aspnetapp.pfx /app/publish/.
+RUN chmod 755 /app/publish/aspnetapp.pfx
 
 FROM base AS final
 ARG PASS
