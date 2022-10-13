@@ -1,6 +1,6 @@
 data:
   # common configuration
-  logLevel: "INFO"
+  logLevel: "ERROR"
   cloudProvider: "google"
   port: "5000"
   desServiceHost: "https://des"
