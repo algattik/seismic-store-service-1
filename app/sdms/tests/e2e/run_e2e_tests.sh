@@ -20,8 +20,8 @@ usage() {
     printf  "\n[USAGE] ./e2e/tests/run_e2e_tests.sh --seistore-svc-url=... " \
             "--seistore-svc-api-key=... --user-idtoken=... --tenant=..." \
             "--datapartition=... --legaltag01=... --legaltag02=... " \
-            "--newuser(optional)=... --VCS-provider(optional)=... --de-app-key(optional)=... " \
-            "--admin-email(optional)=... --subproject(optional)=... \n "
+            "--newuser(optional)=... --newusergroup(optional)=... --VCS-provider(optional)=... " \
+            "--admin-email(optional)=... --de-app-key(optional)=... --subproject(optional)=... \n "
     printf "\n[ERROR] %s\n" "$1"
 }
 
@@ -39,7 +39,8 @@ usage() {
 # argument [datapartition] data partition id - required
 # argument [legaltag01] test legal tag - required
 # argument [legaltag02] test legal tag  - required
-# argument [newuser] user email for a new user to add partition id - required if [VCS-Provider] is not 'gitlab'
+# argument [newuser] user email for a new user to be added into subproject - required if [VCS-Provider] is not 'gitlab'
+# argument [newusergroup] user group email for a group to be added into subproject - required if [VCS-Provider] is not 'gitlab'
 # argument [VCS-Provider] valid value is 'gitlab'. Provided will skip USER and IMPTOKEN API endpoints tests - optional
 # argument [de-app-key] DELFI application key - optional
 # argument [admin-email] user credentail email - optional (deprecated)
@@ -79,6 +80,10 @@ case $i in
   newuser="${i#*=}"
   shift
   ;;
+  --newusergroup=*)
+  newusergroup="${i#*=}"
+  shift
+  ;;
   --de-app-key=*)
   de_app_key="${i#*=}"
   shift
@@ -115,6 +120,7 @@ if [[ "${VCS_Provider}" == true || "${VCS_Provider}" == "true" || "${VCS_Provide
    VCS_Provider="gitlab"
 else
    if [ -z "${newuser}" ]; then usage "newuser not defined" && exit 1; fi
+   if [ -z "${newusergroup}" ]; then usage "newusergroup not defined" && exit 1; fi
    VCS_Provider="any"
 fi
 
@@ -143,6 +149,7 @@ printf "%s\n" "datapartition = ${datapartition}"
 printf "%s\n" "legaltag01 = ${legaltag01}"
 printf "%s\n" "legaltag02 = ${legaltag02}"
 printf "%s\n" "newuser = ${newuser}"
+printf "%s\n" "newusergroup = ${newusergroup}"
 printf "%s\n" "VCS_Provider = ${VCS_Provider}"
 printf "%s\n" "subproject = ${subproject}"
 printf "%s\n" "--------------------------------------------"
@@ -158,6 +165,7 @@ sed -i "s/#{DATAPARTITION}#/${datapartition}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{LEGALTAG01}#/${legaltag01}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{LEGALTAG02}#/${legaltag02}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{NEWUSEREMAIL}#/${newuser}/g" ./tests/e2e/postman_env.json
+sed -i "s/#{NEWUSERGROUP}#/${newusergroup}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{VCS_PROVIDER}#/${VCS_Provider}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{DE_APP_KEY}#/${de_app_key}/g" ./tests/e2e/postman_env.json
 sed -i "s/#{SUBPROJECT}#/${subproject}/g" ./tests/e2e/postman_env.json
