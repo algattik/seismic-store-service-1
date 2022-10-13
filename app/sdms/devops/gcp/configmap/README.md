@@ -30,7 +30,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
-**logLevel** | logging level | string | "INFO" | yes
+**logLevel** | logging level | string | "ERROR" | yes
 **cloudProvider** | cloud provider | string | "google" | yes
 **port** | port | string | "5000" | yes
 **desServiceHost** | base url of host | string | "https://des" | yes
