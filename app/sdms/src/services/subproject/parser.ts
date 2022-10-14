@@ -31,10 +31,17 @@ export class SubProjectParser {
         subproject.tenant = req.params.tenantid;
         subproject.ltag = req.headers.ltag as string;
 
-        // optional parameters
-        subproject.acls = (req.body && req.body.acls) ? req.body.acls : { 'admins': [], 'viewers': [] };
-        subproject.access_policy = (req.body && req.body.access_policy) ?
-            req.body.access_policy : Config.UNIFORM_ACCESS_POLICY;
+        // If not specified, set the acl as empty array. A default acl group will be later created for these.
+        subproject.acls = req.body?.acls || { 'admins': [], 'viewers': [] };
+        if(req.body?.acl) {
+            const aclKeys = Object.keys(req.body.acls);
+            subproject.acls['admins'] = ('admins' in aclKeys) ? subproject.acls['admins'].sort() : [];
+            subproject.acls['viewers'] = ('viewers' in aclKeys) ? subproject.acls['viewers'].sort() : [];
+        }
+
+        // set the dataset level access acl (uniform by default)
+        subproject.access_policy = req.body?.access_policy || Config.UNIFORM_ACCESS_POLICY;
+
 
         // check user input params
         Params.checkString(subproject.admin, 'admin', false);

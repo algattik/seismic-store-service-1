@@ -117,29 +117,29 @@ export class SubProjectHandler {
         }
         Config.enableStrongConsistencyEmulation();
 
-        const uuid = uuidv4();
-        const adminGroup = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd, uuid);
-        const viewerGroup = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd, uuid);
-
-        const adminGroupName = adminGroup.split('@')[0];
-        const viewerGroupName = viewerGroup.split('@')[0];
-
-        SubProjectHandler.validateGroupNamesLength(adminGroupName, viewerGroupName, subproject);
-
-        // provision new groups
-        await Promise.all([
-            AuthGroups.createGroup(userToken, adminGroupName,
+        // if no admins acl are specified, create a default data group for manage them
+        if(subproject.acls?.admins?.length === 0) {
+            const uuid = uuidv4();
+            const group = SubprojectGroups.dataAdminGroup(tenant.name, subproject.name, tenant.esd, uuid);
+            const groupName = group.split('@')[0];
+            SubProjectHandler.validateGroupNameLength(groupName, subproject);
+            await AuthGroups.createGroup(userToken, groupName,
                 'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' admin group',
-                tenant.esd, req[Config.DE_FORWARD_APPKEY]),
-            AuthGroups.createGroup(userToken, viewerGroupName,
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            subproject.acls.admins = [ group ];
+        }
+        // if no viewers acls are specified, create a default data group for manage them
+        if(subproject.acls?.viewers?.length === 0 ) {
+            const uuid = uuidv4();
+            const group = SubprojectGroups.dataViewerGroup(tenant.name, subproject.name, tenant.esd, uuid);
+            const groupName = group.split('@')[0];
+            SubProjectHandler.validateGroupNameLength(groupName, subproject);
+            await AuthGroups.createGroup(userToken, groupName,
                 'seismic dms tenant ' + tenant.name + ' subproject ' + subproject.name + ' viewer group',
-                tenant.esd, req[Config.DE_FORWARD_APPKEY])]
-        );
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            subproject.acls.viewers = [ group ];
 
-        subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins.concat([adminGroup])
-            .filter((group, index, self) => self.indexOf(group) === index) : [adminGroup];
-        subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers.concat([viewerGroup])
-            .filter((group, index, self) => self.indexOf(group) === index) : [viewerGroup];
+        }
 
         // Create the storage resource
         subproject.gcs_bucket = await this.getBucketName(tenant);
@@ -152,9 +152,9 @@ export class SubProjectHandler {
         if (req.body?.admin && req.body?.admin !== Utils.getPropertyFromTokenPayload(
             userToken, Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC)) {
             await Promise.all([
-                AuthGroups.addUserToGroup(userToken, adminGroup, req.body.admin,
+                AuthGroups.addUserToGroup(userToken, subproject.acls.admins[0], req.body.admin,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true),
-                AuthGroups.addUserToGroup(userToken, viewerGroup, req.body.admin,
+                AuthGroups.addUserToGroup(userToken, subproject.acls.viewers[0], req.body.admin,
                     tenant.esd, req[Config.DE_FORWARD_APPKEY], UserRoles.Owner, true)
             ]);
 
@@ -236,8 +236,12 @@ export class SubProjectHandler {
         const viewerSubprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
         const subprojectDataGroups = adminSubprojectDataGroups.concat(viewerSubprojectDataGroups);
         for (const group of subprojectDataGroups) {
-            await AuthGroups.deleteGroup(
-                req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+            Utils.exponentialBackOff(AuthGroups.deleteGroup(
+                req.headers.authorization, group, tenant.esd,
+                req[Config.DE_FORWARD_APPKEY])).catch((error)=>{
+                    console.error(error);
+                });
+
         }
 
 
@@ -270,25 +274,24 @@ export class SubProjectHandler {
         await Auth.isUserAuthorized(req.headers.authorization,
             SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
-
-        if (parsedUserInput.acls) {
-            subproject.acls = parsedUserInput.acls;
-        }
-
+        // Updated the access policy
         if (parsedUserInput.access_policy) {
             this.validateAccessPolicy(parsedUserInput.access_policy, subproject.access_policy);
             subproject.access_policy = parsedUserInput.access_policy;
         }
 
-        const adminGroups = [SubprojectGroups.serviceAdminGroup(tenant.name, subproject.name, tenant.esd),
-        SubprojectGroups.serviceEditorGroup(tenant.name, subproject.name, tenant.esd)];
-        const viewerGroups = [SubprojectGroups.serviceViewerGroup(tenant.name, subproject.name, tenant.esd)];
-
-        subproject.acls.admins = subproject.acls.admins ? subproject.acls.admins
-            .filter((group, index, self) => self.indexOf(group) === index) : adminGroups;
-        subproject.acls.viewers = subproject.acls.viewers ? subproject.acls.viewers
-            .filter((group, index, self) => self.indexOf(group) === index) : viewerGroups;
-
+        // save and replace default SDMS ACLs to delete at the end
+        const dataGroupsToDelete = [] as string[];
+        if (parsedUserInput?.acls?.admins?.length > 0) {
+            const defaultDataGroupRegEx = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+            dataGroupsToDelete.concat(subproject.acls.admins.filter((group) => group.match(defaultDataGroupRegEx)));
+            subproject.acls.admins = parsedUserInput.acls.admins;
+        }
+        if (parsedUserInput?.acls?.viewers?.length > 0) {
+            const defaultDataGroupRegEx = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+            dataGroupsToDelete.concat(subproject.acls.viewers.filter((group) => group.match(defaultDataGroupRegEx)));
+            subproject.acls.viewers = parsedUserInput.acls.viewers;
+        }
 
         // update the legal tag (check if the new one is valid)
         if (parsedUserInput.ltag) {
@@ -326,8 +329,15 @@ export class SubProjectHandler {
         // Update the subproject metadata
         await SubProjectDAO.register(journalClient, subproject);
 
-        return subproject;
+        // delete replaced default data group ACLs (detached retry ops)
+        for (const group of dataGroupsToDelete) {
+            Utils.exponentialBackOff(AuthGroups.deleteGroup(
+                req.headers.authorization, group, tenant.esd, req[Config.DE_FORWARD_APPKEY])).catch((error) => {
+                    console.error(error);
+                });
+        }
 
+        return subproject;
     }
 
     // List the subprojects in a tenant
@@ -382,12 +392,8 @@ export class SubProjectHandler {
     }
 
     // Ensure the group name respect CSP imposed length limits
-    private static validateGroupNamesLength(adminGroupName: string, viewerGroupName: string,
-        subproject: SubProjectModel): boolean {
-
-        const allowedSubprojectLen = Config.DES_GROUP_CHAR_LIMIT - Math.max(
-            adminGroupName.length, viewerGroupName.length
-        );
+    private static validateGroupNameLength(groupName: string, subproject: SubProjectModel) {
+        const allowedSubprojectLen = Config.DES_GROUP_CHAR_LIMIT - groupName.length;
 
         if (allowedSubprojectLen < 0) {
             const maxChar = subproject.name.length - Math.abs(allowedSubprojectLen);
@@ -396,9 +402,6 @@ export class SubProjectHandler {
                 subproject.name.length + ' characters), for the ' + subproject.tenant + ' tenant. ' +
                 'The subproject name must not be longer than ' + maxChar + ' characters'));
         }
-
-        return true;
-
     }
 
     // Ensure the access policy is not changed if already set as 'dataset'
@@ -409,6 +412,4 @@ export class SubProjectHandler {
         }
 
     }
-
-
 }

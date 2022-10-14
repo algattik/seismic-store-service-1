@@ -188,13 +188,13 @@ export class UserHandler {
 
         const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
         const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
-        const viewerSuprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
+        const viewerSubprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
 
+        let adminGroups = subprojectAdminServiceGroups.concat(adminSubprojectDataGroups);
+        let viewerGroups = subprojectViewerServiceGroups.concat(viewerSubprojectDataGroups);
 
-        const adminGroups = subprojectAdminServiceGroups.concat(adminSubprojectDataGroups);
-        const viewerGroups = subprojectViewerServiceGroups.concat(viewerSuprojectDataGroups);
-
-
+        adminGroups= adminGroups.length ? adminGroups : [subproject.acls.admins.sort()[0]];
+        viewerGroups = viewerGroups .length ? viewerGroups : [subproject.acls.viewers.sort()[0]];
 
         if (userGroupRole === AuthRoles.admin || userGroupRole === AuthRoles.editor) {
             await this.addUserAsAdmin(adminGroups, viewerGroups, tenant, req, userEmail);
@@ -250,17 +250,46 @@ export class UserHandler {
                 const result = await UserHandler.listUsersInAuthGroups(datasetOUT.acls.admins, datasetOUT.acls.viewers,
                     req, tenant);
 
-                await UserHandler.findAndRemoveUser(result, userEmail, datasetOUT, tenant, req);
+                await UserHandler.findAndRemoveUserFromDataset(result, userEmail, datasetOUT, tenant, req);
             }
 
 
         } else if (sdPath.subproject) {
 
-            const result = await UserHandler.listUsersInAuthGroups(subproject.acls.admins, subproject.acls.viewers,
-                req, tenant);
+            const serviceGroupRegex = SubprojectGroups.serviceGroupNameRegExp(tenant.name, subproject.name);
+            const subprojectAdminServiceGroups = subproject.acls.admins
+                .filter((group) => group.match(serviceGroupRegex));
+            const subprojectViewerServiceGroups = subproject.acls.viewers
+                .filter((group) => group.match(serviceGroupRegex));
 
-            await UserHandler.findAndRemoveUser(result, userEmail, subproject, tenant, req);
+            const dataGroupRegex = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+            const adminSubprojectDataGroups = subproject.acls.admins.filter((group) => group.match(dataGroupRegex));
+            const viewerSubprojectDataGroups = subproject.acls.viewers.filter(group => group.match(dataGroupRegex));
 
+            const adminGroups = subprojectAdminServiceGroups.concat(adminSubprojectDataGroups);
+            const viewerGroups = subprojectViewerServiceGroups.concat(viewerSubprojectDataGroups);
+
+            let userGroups = [];
+
+            if(adminGroups.length === 0) {
+                userGroups = await AuthGroups.getUserGroups(req.headers.authorization,
+                    tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+
+                adminGroups.push(userGroups.filter(group => subproject.acls.admins.includes(group.email))
+                .map(group => group.email).sort()[0]);
+            }
+
+            if(viewerGroups.length === 0) {
+                if (userGroups.length === 0) {
+                    userGroups = await AuthGroups.getUserGroups(req.headers.authorization,
+                        tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+                }
+
+                viewerGroups.push(userGroups.filter(group => subproject.acls.viewers.includes(group.email))
+                .map(group => group.email).sort()[0]);
+            }
+
+            await UserHandler.removeUserFromAuthGroups(adminGroups, viewerGroups, tenant, req, userEmail);
         } else {
             throw (Error.make(Error.Status.BAD_REQUEST,
                 'Please use Delfi portal to remove users from ' + tenant.name + ' tenant'));
@@ -268,8 +297,8 @@ export class UserHandler {
 
     }
 
-    private static async findAndRemoveUser(userListInAuthGroups: any[], userEmail: string,
-        datastoreEntity: DatasetModel | SubProjectModel, tenant: TenantModel, req) {
+    private static async findAndRemoveUserFromDataset(userListInAuthGroups: any[], userEmail: string,
+        datastoreEntity: DatasetModel, tenant: TenantModel, req) {
         const admins = new Set();
         const viewers = new Set();
 
@@ -280,9 +309,7 @@ export class UserHandler {
                 } else {
                     viewers.add(lst[0]);
                 }
-
             }
-
         });
 
         if (admins.has(userEmail)) {
@@ -359,13 +386,11 @@ export class UserHandler {
 
         let users = [];
 
-
         for (const adminGroup of admins) {
             const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, adminGroup, tenant.esd,
                 req[Config.DE_FORWARD_APPKEY]));
             users = users.concat(result.map((el) => [el.email, 'admin']));
         }
-
 
         for (const viewerGroup of viewers) {
             const result = (await AuthGroups.listUsersInGroup(req.headers.authorization, viewerGroup, tenant.esd,

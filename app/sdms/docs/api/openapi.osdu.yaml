@@ -1420,30 +1420,30 @@ paths:
 
   /subproject/tenant/{tenantid}/subproject/{subprojectid}:
     post:
-      summary: "Create a new subproject."
+      summary: 'Create a new subproject.'
       description: |
         <ul>
-        <li>Creates a new sub-project resource in seismic store.</li>
+        <li>Creates a new subproject resource in seismic store.</li>
         <li>Required roles: users.datalake.admin</li></ul>
       operationId: subproject-create
       tags:
         - SubProject
       parameters:
-        - description: "Legal tag of the datapartition/tenant."
+        - description: 'A valid compliance legal tag. It can be generated and managed via core-compliance-service.'
           in: header
           name: ltag
           type: string
-        - description: "Name of the subproject."
+        - description: 'The subproject name. It must match the regex <b>^[a-z][a-z\d\-]*[a-z\d]$</b>'
           in: path
           name: subprojectid
           type: string
           required: true
-        - description: "Name of the tenant."
+        - description: 'The tenant name - In OSDU this match the data-partition-id'
           in: path
           name: tenantid
           type: string
           required: true
-        - description: "Request body"
+        - description: 'Request body'
           in: body
           name: request body
           required: true
@@ -1451,7 +1451,7 @@ paths:
             $ref: "#/definitions/SubProjectCreateBody"
       responses:
         200:
-          description: "Creation of the subproject is successful."
+          description: 'The registered subproject.'
           schema:
             $ref: "#/definitions/SubProject"
         400:
@@ -1502,7 +1502,6 @@ paths:
           description: "Forbidden."
         404:
           description: "Not found."
-
     delete:
       summary: "Delete a subproject."
       description: "<ul><li>Delete a subproject in seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
@@ -1531,7 +1530,6 @@ paths:
           description: "Forbidden."
         404:
           description: "Not found."
-
     patch:
       summary: "Patch a subproject's metadata."
       description: |
@@ -1710,7 +1708,7 @@ paths:
   /user:
     put:
       summary: "Add a user to a seismic store subproject authorization group."
-      description: "<ul><li>Add a user to a subproject authorization group.</li><li>Required roles: subproject.admin</li></ul>"
+      description: "<ul><li>Add a user to a subproject default authorization group if it exists, otherwise, add the user to the first group.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-add
       tags:
         - Users
@@ -1766,8 +1764,8 @@ paths:
           description: "Not found."
 
     delete:
-      summary: "Remove a user from a subproject's role-based authorization groups."
-      description: "<ul><li>Remove a user from a subproject's role based authorization groups.</li><li>Required roles: subproject.admin</li></ul>"
+      summary: "Remove a user from a subproject."
+      description: "<ul><li>Remove a user from subproject default authorization groups if exists, otherwise, remove it from the first authorization group.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-rm
       tags:
         - Users
@@ -1779,7 +1777,7 @@ paths:
             $ref: "#/definitions/UserRemoveRequest"
       responses:
         200:
-          description: Deletion of user's email in the subproject's role-based authorization groups completed."
+          description: Deletion of user from a subproject."
         400:
           description: "Bad request."
         401:
@@ -2407,25 +2405,24 @@ definitions:
 
   # OK
   SubProjectCreateBody:
-    required: ["admin", "storage_class", "storage_location", "access_policy"]
     properties:
       admin:
         type: string
-        description: Administrator for the subproject.
+        description: 'An optional user to set as admin. The user will be added in the first admins acl group'
       storage_class:
         type: string
-        description: Storage class for the bucket.
+        description: 'Storage class for the bucket (Google Required Only)'
       storage_location:
         type: string
-        description: Storage location for the bucket.
+        description: 'Storage location for the bucket (Google Required Only)'
       access_policy:
         type: string
-        description: Access policy for the subproject.
+        description: 'The datasets access level mode: "uniform" (uniform data access to all subprojects datasets) or "datasets" (acl can be applied at dataset level)'
         default: "uniform"
-        enum: [uniform, dataset]
+        enum: ["uniform", "dataset"]
       acls:
         type: object
-        description: ACLs with admin groups and viewer groups for the subproject.
+        description: 'The entitlement groups to enable subproject access as admin or viewer. If not specified, default entitlement data groups will be created.'
         properties:
           admins:
             type: array
@@ -2436,9 +2433,10 @@ definitions:
             items:
               type: string
     example:
-      admin: "test@email"
+      admin: "admin@email"
       storage_class: "MULTI_REGIONAL"
       storage_location: "US"
+      access_policy: "uniform"
       acls:
         admins:
           - data.sdms.tenant.subproject.1b1417e5-fb0e-402a-b725-606723e50b76.admin@slb.p4d.cloud.slb-ds.com
@@ -2475,7 +2473,7 @@ definitions:
 
   # OK
   SubProject:
-    required: ["name", "tenant", "storage_class", "storage_location", "admin", "ltag", "gcs_bucket"]
+    required: ["name", "tenant", "storage_class", "storage_location", "ltag", "access_policy"]
     properties:
       name:
         type: string
@@ -2489,15 +2487,14 @@ definitions:
       storage_location:
         type: string
         description: Storage location for the bucket.
-      admin:
-        type: string
-        description: Administrator for the subproject. Note that this field is used as a principal identifer for entitlements-svc and be configured using the env variable USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC in the Seismic DMS runtime.
       ltag:
         type: string
         description: Legal tag for the subproject.
-      gcs_bucket:
+      access_policy:
         type: string
-        description: Cloud storage bucket associated with the subproject.
+        description: Access policy for the subproject.
+        default: "uniform"
+        enum: [uniform, dataset]
       acls:
         type: object
         description: ACLs with admin groups and viewer groups for the subproject.
