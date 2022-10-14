@@ -58,7 +58,7 @@ azure_swagger_test:
       echo 'empty'
   only:
       - $DISABLED == 'true'
-
+      
 azure-publish:
   needs: []
   script:

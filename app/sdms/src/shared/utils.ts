@@ -136,4 +136,24 @@ export class Utils {
 
     }
 
+    // retry on error using exponential retry backOff strategy.
+    // wait*2^1+e, wait*2^2+e, wait*2^3+e, wait*2^(retryMaxAttempts)+e
+    // 200ms 400ms 800ms 1600ms ...
+    public static async exponentialBackOff(
+        methodToCall: any, retryMaxAttempts = 5): Promise<void> {
+        let retries = 0;
+        const waitTime = 200;
+        while (true) {
+            try {
+                return await methodToCall();
+            } catch (error) {
+                if (retryMaxAttempts === ++retries) {
+                    throw (error);
+                }
+                await new Promise(resolve => setTimeout(
+                    resolve, ((2 ** (retries - 1)) * waitTime) + Math.random() * 100));
+            }
+        }
+    }
+
 }
