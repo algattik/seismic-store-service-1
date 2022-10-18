@@ -138,6 +138,11 @@ export class TestAuth {
             } catch (e) { Tx.check403(e.error.code, done); }
         });
 
+        Tx.test(async (done: any) => {
+            this.sandbox.stub(ImpTokenDAO, 'getImpTokenBody').returns({ resources: [] } as ImpTokenBodyModel);
+            Tx.checkFalse(await Auth.isReadAuthorized(this.impToken, [], tenant, 's', 'appkey', undefined, false), done);
+        });
+
     }
 
     private static usersGroup() {
