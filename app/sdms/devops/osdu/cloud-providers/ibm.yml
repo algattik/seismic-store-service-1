@@ -40,7 +40,7 @@ sdms_ibm-deploy-devpri:
         - app/sdms/**/*
     
 sdms_ibm-test-py:
-  image: node
+  image: node:18
   stage: integration
   extends:
     - .ibm-test-py
