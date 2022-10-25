@@ -75,7 +75,7 @@ export class Server {
 
         this.app = express();
         this.app.use(express.urlencoded({ extended: false }));
-        this.app.use(express.json());
+        this.app.use(express.json({ limit: '50MB' }));
         this.app.disable('x-powered-by');
         this.app.use(cors(this.corsOptions));
         this.app.options('*', cors());
