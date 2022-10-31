@@ -3,6 +3,7 @@ sdms_push_runtime_image:
   services:
     - docker:19.03.12-dind
   tags: ["osdu-medium"]
+  needs: ['sdms_compile-and-unit-test']
   stage: containerize
   variables:
     SHA_IMAGE: ${SDMS_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}
@@ -11,6 +12,10 @@ sdms_push_runtime_image:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     # Gitlab Container Registry
+    - export directoryToScan=$PWD
+    - export currentDirectory=$PWD
+    - chmod +x devops/scripts/detect_unused_packages.sh
+    - devops/scripts/detect_unused_packages.sh
     - cd app/$SDMS_SERVICE
     - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile  .
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$SHA_IMAGE
@@ -25,3 +30,4 @@ sdms_push_runtime_image:
       - branches
       - main
       - merge_requests
+      - tags
