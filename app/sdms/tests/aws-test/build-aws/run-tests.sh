@@ -89,14 +89,34 @@ subproject+=$RANDOM
 newuser='newuser'
 newuser+=$RANDOM
 newuser+='@testing.com'
+newusergroup='users.seismic-int-test-'
+newusergroup+=$RANDOM
+newusergroup+='.any@'
+newusergroup+=$tenant.
+newusergroup+=$DOMAIN
 echo $subproject
 echo $newuser
 
+echo Creating newusergroup: $newusergroup
+curl --location --request POST "$ENTITLEMENTS_URL"'groups' \
+--header 'data-partition-id: opendes' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer '"$token" \
+--data-raw '{
+    "name": '"$newusergroup"',
+    "description": "Meant for seismic testing"
+}
+'
 
-./tests/e2e/run_e2e_tests.sh --seistore-svc-url=$SEISMIC_DMS_URL --seistore-svc-api-key='xx' --user-idtoken=$token --tenant=$tenant --subproject=$subproject --admin-email=$ADMIN_USER --datapartition=$tenant --legaltag01=$legaltag --legaltag02=$legaltag --newuser=$newuser
+./tests/e2e/run_e2e_tests.sh --seistore-svc-url=$SEISMIC_DMS_URL --seistore-svc-api-key='xx' --user-idtoken=$token --tenant=$tenant --subproject=$subproject --admin-email=$ADMIN_USER --datapartition=$tenant --legaltag01=$legaltag --legaltag02=$legaltag --newuser=$newuser --newusergroup=$newusergroup
 TEST_EXIT_CODE=$?
 mv newman newman_test_reports
 popd
+
+echo Deleting newusergroup: $newusergroup
+curl --location --request DELETE "$ENTITLEMENTS_URL"'groups/'"$newusergroup" \
+--header 'data-partition-id: opendes' \
+--header 'Authorization: Bearer '"$token"
 
 echo Delete legaltag after Integration Tests...
 curl --location --request DELETE "$LEGAL_URL"'legaltags/opendes-sdmstestlegaltag' \
