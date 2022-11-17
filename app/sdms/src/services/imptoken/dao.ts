@@ -20,7 +20,7 @@ import { Config, CredentialsFactory } from '../../cloud';
 import { Error } from '../../shared';
 import { IImpTokenBodyModel as ImpTokenBodyModel, IRefreshUrl } from './model';
 
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export class ImpTokenDAO {
 
@@ -93,7 +93,7 @@ export class ImpTokenDAO {
         } catch (error) {
             // For any code different than 4xx the imptoken can be refreshed
             // This is a temporary fix to handle unavailability of client infrastructure
-            if (error.statusCode >= 400 && error.statusCode <= 499) {
+            if ((error as AxiosError).response.status >= 400 && error.statusCode <= 499) {
                 throw (Error.make(Error.Status.BAD_REQUEST, 'The impersonation token cannot be refreshed.'));
             }
         }
@@ -126,7 +126,7 @@ export class ImpTokenDAO {
                     'The impersonation token is not' +
                     ' a valid seismic store impersonation token. header kid not found'));
             }
-            pubkey = JSON.parse(result)[decodedToken.header.kid];
+            pubkey = result.data[decodedToken.header.kid];
             if (!pubkey) {
                 throw (Error.make(Error.Status.BAD_REQUEST,
                     'The impersonation token is not' +

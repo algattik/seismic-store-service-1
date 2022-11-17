@@ -163,12 +163,12 @@ export class TestDatasetSVC {
             this.journal.runQuery.resolves([[], {}] as never);
             this.journal.save.resolves({} as never);
 
-            const dataset_key = this.journal.createKey({
+            const datasetKey = this.journal.createKey({
                 namespace: Config.SEISMIC_STORE_NS + '-' + this.dataset.tenant + '-' + this.dataset.subproject,
                 path: [Config.DATASETS_KIND],
             });
 
-            await DatasetDAO.register(this.journal, { key: dataset_key, data: this.dataset });
+            await DatasetDAO.register(this.journal, { key: datasetKey, data: this.dataset });
             done();
         });
 
@@ -304,9 +304,9 @@ export class TestDatasetSVC {
                 subproject: 'subproject-a',
                 tenant: 'tenant-a',
             } as IDatasetModel;
-            
+
             this.sandbox.stub(DatasetDAO, 'get').resolves([dataset, undefined]);
-            
+
             this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(true);
             this.sandbox.stub(DatasetDAO, 'delete').resolves();
             this.sandbox.stub(Locker, 'acquireMutex').resolves();
@@ -367,15 +367,6 @@ export class TestDatasetSVC {
             Tx.check200(expRes.statusCode, done);
         });
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(true);
-            this.transaction.run.throws();
-            const writeErrorStub = this.sandbox.stub(Response, 'writeError');
-            writeErrorStub.returns();
-            await DatasetHandler.handler(expReq, expRes, DatasetOP.Delete);
-            Tx.checkTrue(writeErrorStub.calledOnce === true, done);
-        });
-
     }
 
     private static patch() {
@@ -418,7 +409,7 @@ export class TestDatasetSVC {
             this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(true);
             this.sandbox.stub(DatasetDAO, 'update').resolves();
             this.sandbox.stub(DESUtils, 'getDataPartitionID');
-            this.sandbox.stub(DESStorage, "insertRecord").resolves();
+            this.sandbox.stub(DESStorage, 'insertRecord').resolves();
             this.sandbox.stub(Locker, 'acquireMutex').resolves();
             this.sandbox.stub(Locker, 'releaseMutex').resolves();
             await DatasetHandler.handler(expReq, expRes, DatasetOP.Patch);

@@ -232,7 +232,7 @@ export class TestImpTokenSVC {
                 resource: 'resource',
             } as IResourceModel;
             const impToken: ImpTokenBodyModel = {
-                iat: undefined,
+                iat: 0,
                 refreshUrl: 'url',
                 resources: [resourceModel],
                 user: 'userA',
@@ -301,7 +301,7 @@ export class TestImpTokenSVC {
         // });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(axios, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves({data:["my_secret"]});
             await ImpTokenDAO.validate(this.tokenOK);
             done();
         });
@@ -314,7 +314,7 @@ export class TestImpTokenSVC {
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(axios, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves({data:["my_secret"]});
             try {
                 await ImpTokenDAO.validate(this.tokenNoKid);
             } catch (e) { Tx.check400(e.error.code, done); }
@@ -328,14 +328,14 @@ export class TestImpTokenSVC {
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(axios, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves({data:["my_secret"]});
             this.spy.stub(jwt, 'verify').throws({ name: 'TokenExpiredError' });
             await ImpTokenDAO.validate(this.tokenOK, true);
             done();
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(axios, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves({data:["my_secret"]});
             this.spy.stub(jwt, 'verify').throws({ name: 'TokenExpiredError' });
             try {
                 await ImpTokenDAO.validate(this.tokenOK, false);
@@ -343,14 +343,14 @@ export class TestImpTokenSVC {
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(axios, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves({data:["my_secret"]});
             try {
                 await ImpTokenDAO.validate(this.tokenWrongIss);
             } catch (e) { Tx.check400(e.error.code, done); }
         });
 
         Tx.test(async (done: any) => {
-            this.spy.stub(axios, 'get').resolves('["my_secret"]');
+            this.spy.stub(axios, 'get').resolves({data:["my_secret"]});
             try {
                 await ImpTokenDAO.validate(this.tokenWrong);
             } catch (e) { Tx.check400(e.error.code, done); }
@@ -395,11 +395,6 @@ export class TestImpTokenSVC {
     private static others() {
 
         Tx.sectionInit('others');
-
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            await ImpTokenHandler.handler(expReq, expRes, undefined);
-            done();
-        });
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             this.spy.stub(Auth, 'isImpersonationToken').returns(true);
