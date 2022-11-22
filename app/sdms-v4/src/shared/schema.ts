@@ -14,9 +14,7 @@
 // Limitations under the License.
 // ============================================================================
 
-import Ajv from 'ajv';
 import { Utils } from './utils';
-import addFormats from 'ajv-formats';
 import path from 'path';
 
 export interface SchemaValidationResult {
@@ -43,24 +41,19 @@ export class Schema {
 
     public static async validate(data: any, referenceSchema: string): Promise<SchemaValidationResult> {
         const schema = await this.getSchema(referenceSchema);
-        const ajv = new Ajv({
-            strict: false,
-            strictTypes: false,
-            allErrors: true,
-            unicodeRegExp: false,
-        });
 
-        ajv.addFormat('integer', {
+        let Validator = require('jsonschema').Validator;
+        Validator.prototype.customFormats.integer = {
             type: 'number',
             validate: (x: number) => x >= Number.MIN_VALUE && x <= Number.MAX_VALUE,
-        });
-
-        addFormats(ajv);
-
-        const valid = ajv.validate(schema, data);
+        };
+        
+        let v = new Validator();
+       
+        const valid = v.validate(data, schema).valid
         return {
             valid,
-            error: valid ? undefined : ajv.errors[0].instancePath + ' ' + ajv.errors[0].message,
+            error: valid ? undefined : v.validate(data, schema).errors[0].property + ' ' + v.validate(data, schema).errors[1],
         };
     }
 }
