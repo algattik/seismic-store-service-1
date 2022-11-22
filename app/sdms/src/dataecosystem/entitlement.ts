@@ -109,10 +109,9 @@ export class DESEntitlement {
                     await axios.post(url, data, options);
                     return;
                 } catch (error) { // check eventual consistency
-                    if (!(checkConsistencyForCreateGroup && error && error.error &&
-                        error.error.code && error.error.code === 404 &&
-                        error.error.reason && (error.error.reason as string).toLocaleLowerCase() === 'not found')) {
-                        throw (error);
+                    if (axios.isAxiosError(error) && !(checkConsistencyForCreateGroup
+                        && error.response.status === 404)) {
+                        throw (error)
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s constant (no exp backOff required)
@@ -121,7 +120,7 @@ export class DESEntitlement {
 
         } catch (error) {
 
-            if (error.statusCode === 409) {
+            if (error.response.status === 409) {
 
                 let usersList = [];
                 let result = await DESEntitlement.listUsersInGroup(userToken, groupName, dataPartitionID, appkey);
@@ -166,7 +165,7 @@ export class DESEntitlement {
         options.headers[dataecosystem.getDataPartitionIDRestHeaderName()] = dataPartitionID;
 
         await axios.delete(url, options).catch((error) => {
-            if (error.statusCode !== 409) {
+            if (error.response.status !== 409) {
                 throw (Error.makeForHTTPRequest(error, '[entitlement-service]'));
             }
         });
