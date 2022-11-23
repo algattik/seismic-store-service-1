@@ -84,6 +84,7 @@ export class Tx {
     }
 
     public static check200(val: number, done: any) { this.check(val, 200, done); }
+    public static check202(val: number, done: any) { this.check(val, 202, done); }
     public static check400(val: number, done: any) { this.check(val, 400, done); }
     public static check403(val: number, done: any) { this.check(val, 403, done); }
     public static check404(val: number, done: any) { this.check(val, 404, done); }
