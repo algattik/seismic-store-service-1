@@ -27,10 +27,10 @@
   },
   "nyc": {
     "check-coverage": true,
-    "branches": 23,
-    "functions": 30,
-    "lines": 33,
-    "statements": 35,
+    "branches": 30,
+    "functions": 35,
+    "lines": 40,
+    "statements": 40,
     "include": [
       "src/**/*.ts"
     ],
@@ -137,7 +137,7 @@
     "nyc": "^15.1.0",
     "scan-for-secrets": "^2.0.3",
     "sinon": "^12.0.1",
-    "ts-node": "^10.4.0",
+    "ts-node": "10.8.0",
     "tslint": "^6.1.3"
   },
   "config": {
