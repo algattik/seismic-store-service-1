@@ -70,18 +70,23 @@ export class AzureConfig extends Config {
             await Keyvault.loadSecrets(Keyvault.CreateSecretClient());
 
             // data ecosystem host url and appkey
-            AzureConfig.DES_SERVICE_HOST_COMPLIANCE = process.env.DES_SERVICE_HOST;
-            AzureConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST;
-            AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST;
-            AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST;
-            AzureConfig.DES_POLICY_SERVICE_HOST = process.env.DES_POLICY_SERVICE_HOST || process.env.DES_SERVICE_HOST;
+            AzureConfig.DES_SERVICE_HOST_COMPLIANCE = process.env.DES_SERVICE_HOST_COMPLIANCE ||
+                process.env.DES_SERVICE_HOST;
+            AzureConfig.DES_SERVICE_HOST_ENTITLEMENT = process.env.DES_SERVICE_HOST_ENTITLEMENT ||
+                process.env.DES_SERVICE_HOST;
+            AzureConfig.DES_SERVICE_HOST_STORAGE = process.env.DES_SERVICE_HOST_STORAGE ||
+                process.env.DES_SERVICE_HOST;
+            AzureConfig.DES_SERVICE_HOST_PARTITION = process.env.DES_SERVICE_HOST_PARTITION ||
+                process.env.DES_SERVICE_HOST;
+            AzureConfig.DES_POLICY_SERVICE_HOST = process.env.DES_POLICY_SERVICE_HOST ||
+                process.env.DES_SERVICE_HOST;
             AzureConfig.DES_SERVICE_APPKEY = process.env.SEISTORE_DES_APPKEY || 'undefined';
             AzureConfig.CCM_SERVICE_URL = process.env.CCM_SERVICE_URL;
             AzureConfig.CCM_TOKEN_SCOPE = process.env.CCM_TOKEN_SCOPE;
-            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST');
-            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST');
-            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST');
-            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST');
+            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_COMPLIANCE, 'DES_SERVICE_HOST_COMPLIANCE');
+            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_ENTITLEMENT, 'DES_SERVICE_HOST_ENTITLEMENT');
+            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_STORAGE, 'DES_SERVICE_HOST_STORAGE');
+            Config.checkRequiredConfig(AzureConfig.DES_SERVICE_HOST_PARTITION, 'DES_SERVICE_HOST_PARTITION');
             Config.checkRequiredConfig(AzureConfig.DES_SERVICE_APPKEY, 'DES_SERVICE_APPKEY');
 
             // the email of the service identity used to sign an impersonation token
