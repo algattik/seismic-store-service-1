@@ -14,8 +14,14 @@
 // Limitations under the License.
 // ============================================================================
 
+import { Config } from '../cloud';
 import { Utils } from './utils';
+import { Validator } from 'jsonschema';
 import path from 'path';
+
+Validator.prototype.customFormats.integer = (x: number) => {
+    return x >= Number.MIN_VALUE && x <= Number.MAX_VALUE;
+};
 
 export interface SchemaValidationResult {
     valid: boolean;
@@ -41,19 +47,19 @@ export class Schema {
 
     public static async validate(data: any, referenceSchema: string): Promise<SchemaValidationResult> {
         const schema = await this.getSchema(referenceSchema);
-
-        let Validator = require('jsonschema').Validator;
-        Validator.prototype.customFormats.integer = {
-            type: 'number',
-            validate: (x: number) => x >= Number.MIN_VALUE && x <= Number.MAX_VALUE,
-        };
-        
-        let v = new Validator();
-       
-        const valid = v.validate(data, schema).valid
+        const validator = new Validator();
+        const valid = validator.validate(
+            data,
+            schema,
+            Config.ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION ? {} : { skipAttributes: ['format'] }
+        ).valid;
         return {
             valid,
-            error: valid ? undefined : v.validate(data, schema).errors[0].property + ' ' + v.validate(data, schema).errors[1],
+            error: valid
+                ? undefined
+                : validator.validate(data, schema).errors[0].property +
+                  ' ' +
+                  validator.validate(data, schema).errors[1],
         };
     }
 }
