@@ -52,6 +52,9 @@ export abstract class Config implements IConfig {
     // Keys
     public static CORE_SERVICE_PARTITION_STORAGE_ACCOUNT_KEY: string;
 
+    // Enable or disable schema format validation
+    public static ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION: boolean;
+
     // Initialization methods
     public static setCloudProvider(cloudProvider: string | undefined) {
         if (!cloudProvider) {
@@ -63,18 +66,15 @@ export abstract class Config implements IConfig {
         this.CLOUD_PROVIDER = cloudProvider;
     }
 
-    // Load service configuration from environnement.
+    // Load service configuration from environment.
     // In the init implementation, each CSP can override the default value
     public static async initialize(): Promise<void> {
         Config.SERVICE_PORT = this.getEnvNumber('SERVICE_PORT', 5000);
-
         Config.SSL_ENABLED = this.getEnvBoolean('SSL_ENABLED', false);
         Config.SSL_KEY_PATH = this.getEnvString('SSL_KEY_PATH');
         Config.SSL_CERT_PATH = this.getEnvString('SSL_CERT_PATH');
-
         Config.APIS_BASE_PATH = this.getEnvString('APIS_BASE_PATH', '/seistore-svc/api/v4');
         Config.CALLER_FORWARD_HEADERS = this.getEnvString('CALLER_FORWARD_HEADERS');
-
         Config.DATA_PARTITION_ID = this.getEnvString('DATA_PARTITION_HEADER_KEY', 'data-partition-id');
         Config.CORE_SERVICE_HOST = this.getEnvString('CORE_SERVICE_HOST');
         Config.CORE_SERVICE_STORAGE_BASE_PATH = this.getEnvString('STORAGE_SERVICE_BASE_PATH', '/api/storage/v2');
@@ -89,6 +89,8 @@ export abstract class Config implements IConfig {
             'PARTITION_SVC_STORAGE_ACCOUNT_KEY',
             'sdms-storage-account-name'
         );
+        Config.ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION = this.getEnvBoolean(
+            'ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION', false);
 
         // Check required configurations
         this.checkRequiredConfig(Config.CORE_SERVICE_HOST, 'CORE_SERVICE_HOST');
