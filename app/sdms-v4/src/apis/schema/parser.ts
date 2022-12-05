@@ -15,23 +15,21 @@
 // ============================================================================
 
 import { Error, Params, Schema } from '../../shared';
-
-import { DatasetListRequest } from './model';
+import { Context } from '../../shared/context';
+import { SchemaListRequest } from './model';
 import { Request as expRequest } from 'express';
 import fs from 'fs';
 import path from 'path';
 
 export class Parser {
-    public static datasetModels: string[];
     private static baseModelsPath = '../../docs/schemas/generated/';
-    private static datasetModelsFolder = 'dataset';
     public static async register(req: expRequest): Promise<object[]> {
         Params.checkBodyArray(req.body);
         const requestModel = req.baseUrl.split('/').pop();
         const model = this.getReferenceModel(requestModel);
 
         for (const record of req.body) {
-            const validationResult = await Schema.validate(record, this.datasetModelsFolder + '/' + model);
+            const validationResult = await Schema.validate(record, Context.schemaGroup.folder + '/' + model);
             if (!validationResult || !validationResult.valid) {
                 throw Error.make(Error.Status.BAD_REQUEST, 'Schema validation error: ' + validationResult.error);
             }
@@ -40,17 +38,17 @@ export class Parser {
     }
 
     private static getReferenceModel(requestModel: string): string {
-        if (!this.datasetModels) {
-            this.datasetModels = fs.readdirSync(
-                path.resolve(__dirname, this.baseModelsPath + this.datasetModelsFolder)
-            );
-        }
-        const model = this.datasetModels
+        const models = fs.readdirSync(path.resolve(__dirname, this.baseModelsPath + Context.schemaGroup.folder));
+        const model = models
             .filter((model) => {
-                return (
-                    model.toLowerCase().indexOf('filecollection.') !== -1 &&
-                    model.toLowerCase().indexOf('.' + requestModel.toLowerCase() + '.') !== -1
-                );
+                if (Context.schemaGroup.prefix) {
+                    return (
+                        model.toLowerCase().indexOf(Context.schemaGroup.prefix) !== -1 &&
+                        model.toLowerCase().indexOf('.' + requestModel.toLowerCase() + '.') !== -1
+                    );
+                } else {
+                    return model.toLowerCase().indexOf(requestModel.toLowerCase() + '.') !== -1;
+                }
             })
             .sort()
             .pop();
@@ -67,11 +65,11 @@ export class Parser {
         return [req.params.id as string, req.params.version as string];
     }
 
-    public static async listDatasets(req: expRequest): Promise<DatasetListRequest> {
+    public static async listSchemas(req: expRequest): Promise<SchemaListRequest> {
         const requestModel = req.baseUrl.split('/').pop();
         const model = this.getReferenceModel(requestModel);
         return {
-            kind: await Schema.getSchemaKind(this.datasetModelsFolder + '/' + model),
+            kind: await Schema.getSchemaKind(Context.schemaGroup.folder + '/' + model),
             pagination: {
                 paginationLimit: +req.query['page-limit'],
                 paginationCursor: req.query['next-page-token'] as string,

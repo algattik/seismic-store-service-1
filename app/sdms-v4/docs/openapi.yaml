@@ -1218,7 +1218,7 @@ paths:
         Required role: users.datalake.editors or users.datalake.admin
 
         This API registers or update a list of acquisition survey seismic component. When a component is updated, a new version of it will be created.
-        The [acquisition survey 1.1.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/SeismicAcquisitionSurvey.1.1.0.json)
+        The [acquisition survey 1.2.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/SeismicAcquisitionSurvey.1.2.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
         References to datasets, as record id, are requested to be specified in the
@@ -1226,11 +1226,11 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
+        - Master Data Seismic Acquisition Survey
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
-        $ref: "#/components/requestBodies/acquisitionsurvey.1.1.0.list"
+        $ref: "#/components/requestBodies/acquisitionsurvey.1.2.0.list"
       responses:
         200:
           $ref: "#/components/responses/record.id.version.list"
@@ -1246,14 +1246,14 @@ paths:
 
         Pagination is supported.
       tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
+        - Master Data Seismic Acquisition Survey
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
         - $ref: "#/components/parameters/pagination.token"
       responses:
         200:
-          $ref: "#/components/responses/acquisitionsurvey.1.1.0.list.paginated"
+          $ref: "#/components/responses/acquisitionsurvey.1.2.0.list.paginated"
 
   /acquisitionsurvey/v1/record/{id}:
     get:
@@ -1264,13 +1264,13 @@ paths:
 
         This api returns the last version of a acquisition survey seismic dataset. Previous schema version will be automatically converted.
       tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
+        - Master Data Seismic Acquisition Survey
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
       responses:
         200:
-          $ref: "#/components/responses/acquisitionsurvey.1.1.0"
+          $ref: "#/components/responses/acquisitionsurvey.1.2.0"
     delete:
       operationId: acquisitionsurvey-v1-delete
       summary: delete an acquisition survey component
@@ -1279,7 +1279,7 @@ paths:
 
         The API performs a deletion of the given line acquisition survey component.
       tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
+        - Master Data Seismic Acquisition Survey
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1296,7 +1296,7 @@ paths:
 
         This api returns the list of versions for a acquisition survey seismic data.
       tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
+        - Master Data Seismic Acquisition Survey
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1313,14 +1313,14 @@ paths:
 
         This api returns a specific version of the acquisition survey data
       tags:
-        - Master Data Seismic Acquisition Survey (Not Implemented)
+        - Master Data Seismic Acquisition Survey
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
         - $ref: "#/components/parameters/version"
       responses:
         200:
-          $ref: "#/components/responses/acquisitionsurvey.1.1.0"
+          $ref: "#/components/responses/acquisitionsurvey.1.2.0"
 
   ### ==============================================================================
   ### SEISMIC PROCESSING PROJECT PATHS
@@ -1659,12 +1659,12 @@ components:
       type: array
       items:
         $ref: "schemas/generated/work-product-component/SeismicLineGeometry.1.0.0.json"
-    acquisitionsurvey.1.1.0.list:
-      title: Seismic Acquisition Survey 1.0.0 data
-      description: The list of acquisition survey 1.0.0 data
+    acquisitionsurvey.1.2.0.list:
+      title: Seismic Acquisition Survey 1.2.0 data
+      description: The list of acquisition survey 1.2.0 data
       type: array
       items:
-        $ref: "schemas/generated/master-data/SeismicProcessingProject.1.1.0.json"
+        $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
     processingproject.1.1.0.list:
       title: Seismic Processing Project 1.0.0 data
       description: The list of processing project 1.0.0 data
@@ -1748,15 +1748,15 @@ components:
             $ref: "schemas/generated/work-product-component/SeismicLineGeometry.1.0.0.json"
         next-page-token:
           type: string
-    acquisitionsurvey.1.1.0.list.paginated:
-      title: Acquisition Survey 1.1.0 data paginated list
-      description: The paginated list of acquisition survey 1.1.0 data
+    acquisitionsurvey.1.2.0.list.paginated:
+      title: Acquisition Survey 1.2.0 data paginated list
+      description: The paginated list of acquisition survey 1.2.0 data
       type: object
       properties:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.1.0.json"
+            $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
         next-page-token:
           type: string
     processingproject.1.1.0.list.paginated:
@@ -1845,11 +1845,11 @@ components:
         [
           $ref: "schemas/examples/work-product-component/SeismicLineGeometry.1.0.0.json",
         ]
-    acquisitionsurvey.1.1.0.list:
-      summary: Acquisition Survey 1.1.0 data
+    acquisitionsurvey.1.2.0.list:
+      summary: Acquisition Survey 1.2.0 data
       value:
         [
-          $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.1.0.json",
+          $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
         ]
     processingproject.1.1.0.list:
       summary: Processing Project 1.1.0 data
@@ -1909,12 +1909,12 @@ components:
             $ref: "schemas/examples/work-product-component/SeismicLineGeometry.1.0.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
-    acquisitionsurvey.1.1.0.list.paginated:
-      summary: Acquisition Survey 1.1.0 data (paginated)
+    acquisitionsurvey.1.2.0.list.paginated:
+      summary: Acquisition Survey 1.2.0 data (paginated)
       value:
         datasets:
           [
-            $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.1.0.json",
+            $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     processingproject.1.1.0.list.paginated:
@@ -2005,16 +2005,16 @@ components:
           examples:
             linegeometry.1.0.0.list:
               $ref: "#/components/examples/linegeometry.1.0.0.list"
-    acquisitionsurvey.1.1.0.list:
-      description: The list of acquisition survey 1.1.0 components.
+    acquisitionsurvey.1.2.0.list:
+      description: The list of acquisition survey 1.2.0 components.
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/acquisitionsurvey.1.1.0.list"
+            $ref: "#/components/schemas/acquisitionsurvey.1.2.0.list"
           examples:
-            acquisitionsurvey.1.1.0.list:
-              $ref: "#/components/examples/acquisitionsurvey.1.1.0.list"
+            acquisitionsurvey.1.2.0.list:
+              $ref: "#/components/examples/acquisitionsurvey.1.2.0.list"
     processingproject.1.1.0.list:
       description: The list of processing project 1.1.0 components.
       required: true
@@ -2136,15 +2136,15 @@ components:
           examples:
             Line Geometry 1.0.0 dataset:
               $ref: "schemas/examples/work-product-component/SeismicLineGeometry.1.0.0.json"
-    acquisitionsurvey.1.1.0:
-      description: The acquisition survey 1.1.0 data
+    acquisitionsurvey.1.2.0:
+      description: The acquisition survey 1.2.0 data
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.1.0.json"
+            $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
           examples:
-            Acquisition Survey 1.1.0 dataset:
-              $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.1.0.json"
+            Acquisition Survey 1.2.0 dataset:
+              $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json"
     processingproject.1.1.0:
       description: The processing project 1.1.0 data
       content:
@@ -2226,15 +2226,15 @@ components:
           examples:
             tracedata.1.0.0.list:
               $ref: "#/components/examples/linegeometry.1.0.0.list.paginated"
-    acquisitionsurvey.1.1.0.list.paginated:
-      description: The list of acquisition survey 1.1.0 data
+    acquisitionsurvey.1.2.0.list.paginated:
+      description: The list of acquisition survey 1.2.0 data
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/acquisitionsurvey.1.1.0.list.paginated"
+            $ref: "#/components/schemas/acquisitionsurvey.1.2.0.list.paginated"
           examples:
-            acquisitionsurvey.1.0.0.list:
-              $ref: "#/components/examples/acquisitionsurvey.1.1.0.list.paginated"
+            acquisitionsurvey.1.2.0.list:
+              $ref: "#/components/examples/acquisitionsurvey.1.2.0.list.paginated"
     processingproject.1.1.0.list.paginated:
       description: The list of processing project 1.1.0 data
       content:

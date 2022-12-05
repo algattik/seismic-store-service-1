@@ -19,7 +19,7 @@ export interface Pagination {
     paginationCursor: string;
 }
 
-export interface DatasetListRequest {
+export interface SchemaListRequest {
     kind: string;
     pagination: Pagination;
 }

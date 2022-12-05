@@ -300,6 +300,13 @@ The following software have components provided under the terms of this license:
 - lodash.snakecase (from https://www.npmjs.com/package/lodash.snakecase)
 
 ========================================================================
+GPL-1.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- node-forge (from https://www.npmjs.com/package/node-forge)
+
+========================================================================
 GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -882,6 +889,13 @@ The following software have components provided under the terms of this license:
 - prisma (from https://www.npmjs.com/package/prisma)
 
 ========================================================================
+mit-addition
+========================================================================
+The following software have components provided under the terms of this license:
+
+- node-forge (from https://www.npmjs.com/package/node-forge)
+
+========================================================================
 ogl-uk-3.0
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -891,8 +905,6 @@ The following software have components provided under the terms of this license:
 ========================================================================
 unknown
 ========================================================================
-The following software have components provided under the terms of this license:
-
 - querystring (from https://www.npmjs.com/package/querystring)
 
 ========================================================================

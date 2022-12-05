@@ -14,4 +14,5 @@
 // Limitations under the License.
 // ============================================================================
 
-export { DatasetRouter } from './service';
+export { SchemaRouter } from './service';
+export { SchemaGroup, SchemaGroups } from './types';

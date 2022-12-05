@@ -90,7 +90,9 @@ export abstract class Config implements IConfig {
             'sdms-storage-account-name'
         );
         Config.ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION = this.getEnvBoolean(
-            'ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION', false);
+            'ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION',
+            false
+        );
 
         // Check required configurations
         this.checkRequiredConfig(Config.CORE_SERVICE_HOST, 'CORE_SERVICE_HOST');
