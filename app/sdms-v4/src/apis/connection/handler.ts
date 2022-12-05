@@ -18,13 +18,19 @@ import { ComplianceCoreService, EntitlementCoreService, StorageCoreService } fro
 import { Config, CredentialsFactory } from '../../cloud';
 import { Error, Response, getInMemoryCacheInstance } from '../../shared';
 import { Request as expRequest, Response as expResponse } from 'express';
-
+import { Context } from '../../shared/context';
 import { Operation } from './operations';
 import { Parser } from './parser';
 import crypto from 'crypto';
 
 export class ConnectionsHandler {
     public static async handler(req: expRequest, res: expResponse, op: Operation) {
+        if (!Context.schemaGroup.hasBulks) {
+            throw Error.make(
+                Error.Status.BAD_REQUEST,
+                'Connection strings cannot be released for ' + Context.schemaGroup.folder + ' records'
+            );
+        }
         const dataPartition = req.headers[Config.DATA_PARTITION_ID] as string;
         try {
             if (op === Operation.GetUploadConnectionString) {

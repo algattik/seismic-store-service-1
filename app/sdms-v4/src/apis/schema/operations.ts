@@ -13,21 +13,12 @@
 // See the License for the specific language governing permissions and
 // Limitations under the License.
 // ============================================================================
-import { SchemaGroup, SchemaGroups, SchemaRouter } from './schema';
-import { Config } from '../cloud';
-import { ConnectionStringRouter } from './connection';
-import { Router } from 'express';
-import { StatusRouter } from './status';
 
-const router = Router();
-
-router.use(Config.APIS_BASE_PATH + '/status', StatusRouter);
-for (const group of SchemaGroups) {
-    for (const model of group.models) {
-        router.use(Config.APIS_BASE_PATH + '/' + model, SchemaRouter);
-    }
+export enum Operation {
+    RegisterPatch,
+    Get,
+    GetVersionedSchema,
+    DeleteSchema,
+    GetAllVersionIDsOfSchema,
+    ListSchemas,
 }
-router.use(Config.APIS_BASE_PATH + '/connection-string', ConnectionStringRouter);
-
-export { router as ServiceRouter };
-export { SchemaGroup, SchemaGroups };

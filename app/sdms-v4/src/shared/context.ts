@@ -13,21 +13,25 @@
 // See the License for the specific language governing permissions and
 // Limitations under the License.
 // ============================================================================
-import { SchemaGroup, SchemaGroups, SchemaRouter } from './schema';
-import { Config } from '../cloud';
-import { ConnectionStringRouter } from './connection';
-import { Router } from 'express';
-import { StatusRouter } from './status';
 
-const router = Router();
+import { SchemaGroup, SchemaGroups } from '../apis';
+import express from 'express';
 
-router.use(Config.APIS_BASE_PATH + '/status', StatusRouter);
-for (const group of SchemaGroups) {
-    for (const model of group.models) {
-        router.use(Config.APIS_BASE_PATH + '/' + model, SchemaRouter);
+export class Context {
+    public static schemaGroup: SchemaGroup;
+
+    private static urlIncludeSchemaModel = (url: string, models: string[]): boolean => {
+        return models.some((model) => {
+            return url.includes(model);
+        });
+    };
+
+    public static init(req: express.Request) {
+        for (const group of SchemaGroups) {
+            if (this.urlIncludeSchemaModel(req.url, group.models)) {
+                this.schemaGroup = group;
+                break;
+            }
+        }
     }
 }
-router.use(Config.APIS_BASE_PATH + '/connection-string', ConnectionStringRouter);
-
-export { router as ServiceRouter };
-export { SchemaGroup, SchemaGroups };

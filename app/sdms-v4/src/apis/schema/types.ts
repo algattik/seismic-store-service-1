@@ -14,11 +14,23 @@
 // Limitations under the License.
 // ============================================================================
 
-export enum Operation {
-    RegisterPatch,
-    Get,
-    GetVersionedDataset,
-    DeleteDataset,
-    GetAllVersionIDsOfDataset,
-    ListDatasets,
+export interface SchemaGroup {
+    models: string[];
+    prefix?: string;
+    folder: string;
+    hasBulks?: boolean;
 }
+
+export const SchemaGroups = [
+    {
+        models: ['segy', 'openzgy', 'openvds', 'generic'],
+        prefix: 'filecollection',
+        folder: 'dataset',
+        hasBulks: true,
+    },
+    {
+        models: ['acquisitionsurvey'],
+        folder: 'master-data',
+        hasBulks: false,
+    },
+] as SchemaGroup[];

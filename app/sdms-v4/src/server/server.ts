@@ -17,6 +17,7 @@
 import { Error, Response } from '../shared';
 
 import { Config } from '../cloud';
+import { Context } from '../shared/context';
 import { ServiceRouter } from '../apis';
 import cors from 'cors';
 import { corsOptions } from './cors';
@@ -70,6 +71,10 @@ export class Server {
             }
         }
 
+        // Initialize request execution context
+        Context.init(req);
+
+        // Continue service the request
         next();
     }
 

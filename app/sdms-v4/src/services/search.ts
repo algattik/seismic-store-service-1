@@ -17,7 +17,7 @@
 import { Error, Utils } from '../shared';
 
 import { Config } from '../cloud';
-import { Pagination } from '../apis/dataset/model';
+import { Pagination } from '../apis/schema/model';
 import axios from 'axios';
 
 export class SearchService {
