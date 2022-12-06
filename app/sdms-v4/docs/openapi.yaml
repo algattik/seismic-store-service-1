@@ -104,8 +104,8 @@ paths:
         It is performed by checking if the caller is a member of an authorization group. 
         A user in SDMS can be either owner or viewer
 
-        -	owner with read/write access if a member of an owner authorization group
-        -	viewer with read-only access if a member of a viewer authorization group.
+        -  owner with read/write access if a member of an owner authorization group
+        -  viewer with read-only access if a member of a viewer authorization group.
 
         The owner and viewer authorization groups are required to be specified in the *acl* property
         of the model.
@@ -305,8 +305,8 @@ paths:
         It is performed by checking if the caller is a member of an authorization group. 
         A user in SDMS can be either owner or viewer
 
-        -	owner with read/write access if a member of an owner authorization group
-        -	viewer with read-only access if a member of a viewer authorization group.
+        -  owner with read/write access if a member of an owner authorization group
+        -  viewer with read-only access if a member of a viewer authorization group.
 
         The owner and viewer authorization groups are required to be specified in the *acl* property
         of the model.
@@ -506,8 +506,8 @@ paths:
         It is performed by checking if the caller is a member of an authorization group. 
         A user in SDMS can be either owner or viewer
 
-        -	owner with read/write access if a member of an owner authorization group
-        -	viewer with read-only access if a member of a viewer authorization group.
+        -  owner with read/write access if a member of an owner authorization group
+        -  viewer with read-only access if a member of a viewer authorization group.
 
         The owner and viewer authorization groups are required to be specified in the *acl* property
         of the model.
@@ -707,8 +707,8 @@ paths:
         It is performed by checking if the caller is a member of an authorization group. 
         A user in SDMS can be either owner or viewer
 
-        -	owner with read/write access if a member of an owner authorization group
-        -	viewer with read-only access if a member of a viewer authorization group.
+        -  owner with read/write access if a member of an owner authorization group
+        -  viewer with read-only access if a member of a viewer authorization group.
 
         The owner and viewer authorization groups are required to be specified in the *acl* property
         of the model.
@@ -1334,7 +1334,8 @@ paths:
         Required role: users.datalake.editors or users.datalake.admin
 
         This API registers or update a list of processing project seismic component. When a component is updated, a new version of it will be created.
-        The [processing project 1.1.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/SeismicAcquisitionSurvey.1.1.0.json)
+        The [processing project 1.2.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/SeismicProcessingProject.1.2.0.json)
+
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
         References to datasets, as record id, are requested to be specified in the
@@ -1342,11 +1343,11 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - Master Data Seismic Processing Project (Not Implemented)
+        - Master Data Seismic Processing Project
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
-        $ref: "#/components/requestBodies/processingproject.1.1.0.list"
+        $ref: "#/components/requestBodies/processingproject.1.2.0.list"
       responses:
         200:
           $ref: "#/components/responses/record.id.version.list"
@@ -1362,14 +1363,14 @@ paths:
 
         Pagination is supported.
       tags:
-        - Master Data Seismic Processing Project (Not Implemented)
+        - Master Data Seismic Processing Project
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
         - $ref: "#/components/parameters/pagination.token"
       responses:
         200:
-          $ref: "#/components/responses/processingproject.1.1.0.list.paginated"
+          $ref: "#/components/responses/processingproject.1.2.0.list.paginated"
 
   /processingproject/v1/record/{id}:
     get:
@@ -1380,13 +1381,13 @@ paths:
 
         This api returns the last version of a processing project seismic dataset. Previous schema version will be automatically converted.
       tags:
-        - Master Data Seismic Processing Project (Not Implemented)
+        - Master Data Seismic Processing Project
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
       responses:
         200:
-          $ref: "#/components/responses/processingproject.1.1.0"
+          $ref: "#/components/responses/processingproject.1.2.0"
     delete:
       operationId: processingproject-v1-delete
       summary: delete a processing project component
@@ -1395,7 +1396,7 @@ paths:
 
         The API performs a deletion of the given line processing project component.
       tags:
-        - Master Data Seismic Processing Project (Not Implemented)
+        - Master Data Seismic Processing Project
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1412,7 +1413,7 @@ paths:
 
         This api returns the list of versions for a processing project seismic data.
       tags:
-        - Master Data Seismic Processing Project (Not Implemented)
+        - Master Data Seismic Processing Project
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1429,14 +1430,14 @@ paths:
 
         This api returns a specific version of the processing project data
       tags:
-        - Master Data Seismic Processing Project (Not Implemented)
+        - Master Data Seismic Processing Project
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
         - $ref: "#/components/parameters/version"
       responses:
         200:
-          $ref: "#/components/responses/processingproject.1.1.0"
+          $ref: "#/components/responses/processingproject.1.2.0"
 
   ### ==============================================================================
   ### CONNECTION STRINGS
@@ -1665,12 +1666,12 @@ components:
       type: array
       items:
         $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
-    processingproject.1.1.0.list:
-      title: Seismic Processing Project 1.0.0 data
-      description: The list of processing project 1.0.0 data
+    processingproject.1.2.0.list:
+      title: Seismic Processing Project 1.2.0 data
+      description: The list of processing project 1.2.0 data
       type: array
       items:
-        $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.1.0.json"
+        $ref: "schemas/generated/master-data/SeismicProcessingProject.1.2.0.json"
     segy.1.0.0.list.paginated:
       title: SEGY 1.0.0 datasets paginated list
       description: The paginated list of segy 1.0.0 datasets
@@ -1759,15 +1760,15 @@ components:
             $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
         next-page-token:
           type: string
-    processingproject.1.1.0.list.paginated:
-      title: Processing Project 1.1.0 data paginated list
-      description: The paginated list of processing project 1.1.0 data
+    processingproject.1.2.0.list.paginated:
+      title: Processing Project 1.2.0 data paginated list
+      description: The paginated list of processing project 1.2.0 data
       type: object
       properties:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/master-data/SeismicProcessingProject.1.1.0.json"
+            $ref: "schemas/generated/master-data/SeismicProcessingProject.1.2.0.json"
         next-page-token:
           type: string
 
@@ -1851,11 +1852,11 @@ components:
         [
           $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
         ]
-    processingproject.1.1.0.list:
-      summary: Processing Project 1.1.0 data
+    processingproject.1.2.0.list:
+      summary: Processing Project 1.2.0 data
       value:
         [
-          $ref: "schemas/examples/master-data/SeismicProcessingProject.1.1.0.json",
+          $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json",
         ]
     segy.1.0.0.list.paginated:
       summary: SEGY 1.0.0 datasets (paginated)
@@ -1917,12 +1918,12 @@ components:
             $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
-    processingproject.1.1.0.list.paginated:
-      summary: Processing Project 1.1.0 data (paginated)
+    processingproject.1.2.0.list.paginated:
+      summary: Processing Project 1.2.0 data (paginated)
       value:
         datasets:
           [
-            $ref: "schemas/examples/master-data/SeismicProcessingProject.1.1.0.json",
+            $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     connection.string:
@@ -2015,16 +2016,16 @@ components:
           examples:
             acquisitionsurvey.1.2.0.list:
               $ref: "#/components/examples/acquisitionsurvey.1.2.0.list"
-    processingproject.1.1.0.list:
-      description: The list of processing project 1.1.0 components.
+    processingproject.1.2.0.list:
+      description: The list of processing project 1.2.0 components.
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/processingproject.1.1.0.list"
+            $ref: "#/components/schemas/processingproject.1.2.0.list"
           examples:
-            processingproject.1.1.0.list:
-              $ref: "#/components/examples/processingproject.1.1.0.list"
+            processingproject.1.2.0.list:
+              $ref: "#/components/examples/processingproject.1.2.0.list"
     sdms.v3.dataset.path.list:
       description: The list of sdms v3 dataset path (sdpath).
       required: true
@@ -2145,15 +2146,15 @@ components:
           examples:
             Acquisition Survey 1.2.0 dataset:
               $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json"
-    processingproject.1.1.0:
-      description: The processing project 1.1.0 data
+    processingproject.1.2.0:
+      description: The processing project 1.2.0 data
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/master-data/SeismicProcessingProject.1.1.0.json"
+            $ref: "schemas/generated/master-data/SeismicProcessingProject.1.2.0.json"
           examples:
-            Processing Project 1.1.0 dataset:
-              $ref: "schemas/examples/master-data/SeismicProcessingProject.1.1.0.json"
+            Processing Project 1.2.0 dataset:
+              $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json"
     seismic.1.1.0:
       description: The trace data 1.1.0 component
       content:
@@ -2235,15 +2236,15 @@ components:
           examples:
             acquisitionsurvey.1.2.0.list:
               $ref: "#/components/examples/acquisitionsurvey.1.2.0.list.paginated"
-    processingproject.1.1.0.list.paginated:
-      description: The list of processing project 1.1.0 data
+    processingproject.1.2.0.list.paginated:
+      description: The list of processing project 1.2.0 data
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/processingproject.1.1.0.list.paginated"
+            $ref: "#/components/schemas/processingproject.1.2.0.list.paginated"
           examples:
-            processingproject.1.0.0.list:
-              $ref: "#/components/examples/processingproject.1.1.0.list.paginated"
+            processingproject.1.2.0.list:
+              $ref: "#/components/examples/processingproject.1.2.0.list.paginated"
     version.list:
       description: The list of dataset versions
       content:
