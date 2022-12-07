@@ -33,4 +33,9 @@ export const SchemaGroups = [
         folder: 'master-data',
         hasBulks: false,
     },
+    {
+        models: ['linegeometry'],
+        folder: 'work-product-component',
+        hasBulks: false,
+    },
 ] as SchemaGroup[];
