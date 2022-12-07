@@ -1110,7 +1110,7 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
+        - Work Product Component Seismic Line Geometry
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
@@ -1130,7 +1130,7 @@ paths:
 
         Pagination is supported.
       tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
+        - Work Product Component Seismic Line Geometry
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
@@ -1148,7 +1148,7 @@ paths:
 
         This api returns the last version of a line geometry seismic dataset. Previous schema version will be automatically converted.
       tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
+        - Work Product Component Seismic Line Geometry
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1163,7 +1163,7 @@ paths:
 
         The API performs a deletion of the given line geometry seismic component.
       tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
+        - Work Product Component Seismic Line Geometry
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1180,7 +1180,7 @@ paths:
 
         This api returns the list of versions for a line geometry seismic component.
       tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
+        - Work Product Component Seismic Line Geometry
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1197,7 +1197,7 @@ paths:
 
         This api returns a specific version of the line geometry component
       tags:
-        - Work Product Component Seismic Line Geometry (Not Implemented)
+        - Work Product Component Seismic Line Geometry
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
