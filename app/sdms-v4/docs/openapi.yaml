@@ -986,7 +986,7 @@ paths:
         Required role: users.datalake.editors or users.datalake.admin
 
         This API registers or update a list of bin grid seismic component. When a component is updated, a new version of it will be created.
-        The [bingrid 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicBingrid.1.0.0.json)
+        The [bin grid 1.1.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicBinGrid.1.1.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
         References to datasets, as record id, are requested to be specified in the
@@ -994,11 +994,11 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
+        - Work Product Component Seismic Bin Grid
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
-        $ref: "#/components/requestBodies/bingrid.1.0.0.list"
+        $ref: "#/components/requestBodies/bingrid.1.1.0.list"
       responses:
         200:
           $ref: "#/components/responses/record.id.version.list"
@@ -1014,14 +1014,14 @@ paths:
 
         Pagination is supported.
       tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
+        - Work Product Component Seismic Bin Grid
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
         - $ref: "#/components/parameters/pagination.token"
       responses:
         200:
-          $ref: "#/components/responses/bingrid.1.0.0.list.paginated"
+          $ref: "#/components/responses/bingrid.1.1.0.list.paginated"
 
   /bingrid/v1/record/{id}:
     get:
@@ -1032,13 +1032,13 @@ paths:
 
         This api returns the last version of a bin grid seismic dataset. Previous schema version will be automatically converted.
       tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
+        - Work Product Component Seismic Bin Grid
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
       responses:
         200:
-          $ref: "#/components/responses/bingrid.1.0.0"
+          $ref: "#/components/responses/bingrid.1.1.0"
     delete:
       operationId: bingrid-v1-delete
       summary: delete a bin grid seismic component
@@ -1047,7 +1047,7 @@ paths:
 
         The API performs a deletion of the given bin grid seismic component.
       tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
+        - Work Product Component Seismic Bin Grid
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1064,7 +1064,7 @@ paths:
 
         This api returns the list of versions for a bin grid seismic component.
       tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
+        - Work Product Component Seismic Bin Grid
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -1081,14 +1081,14 @@ paths:
 
         This api returns a specific version of the bin grid component
       tags:
-        - Work Product Component Seismic Bin Grid (Not Implemented)
+        - Work Product Component Seismic Bin Grid
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
         - $ref: "#/components/parameters/version"
       responses:
         200:
-          $ref: "#/components/responses/bingrid.1.0.0"
+          $ref: "#/components/responses/bingrid.1.1.0"
 
   ### ==============================================================================
   ### SEISMIC LINE GEOMETRY PATHS
@@ -1648,12 +1648,12 @@ components:
       type: array
       items:
         $ref: "schemas/generated/work-product-component/SeismicTraceData.1.1.0.json"
-    bingrid.1.0.0.list:
-      title: Seismic Bin Grid 1.0.0 components
-      description: The list of bin grid 1.0.0 components
+    bingrid.1.1.0.list:
+      title: Seismic Bin Grid 1.1.0 components
+      description: The list of bin grid 1.1.0 components
       type: array
       items:
-        $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.0.0.json"
+        $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.1.0.json"
     linegeometry.1.0.0.list:
       title: Seismic Line Geometry 1.0.0 components
       description: The list of line geometry 1.0.0 components
@@ -1727,15 +1727,15 @@ components:
             $ref: "schemas/generated/work-product-component/SeismicTraceData.1.1.0.json"
         next-page-token:
           type: string
-    bingrid.1.0.0.list.paginated:
-      title: Bin Grid 1.0.0 components paginated list
-      description: The paginated list of bin grid 1.0.0 components
+    bingrid.1.1.0.list.paginated:
+      title: Bin Grid 1.1.0 components paginated list
+      description: The paginated list of bin grid 1.1.0 components
       type: object
       properties:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.0.0.json"
+            $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.1.0.json"
         next-page-token:
           type: string
     linegeometry.1.0.0.list.paginated:
@@ -1834,11 +1834,11 @@ components:
         [
           $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json",
         ]
-    bingrid.1.0.0.list:
-      summary: Seismic Bin Grid 1.0.0 components
+    bingrid.1.1.0.list:
+      summary: Seismic Bin Grid 1.1.0 components
       value:
         [
-          $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.0.0.json",
+          $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.1.0.json",
         ]
     linegeometry.1.0.0.list:
       summary: Seismic LineGeometry 1.0.0 components
@@ -1894,12 +1894,12 @@ components:
             $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
-    bingrid.1.0.0.list.paginated:
-      summary: Bin Grid 1.0.0 components (paginated)
+    bingrid.1.1.0.list.paginated:
+      summary: Bin Grid 1.1.0 components (paginated)
       value:
         datasets:
           [
-            $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.0.0.json",
+            $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.1.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     linegeometry.1.0.0.list.paginated:
@@ -1986,16 +1986,16 @@ components:
           examples:
             tracedata.1.0.0.list:
               $ref: "#/components/examples/tracedata.1.1.0.list"
-    bingrid.1.0.0.list:
-      description: The list of bin grid 1.0.0 components.
+    bingrid.1.1.0.list:
+      description: The list of bin grid 1.1.0 components.
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/bingrid.1.0.0.list"
+            $ref: "#/components/schemas/bingrid.1.1.0.list"
           examples:
-            bingrid.1.0.0.list:
-              $ref: "#/components/examples/bingrid.1.0.0.list"
+            bingrid.1.1.0.list:
+              $ref: "#/components/examples/bingrid.1.1.0.list"
     linegeometry.1.0.0.list:
       description: The list of line geometry 1.0.0 components.
       required: true
@@ -2119,15 +2119,15 @@ components:
           examples:
             Trace Data 1.1.0 dataset:
               $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json"
-    bingrid.1.0.0:
-      description: The bin grid 1.0.0 component
+    bingrid.1.1.0:
+      description: The bin grid 1.1.0 component
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.0.0.json"
+            $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.1.0.json"
           examples:
-            BinGrid 1.0.0 dataset:
-              $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.0.0.json"
+            BinGrid 1.1.0 dataset:
+              $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.1.0.json"
     linegeometry.1.0.0:
       description: The line geometry 1.0.0 component
       content:
@@ -2209,15 +2209,15 @@ components:
           examples:
             tracedata.1.0.0.list:
               $ref: "#/components/examples/tracedata.1.1.0.list.paginated"
-    bingrid.1.0.0.list.paginated:
-      description: The list of bin grid 1.0.0 component
+    bingrid.1.1.0.list.paginated:
+      description: The list of bin grid 1.1.0 component
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/bingrid.1.0.0.list.paginated"
+            $ref: "#/components/schemas/bingrid.1.1.0.list.paginated"
           examples:
             tracedata.1.0.0.list:
-              $ref: "#/components/examples/bingrid.1.0.0.list.paginated"
+              $ref: "#/components/examples/bingrid.1.1.0.list.paginated"
     linegeometry.1.0.0.list.paginated:
       description: The list of line geometry 1.0.0 component
       content:
