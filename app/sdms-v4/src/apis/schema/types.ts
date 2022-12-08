@@ -34,7 +34,7 @@ export const SchemaGroups = [
         hasBulks: false,
     },
     {
-        models: ['linegeometry'],
+        models: ['linegeometry', 'bingrid'],
         folder: 'work-product-component',
         hasBulks: false,
     },
