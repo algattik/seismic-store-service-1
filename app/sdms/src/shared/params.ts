@@ -92,10 +92,10 @@ export class Params {
 
         this.checkParam(path, fieldName, required, 'string');
 
-        if (!path.match(/^[\/A-Za-z0-9_-]*$/g)) {
+        if (!path.match(/^[\/A-Za-z0-9_\.-]*$/g)) {
             throw (Error.make(Error.Status.BAD_REQUEST, 'The \'' + fieldName +
                 '\' parameter ' + path + ' is in a wrong format.' +
-                'It should match the regex expression ^[\/A-Za-z0-9_-]*$'));
+                'It should match the regex expression ^[\/A-Za-z0-9_\.-]*$'));
         }
 
     }
