@@ -870,7 +870,7 @@ paths:
         Required role: users.datalake.editors or users.datalake.admin
 
         This API registers or update a list of trace data seismic component. When a component is updated, a new version of it will be created.
-        The [tracedata 1.1.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicTraceData.1.1.0.json)
+        The [TraceData 1.3.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicTraceData.1.3.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
         References to datasets, as record id, are requested to be specified in the
@@ -878,11 +878,11 @@ paths:
 
         The API returns a list of versioned records ID for the registered or updated datasets.
       tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
+        - Work Product Component Seismic Trace Data
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
       requestBody:
-        $ref: "#/components/requestBodies/tracedata.1.1.0.list"
+        $ref: "#/components/requestBodies/tracedata.1.3.0.list"
       responses:
         200:
           $ref: "#/components/responses/record.id.version.list"
@@ -898,14 +898,14 @@ paths:
 
         Pagination is supported.
       tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
+        - Work Product Component Seismic Trace Data
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/pagination.limit"
         - $ref: "#/components/parameters/pagination.token"
       responses:
         200:
-          $ref: "#/components/responses/tracedata.1.1.0.list.paginated"
+          $ref: "#/components/responses/tracedata.1.3.0.list.paginated"
 
   /tracedata/v1/record/{id}:
     get:
@@ -916,13 +916,13 @@ paths:
 
         This api returns the last version of a trace data seismic dataset. Previous schema version will be automatically converted.
       tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
+        - Work Product Component Seismic Trace Data
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
       responses:
         200:
-          $ref: "#/components/responses/tracedata.1.1.0"
+          $ref: "#/components/responses/tracedata.1.3.0"
     delete:
       operationId: tracedata-v1-delete
       summary: delete a trace data seismic component
@@ -931,7 +931,7 @@ paths:
 
         The API performs a deletion of the given trace data seismic component.
       tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
+        - Work Product Component Seismic Trace Data
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -948,7 +948,7 @@ paths:
 
         This api returns the list of versions for a trace data seismic component.
       tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
+        - Work Product Component Seismic Trace Data
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
@@ -965,14 +965,14 @@ paths:
 
         This api returns a specific version of the trace data component
       tags:
-        - Work Product Component Seismic Trace Data (Not Implemented)
+        - Work Product Component Seismic Trace Data
       parameters:
         - $ref: "#/components/parameters/data.partition.id"
         - $ref: "#/components/parameters/id"
         - $ref: "#/components/parameters/version"
       responses:
         200:
-          $ref: "#/components/responses/tracedata.1.1.0"
+          $ref: "#/components/responses/tracedata.1.3.0"
 
   ### ==============================================================================
   ### SEISMIC BINGRID PATHS
@@ -1642,12 +1642,12 @@ components:
       type: array
       items:
         $ref: "schemas/generated/dataset/FileCollection.Generic.1.0.0.json"
-    tracedata.1.1.0.list:
-      title: Seismic Trace Data 1.1.0 components
-      description: The list of trace data 1.1.0 components
+    tracedata.1.3.0.list:
+      title: Seismic Trace Data 1.3.0 components
+      description: The list of trace data 1.3.0 components
       type: array
       items:
-        $ref: "schemas/generated/work-product-component/SeismicTraceData.1.1.0.json"
+        $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
     bingrid.1.1.0.list:
       title: Seismic Bin Grid 1.1.0 components
       description: The list of bin grid 1.1.0 components
@@ -1716,15 +1716,15 @@ components:
             $ref: "schemas/generated/dataset/FileCollection.Generic.1.0.0.json"
         next-page-token:
           type: string
-    tracedata.1.1.0.list.paginated:
-      title: Trace Data 1.1.0 components paginated list
-      description: The paginated list of trace data 1.1.0 components
+    tracedata.1.3.0.list.paginated:
+      title: Trace Data 1.3.0 components paginated list
+      description: The paginated list of trace data 1.3.0 components
       type: object
       properties:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.1.0.json"
+            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
         next-page-token:
           type: string
     bingrid.1.1.0.list.paginated:
@@ -1828,11 +1828,11 @@ components:
       summary: Generic 1.0.0 datasets
       value:
         [$ref: "./schemas/examples/dataset/FileCollection.Generic.1.0.0.json"]
-    tracedata.1.1.0.list:
-      summary: Seismic Trace Data 1.1.0 components
+    tracedata.1.3.0.list:
+      summary: Seismic Trace Data 1.3.0 components
       value:
         [
-          $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json",
+          $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json",
         ]
     bingrid.1.1.0.list:
       summary: Seismic Bin Grid 1.1.0 components
@@ -1886,12 +1886,12 @@ components:
         datasets:
           [$ref: "./schemas/examples/dataset/FileCollection.Generic.1.0.0.json"]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
-    tracedata.1.1.0.list.paginated:
-      summary: Trace Data 1.1.0 components (paginated)
+    tracedata.1.3.0.list.paginated:
+      summary: Trace Data 1.3.0 components (paginated)
       value:
         datasets:
           [
-            $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json",
+            $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     bingrid.1.1.0.list.paginated:
@@ -1976,16 +1976,16 @@ components:
           examples:
             generic.1.0.0.list:
               $ref: "#/components/examples/generic.1.0.0.list"
-    tracedata.1.1.0.list:
-      description: The list of trace data 1.1.0 components.
+    tracedata.1.3.0.list:
+      description: The list of trace data 1.3.0 components.
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/tracedata.1.1.0.list"
+            $ref: "#/components/schemas/tracedata.1.3.0.list"
           examples:
-            tracedata.1.0.0.list:
-              $ref: "#/components/examples/tracedata.1.1.0.list"
+            tracedata.1.3.0.list:
+              $ref: "#/components/examples/tracedata.1.3.0.list"
     bingrid.1.1.0.list:
       description: The list of bin grid 1.1.0 components.
       required: true
@@ -2110,15 +2110,15 @@ components:
           examples:
             Generic 1.0.0 dataset:
               $ref: "schemas/examples/dataset/FileCollection.Generic.1.0.0.json"
-    tracedata.1.1.0:
-      description: The trace data 1.1.0 component
+    tracedata.1.3.0:
+      description: The trace data 1.3.0 component
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.1.0.json"
+            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
           examples:
-            Trace Data 1.1.0 dataset:
-              $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json"
+            Trace Data 1.3.0 dataset:
+              $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json"
     bingrid.1.1.0:
       description: The bin grid 1.1.0 component
       content:
@@ -2156,14 +2156,14 @@ components:
             Processing Project 1.2.0 dataset:
               $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json"
     seismic.1.1.0:
-      description: The trace data 1.1.0 component
+      description: The trace data 1.3.0 component
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.1.0.json"
+            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
           examples:
-            TraceData 1.1.0 dataset:
-              $ref: "schemas/examples/work-product-component/SeismicTraceData.1.1.0.json"
+            TraceData 1.3.0 dataset:
+              $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json"
     segy.1.0.0.list.paginated:
       description: The list of segy 1.0.0 datasets
       content:
@@ -2200,15 +2200,15 @@ components:
           examples:
             generic.1.0.0.list:
               $ref: "#/components/examples/generic.1.0.0.list.paginated"
-    tracedata.1.1.0.list.paginated:
-      description: The list of trace data 1.1.0 component
+    tracedata.1.3.0.list.paginated:
+      description: The list of trace data 1.3.0 component
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/tracedata.1.1.0.list.paginated"
+            $ref: "#/components/schemas/tracedata.1.3.0.list.paginated"
           examples:
-            tracedata.1.0.0.list:
-              $ref: "#/components/examples/tracedata.1.1.0.list.paginated"
+            tracedata.1.3.0.list:
+              $ref: "#/components/examples/tracedata.1.3.0.list.paginated"
     bingrid.1.1.0.list.paginated:
       description: The list of bin grid 1.1.0 component
       content:
