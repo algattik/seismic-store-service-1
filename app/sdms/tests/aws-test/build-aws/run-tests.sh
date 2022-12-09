@@ -75,7 +75,7 @@ curl --location --request POST "$SEISMIC_DMS_URL"'/tenant/opendes' \
   --data '{
         "default_acls": "users.datalake.admins@opendes.example.com",
         "esd": "opendes.example.com",
-        "gcpid": "aws_project_id"
+        "gcpid": "opendes"
 }'
 
 chmod +x ./tests/e2e/run_e2e_tests.sh
@@ -91,9 +91,7 @@ newuser+=$RANDOM
 newuser+='@testing.com'
 newusergroup='users.seismic-int-test-'
 newusergroup+=$RANDOM
-newusergroup+='.any@'
-newusergroup+=$tenant.
-newusergroup+=$DOMAIN
+newusergroup+='.any'
 echo $subproject
 echo $newuser
 
@@ -103,7 +101,7 @@ curl --location --request POST "$ENTITLEMENTS_URL"'groups' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer '"$token" \
 --data-raw '{
-    "name": '"$newusergroup"',
+    "name": "'$newusergroup'",
     "description": "Meant for seismic testing"
 }
 '
@@ -114,7 +112,7 @@ mv newman newman_test_reports
 popd
 
 echo Deleting newusergroup: $newusergroup
-curl --location --request DELETE "$ENTITLEMENTS_URL"'groups/'"$newusergroup" \
+curl --location --request DELETE "$ENTITLEMENTS_URL"'groups/'"$newusergroup"'@opendes.example.com' \
 --header 'data-partition-id: opendes' \
 --header 'Authorization: Bearer '"$token"
 
