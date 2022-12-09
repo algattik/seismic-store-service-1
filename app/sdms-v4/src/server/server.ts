@@ -35,7 +35,10 @@ export class Server {
         this.app.use(express.json());
         this.app.disable('x-powered-by');
         this.app.use(cors(corsOptions));
-        this.app.use(Config.APIS_BASE_PATH + '/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+        this.app.use(Config.APIS_BASE_PATH + '/swagger-ui.html', swaggerUi.serve, swaggerUi.setup(
+		    swaggerDocument, {
+            customCss: '.swagger-ui .topbar { display: none }'
+        }));
         this.app.use(this.sddmsMiddleware);
         this.app.use(ServiceRouter);
     }
