@@ -16,7 +16,5 @@
 
 export enum Operation {
     GetUploadConnectionString,
-    GetUploadConnectionStringForDatasetVersion,
     GetDownloadConnectionString,
-    GetDownloadConnectionStringForDatasetVersion,
 }

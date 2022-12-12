@@ -29,7 +29,7 @@ export const SchemaGroups = [
         hasBulks: true,
     },
     {
-        models: ['acquisitionsurvey', 'processingproject'],
+        models: ['2dinterpretationset', '3dinterpretationset', 'acquisitionsurvey', 'processingproject'],
         folder: 'master-data',
         hasBulks: false,
     },

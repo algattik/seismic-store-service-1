@@ -15,14 +15,13 @@
 // ============================================================================
 
 import { Config, StorageFactory } from '../../cloud';
+import { Response, Utils } from '../../shared';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Context } from '../../shared/context';
 import { Operation } from './operations';
 import { Parser } from './parser';
-import { Response } from '../../shared';
 import { SearchService } from '../../services/search';
 import { StorageCoreService } from '../../services';
-import crypto from 'crypto';
 
 export class SchemaHandler {
     public static async handler(req: expRequest, res: expResponse, op: Operation) {
@@ -58,7 +57,7 @@ export class SchemaHandler {
         const recordIds = await StorageCoreService.insertRecords(req.headers.authorization!, records, dataPartition);
         if (Context.schemaGroup.hasBulks) {
             for (let ii = 0; ii < records.length; ii++) {
-                const bucketId = this.constructBucketID(recordIds[ii].substring(0, recordIds[ii].lastIndexOf(':')));
+                const bucketId = Utils.constructBucketID(recordIds[ii].substring(0, recordIds[ii].lastIndexOf(':')));
                 if (!(await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).bucketExists(bucketId))) {
                     await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).createBucket(bucketId);
                 }
@@ -105,7 +104,7 @@ export class SchemaHandler {
             }
         }
         if (Context.schemaGroup.hasBulks) {
-            const bucketID = this.constructBucketID(inputRecordID);
+            const bucketID = Utils.constructBucketID(inputRecordID);
             await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).deleteBucket(bucketID);
         }
     }
@@ -135,14 +134,5 @@ export class SchemaHandler {
             options.kind,
             options.pagination
         );
-    }
-
-    /**
-     * Construct a BucketId from a recordId
-     * @param recordID the Schema storage record Id
-     * @returns the bucket id
-     */
-    private static constructBucketID(recordID: string) {
-        return crypto.createHash('sha256').update(recordID).digest('hex').slice(0, -1);
     }
 }

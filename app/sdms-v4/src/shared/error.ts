@@ -53,8 +53,12 @@ export class Error {
         if (axios.isAxiosError(error)) {
             const err = error as AxiosError;
             return this.make(
-                err.response.status || 500,
-                typeof err.response.data === 'object' ? (err.response.data as any).message : err.response.data,
+                err.response?.status || 500,
+                err.response
+                    ? typeof err.response?.data === 'object'
+                        ? (err.response?.data as any).message
+                        : err.response?.data
+                    : err.message,
                 mexPrefix
             );
         }

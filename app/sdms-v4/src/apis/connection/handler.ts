@@ -16,7 +16,7 @@
 
 import { ComplianceCoreService, EntitlementCoreService, StorageCoreService } from '../../services';
 import { Config, CredentialsFactory } from '../../cloud';
-import { Error, Response, getInMemoryCacheInstance } from '../../shared';
+import { Error, Response, Utils, getInMemoryCacheInstance } from '../../shared';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Context } from '../../shared/context';
 import { Operation } from './operations';
@@ -36,10 +36,6 @@ export class ConnectionsHandler {
             if (op === Operation.GetUploadConnectionString) {
                 Response.writeOK(res, await this.getConnectionString(req, dataPartition, false));
             } else if (op === Operation.GetDownloadConnectionString) {
-                Response.writeOK(res, await this.getConnectionString(req, dataPartition, true));
-            } else if (op === Operation.GetUploadConnectionStringForDatasetVersion) {
-                Response.writeOK(res, await this.getConnectionString(req, dataPartition, false));
-            } else if (op === Operation.GetDownloadConnectionStringForDatasetVersion) {
                 Response.writeOK(res, await this.getConnectionString(req, dataPartition, true));
             }
         } catch (error) {
@@ -74,12 +70,7 @@ export class ConnectionsHandler {
             recordVersion
         );
 
-        const hash = crypto
-            .createHash('sha512')
-            .update(storageRecord['data']['DatasetProperties']['FileCollectionPath'])
-            .digest('hex')
-            .substring(0, 12);
-        const bucketId = recordId.split(':').at(-1) + '-' + hash;
+        const bucketId = Utils.constructBucketID(recordId);
         const storageCredentials = await CredentialsFactory.build(Config.CLOUD_PROVIDER, {
             dataPartition,
         }).getStorageCredentials(bucketId, readonly, dataPartition);
