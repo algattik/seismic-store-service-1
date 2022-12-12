@@ -9,10 +9,8 @@
     "scripts": {
         "build": "tsc",
         "copy-static-files": "copyfiles --error --up 1 ./docs/openapi.yaml ./docs/schemas/**/*.json ./docs/schemas/examples/**/*.json ./docs/schemas/generated/**/*.json ./dist/docs",
-        "copy-types-hpropagate": "copyfiles --error --up 2 ./typescript/types/hpropagate/**/*.d.ts ./node_modules/@types",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
         "postbuild": "npm run copy-static-files",
-        "postinstall": "npm run copy-types-hpropagate",
         "start-service": "node --trace-warnings --trace-uncaught ./dist/server/server-start.js"
     },
     "dependencies": {

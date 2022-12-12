@@ -25,16 +25,8 @@ ConnectionStringRouter.get('/upload/record/:id', async (req: expRequest, res: ex
     await ConnectionsHandler.handler(req, res, Operation.GetUploadConnectionString);
 });
 
-ConnectionStringRouter.get('/upload/record/:id/version/:version', async (req: expRequest, res: expResponse) => {
-    await ConnectionsHandler.handler(req, res, Operation.GetUploadConnectionStringForDatasetVersion);
-});
-
 ConnectionStringRouter.get('/download/record/:id', async (req: expRequest, res: expResponse) => {
     await ConnectionsHandler.handler(req, res, Operation.GetDownloadConnectionString);
-});
-
-ConnectionStringRouter.get('/download/record/:id/version/:version', async (req: expRequest, res: expResponse) => {
-    await ConnectionsHandler.handler(req, res, Operation.GetDownloadConnectionStringForDatasetVersion);
 });
 
 export { ConnectionStringRouter };

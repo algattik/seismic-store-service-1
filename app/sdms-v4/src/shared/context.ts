@@ -22,7 +22,7 @@ export class Context {
 
     private static urlIncludeSchemaModel = (url: string, models: string[]): boolean => {
         return models.some((model) => {
-            return url.includes(model);
+            return url.toLowerCase().includes(model);
         });
     };
 

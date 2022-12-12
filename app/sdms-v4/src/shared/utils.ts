@@ -16,6 +16,7 @@
 
 import JsYaml from 'js-yaml';
 import JsonRefs from 'json-refs';
+import crypto from 'crypto';
 
 export class Utils {
     public static async resolveJsonReferences(location: string): Promise<object> {
@@ -34,5 +35,9 @@ export class Utils {
 
     public static PreBearerToken(token: string): string {
         return token.startsWith('Bearer') ? token : 'Bearer ' + token;
+    }
+
+    public static constructBucketID(recordID: string) {
+        return crypto.createHash('sha256').update(recordID).digest('hex').slice(0, -1);
     }
 }
