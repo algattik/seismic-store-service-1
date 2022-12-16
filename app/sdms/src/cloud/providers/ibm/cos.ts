@@ -22,7 +22,8 @@ export class Cos extends AbstractStorage {
                 secretAccessKey: IbmConfig.COS_SECRET_ACCESS_KEY ,
                 endpoint: IbmConfig.COS_ENDPOINT,
                 s3ForcePathStyle: IbmConfig.COS_S3_FORCEPATHSTYLE, // needed with minio?
-                signatureVersion: IbmConfig.COS_SIGNATUREVERSION
+                signatureVersion: IbmConfig.COS_SIGNATUREVERSION,
+                region: 'us-south'
         });
     }
 
@@ -49,7 +50,7 @@ export class Cos extends AbstractStorage {
             Bucket: bucketName,
             CreateBucketConfiguration: {
                 // Set your region here
-               // LocationConstraint: location
+                LocationConstraint: ''
             }
         };
 

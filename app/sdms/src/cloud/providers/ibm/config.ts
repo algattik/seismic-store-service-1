@@ -97,7 +97,7 @@ export class IbmConfig extends Config {
         IbmConfig.COS_SIGNATUREVERSION = process.env.COS_SIGNATUREVERSION;
         IbmConfig.COS_SUBUSER_ACCESS_KEY_ID = process.env.COS_SUBUSER_ACCESS_KEY_ID;
         IbmConfig.COS_SUBUSER_SECRET_ACCESS_KEY = process.env.COS_SUBUSER_SECRET_ACCESS_KEY;
-        IbmConfig.COS_TEMP_CRED_EXPIRY = process.env.COS_TEMP_CRED_EXPIRY || '7200';
+        IbmConfig.COS_TEMP_CRED_EXPIRY = process.env.COS_TEMP_CRED_EXPIRY || '3600';
         IbmConfig.COS_ROLE_ARN = process.env.COS_ROLE_ARN || 'arn:aws:iam:::role/osdurolearn';
         IbmConfig.COS_ROLE_SESSION_NAME = process.env.COS_ROLE_SESSION_NAME || 'Bob';
 
