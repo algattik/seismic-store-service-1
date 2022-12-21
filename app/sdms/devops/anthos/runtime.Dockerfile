@@ -15,24 +15,25 @@
 # limitations under the License.
 # ============================================================================
 
+ARG docker_node_builder_image_version=16.15-slim
 ARG docker_node_image_version=14-alpine
 
 # -------------------------------
 # Compilation stage
 # -------------------------------
-FROM node:${docker_node_image_version} as runtime-builder
+FROM node:${docker_node_builder_image_version} as runtime-builder
 
 ADD ./ /service
 WORKDIR /service
 COPY ./src/cloud/providers/anthos/schema.prisma /service/prisma/schema.prisma
 
-RUN apk --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-headers make python3 \
+RUN apt update \
+    && apt install g++ gcc build-essential libstdc++6 make python3 -y \
     && npm install --quiet node-gyp -g \
     && npm install --quiet \
     && npm run build \
     && mkdir artifact \
-    && cp -r package.json dist artifact \
-    && apk del native-deps
+    && cp -r package.json dist artifact
 
 # -------------------------------
 # Package stage

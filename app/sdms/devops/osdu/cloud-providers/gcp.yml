@@ -1,5 +1,7 @@
 variables:
   GCP_SDMS_PREFIX: /api/seismic-store/v3
+  OSDU_GCP_GCR_REGISTRY: gcr.io/osdu-anthos
+  SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "devops/anthos/runtime.Dockerfile"
 
 sdms-osdu-gcp-helm-charts-master:
   extends: .osdu-gcp-helm-charts-master
@@ -15,8 +17,8 @@ sdms-osdu-gcp-helm-charts-release:
 
 sdms-osdu-gcp-containerize-gitlab:
   extends: .osdu-gcp-containerize-gitlab
+  needs: ["sdms_compile-and-unit-test"]
   variables:
-    SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "devops/anthos/runtime.Dockerfile"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
     IMAGE_NAME: osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
   before_script:
@@ -41,8 +43,8 @@ sdms-osdu-gcp-containerize-gitlab:
 
 sdms-osdu-gcp-containerize-gcr:
   extends: .osdu-gcp-containerize-gcr
+  needs: ["sdms_compile-and-unit-test"]
   variables:
-    SEISMIC_OSDU_GCP_DOCKERFILE_NAME: "docker/runtime.Dockerfile"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
     IMAGE_NAME: osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
   before_script:

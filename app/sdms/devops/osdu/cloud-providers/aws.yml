@@ -25,6 +25,20 @@ sdms_aws-containerize:
       else
         echo Building BUILDER->RUNTIME containers;
         cd app/$SDMS_SERVICE;
+        sed -i "/anthos/d" src/cloud/providers/index.ts
+        rm -Rf src/cloud/providers/anthos
+        sed -i "/google/d" src/cloud/providers/index.ts
+        rm -Rf src/cloud/providers/google
+        sed -i "/ibm/d" src/cloud/providers/index.ts
+        rm -Rf src/cloud/providers/ibm
+        jq "del(.prisma)" package.json > cleaned_package.json
+        mv cleaned_package.json package.json
+        export directoryToScan=$PWD
+        export currentDirectory=$PWD
+        chmod +x devops/scripts/detect_unused_packages.sh
+        devops/scripts/detect_unused_packages.sh
+        chmod +x devops/scripts/clean_package_json.sh
+        devops/scripts/clean_package_json.sh
         docker build -t builder:latest --file $AWS_BUILDER_DOCKERFILE_PATH .;
         docker build -t $LOCAL_IMAGE_TAG --file $AWS_RUNTIME_DOCKERFILE_PATH --build-arg docker_builder_image=builder .;
       fi
