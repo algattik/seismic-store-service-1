@@ -24,5 +24,4 @@ filemetadata_push_runtime_image:
       - app/filemetadata/**/*
     refs:
       - branches
-      - main
       - merge_requests

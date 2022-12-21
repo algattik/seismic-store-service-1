@@ -14,5 +14,4 @@ sdms_lint:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests

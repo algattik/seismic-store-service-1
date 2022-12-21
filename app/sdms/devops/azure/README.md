@@ -1,8 +1,8 @@
-# Install Seismic filemetadata on Azure
+# Install Seismic DMS on Azure
 
 ## Install service in AKS
 
-please follow mentioned instructions on the below link to install the Seismic filemetadata in azure enviroment
+please follow mentioned instructions on the below link to install the Seismic in azure enviroment
 
 Use [standard-ddms](https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure/-/tree/master/osdu-ddms/standard-ddms) to install in your environment.
 
@@ -11,4 +11,3 @@ Use [standard-ddms](https://community.opengroup.org/osdu/platform/deployment-and
 The installation using [/devops/azure/chart](chart) has been deprecated.
 
 Installation using Istio + Application Gateway has been deprecated. Istio Gateway and Virtual Services are used in its place.
-
