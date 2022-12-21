@@ -171,7 +171,7 @@ export class DatasetDAO {
             }
 
             const [datasetEntities, info] = await journalClient.runQuery(query);
-            if (datasetEntities.length !== 0) {
+            if (datasetEntities.length !== 0 || info.endCursor) {
                 output.datasets = output.datasets.concat(datasetEntities.map((item) => item.name));
                 if (pagination) {
                     output.nextPageCursor = info.endCursor;

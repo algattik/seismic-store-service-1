@@ -55,6 +55,8 @@ sdms_azure_containerize:
     - docker push ${CI_REGISTRY_IMAGE}/$SHA_IMAGE
     - docker tag $CI_REGISTRY_IMAGE/$SHA_IMAGE $CI_REGISTRY_IMAGE/$LATEST_IMAGE
     - docker push ${CI_REGISTRY_IMAGE}/$LATEST_IMAGE
+    - docker tag ${CI_REGISTRY_IMAGE}/$LATEST_IMAGE $CI_REGISTRY_IMAGE/${SDMS_PROJECT_NAME}azure:${CI_COMMIT_SHA}
+    - docker push $CI_REGISTRY_IMAGE/${SDMS_PROJECT_NAME}azure:${CI_COMMIT_SHA}
     # Sidecar image
     - docker tag $SDMS_SIDECAR_IMAGE $CI_REGISTRY_IMAGE/$SHA_SIDECAR_IMAGE
     - docker push ${CI_REGISTRY_IMAGE}/$SHA_SIDECAR_IMAGE
@@ -97,7 +99,7 @@ sdms_azure_container_scanning:
   needs:
     - sdms_azure_containerize
   variables:
-    DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}/${SDMS_PROJECT_NAME}:${CI_COMMIT_SHA}
+    DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}/${SDMS_PROJECT_NAME}azure:${CI_COMMIT_SHA}
   rules:
     - if: $AZURE == '1' && $ENFORCE_CONTAINER_SCANNING == 'true'
       allow_failure: false
@@ -138,7 +140,15 @@ sdms_azure_deploy:
       --create-namespace
       -n ${NAMESPACE} -f app/sdms/devops/azure/${SDMS_SERVICE_NAME}.osdu.values.yaml --wait --timeout 10m
     # Wait for service to be running to start
-    - kubectl rollout status deployment.v1.apps/${SDMS_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+    - |
+      kubectl rollout status deployment.v1.apps/${SDMS_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+      RESULT=$?
+      if [ $RESULT == 0 ]; then
+        echo "Rollout succeeded."
+      else
+        kubectl delete pod -l app=${SDMS_SERVICE_NAME} -n ${NAMESPACE}
+        kubectl rollout status deployment.v1.apps/${SDMS_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+      fi
     - pod=$(kubectl -n ddms-seismic get po -l app=${SDMS_SERVICE_NAME} --no-headers=true -o custom-columns=":metadata.name" | tail -1)
     - status=$(kubectl wait -n ${NAMESPACE} --for=condition=Ready pod/$pod --timeout=600s)
     - if [[ "$status" != *"met"* ]]; then echo "${SDMS_SERVICE_NAME} pod didn't start correctly" ; exit 1 ; fi
