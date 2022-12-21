@@ -14,8 +14,8 @@ sdms_push_runtime_image:
     # Gitlab Container Registry
     - export directoryToScan=$PWD
     - export currentDirectory=$PWD
-    - chmod +x devops/scripts/detect_unused_packages.sh
-    - devops/scripts/detect_unused_packages.sh
+    - chmod +x app/$SDMS_SERVICE/devops/scripts/detect_unused_packages.sh
+    - app/$SDMS_SERVICE/devops/scripts/detect_unused_packages.sh
     - cd app/$SDMS_SERVICE
     - docker build -t $SDMS_UTEST_RUNTIME_IMAGE --file docker/runtime.Dockerfile  .
     - docker tag $SDMS_UTEST_RUNTIME_IMAGE $CI_REGISTRY_IMAGE/$SHA_IMAGE
@@ -28,6 +28,5 @@ sdms_push_runtime_image:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests
       - tags

@@ -18,10 +18,9 @@ sdms_ibm-deploy:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests
       - tags
-      
+
 sdms_ibm-deploy-devpri:
   extends: .ibm-deploy-devpri
   needs: ['sdms_compile-and-unit-test']
@@ -38,7 +37,7 @@ sdms_ibm-deploy-devpri:
       changes:
         - devops/**/*
         - app/sdms/**/*
-    
+
 sdms_ibm-test-py:
   image: node:18
   stage: integration
@@ -65,7 +64,6 @@ sdms_ibm-test-py:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests
       - tags
 
@@ -82,7 +80,7 @@ sdms_ibm-preship-promote:
       changes:
         - devops/**/*
         - app/sdms/**/*
-        
+
 sdms_ibm-preship-promote-release:
   extends: .ibm-preship-promote-release
   stage: publish

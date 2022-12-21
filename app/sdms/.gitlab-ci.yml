@@ -17,7 +17,9 @@ include:
 
   # containerize
   # osdu
-  - project: "app/sdms/devops/osdu/containerize/osdu.yml"
+
+  # this job doesn't work for a long time
+  #  - local: "app/sdms/devops/osdu/containerize/osdu.yml"
 
   # deploy
   # azure

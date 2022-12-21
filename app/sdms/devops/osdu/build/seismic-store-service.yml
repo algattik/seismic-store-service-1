@@ -5,7 +5,7 @@ sdms_compile-and-unit-test:
   artifacts:
     reports:
       junit: app/$SDMS_SERVICE/test-results.xml
-      coverage_report: 
+      coverage_report:
         coverage_format: cobertura
         path: app/$SDMS_SERVICE/coverage/cobertura-coverage.xml
 
@@ -19,6 +19,5 @@ sdms_compile-and-unit-test:
   only:
     refs:
       - branches
-      - main
       - merge_requests
       - tags

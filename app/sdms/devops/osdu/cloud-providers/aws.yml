@@ -43,7 +43,6 @@ sdms_aws-containerize:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests
 
 sdms_aws-update-tf:
@@ -67,9 +66,8 @@ sdms_aws-update-tf:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests
-    
+
 sdms_aws-test-newman:
   allow_failure: true
   extends:
@@ -83,7 +81,7 @@ sdms_aws-test-newman:
     - cd app/$SDMS_SERVICE
     - pip3 install -r devops/aws/requirements.txt
     - svctoken=$(python3 ../../devops/scripts/aws_jwt_client.py)
-    - > 
+    - >
       curl --insecure --location --request POST "$LEGAL_BASE_URL"'legaltags' \
         --header 'accept: application/json' \
         --header 'authorization: Bearer '"$svctoken" \
@@ -96,7 +94,7 @@ sdms_aws-test-newman:
             "countryOfOrigin":["US"],
             "contractId":"A1234",
             "expirationDate":"2099-01-25",
-            "dataType":"Public Domain Data", 
+            "dataType":"Public Domain Data",
             "originator":"MyCompany",
             "securityClassification":"Public",
             "exportClassification":"EAR99",
@@ -126,11 +124,9 @@ sdms_aws-test-newman:
       - app/sdms/**/*
     refs:
       - branches
-      - main
       - merge_requests
   artifacts:
     when: always
     paths:
       - app/$SDMS_SERVICE/$INTEGRATION_TEST_DIR
     expire_in: 14 days
-    
