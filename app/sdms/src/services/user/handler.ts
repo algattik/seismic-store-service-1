@@ -466,16 +466,20 @@ export class UserHandler {
             let roles = [];
             const subprojects = (await SubProjectDAO.list(journalClient, sdPath.tenant));
             for(const subproject of subprojects) {
-                for(const admin of subproject.acls?.admins) {
-                    if (groupEmailsOfUser.includes(admin)) {
-                        roles.push(['/' + subproject.name, 'admin']);
-                        break;
+                if (subproject.acls?.admins) {
+                    for(const admin of subproject.acls?.admins) {
+                        if (groupEmailsOfUser.includes(admin)) {
+                            roles.push(['/' + subproject.name, 'admin']);
+                            break;
+                        }
                     }
                 }
-                for(const viewer of subproject.acls?.viewers) {
-                    if (groupEmailsOfUser.includes(viewer)) {
-                        roles.push(['/' + subproject.name, 'viewer']);
-                        break;
+                if (subproject.acls?.viewers) {
+                    for(const viewer of subproject.acls?.viewers) {
+                        if (groupEmailsOfUser.includes(viewer)) {
+                            roles.push(['/' + subproject.name, 'viewer']);
+                            break;
+                        }
                     }
                 }
             }
