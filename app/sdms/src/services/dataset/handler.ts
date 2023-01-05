@@ -320,26 +320,30 @@ export class DatasetHandler {
 
         // Apply transforms for openzgy_V1 and segy_v1 is required
         if (retrieveStorageRecord) {
+            let recordExist = true;
             const storageSchemaRecord = await DESStorage.getRecord(req.headers.authorization,
                 datasetOUT.seismicmeta_guid,
                 tenant.esd,
                 req[Config.DE_FORWARD_APPKEY],
-                seismicMetaRecordVersion);
+                seismicMetaRecordVersion).catch((error) => {
+                    recordExist = false;
+                });
 
-            // For all datasets with storage record, the default storage schema type is seismicmeta
-            if (storageSchemaRecord && !datasetOUT.storageSchemaRecordType) {
-                datasetOUT.storageSchemaRecordType = 'seismicmeta';
+            if(recordExist){
+                // For all datasets with storage record, the default storage schema type is seismicmeta
+                if (storageSchemaRecord && !datasetOUT.storageSchemaRecordType) {
+                    datasetOUT.storageSchemaRecordType = 'seismicmeta';
+                }
+
+                SchemaManagerFactory.build(datasetOUT.storageSchemaRecordType).applySchemaTransforms({
+                    data: storageSchemaRecord,
+                    transformFuncID: storageSchemaRecord['kind'],
+                    nextTransformFuncID: undefined
+                });
+
+                (datasetOUT as any)[datasetOUT.storageSchemaRecordType] = storageSchemaRecord;
+                delete datasetOUT.storageSchemaRecordType;
             }
-
-            SchemaManagerFactory.build(datasetOUT.storageSchemaRecordType).applySchemaTransforms({
-                data: storageSchemaRecord,
-                transformFuncID: storageSchemaRecord['kind'],
-                nextTransformFuncID: undefined
-            });
-
-            (datasetOUT as any)[datasetOUT.storageSchemaRecordType] = storageSchemaRecord;
-            delete datasetOUT.storageSchemaRecordType;
-
         }
         // attach the gcpid for fast check
         datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
@@ -431,15 +435,8 @@ export class DatasetHandler {
             req.headers['impersonation-token-context'] as string);
 
 
-        // Delete the dataset metadata (both firestore and DEStorage)
-        await Promise.all([
-            // delete the dataset entity
-            DatasetDAO.delete(journalClient, dataset),
-            // delete des storage record
-            (dataset.seismicmeta_guid && (FeatureFlags.isEnabled(Feature.SEISMICMETA_STORAGE))) ?
-                DESStorage.deleteRecord(req.headers.authorization,
-                    dataset.seismicmeta_guid, tenant.esd, req[Config.DE_FORWARD_APPKEY]) : undefined,
-        ]);
+        // Delete the dataset metadata on DEStorage
+        await DatasetDAO.delete(journalClient, dataset);
 
         // Delete all physical objects (not wait for full objects deletion)
         const bucket = DatasetUtils.getBucketFromDatasetResourceUri(dataset.gcsurl);
