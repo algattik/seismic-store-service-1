@@ -34,6 +34,11 @@ sdms_azure_containerize:
     - rm -Rf src/cloud/providers/google
     - sed -i "/ibm/d" src/cloud/providers/index.ts
     - rm -Rf src/cloud/providers/ibm
+    - sed -i "/TestGoogle/d" tests/utest/cloud/test.ts
+    - sed -i "/TestGCS/d" tests/utest/cloud/test.ts
+    - rm -Rf tests/utest/cloud/google
+    - rm -Rf tests/utest/dao
+    - rm -Rf tests/utest/services
     - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
     - jq "del(.prisma)" package.json > cleaned_package.json
     - mv cleaned_package.json package.json

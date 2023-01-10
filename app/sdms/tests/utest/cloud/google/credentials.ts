@@ -17,12 +17,12 @@
 import axios from 'axios';
 import sinon from 'sinon';
 
-import { google } from '../../../src/cloud/providers';
-import { Utils } from '../../../src/shared';
-import { Tx } from '../utils';
-import { ConfigGoogle } from '../../../src/cloud/providers/google';
+import { google } from '../../../../src/cloud/providers';
+import { Utils } from '../../../../src/shared';
+import { Tx } from '../../utils';
+import { ConfigGoogle } from '../../../../src/cloud/providers/google';
 
-export class TestCredentials {
+export class TestGoogleCredentials {
 
   public static run() {
 
