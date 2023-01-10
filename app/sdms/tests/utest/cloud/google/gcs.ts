@@ -18,8 +18,8 @@ import sinon from 'sinon';
 
 import { Bucket, DeleteFilesOptions, File, Iam, Storage } from '@google-cloud/storage';
 import { Acl } from '@google-cloud/storage/build/src/acl';
-import { google } from '../../../src/cloud/providers';
-import { Tx } from '../utils';
+import { google } from '../../../../src/cloud/providers';
+import { Tx } from '../../utils';
 
 export class TestGCSCore {
 

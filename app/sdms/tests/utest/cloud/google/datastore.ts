@@ -17,9 +17,9 @@
 import sinon from 'sinon';
 
 import { Datastore, Query, Transaction } from '@google-cloud/datastore';
-import { DatastoreDAO, DatastoreTransactionDAO } from '../../../src/cloud/providers/google';
-import { Config } from '../../../src/cloud';
-import { Tx } from '../utils';
+import { DatastoreDAO, DatastoreTransactionDAO } from '../../../../src/cloud/providers/google';
+import { Config } from '../../../../src/cloud';
+import { Tx } from '../../utils';
 
 export class TestGoogleDatastoreDAO {
    private static sandbox: sinon.SinonSandbox;

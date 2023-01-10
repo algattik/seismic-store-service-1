@@ -39,6 +39,7 @@ FROM mcr.microsoft.com/mirror/docker/library/node:${docker_node_image_version} a
 COPY --from=runtime-builder /service/artifact /seistore-service
 WORKDIR /seistore-service
 
+RUN apk update && apk upgrade
 RUN apk --no-cache add --virtual native-deps g++ gcc libgcc libstdc++ linux-headers make python3 \
     && addgroup appgroup \
     && adduser --disabled-password --gecos --shell appuser --ingroup appgroup \

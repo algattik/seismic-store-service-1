@@ -1,21 +1,14 @@
 import sinon from 'sinon';
 import { Request as expRequest, Response as expResponse } from 'express';
-import { Auth, AuthGroups, AuthRoles, UserRoles } from '../../../../src/auth';
-import { Config } from '../../../../src/cloud';
-import { JournalFactoryTenantClient } from '../../../../src/cloud/journal';
+import { Auth, AuthGroups } from '../../../../src/auth';
 import { IDESEntitlementGroupModel } from '../../../../src/cloud/dataecosystem';
-import { Error, Feature, FeatureFlags, Response, Utils } from '../../../../src/shared';
-import { ISDPathModel } from '../../../../src/shared/sdpath';
 import { DatasetDAO, DatasetModel } from '../../../../src/services/dataset';
-import { SubProjectDAO, SubprojectGroups, SubProjectModel } from '../../../../src/services/subproject';
-import { ISubProjectModel } from '../../../../src/services/subproject/model';
-import { TenantDAO, TenantGroups, TenantModel } from '../../../../src/services/tenant';
+import { SubProjectDAO, SubProjectModel } from '../../../../src/services/subproject';
+import { TenantDAO } from '../../../../src/services/tenant';
 import { ITenantModel } from '../../../../src/services/tenant/model';
 import { UserOP } from '../../../../src/services/user/optype';
-import { UserParser } from '../../../../src/services/user/parser';
 import { UserHandler as Handler } from '../../../../src/services/user/handler';
 import { Tx } from '../../utils';
-import { RequestPaymentConfiguration } from '@aws-sdk/client-s3';
 
 export class TestServicesUserHandler {
 
