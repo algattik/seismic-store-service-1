@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ export class TestParams {
          this.checkArray();
          this.checkEmail();
          this.checkDatasetPath();
+         this.checkBoolean();
 
       });
 
@@ -55,6 +56,14 @@ export class TestParams {
          } catch (e) {
             Tx.check400(e.error.code, done);
          }
+      });
+
+      Tx.test((done: any) => {
+         const body = {};
+
+         const result = Params.checkBody(body, false);
+         Tx.checkTrue(result === undefined, done);
+
       });
 
       // body is not a object
@@ -82,6 +91,7 @@ export class TestParams {
          Params.checkBody(body, false);
          done();
       });
+      
    }
 
    private static checkArray() {
@@ -102,6 +112,13 @@ export class TestParams {
       });
 
       Tx.test((done: any) => {
+
+         const result = Params.checkArray('', 'array01', false);
+         Tx.checkTrue(result === undefined, done);
+
+      });
+
+      Tx.test((done: any) => {
          try {
             Params.checkArray(100, 'array01', true);
          } catch (e) {
@@ -115,6 +132,11 @@ export class TestParams {
 
       Tx.test((done: any) => {
          Params.checkEmail('user@email.com', 'emailAdress', true);
+         done();
+      });
+
+      Tx.test((done: any) => {
+         Params.checkEmail('', 'emailAdress', false);
          done();
       });
 
@@ -152,6 +174,17 @@ export class TestParams {
             Tx.check400(e.error.code, done);
          }
       });
+   }
+
+   private static checkBoolean() {
+      Tx.sectionInit('check Boolean');
+
+      Tx.test((done: any) => {
+         this.spy.stub(Params, <any>'checkParam').resolves();
+         Params.checkBoolean('param', 'fieldName', true);
+         done();
+      });
+
    }
 
 }

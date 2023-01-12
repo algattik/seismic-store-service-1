@@ -25,10 +25,10 @@ export class TestDao {
 	public static run() {
 		describe(Tx.title('utest seismic store [DAO]'), () => {
 			TestSubProject.run();
-			// TestImpToken.run();
-			// TestDataset.run();
-			// TestTenant.run();
-			// TestSvcApp.run();
+			TestImpToken.run();
+			TestDataset.run();
+			TestTenant.run();
+			TestSvcApp.run();
 		});
 	}
 }

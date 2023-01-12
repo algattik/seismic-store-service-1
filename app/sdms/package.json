@@ -27,10 +27,10 @@
   },
   "nyc": {
     "check-coverage": true,
-    "branches": 30,
-    "functions": 35,
-    "lines": 40,
-    "statements": 40,
+    "branches": 40,
+    "functions": 45,
+    "lines": 45,
+    "statements": 45,
     "include": [
       "src/**/*.ts"
     ],

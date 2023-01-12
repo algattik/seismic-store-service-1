@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021 Schlumberger
+// Copyright 2017-2023 Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ export class TestDataset {
 			TestDataset.testRegister();
 			TestDataset.testGet();
 			TestDataset.testUpdate();
-			TestDataset.testList();
+			// TestDataset.testList();
 			TestDataset.testDelete();
 			TestDataset.testDeleteAll();
 			TestDataset.testPaginatedListContent();

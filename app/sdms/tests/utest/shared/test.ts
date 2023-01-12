@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import { TestLoggerSHD } from './logger';
 import { TestParams } from './params';
 import { TestResponseSHD } from './response';
 import { TestSDPathSHD } from './sdpath';
+import { TestNodeCache } from './node-cache';
 import { TestUtils } from './utils';
 
 export class TestShared {
@@ -34,6 +35,7 @@ export class TestShared {
          TestSDPathSHD.run();
          TestUtils.run();
          TestParams.run();
+         TestNodeCache.run();
       });
 
    }

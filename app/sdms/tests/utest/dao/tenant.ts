@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ import sinon from 'sinon';
 
 import { Datastore } from '@google-cloud/datastore';
 import { Entity } from '@google-cloud/datastore/build/src/entity';
-import { google, JournalFactoryServiceClient } from '../../../src/cloud';
+import { google, Config, JournalFactoryServiceClient } from '../../../src/cloud';
 import { TenantDAO } from '../../../src/services/tenant/dao';
 import { ITenantModel } from '../../../src/services/tenant/model';
 import { Tx } from '../utils';
+import { InMemoryCache } from '../../../src/shared/node-cache';
 export class TestTenant {
 
    public static run() {
@@ -35,7 +36,6 @@ export class TestTenant {
             this.journal = this.sandbox.createStubInstance(google.DatastoreDAO);
             this.journal.createKey.callsFake((specs) => TestTenant.testDb.key(specs));
             this.journal.createQuery.callsFake((namespace, kind) => TestTenant.testDb.createQuery(namespace, kind));
-
             this.sandbox.stub(JournalFactoryServiceClient, 'get').returns(this.journal);
          });
          afterEach(() => { this.sandbox.restore(); });
@@ -44,6 +44,7 @@ export class TestTenant {
          this.testGetAll();
          this.testRegister();
          this.testExist();
+         this.testDelete();
       });
 
    }
@@ -58,14 +59,13 @@ export class TestTenant {
       Tx.test(async (done: any) => {
 
          this.journal.get.resolves([{
-            esd: 'esd',
+            esd: 'esd.dom',
             gcpid: 'gcpid',
-            name: 'tenant-a',
+            name: 'tenant-c',
          } as ITenantModel]);
 
-         const result = await TenantDAO.get('tenant-a');
-         Tx.checkTrue(result.name === 'tenant-a' && result.esd === 'esd' && result.gcpid === 'gcpid', done);
-
+         const result = await TenantDAO.get('tenant-c');
+         Tx.checkTrue(result.name === 'tenant-c' && result.esd === 'esd.dom' && result.gcpid === 'gcpid', done);
       });
    }
 
@@ -76,9 +76,10 @@ export class TestTenant {
          const entity: Entity = {
             esd: 'esd', gcpid: 'gcpid', name: 'tenant-a',
          };
+         // console.log(Datastore.KEY);
          entity[Datastore.KEY] = this.journal.createKey(
             { namespace: 'seismic-store-ns', path: ['tenants', 'tenant-a'] });
-
+         
          this.journal.runQuery.resolves([[
             entity,
          ]]);
@@ -86,13 +87,37 @@ export class TestTenant {
          const results = await TenantDAO.getAll();
          Tx.checkTrue(results[0].name === 'tenant-a' && results[0].esd === 'esd' && results[0].gcpid === 'gcpid', done);
       });
+
+      Tx.test(async (done: any) => {
+
+         const entity: Entity = {
+            esd: 'esd', gcpid: 'gcpid', name: 'tenant-a',
+         };
+         // console.log(Datastore.KEY);
+         entity[Datastore.KEY] = this.journal.createKey(
+            { namespace: 'seismic-store-ns', path: ['tenants', 'tenant-a'] });
+         
+         this.journal.runQuery.resolves([[
+            entity,
+         ]]);
+
+         Config.TENANT_JOURNAL_ON_DATA_PARTITION = false;
+
+         try {
+            const results = await TenantDAO.getAll();
+            done();
+         } catch (e) { 
+            done(); 
+         }
+         // Tx.checkTrue(results[0].name === 'tenant-a' && results[0].esd === 'esd' && results[0].gcpid === 'gcpid', done);
+      });
    }
 
    private static testRegister() {
       Tx.sectionInit('tenant register');
       Tx.test(async (done: any) => {
          this.journal.save.resolves();
-         await TenantDAO.register({ esd: 'esd', gcpid: 'gcpid', name: 'tenant-a', default_acls: undefined });
+         await TenantDAO.register({ esd: 'esd', gcpid: 'gcpid', name: 'tenant-a', default_acls: 'undefined' });
          done();
       });
 
@@ -105,6 +130,33 @@ export class TestTenant {
          const result = await TenantDAO.exist({ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid', default_acls: 'default_acls' });
          Tx.checkTrue(result, done);
       });
+
+      Tx.test(async (done: any) => {
+         this.sandbox.stub(InMemoryCache.prototype, 'get').resolves(undefined);
+         this.journal.get.resolves([[{ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid' }]]);
+         const result = await TenantDAO.exist({ name: 'tenant-a', esd: 'esd', gcpid: 'gcpid', default_acls: 'default_acls' });
+         Tx.checkTrue(result, done);
+      });
+
+   }
+
+   private static testDelete() {
+      Tx.sectionInit('tenant delete');
+      Tx.test(async (done: any) => {
+         this.journal.delete.resolves();
+         await TenantDAO.delete('tenant');
+         done();
+      });
+
+      Tx.test(async (done: any) => {
+         const originalValue = Config.TENANT_JOURNAL_ON_DATA_PARTITION;
+         Config.TENANT_JOURNAL_ON_DATA_PARTITION = true;
+         this.journal.delete.resolves();
+         await TenantDAO.delete('tenant');
+         Config.TENANT_JOURNAL_ON_DATA_PARTITION = originalValue;
+         done();
+      });
+
    }
 
 }

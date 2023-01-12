@@ -14,21 +14,36 @@
 // limitations under the License.
 // ============================================================================
 
+import { InMemoryCache } from '../../../src/shared/node-cache';
 import { Tx } from '../utils';
-import { TestAuth } from './auth';
-import { GenericAuth } from './generic-auth';
-import { TestAuthGroups } from './groups';
 
-export class TestAuthorization {
+import sinon from 'sinon';
 
-    public static run() {
+export class TestNodeCache {
+   public static spy: sinon.SinonSandbox;
 
-        describe(Tx.title('utest seismic store - authorizations'), () => {
+   public static run() {
 
-            TestAuth.run();
-            TestAuthGroups.run();
-            GenericAuth.run();
-        });
-    }
+      describe(Tx.testInit('seismic store shared logger test'), () => {
+
+         beforeEach(() => { this.spy = sinon.createSandbox(); });
+         afterEach(() => { this.spy.restore(); });
+
+         this.TestflushAll();
+
+      });
+
+   }
+
+   private static TestflushAll() {
+
+      Tx.sectionInit('Test flushAll');
+
+      Tx.testExp((done: any) => {
+         const trace = new InMemoryCache();
+         trace.flushAll();
+         done();
+      });
+   }
 
 }

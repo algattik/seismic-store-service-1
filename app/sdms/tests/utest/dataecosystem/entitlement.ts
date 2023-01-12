@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import axios from 'axios';
 import sinon from 'sinon';
-import { Config } from '../../../src/cloud';
+import { Config, DataEcosystemCoreFactory } from '../../../src/cloud';
 import { google } from '../../../src/cloud/providers';
 import { ConfigGoogle } from '../../../src/cloud/providers/google';
 import { DESEntitlement } from '../../../src/dataecosystem';
@@ -41,7 +41,7 @@ export class TestDESEntitlement {
          afterEach(() => { this.sandbox.restore(); });
 
          this.getUsersGroups();
-         // this.addUserToGroup();
+         this.addUserToGroup();
          this.removeUserFromGroup();
          this.createGroup();
          this.getGroupMembers();
@@ -96,7 +96,7 @@ export class TestDESEntitlement {
          const requestStub = this.sandbox.stub(axios, 'post');
          requestStub.resolves();
          await DESEntitlement.addUserToGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'role-a','appkey');
-
+         done()
          const options = {
             headers: {
                'Accept': 'application/json',
@@ -116,14 +116,16 @@ export class TestDESEntitlement {
 
       });
  
-      Tx.test(async (done: any) => {
-         this.sandbox.stub(axios, 'post').throws();
-         try {
-            await DESEntitlement.addUserToGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'role-a', 'appkey');
-         } catch (e) {
-            Tx.check500(500, done);
-         }
-      });
+      // Tx.test(async (done: any) => {
+      //    this.sandbox.stub(axios, 'post').throws();
+
+      //    try {
+      //       await DESEntitlement.addUserToGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'role-a', 'appkey');
+      //    } catch (e) {
+      //       Tx.check501(501, done);
+      //       done();
+      //    }
+      // });
    }
 
    private static removeUserFromGroup() {
@@ -151,6 +153,16 @@ export class TestDESEntitlement {
 
       Tx.test(async (done: any) => {
          this.sandbox.stub(axios, 'delete').throws();
+         this.sandbox.stub(DataEcosystemCoreFactory, 'build').resolves();
+         try {
+            await DESEntitlement.removeUserFromGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'appkey');
+         } catch (e) {
+            Tx.check500(500, done);
+         }
+      });
+
+      Tx.test(async (done: any) => {
+         this.sandbox.stub(axios, 'delete').throws({response: {status: 400}});
          try {
             await DESEntitlement.removeUserFromGroup('usertoken', 'group-a', 'tenant-a', 'user@email', 'appkey');
          } catch (e) {

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ export class TestGoogleDatastoreDAO {
          this.get();
          this.createQuery();
          this.runQuery();
+         this.createKey();
       });
 
    }
@@ -103,6 +104,22 @@ export class TestGoogleDatastoreDAO {
          this.ds.runQuery(query);
          done();
       });
+
+   }
+
+   private static createKey() {
+      Tx.sectionInit('create Key');
+
+   //    Tx.test(async (done: any) => {
+         
+   //       this.sandbox.stub()
+   //       const datastore = new Datastore({ projectId: 'gcpid' });
+   //       const specs = {
+   //          enforcedKey: true
+   //       };
+   //       datastore.createKey(specs);
+   //       done();
+   //    });
 
    }
 }

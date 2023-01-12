@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
+import { DataEcosystemCoreFactory } from '../../../src/cloud/dataecosystem';
 import sinon from 'sinon';
 import { Auth, AuthGroups } from '../../../src/auth';
 import { Config, google, JournalFactoryServiceClient } from '../../../src/cloud';
@@ -61,6 +62,7 @@ export class TestTenantSVC {
             this.deleteTenant();
             this.parseParams();
             this.getAdminGroup();
+            this.adminGroupName();
 
         });
 
@@ -257,6 +259,20 @@ export class TestTenantSVC {
             this.tenant.default_acls = 'authgroup@dp.com';
             const result = TenantGroups.adminGroup(this.tenant);
             Tx.checkTrue(result === 'authgroup@dp.com', done);
+
+        });
+
+    }
+
+    private static adminGroupName() {
+
+        Tx.sectionInit('admin Group Name');
+
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.query.datapartition = 'datapartition';
+            this.tenant.default_acls = 'authgroup@dp.com';
+            const result = TenantGroups.adminGroupName(this.tenant);
+            Tx.checkTrue(result === 'authgroup', done);
 
         });
 

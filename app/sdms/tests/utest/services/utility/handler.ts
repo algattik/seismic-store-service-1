@@ -589,6 +589,18 @@ export class TestServicesUtilityHandler {
             Tx.check400(res.statusCode, done)
 
         } );
+
+        Tx.testExp(async (done: any, req: expRequest, res: expResponse, op: UtilityOP) => {
+
+            op = UtilityOP.UPLOAD_CONNECTION_STRING;
+
+            req.query = {};
+            req.query.sdpath = "sd:/";
+
+            await Handler.handler(req, res, op);
+            Tx.check400(res.statusCode, done)
+
+        } );
         
     };
 
