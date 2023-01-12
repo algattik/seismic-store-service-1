@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,6 +91,7 @@ export class Tx {
     public static check409(val: number, done: any) { this.check(val, 409, done); }
     public static check423(val: number, done: any) { this.check(val, 423, done); }
     public static check500(val: number, done: any) { this.check(val, 500, done); }
+    public static check501(val: number, done: any) { this.check(val, 501, done); }
 
     public static checkTrue(val: boolean, done: any) { this.check(val, true, done); }
     public static checkFalse(val: boolean, done: any) { this.check(val, false, done); }

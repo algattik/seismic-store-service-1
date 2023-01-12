@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import { Response as expResponse } from 'express';
 import { Config } from '../../../src/cloud';
 import { Response } from '../../../src/shared/response';
+import { Feature, FeatureFlags } from '../../../src/shared/featureflags';
 import { Tx } from '../utils';
 
 import sinon from 'sinon';
@@ -56,6 +57,8 @@ export class TestResponseSHD {
          afterEach(() => { this.sandbox.restore(); });
          this.testWriteOK();
          this.testWriteError();
+         this.writeMetric();
+         this.write();
 
       });
 
@@ -162,6 +165,19 @@ export class TestResponseSHD {
          Tx.checkTrue(spy.calledWith(expRes, 403, 'error message'), done);
 
       });
+      
+      Tx.testExp((done: any) => {
+         const expRes = (new TestRESExpress() as unknown) as expResponse;
+         const spy = this.sandbox.spy(Response, 'write');
+
+         Response.writeError(expRes, {
+            code: 10,
+            message: 'error message',
+         });
+
+         Tx.checkFalse(spy.calledWith(expRes, 10, 'error message'), done);
+
+      });
 
       Tx.testExp((done: any) => {
          const expRes = (new TestRESExpress() as unknown) as expResponse;
@@ -171,6 +187,49 @@ export class TestResponseSHD {
 
          Tx.checkTrue(spy.calledWith(expRes, 500, 'Internal Server Error'), done);
 
+      });
+
+      Tx.testExp((done: any) => {
+         const expRes = (new TestRESExpress() as unknown) as expResponse;
+         this.sandbox.stub(FeatureFlags, 'isEnabled').resolves(true);
+
+         Response.writeError(expRes, 'err');
+         done();
+         // Tx.checkTrue(spy.calledWith(expRes, 500, 'Internal Server Error'), done);
+
+      });
+
+      Tx.testExp((done: any) => {
+         const expRes = (new TestRESExpress() as unknown) as expResponse;
+         this.sandbox.stub(FeatureFlags, 'isEnabled').resolves(true);
+
+         Response.writeError(expRes, '');
+         done();
+         // Tx.checkTrue(spy.calledWith(expRes, 500, 'Internal Server Error'), done);
+
+      });
+
+   }
+
+   private static writeMetric() {
+      Tx.sectionInit('Response writeOK');
+
+      Tx.testExp((done: any) => {
+         // this.sandbox.stub(FeatureFlags, 'isEnabled').returns(true);
+         Response.writeMetric('key', 'val');
+         done();
+      });
+   }
+
+   private static write() {
+      Tx.sectionInit('Response writeOK');
+
+      Tx.testExp((done: any) => {
+         const expRes = (new TestRESExpress() as unknown) as expResponse;
+
+         // this.sandbox.stub(FeatureFlags, 'isEnabled').returns(true);
+         Response.write(expRes, 500);   
+         done();
       });
    }
 

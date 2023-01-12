@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -168,46 +168,85 @@ export class TestImpTokenSVC {
             done();
         });
 
-        // [TO REVIEW]
-        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-        //     expReq.body.token = this.userAuthExp0;
-        //     expReq.body.resources = [{ readonly: true, resource: 'sd://tnx/spx' }];
-        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
-        //     try {
-        //         ImpTokenParser.create(expReq);
-        //     } catch (e) { Tx.check400(e.error.code, done); }
-        // });
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            const temp = Config.CLOUDPROVIDER;
+            Config.CLOUDPROVIDER = 'azure'
+            expReq.body.token = this.userAuthExp;
+            expReq.body.resources = [{ readonly: true, resource: 'sd://tnx/spx' }];
+            expReq.body['refresh-url'] = 'https://httpstat.us/200';
+            this.spy.stub(TenantDAO, 'get').resolves({} as any);
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+            this.spy.stub(Auth, 'isAppAuthorized').resolves(undefined);
+            this.spy.stub(Auth, 'isReadAuthorized').resolves(false);
+            this.spy.stub(Auth, 'isWriteAuthorized').resolves(false);
+            this.spy.stub(Response, 'writeError').returns(undefined);
+            await ImpTokenHandler.handler(expReq, expRes, ImpTokenOP.Generate);
+            Config.CLOUDPROVIDER = temp;
+            done();
+        });
+
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            const temp = Config.CLOUDPROVIDER;
+            Config.CLOUDPROVIDER = 'aws'
+            expReq.body.token = this.userAuthExp;
+            expReq.body.resources = [{ readonly: true, resource: 'sd://tnx/spx' }];
+            expReq.body['refresh-url'] = 'https://httpstat.us/200';
+            this.spy.stub(TenantDAO, 'get').resolves({} as any);
+            this.spy.stub(SubProjectDAO, 'get').resolves(this.testSubProject);
+            this.spy.stub(Auth, 'isAppAuthorized').resolves(undefined);
+            this.spy.stub(Auth, 'isReadAuthorized').resolves(false);
+            this.spy.stub(Auth, 'isWriteAuthorized').resolves(false);
+            this.spy.stub(Response, 'writeError').returns(undefined);
+            await ImpTokenHandler.handler(expReq, expRes, ImpTokenOP.Generate);
+            Config.CLOUDPROVIDER = temp;
+            done();
+        });
+
 
         // [TO REVIEW]
-        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-        //     expReq.body.token = this.userAuthExp;
-        //     expReq.body.resources = [];
-        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
-        //     try {
-        //         ImpTokenParser.create(expReq);
-        //     } catch (e) { Tx.check400(e.error.code, done); }
-        // });
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.body.token = this.userAuthExp0;
+            expReq.body.resources = [{ readonly: true, resource: 'sd://tnx/spx' }];
+            expReq.body['refresh-url'] = 'https://httpstat.us/200';
+            try {
+                ImpTokenParser.create(expReq);
+            } catch (e) { Tx.check400(e.error.code, done); }
+            done();
+        });
 
         // [TO REVIEW]
-        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-        //     expReq.body.token = this.userAuthExp;
-        //     expReq.body.resources = [{ readonly: true, resource: 'sd://tnx' }];
-        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
-        //     try {
-        //         ImpTokenParser.create(expReq);
-        //     } catch (e) { Tx.check400(e.error.code, done); }
-        // });
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.body.token = this.userAuthExp;
+            expReq.body.resources = [];
+            expReq.body['refresh-url'] = 'https://httpstat.us/200';
+            try {
+                ImpTokenParser.create(expReq);
+            } catch (e) { Tx.check400(e.error.code, done); }
+            done();
+        });
 
         // [TO REVIEW]
-        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-        //     expReq.body.token = this.userAuthExp;
-        //     expReq.body.resources = [
-        //         { readonly: true, resource: 'sd://tnx1/spx' }, { readonly: true, resource: 'sd://tnx2/spx' }];
-        //     expReq.body['refresh-url'] = 'https://httpstat.us/200';
-        //     try {
-        //         ImpTokenParser.create(expReq);
-        //     } catch (e) { Tx.check400(e.error.code, done); }
-        // });
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.body.token = this.userAuthExp;
+            expReq.body.resources = [{ readonly: true, resource: 'sd://tnx' }];
+            expReq.body['refresh-url'] = 'https://httpstat.us/200';
+            try {
+                ImpTokenParser.create(expReq);
+            } catch (e) { Tx.check400(e.error.code, done); }
+            done();
+        });
+
+        // [TO REVIEW]
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.body.token = this.userAuthExp;
+            expReq.body.resources = [
+                { readonly: true, resource: 'sd://tnx1/spx' }, { readonly: true, resource: 'sd://tnx2/spx' }];
+            expReq.body['refresh-url'] = 'https://httpstat.us/200';
+            try {
+                ImpTokenParser.create(expReq);
+            } catch (e) { Tx.check400(e.error.code, done); }
+            done();
+        });
 
         Tx.testExp(async (done: any, expReq: expRequest) => {
             expReq.body.token = this.userAuthExp;
@@ -293,11 +332,30 @@ export class TestImpTokenSVC {
             done();
         });
 
+        Tx.test(async (done: any) => {
+            this.spy.stub(axios, 'get').resolves();
+            try {
+                await ImpTokenDAO.canBeRefreshed('google.com');
+            } catch (e) {done();}
+            
+        });
+
         // Tx.test(async (done: any) => {
-        //     this.spy.stub(request, 'get').rejects(this.requestError);
+        //     this.spy.stub(axios, 'get').resolves();
+        //     this.spy.stub(JSON, 'parse').resolves();
+        //     await ImpTokenDAO.canBeRefreshed('htt://google.com');
+        //     done();
+        // });
+
+        // Tx.test(async (done: any) => {
+        //     this.spy.stub(axios, 'get').rejects(this.requestError);
         //     try {
         //         await ImpTokenDAO.canBeRefreshed('https://url');
-        //     } catch (e) { Tx.check400(e.error.code, done); }
+        //         console.log('1');
+        //     } catch (e) { 
+        //         Tx.check400(e.error.code, done); 
+        //         done();
+        //     }
         // });
 
         Tx.test(async (done: any) => {

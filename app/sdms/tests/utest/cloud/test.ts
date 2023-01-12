@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,13 @@
 // limitations under the License.
 // ============================================================================
 
+import { Config } from '../../../src/cloud';
+
+Config.CLOUDPROVIDER = 'amazon'
+Config.FEATURE_FLAG_LOGGING = false;
+Config.FEATURE_FLAG_TRACE = false;
+Config.FEATURE_FLAG_STACKDRIVER_EXPORTER = false;
+
 import { Tx } from '../utils';
 import { TestGoogleCredentials } from './google/credentials';
 import { TestGoogleDatastoreDAO, TestGoogleDatastoreTransactionDAO } from './google/datastore';
@@ -23,6 +30,7 @@ import { TestGCSCore } from './google/gcs';
 import { TestAzureKeyVault } from './azure/keyvault';
 import { TestAzureStorage } from './azure/cloudstorage';
 import { TestAzureCosmosDbDAORegular } from './azure/azureCosmosDbDAORegular';
+import { TestDataEcoSystem } from './google/dataecosystem';
 
 
 export class TestCloud {
@@ -39,6 +47,7 @@ export class TestCloud {
             TestAzureCosmosDbTransactionDAO.run();
             TestAzureKeyVault.run();
             TestAzureStorage.run();
+            TestDataEcoSystem.run();
         });
 
     }

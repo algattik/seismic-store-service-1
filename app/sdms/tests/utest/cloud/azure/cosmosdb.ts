@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,17 +18,24 @@ import sinon from 'sinon';
 import crypto from 'crypto'
 
 import { Conflict, Container, ContainerDefinition, ContainerResponse, FeedOptions, FeedResponse, Item, Items, OfferResponse, PartitionedQueryExecutionInfo, PartitionKeyDefinition, PartitionKeyRange, QueryIterator, RequestOptions, ResourceResponse, Response, SqlQuerySpec } from '@azure/cosmos';
-import { AzureCosmosDbDAO, AzureCosmosDbQuery } from '../../../../src/cloud/providers/azure/cosmosdb';
+import { AzureCosmosDbDAO, AzureCosmosDbQuery, AzureCosmosDbTransactionDAO } from '../../../../src/cloud/providers/azure/cosmosdb';
+import { DatasetModel, PaginationModel } from '../../../../src/services/dataset';
 import { AzureDataEcosystemServices } from '../../../../src/cloud/providers/azure';
-import { Config } from '../../../../src/cloud';
+import { Config, IJournal, IJournalTransaction } from '../../../../src/cloud';
 import { IJournalQueryModel } from '../../../../src/cloud/journal';
 import { Tx } from '../../utils';
 import { assert } from 'chai';
 import { AzureConfig } from '../../../../src/cloud/providers/azure';
+import { HighlightSpanKind } from 'typescript';
+import { query } from 'winston';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
 export class TestAzureCosmosDbDAO {
     private static sandbox: sinon.SinonSandbox;
     private static cosmos: AzureCosmosDbDAO;
+    private static query: AzureCosmosDbQuery;
+    private static axiosInstance: AxiosInstance;
+    private static buffer: Buffer;
 
     public static run() {
 
@@ -36,6 +43,76 @@ export class TestAzureCosmosDbDAO {
             Config.CLOUDPROVIDER = 'azure';
             this.sandbox = sinon.createSandbox();
             this.cosmos = new AzureCosmosDbDAO({ gcpid: 'gcpid', default_acls: 'x', esd: 'gcpid@domain.com', name: 'gcpid' });
+            this.query = new AzureCosmosDbQuery('name-a', 'kind-a');
+
+            let datasetModel: DatasetModel = {
+                name: 'name',
+                tenant: 'tenant',
+                subproject: 'subproject',
+                path: 'sd://tenant/subproject/path/mydata.txt',
+                created_date: '',
+                last_modified_date: '',
+                created_by: '',
+                metadata: undefined,
+                filemetadata: undefined,
+                gcsurl: '',
+                type: '',
+                ltag: '',
+                ctag: '0000000000000000',
+                sbit: '',
+                sbit_count: 0,
+                gtags: ["gtag1"],
+                readonly: false,
+                seismicmeta_guid: '',
+                transfer_status: '',
+                acls: { admins: [], viewers: [] },
+                access_policy: ''
+            };
+            let iJournalQueryModel: IJournalQueryModel = {
+                filter: function (property: string, value: {}): IJournalQueryModel {
+                    return iJournalQueryModel;
+                },
+                start: function (start: string | Buffer): IJournalQueryModel {
+                    return iJournalQueryModel;
+                },
+                limit: function (n: number): IJournalQueryModel {
+                    return iJournalQueryModel;
+                },
+                groupBy: function (fieldNames: string | string[]): IJournalQueryModel {
+                    return iJournalQueryModel;
+                },
+                select: function (fieldNames: string | string[]): IJournalQueryModel {
+                    return iJournalQueryModel;
+                }
+            };
+            let journalClient: IJournal = {
+                get: function (key: any): Promise<[any]> {
+                    return Promise.resolve([ datasetModel ]);
+                },
+                save: function (entity: any): Promise<any> {
+                    return Promise.resolve("exit saved");
+                },
+                delete: function (key: any): Promise<any> {
+                    return Promise.resolve("exit delete");
+                },
+                createQuery: function (namespace: string, kind: string): IJournalQueryModel {
+                    return iJournalQueryModel;
+                },
+                runQuery: function (query: IJournalQueryModel): Promise<[any[], { endCursor?: string | undefined; }]> {
+                    return Promise.resolve( [[datasetModel], {}] );
+                },
+                createKey: function (specs: any): object {
+                    return {};
+                },
+                getTransaction: function (): IJournalTransaction {
+                    throw new Error('Function not implemented.');
+                },
+                getQueryFilterSymbolContains: function (): string {
+                    return "=";
+                },
+                KEY: undefined
+            };
+            
 
             beforeEach(() => {
                 this.sandbox.stub(AzureCosmosDbDAO.prototype, 'getCosmoContainer').resolves(
@@ -54,6 +131,10 @@ export class TestAzureCosmosDbDAO {
             this.createKey();
             this.getTransaction();
             this.getQueryFilterSymbolContains();
+            this.queryFilter();
+            this.queryStart();
+            this.queryLimit();
+            this.querygroupBy();
         });
     }
 
@@ -96,11 +177,30 @@ export class TestAzureCosmosDbDAO {
 
     private static get() {
         Tx.sectionInit('get');
+
         const key = {
             id: 'testId',
             partitionKey: 'testKey',
             kind: 'testKind'
         };
+
+        Tx.test(async (done: any) => {
+            key.partitionKey = 'dstestKey';
+            this.sandbox.stub(axios, 'get').resolves();
+            const mockResult = {
+                resource: {
+                    data: {
+                        id: 'testId',
+                        param: 'testParam'
+                    }
+                }
+            } as any;
+
+            this.sandbox.stub(Item.prototype, 'read').returns(mockResult);
+            const [result] = await this.cosmos.get(key);
+            assert.deepEqual(mockResult.resource.data, result, 'Get returned wrong object');
+            done();
+        });
 
         Tx.test(async (done: any) => {
             const mockResult = {
@@ -150,6 +250,7 @@ export class TestAzureCosmosDbDAO {
                 assert.fail(err)
             });
         });
+    
 
     }
 
@@ -376,9 +477,98 @@ export class TestAzureCosmosDbDAO {
         Tx.sectionInit('getQueryFilterSymbolContains');
 
         Tx.test( (done: any) => {
-            let res = this.cosmos.getQueryFilterSymbolContains();
+            const res = this.cosmos.getQueryFilterSymbolContains();
             Tx.checkTrue(res === "CONTAINS", done);
         });
 
     }
+
+    private static queryFilter() {
+        Tx.sectionInit('filter');
+
+        Tx.test( (done: any) => {
+            const res = this.query.filter('property');
+            Tx.checkTrue(res === this.query , done);
+
+        });
+
+        Tx.test( (done: any) => {
+            const res = this.query.filter('property', undefined, undefined);
+            Tx.checkTrue(res === this.query , done);
+
+        });
+
+        Tx.test( (done: any) => {
+            const res = this.query.filter('', undefined, undefined);
+            Tx.checkTrue(res === this.query , done);
+
+        });
+
+        Tx.test( (done: any) => {
+            const res = this.query.filter('property', '=', {});
+            Tx.checkTrue(res === this.query , done);
+
+        });
+    }
+
+    
+    private static queryStart() {
+        Tx.sectionInit('Start');
+
+        Tx.test( (done: any) => {
+            const res = this.query.start('start');
+            Tx.checkTrue(res === this.query , done);
+
+        });
+
+        Tx.test( (done: any) => {
+            const start = {} as Buffer;
+            const res = this.query.start(start);
+            Tx.checkTrue(res === this.query , done);
+
+        });
+    }
+
+    private static queryLimit() {
+        Tx.sectionInit('Limit');
+
+        Tx.test( (done: any) => {
+            const res = this.query.limit(1);
+            Tx.checkTrue(res === this.query , done);
+
+        });
+    }
+
+    private static querygroupBy() {
+        Tx.sectionInit('groupBy');
+
+        Tx.test( (done: any) => {
+            const res = this.query.groupBy('fieldName');
+            Tx.checkTrue(res === this.query , done);
+
+        });
+
+        Tx.test( (done: any) => {
+            const res = this.query.groupBy([]);
+            Tx.checkTrue(res === this.query , done);
+
+        });
+    }
+
+    private static querySelect() {
+        Tx.sectionInit('Select');
+
+        Tx.test( (done: any) => {
+            const res = this.query.select('fieldName');
+            Tx.checkTrue(res === this.query , done);
+
+        });
+
+        Tx.test( (done: any) => {
+            const res = this.query.select([]);
+            Tx.checkTrue(res === this.query , done);
+
+        });
+    }
+
 }

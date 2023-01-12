@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 // ============================================================================
 
+import { doesNotMatch } from 'assert';
 import sinon from 'sinon';
 import { AuthGroups, UserRoles } from '../../../src/auth';
 import { Config } from '../../../src/cloud';
@@ -43,11 +44,12 @@ export class TestAuthGroups {
          this.getUserGroups();
          this.hasOneInGroups();
          this.isMemberOfaGroup();
+         this.deleteGroup();
       });
 
    }
 
-   private static spy: sinon.SinonSandbox;
+   private static spy: sinon.SinonSandbox; 
 
    private static datalakeUserAdminGroupName() {
 
@@ -71,6 +73,22 @@ export class TestAuthGroups {
          Tx.checkTrue(stub.calledWith(undefined, 'group-a', 'group-desc', 'partition-a'), done);
       });
 
+   }
+
+   private static deleteGroup() {
+
+      Tx.sectionInit('delete group');
+      Tx.test(async (done: any) => {
+         const deleteGroupstub = this.spy.stub(DESEntitlement, 'deleteGroup');
+         deleteGroupstub.resolves();
+
+         this.spy.stub(DESUtils, 'getDataPartitionID').returns('partition-a');
+         await AuthGroups.deleteGroup(undefined, 'group-a', 'esd', 'appkey');
+         done();
+         const calldedWithResult = deleteGroupstub.calledWith(undefined, 'group-a', 'esd', 'appkey')
+         Tx.checkTrue(calldedWithResult === true, done);
+         
+      });
    }
 
    private static isMemberOfaGroup() {

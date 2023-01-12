@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -98,6 +98,19 @@ export class TestAppSVC {
             this.spy.stub(Auth, 'isImpersonationToken').returns(false);
             await AppHandler.handler(expReq, expRes, AppOp.RegisterTrusted);
             Tx.check200(expRes.statusCode, done);
+        });
+
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            expReq.query.email = 'user@user.com';
+            expReq.query.sdpath = 'sd://tnx';
+            this.spy.stub(TenantDAO, 'get').resolves({} as any);
+            this.spy.stub(Auth, 'isUserAuthorized');
+            this.spy.stub(Auth, 'isAppAuthorized');
+            this.spy.stub(AppsDAO, 'get').resolves();
+            this.spy.stub(AppsDAO, 'register').resolves(undefined);
+            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+            await AppHandler.handler(expReq, expRes, AppOp.RegisterTrusted);
+            Tx.check400(expRes.statusCode, done);
         });
 
     }

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ export class TestDatasetSVC {
 
             this.ctag();
             this.register();
+            this.validateAcls();
             this.get();
             this.list();
             this.delete();
@@ -104,9 +105,41 @@ export class TestDatasetSVC {
             this.putTags();
             this.lock();
             this.unlock();
+            this.listPost();
 
         });
 
+    }
+
+    private static listPost() {
+
+        Tx.sectionInit('listPost');
+
+        Tx.testExp(async (done: any, expReq: expRequest) => {
+            expReq.query.ctag = 'xxx';
+
+            DatasetParser.listPost(expReq);
+            done();
+
+        });
+
+        Tx.testExp(async (done: any, expReq: expRequest) => {
+            // expReq.query.ctag = 'xxx';
+            // expReq.body = {};
+
+            DatasetParser.listPost(expReq);
+            done();
+
+        });
+
+        // Tx.testExp(async (done: any, expReq: expRequest) => {
+        //     // expReq.query.ctag = 'xxx';
+        //     expReq.body.gtag = "tag";
+
+        //     DatasetParser.listPost(expReq);
+        //     done();
+
+        // });
     }
 
     private static ctag() {
@@ -202,6 +235,8 @@ export class TestDatasetSVC {
         });
 
     }
+
+    private static validateAcls() {}
 
     private static get() {
 

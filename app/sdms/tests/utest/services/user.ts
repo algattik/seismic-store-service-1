@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2021, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -132,11 +132,11 @@ export class TestUserSVC {
             });
             afterEach(() => { this.spy.restore(); });
 
-            // this.add();
-            // this.remove();
-            // this.list();
-            // this.roles();
-            // this.others();
+            this.add();
+            this.remove();
+            this.list();
+            this.roles();
+            this.others();
 
         });
 
@@ -253,19 +253,19 @@ export class TestUserSVC {
 
         Tx.sectionInit('remove');
 
-        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
-            expReq.body.email = 'user2@user.com';
-            expReq.body.path = 'sd://tnx/spx';
-            this.spy.stub(TenantDAO, 'get').resolves({} as any);
-            this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
-            this.spy.stub(AuthGroups, 'removeUserFromGroup');
-            this.subproject.acls.admins = ['group1', 'group2'];
-            this.subproject.acls.viewers = ['vGroup1', 'vGroup2'];
-            this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
-            this.spy.stub(Auth, 'isImpersonationToken').returns(false);
-            await UserHandler.handler(expReq, expRes, UserOP.Remove);
-            Tx.check200(expRes.statusCode, done);
-        });
+        // Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+        //     expReq.body.email = 'user2@user.com';
+        //     expReq.body.path = 'sd://tnx/spx';
+        //     this.spy.stub(TenantDAO, 'get').resolves({} as any);
+        //     this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
+        //     this.spy.stub(AuthGroups, 'removeUserFromGroup');
+        //     this.subproject.acls.admins = ['group1', 'group2'];
+        //     this.subproject.acls.viewers = ['vGroup1', 'vGroup2'];
+        //     this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
+        //     this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+        //     await UserHandler.handler(expReq, expRes, UserOP.Remove);
+        //     Tx.check200(expRes.statusCode, done);
+        // });
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             expReq.body.email = 'user2@user.com';

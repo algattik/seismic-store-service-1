@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,18 +15,33 @@
 // ============================================================================
 
 import { Error } from '../../../src/shared/error';
+import axios from 'axios';
+import sinon from 'sinon';
 import { Tx } from '../utils';
 
 export class TestErrorSHD {
 
    public static run() {
 
+
       describe(Tx.testInit('seismic store shared error test'), () => {
+
+         beforeEach(() => { this.sandbox = sinon.createSandbox();
+            const myobj = new Error(); });
+         afterEach(() => { this.sandbox.restore(); });
+
          this.testMake();
          this.testMakeForHttpRequest();
+         this.get423WriteLockReason();
+         this.get423ReadLockReason();
+         this.get423CannotLockReason();
+         this.get423CannotUnlockReason();
+
       });
 
    }
+
+   private static sandbox: sinon.SinonSandbox;
 
    private static testMake() {
       Tx.sectionInit('make');
@@ -75,6 +90,8 @@ export class TestErrorSHD {
 
    private static testMakeForHttpRequest() {
 
+      Tx.sectionInit('testMakeForHttpRequest');
+
       Tx.test((done: any) => {
          const result = Error.makeForHTTPRequest({
             error: 'error',
@@ -86,6 +103,89 @@ export class TestErrorSHD {
             result.error.message === '[seismic-store-service] error' &&
             result.error.status === 'UNKNOWN', done);
       });
+
+      Tx.test((done: any) => {
+         const result = Error.makeForHTTPRequest({
+            error: 'error',
+            message: 'error',
+            name: 'StatusCodeError'
+         });
+         // done();
+         Tx.checkTrue(result[0] === undefined, done);
+
+      });
+
+      Tx.test((done: any) => {
+         const result = Error.makeForHTTPRequest({
+            error: {} as object,
+            message: 'error',
+            name: 'StatusCodeError'
+         });
+         Tx.checkTrue(result[0] === undefined, done);
+
+      });
+
+      Tx.test((done: any) => {
+         this.sandbox.stub(axios, 'isAxiosError').resolves(true);
+         this.sandbox.stub(Error, 'make').resolves();
+
+         const result = Error.makeForHTTPRequest({
+            error: 'error',
+            response: {
+               status: 'status',
+               statusText: 'statusText'},
+            message: 'error',
+            name: 'StatusCodeError',
+            statusCode: 402,
+         });
+         
+         Tx.checkTrue(result[0] === undefined, done);
+
+         
+      });
+   }
+
+   private static get423WriteLockReason() {
+
+      Tx.sectionInit('get423WriteLockReason');
+      Tx.test((done: any) => {
+         this.sandbox.stub(Error, <any>'create423Reason').resolves();
+         const result = Error.get423WriteLockReason();
+         Tx.checkTrue(result[0] === undefined, done);
+      });
+
+   }
+
+   private static get423ReadLockReason() {
+
+      Tx.sectionInit('get423ReadLockReason');
+      Tx.test((done: any) => {
+         this.sandbox.stub(Error, <any>'create423Reason').resolves();
+         const result = Error.get423ReadLockReason();
+         Tx.checkTrue(result[0] === undefined, done);
+      });
+
+   }
+
+   private static get423CannotLockReason() {
+
+      Tx.sectionInit('get423CannotLockReason');
+      Tx.test((done: any) => {
+         this.sandbox.stub(Error, <any>'create423Reason').resolves();
+         const result = Error.get423CannotLockReason();
+         Tx.checkTrue(result[0] === undefined, done);
+      });
+
+   }
+
+   private static get423CannotUnlockReason() {
+
+      Tx.sectionInit('get423CannotUnlockReason');
+      Tx.test((done: any) => {
+         this.sandbox.stub(Error, <any>'create423Reason').resolves();
+         const result = Error.get423CannotUnlockReason();
+         Tx.checkTrue(result[0] === undefined, done);
+      }); 
 
    }
 }
