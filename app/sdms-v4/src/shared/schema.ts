@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 // ============================================================================
 
 import { Config } from '../cloud';
-import { Utils } from './utils';
+import { SchemaCoreService } from '../services/schema';
 import { Validator } from 'jsonschema';
-import path from 'path';
 
 Validator.prototype.customFormats.integer = (x: number) => {
     return x >= Number.MIN_VALUE && x <= Number.MAX_VALUE;
@@ -29,24 +28,21 @@ export interface SchemaValidationResult {
 }
 
 export class Schema {
-    private static mapSchema: { [key: string]: object } = {};
-
-    private static async getSchema(referenceSchema: string) {
-        let schema = this.mapSchema[referenceSchema];
-        if (!schema) {
-            const schemaFilePath: string = path.resolve(__dirname, '../docs/schemas/generated/' + referenceSchema);
-            schema = JSON.parse(JSON.stringify(await Utils.resolveJsonReferences(schemaFilePath)));
-            this.mapSchema[referenceSchema] = schema;
-        }
-        return schema;
+    public static async getSchemaKind(
+        userToken: string,
+        dataPartition: string,
+        referenceSchema: string
+    ): Promise<string> {
+        return (await SchemaCoreService.getSchema(userToken, dataPartition, referenceSchema))['x-osdu-schema-source'];
     }
 
-    public static async getSchemaKind(referenceSchema: string): Promise<string> {
-        return (await this.getSchema(referenceSchema))['x-osdu-schema-source'];
-    }
-
-    public static async validate(data: any, referenceSchema: string): Promise<SchemaValidationResult> {
-        const schema = await this.getSchema(referenceSchema);
+    public static async validate(
+        data: any,
+        userToken: string,
+        dataPartition: string,
+        referenceSchema: string
+    ): Promise<SchemaValidationResult> {
+        const schema = await SchemaCoreService.getSchema(userToken, dataPartition, referenceSchema);
         const validator = new Validator();
         const valid = validator.validate(
             data,

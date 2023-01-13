@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 // Limitations under the License.
 // ============================================================================
 
-import { SchemaGroup, SchemaGroups } from '../apis';
+import { SchemaEndpoint, SchemaEndpoints } from '../apis';
 import express from 'express';
 
 export class Context {
-    public static schemaGroup: SchemaGroup;
+    public static schemaEndpoint: SchemaEndpoint;
 
     private static urlIncludeSchemaModel = (url: string, models: string[]): boolean => {
         return models.some((model) => {
@@ -27,9 +27,9 @@ export class Context {
     };
 
     public static init(req: express.Request) {
-        for (const group of SchemaGroups) {
-            if (this.urlIncludeSchemaModel(req.url, group.models)) {
-                this.schemaGroup = group;
+        for (const endpoint of SchemaEndpoints) {
+            if (req.url.indexOf('/' + endpoint.name + '/') !== -1) {
+                Context.schemaEndpoint = endpoint;
                 break;
             }
         }

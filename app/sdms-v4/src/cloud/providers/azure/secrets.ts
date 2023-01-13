@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import { AbstractSecrets, SecretsFactory } from '../../secrets';
 import { AzureConfig } from './config';
 import { AzureCredentials } from './credentials';
+import { Config } from '../../config';
 import { SecretClient } from '@azure/keyvault-secrets';
 
 @SecretsFactory.register('azure')
@@ -29,6 +30,10 @@ export class AzureSecrets extends AbstractSecrets {
 
     // Instrumentation key
     private static AI_INSTRUMENTATION_KEY = 'appinsights-key';
+
+    // Redis keys
+    public static REDIS_HOST = 'redis-hostname';
+    public static REDIS_KEY = 'redis-password';
 
     public static CreateSecretClient(): SecretClient {
         const credential = AzureCredentials.getCredential();
@@ -43,7 +48,9 @@ export class AzureSecrets extends AbstractSecrets {
         AzureConfig.SP_CLIENT_ID = (await client.getSecret(this.SP_CLIENT_ID_KEY)).value!;
         AzureConfig.SP_CLIENT_SECRET = (await client.getSecret(this.SP_CLIENT_SECRET_KEY)).value!;
         AzureConfig.SP_APP_RESOURCE_ID = (await client.getSecret(this.SP_APP_RESOURCE_ID_KEY)).value!;
-        AzureConfig.AI_INSTRUMENTATION_KEY = (await client.getSecret(this.AI_INSTRUMENTATION_KEY)).value;
+        AzureConfig.AI_INSTRUMENTATION_KEY = (await client.getSecret(this.AI_INSTRUMENTATION_KEY)).value!;
+        Config.REDIS_KEY = (await client.getSecret(this.REDIS_KEY)).value!;
+        Config.REDIS_HOST = (await client.getSecret(this.REDIS_HOST)).value!;
     }
 
     public async getSecret(key: string): Promise<string> {

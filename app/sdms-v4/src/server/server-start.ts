@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 // Limitations under the License.
 // ============================================================================
 
+import { SharedCache, Utils } from '../shared';
 import { Config } from '../cloud';
-import { Utils } from '../shared';
 import path from 'path';
 
 async function ServerStart() {
@@ -25,6 +25,9 @@ async function ServerStart() {
 
         console.log('- Initializing ' + Config.CLOUD_PROVIDER + ' Configurations');
         await Config.initialize();
+
+        console.log('- Initializing shared cache');
+        await SharedCache.init();
 
         console.log(`- Initializing header forwarding`);
         const hpropagate = require('hpropagate');

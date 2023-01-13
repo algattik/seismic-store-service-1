@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ export abstract class Config implements IConfig {
     public static CORE_SERVICE_PARTITION_BASE_PATH: string;
     public static CORE_SERVICE_STORAGE_BASE_PATH: string;
     public static CORE_SERVICE_COMPLIANCE_BASE_PATH: string;
+    public static CORE_SERVICE_SCHEMA_BASE_PATH: string;
     public static CORE_SERVICE_ENTITLEMENT_BASE_PATH: string;
     public static CORE_SEARCH_BASE_PATH: string;
 
@@ -54,6 +55,11 @@ export abstract class Config implements IConfig {
 
     // Enable or disable schema format validation
     public static ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION: boolean;
+
+    // Redis cache
+    public static REDIS_PORT: number;
+    public static REDIS_HOST: string;
+    public static REDIS_KEY: string;
 
     // Initialization methods
     public static setCloudProvider(cloudProvider: string | undefined) {
@@ -80,6 +86,10 @@ export abstract class Config implements IConfig {
         Config.CORE_SERVICE_STORAGE_BASE_PATH = this.getEnvString('STORAGE_SERVICE_BASE_PATH', '/api/storage/v2');
         Config.CORE_SERVICE_PARTITION_BASE_PATH = this.getEnvString('PARTITION_SERVICE_BASE_PATH', '/api/partition/v1');
         Config.CORE_SERVICE_COMPLIANCE_BASE_PATH = this.getEnvString('COMPLIANCE_SERVICE_BASE_PATH', '/api/legal/v1');
+        Config.CORE_SERVICE_SCHEMA_BASE_PATH = this.getEnvString(
+            'CORE_SERVICE_SCHEMA_BASE_PATH',
+            '/api/schema-service/v1'
+        );
         Config.CORE_SEARCH_BASE_PATH = this.getEnvString('SEARCH_SERVICE_BASE_PATH', '/api/search/v2');
         Config.CORE_SERVICE_ENTITLEMENT_BASE_PATH = this.getEnvString(
             'ENTITLEMENT_SERVICE_BASE_PATH',
@@ -93,12 +103,16 @@ export abstract class Config implements IConfig {
             'ENABLE_SCHEMA_PROPERTIES_FORMAT_VALIDATION',
             false
         );
-
-        // Check required configurations
-        this.checkRequiredConfig(Config.CORE_SERVICE_HOST, 'CORE_SERVICE_HOST');
+        Config.REDIS_HOST = this.getEnvString(process.env.REDIS_HOST);
+        Config.REDIS_PORT = this.getEnvNumber(process.env.REDIS_PORT, 6380);
+        Config.REDIS_KEY = this.getEnvString(process.env.REDIS_KEY);
 
         // Initialize the CSP specific configuration
         await ConfigFactory.build(Config.CLOUD_PROVIDER).init();
+
+        // Check required configurations
+        this.checkRequiredConfig(Config.CORE_SERVICE_HOST, 'CORE_SERVICE_HOST');
+        this.checkRequiredConfig(Config.REDIS_HOST, 'REDIS_HOST');
     }
 
     protected static getEnvBoolean(key: string, defaultValue?: boolean): boolean {

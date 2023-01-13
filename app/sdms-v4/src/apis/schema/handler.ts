@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -53,9 +53,9 @@ export class SchemaHandler {
      * @returns list of storage service record identifiers
      */
     private static async register(req: expRequest, dataPartition: string): Promise<string[]> {
-        const records = await Parser.register(req);
+        const records = await Parser.register(req, dataPartition);
         const recordIds = await StorageCoreService.insertRecords(req.headers.authorization!, records, dataPartition);
-        if (Context.schemaGroup.hasBulks) {
+        if (Context.schemaEndpoint.hasBulks) {
             for (let ii = 0; ii < records.length; ii++) {
                 const bucketId = Utils.constructBucketID(recordIds[ii].substring(0, recordIds[ii].lastIndexOf(':')));
                 if (!(await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).bucketExists(bucketId))) {
@@ -103,7 +103,7 @@ export class SchemaHandler {
                 throw error;
             }
         }
-        if (Context.schemaGroup.hasBulks) {
+        if (Context.schemaEndpoint.hasBulks) {
             const bucketID = Utils.constructBucketID(inputRecordID);
             await StorageFactory.build(Config.CLOUD_PROVIDER, { dataPartition }).deleteBucket(bucketID);
         }
@@ -127,7 +127,7 @@ export class SchemaHandler {
      * @returns list of Schema storage records that match the Schema kind
      */
     private static async listSchemas(req: expRequest, dataPartition: string) {
-        const options = await Parser.listSchemas(req);
+        const options = await Parser.listSchemas(req, dataPartition);
         return await SearchService.searchOnKind(
             req.headers.authorization,
             dataPartition,

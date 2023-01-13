@@ -1,5 +1,5 @@
 #  ***************************************************************************
-#  Copyright 2017 - 2022, Schlumberger
+#  Copyright 2017 - 2023, Schlumberger
 #
 #  Licensed under the Apache License, Version 2.0(the 'License');
 #  you may not use this file except in compliance with the License.
@@ -1820,67 +1820,67 @@ components:
       description: The list of segy 1.0.0 datasets
       type: array
       items:
-        $ref: "schemas/generated/dataset/FileCollection.SEGY.1.0.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.SEGY.1.0.0.json"
     openzgy.1.0.0.list:
       title: OpenZGY 1.0.0 datasets
       description: The list of openzgy 1.0.0 datasets
       type: array
       items:
-        $ref: "schemas/generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
     openvds.1.0.0.list:
       title: OpenVDS 1.0.0 datasets
       description: The list of openvds 1.0.0 datasets
       type: array
       items:
-        $ref: "schemas/generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
     generic.1.0.0.list:
       title: Generic 1.0.0 datasets
       description: The list of generic 1.0.0 datasets
       type: array
       items:
-        $ref: "schemas/generated/dataset/FileCollection.Generic.1.0.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Generic.1.0.0.json"
     tracedata.1.3.0.list:
       title: Seismic Trace Data 1.3.0 components
       description: The list of trace data 1.3.0 components
       type: array
       items:
-        $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicTraceData.1.3.0.json"
     bingrid.1.1.0.list:
       title: Seismic Bin Grid 1.1.0 components
       description: The list of bin grid 1.1.0 components
       type: array
       items:
-        $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.1.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicBinGrid.1.1.0.json"
     linegeometry.1.0.0.list:
       title: Seismic Line Geometry 1.0.0 components
       description: The list of line geometry 1.0.0 components
       type: array
       items:
-        $ref: "schemas/generated/work-product-component/SeismicLineGeometry.1.0.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicLineGeometry.1.0.0.json"
     3dinterpretationset.1.1.0.list:
       title: Seismic 3D Interpretation Set 1.1.0 data
       description: The list of seismic 3D interpretation set 1.1.0 data
       type: array
       items:
-        $ref: "schemas/generated/master-data/Seismic3DInterpretationSet.1.1.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/Seismic3DInterpretationSet.1.1.0.json"
     2dinterpretationset.1.1.0.list:
       title: Seismic 2D Interpretation Set 1.1.0 data
       description: The list of seismic 2D interpretation set 1.1.0 data
       type: array
       items:
-        $ref: "schemas/generated/master-data/Seismic2DInterpretationSet.1.1.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/Seismic2DInterpretationSet.1.1.0.json"
     acquisitionsurvey.1.2.0.list:
       title: Seismic Acquisition Survey 1.2.0 data
       description: The list of acquisition survey 1.2.0 data
       type: array
       items:
-        $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
     processingproject.1.2.0.list:
       title: Seismic Processing Project 1.2.0 data
       description: The list of processing project 1.2.0 data
       type: array
       items:
-        $ref: "schemas/generated/master-data/SeismicProcessingProject.1.2.0.json"
+        $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/SeismicProcessingProject.1.2.0.json"
     segy.1.0.0.list.paginated:
       title: SEGY 1.0.0 datasets paginated list
       description: The paginated list of segy 1.0.0 datasets
@@ -1889,7 +1889,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/dataset/FileCollection.SEGY.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.SEGY.1.0.0.json"
         next-page-token:
           type: string
     openzgy.1.0.0.list.paginated:
@@ -1900,7 +1900,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
         next-page-token:
           type: string
     openvds.1.0.0.list.paginated:
@@ -1911,7 +1911,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
         next-page-token:
           type: string
     generic.1.0.0.list.paginated:
@@ -1922,7 +1922,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/dataset/FileCollection.Generic.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Generic.1.0.0.json"
         next-page-token:
           type: string
     tracedata.1.3.0.list.paginated:
@@ -1933,7 +1933,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicTraceData.1.3.0.json"
         next-page-token:
           type: string
     bingrid.1.1.0.list.paginated:
@@ -1944,7 +1944,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.1.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicBinGrid.1.1.0.json"
         next-page-token:
           type: string
     linegeometry.1.0.0.list.paginated:
@@ -1955,7 +1955,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/work-product-component/SeismicLineGeometry.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicLineGeometry.1.0.0.json"
         next-page-token:
           type: string
     3dinterpretationset.1.1.0.list.paginated:
@@ -1966,7 +1966,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/master-data/Seismic3DInterpretationSet.1.1.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/Seismic3DInterpretationSet.1.1.0.json"
         next-page-token:
           type: string
     2dinterpretationset.1.1.0.list.paginated:
@@ -1977,7 +1977,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/master-data/Seismic2DInterpretationSet.1.1.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/Seismic2DInterpretationSet.1.1.0.json"
         next-page-token:
           type: string
     acquisitionsurvey.1.2.0.list.paginated:
@@ -1988,7 +1988,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
         next-page-token:
           type: string
     processingproject.1.2.0.list.paginated:
@@ -1999,7 +1999,7 @@ components:
         datasets:
           type: array
           items:
-            $ref: "schemas/generated/master-data/SeismicProcessingProject.1.2.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/SeismicProcessingProject.1.2.0.json"
         next-page-token:
           type: string
 
@@ -2042,77 +2042,77 @@ components:
         ]
     segy.1.0.0.list:
       summary: SEGY 1.0.0 datasets
-      value: [$ref: "./schemas/examples/dataset/FileCollection.SEGY.1.0.0.json"]
+      value: [$ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.SEGY.1.0.0.json"]
     openzgy.1.0.0.list:
       summary: OpenZGY 1.0.0 datasets
       value:
         [
-          $ref: "./schemas/examples/dataset/FileCollection.Slb.OpenZGY.1.0.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Slb.OpenZGY.1.0.0.json",
         ]
     openvds.1.0.0.list:
       summary: OpenVDS 1.0.0 datasets
       value:
         [
-          $ref: "./schemas/examples/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json",
         ]
     generic.1.0.0.list:
       summary: Generic 1.0.0 datasets
       value:
-        [$ref: "./schemas/examples/dataset/FileCollection.Generic.1.0.0.json"]
+        [$ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Generic.1.0.0.json"]
     tracedata.1.3.0.list:
       summary: Seismic Trace Data 1.3.0 components
       value:
         [
-          $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicTraceData.1.3.0.json",
         ]
     bingrid.1.1.0.list:
       summary: Seismic Bin Grid 1.1.0 components
       value:
         [
-          $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.1.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicBinGrid.1.1.0.json",
         ]
     linegeometry.1.0.0.list:
       summary: Seismic LineGeometry 1.0.0 components
       value:
         [
-          $ref: "schemas/examples/work-product-component/SeismicLineGeometry.1.0.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicLineGeometry.1.0.0.json",
         ]
     3dinterpretationset.1.1.0.list:
       summary: Seismic 3D Interpretation Set 1.1.0 data
       value:
         [
-          $ref: "schemas/examples/master-data/Seismic3DInterpretationSet.1.1.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/Seismic3DInterpretationSet.1.1.0.json",
         ]
     2dinterpretationset.1.1.0.list:
       summary: Seismic 2D Interpretation Set 1.1.0 data
       value:
         [
-          $ref: "schemas/examples/master-data/Seismic2DInterpretationSet.1.1.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/Seismic2DInterpretationSet.1.1.0.json",
         ]
     acquisitionsurvey.1.2.0.list:
       summary: Acquisition Survey 1.2.0 data
       value:
         [
-          $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
         ]
     processingproject.1.2.0.list:
       summary: Processing Project 1.2.0 data
       value:
         [
-          $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json",
+          $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/SeismicProcessingProject.1.2.0.json",
         ]
     segy.1.0.0.list.paginated:
       summary: SEGY 1.0.0 datasets (paginated)
       value:
         datasets:
-          [$ref: "./schemas/examples/dataset/FileCollection.SEGY.1.0.0.json"]
+          [$ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.SEGY.1.0.0.json"]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     openzgy.1.0.0.list.paginated:
       summary: OpenZGY 1.0.0 datasets (paginated)
       value:
         datasets:
           [
-            $ref: "./schemas/examples/dataset/FileCollection.Slb.OpenZGY.1.0.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Slb.OpenZGY.1.0.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     openvds.1.0.0.list.paginated:
@@ -2120,21 +2120,21 @@ components:
       value:
         datasets:
           [
-            $ref: "./schemas/examples/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     generic.1.0.0.list.paginated:
       summary: Generic 1.0.0 datasets (paginated)
       value:
         datasets:
-          [$ref: "./schemas/examples/dataset/FileCollection.Generic.1.0.0.json"]
+          [$ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Generic.1.0.0.json"]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     tracedata.1.3.0.list.paginated:
       summary: Trace Data 1.3.0 components (paginated)
       value:
         datasets:
           [
-            $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicTraceData.1.3.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     bingrid.1.1.0.list.paginated:
@@ -2142,7 +2142,7 @@ components:
       value:
         datasets:
           [
-            $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.1.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicBinGrid.1.1.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     linegeometry.1.0.0.list.paginated:
@@ -2150,7 +2150,7 @@ components:
       value:
         datasets:
           [
-            $ref: "schemas/examples/work-product-component/SeismicLineGeometry.1.0.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicLineGeometry.1.0.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     3dinterpretationset.1.1.0.list.paginated:
@@ -2158,7 +2158,7 @@ components:
       value:
         datasets:
           [
-            $ref: "schemas/examples/master-data/Seismic3DInterpretationSet.1.1.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/Seismic3DInterpretationSet.1.1.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     2dinterpretationset.1.1.0.list.paginated:
@@ -2166,7 +2166,7 @@ components:
       value:
         datasets:
           [
-            $ref: "schemas/examples/master-data/Seismic2DInterpretationSet.1.1.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/Seismic2DInterpretationSet.1.1.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     acquisitionsurvey.1.2.0.list.paginated:
@@ -2174,7 +2174,7 @@ components:
       value:
         datasets:
           [
-            $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/SeismicAcquisitionSurvey.1.2.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     processingproject.1.2.0.list.paginated:
@@ -2182,7 +2182,7 @@ components:
       value:
         datasets:
           [
-            $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json",
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/SeismicProcessingProject.1.2.0.json",
           ]
         next-page-token: f446733b-154f-d134-8a54-6ab612a48217
     connection.string:
@@ -2358,100 +2358,100 @@ components:
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/dataset/FileCollection.SEGY.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.SEGY.1.0.0.json"
           examples:
             SEGY 1.0.0 dataset:
-              $ref: "schemas/examples/dataset/FileCollection.SEGY.1.0.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.SEGY.1.0.0.json"
     openzgy.1.0.0:
       description: The openzgy 1.0.0 dataset
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
           examples:
             OpenZGY 1.0.0 dataset:
-              $ref: "schemas/examples/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Slb.OpenZGY.1.0.0.json"
     openvds.1.0.0:
       description: The openvds 1.0.0 dataset
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
           examples:
             OpenVDS 1.0.0 dataset:
-              $ref: "schemas/examples/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json"
     generic.1.0.0:
       description: The generic 1.0.0 dataset
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/dataset/FileCollection.Generic.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/dataset/FileCollection.Generic.1.0.0.json"
           examples:
             Generic 1.0.0 dataset:
-              $ref: "schemas/examples/dataset/FileCollection.Generic.1.0.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/dataset/FileCollection.Generic.1.0.0.json"
     tracedata.1.3.0:
       description: The trace data 1.3.0 component
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/work-product-component/SeismicTraceData.1.3.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicTraceData.1.3.0.json"
           examples:
             Trace Data 1.3.0 dataset:
-              $ref: "schemas/examples/work-product-component/SeismicTraceData.1.3.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicTraceData.1.3.0.json"
     bingrid.1.1.0:
       description: The bin grid 1.1.0 component
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/work-product-component/SeismicBinGrid.1.1.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicBinGrid.1.1.0.json"
           examples:
             BinGrid 1.1.0 dataset:
-              $ref: "schemas/examples/work-product-component/SeismicBinGrid.1.1.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicBinGrid.1.1.0.json"
     linegeometry.1.0.0:
       description: The line geometry 1.0.0 component
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/work-product-component/SeismicLineGeometry.1.0.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/work-product-component/SeismicLineGeometry.1.0.0.json"
           examples:
             Line Geometry 1.0.0 dataset:
-              $ref: "schemas/examples/work-product-component/SeismicLineGeometry.1.0.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/work-product-component/SeismicLineGeometry.1.0.0.json"
     3dinterpretationset.1.1.0:
       description: The seismic 3D interpretation set 1.1.0 data
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/master-data/Seismic3DInterpretationSet.1.1.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/Seismic3DInterpretationSet.1.1.0.json"
           examples:
             Seismic 3D Interpretation Set 1.1.0:
-              $ref: "schemas/examples/master-data/Seismic3DInterpretationSet.1.1.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/Seismic3DInterpretationSet.1.1.0.json"
     2dinterpretationset.1.1.0:
       description: The seismic 2D interpretation set 1.1.0 data
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/master-data/Seismic2DInterpretationSet.1.1.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/Seismic2DInterpretationSet.1.1.0.json"
           examples:
             Seismic 2D Interpretation Set 1.1.0:
-              $ref: "schemas/examples/master-data/Seismic2DInterpretationSet.1.1.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/Seismic2DInterpretationSet.1.1.0.json"
     acquisitionsurvey.1.2.0:
       description: The acquisition survey 1.2.0 data
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/SeismicAcquisitionSurvey.1.2.0.json"
           examples:
             Acquisition Survey 1.2.0 dataset:
-              $ref: "schemas/examples/master-data/SeismicAcquisitionSurvey.1.2.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/SeismicAcquisitionSurvey.1.2.0.json"
     processingproject.1.2.0:
       description: The processing project 1.2.0 data
       content:
         application/json:
           schema:
-            $ref: "schemas/generated/master-data/SeismicProcessingProject.1.2.0.json"
+            $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Generated/master-data/SeismicProcessingProject.1.2.0.json"
           examples:
             Processing Project 1.2.0 dataset:
-              $ref: "schemas/examples/master-data/SeismicProcessingProject.1.2.0.json"
+              $ref: "https://community.opengroup.org/osdu/data/data-definitions/-/raw/master/Examples/master-data/SeismicProcessingProject.1.2.0.json"
     segy.1.0.0.list.paginated:
       description: The list of segy 1.0.0 datasets
       content:

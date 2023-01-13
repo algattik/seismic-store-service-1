@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,28 +14,66 @@
 // Limitations under the License.
 // ============================================================================
 
-export interface SchemaGroup {
-    models: string[];
-    prefix?: string;
-    folder: string;
+export interface SchemaEndpoint {
+    name: string;
+    kind: string;
     hasBulks?: boolean;
 }
 
-export const SchemaGroups = [
+export const SchemaEndpoints = [
     {
-        models: ['segy', 'openzgy', 'openvds', 'generic'],
-        prefix: 'filecollection',
-        folder: 'dataset',
+        name: 'segy',
+        kind: 'osdu:wks:dataset--FileCollection.SEGY:1.0.0',
         hasBulks: true,
     },
     {
-        models: ['2dinterpretationset', '3dinterpretationset', 'acquisitionsurvey', 'processingproject'],
-        folder: 'master-data',
+        name: 'openzgy',
+        kind: 'osdu:wks:dataset--FileCollection.Slb.OpenZGY:1.0.0',
+        hasBulks: true,
+    },
+    {
+        name: 'openvds',
+        kind: 'osdu:wks:dataset--FileCollection.Bluware.OpenVDS:1.0.0',
+        hasBulks: true,
+    },
+    {
+        name: 'generic',
+        kind: 'osdu:wks:dataset--FileCollection.Generic:1.0.0',
+        hasBulks: true,
+    },
+    {
+        name: '2dinterpretationset',
+        kind: 'osdu:wks:master-data--Seismic2DInterpretationSet:1.1.0',
         hasBulks: false,
     },
     {
-        models: ['linegeometry', 'bingrid', 'tracedata'],
-        folder: 'work-product-component',
+        name: '3dinterpretationset',
+        kind: 'osdu:wks:master-data--Seismic3DInterpretationSet:1.1.0',
         hasBulks: false,
     },
-] as SchemaGroup[];
+    {
+        name: 'acquisitionsurvey',
+        kind: 'osdu:wks:master-data--SeismicAcquisitionSurvey:1.2.0',
+        hasBulks: false,
+    },
+    {
+        name: 'processingproject',
+        kind: 'osdu:wks:master-data--SeismicProcessingProject:1.2.0',
+        hasBulks: false,
+    },
+    {
+        name: 'bingrid',
+        kind: 'osdu:wks:work-product-component--SeismicBinGrid:1.1.0',
+        hasBulks: false,
+    },
+    {
+        name: 'linegeometry',
+        kind: 'osdu:wks:work-product-component--SeismicLineGeometry:1.0.0',
+        hasBulks: false,
+    },
+    {
+        name: 'tracedata',
+        kind: 'osdu:wks:work-product-component--SeismicTraceData:1.3.0',
+        hasBulks: false,
+    },
+] as SchemaEndpoint[];
