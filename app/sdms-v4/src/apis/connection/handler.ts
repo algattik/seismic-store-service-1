@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import crypto from 'crypto';
 
 export class ConnectionsHandler {
     public static async handler(req: expRequest, res: expResponse, op: Operation) {
-        if (!Context.schemaGroup.hasBulks) {
+        if (!Context.schemaEndpoint.hasBulks) {
             throw Error.make(
                 Error.Status.BAD_REQUEST,
-                'Connection strings cannot be released for ' + Context.schemaGroup.folder + ' records'
+                'Connection strings cannot be released for ' + Context.schemaEndpoint.kind
             );
         }
         const dataPartition = req.headers[Config.DATA_PARTITION_ID] as string;

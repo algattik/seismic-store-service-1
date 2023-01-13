@@ -8,7 +8,7 @@
     "description": "Seismic Domain Data Management APIs to store and manage strongly typed seismic datasets.",
     "scripts": {
         "build": "tsc",
-        "copy-static-files": "copyfiles --error --up 1 ./docs/openapi.yaml ./docs/schemas/**/*.json ./docs/schemas/examples/**/*.json ./docs/schemas/generated/**/*.json ./dist/docs",
+        "copy-static-files": "copyfiles --error --up 1 ./docs/openapi.yaml ./dist/docs",
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
         "postbuild": "npm run copy-static-files",
         "start-service": "node --trace-warnings --trace-uncaught ./dist/server/server-start.js"
