@@ -8,12 +8,16 @@ sdms-osdu-gcp-helm-charts-master:
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store
+    IMAGE_NAME: osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
 
 sdms-osdu-gcp-helm-charts-release:
   extends: .osdu-gcp-helm-charts-release
   variables:
     SEISMIC_OSDU_GCP_HELM_CONFIG_DIR: "app/sdms/devops/gcp/configmap"
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
+    SEISMIC_OSDU_GCP_SERVICE: seismic-store
+    IMAGE_NAME: osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
 
 sdms-osdu-gcp-containerize-gitlab:
   extends: .osdu-gcp-containerize-gitlab
@@ -138,6 +142,7 @@ sdms-osdu-gcp-dev2-deploy-deployment:
     SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gcp/deploy"
     SEISMIC_OSDU_GCP_SERVICE: seismic-store
     SEISMIC_OSDU_GCP_CHART: gcp-seismic-store-sdms-deploy #var used only in release and tagged pipelines
+    IMAGE_NAME: osdu-gcp-$SEISMIC_OSDU_GCP_SERVICE
   rules:
     - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
@@ -265,7 +270,7 @@ sdms-osdu-gcp-anthos-test-python:
     - chmod +x ./tests/e2e/run_e2e_tests.sh
     - >
       ./tests/e2e/run_e2e_tests.sh
-      --seistore-svc-url="${OSDU_GCP_SDMS_HOST}${GCP_SDMS_PREFIX}" 
+      --seistore-svc-url="${OSDU_GCP_SDMS_HOST}${GCP_SDMS_PREFIX}"
       --seistore-svc-api-key="NA"
       --user-idtoken="$OSDU_GCP_ID_TOKEN"
       --tenant="${OSDU_GCP_SDMS_TENANT}"
