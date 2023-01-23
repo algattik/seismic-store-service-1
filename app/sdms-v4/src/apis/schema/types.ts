@@ -63,7 +63,7 @@ export const SchemaEndpoints = [
     },
     {
         name: 'bingrid',
-        kind: 'osdu:wks:work-product-component--SeismicBinGrid:1.1.0',
+        kind: 'osdu:wks:work-product-component--SeismicBinGrid:1.0.0',
         hasBulks: false,
     },
     {
