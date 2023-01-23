@@ -1,7 +1,8 @@
 {
     "env": {
         "node": true,
-        "es2022": true
+        "es2022": true,
+        "mocha": true
     },
     "extends": [
         "eslint:recommended",
@@ -25,15 +26,7 @@
         "require-await": "error",
         "eqeqeq": "error",
         "no-unused-vars": "off",
-        "sort-imports": "error",
-        "capitalized-comments": [
-            "error",
-            "always",
-            {
-                "ignorePattern": "pragma|ignored",
-                "ignoreInlineComments": true
-            }
-        ]
+        "sort-imports": "error"
     },
     "root": true
 }
