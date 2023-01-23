@@ -22,7 +22,7 @@ import { Config } from '../../../src/cloud/config';
 import { IDESEntitlementGroupModel } from '../../../src/cloud/dataecosystem';
 import { google } from '../../../src/cloud/providers';
 import { DatasetDAO, DatasetModel } from '../../../src/services/dataset';
-import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject';
+import { SubProjectDAO, SubProjectModel, SubprojectAuth } from '../../../src/services/subproject';
 import { TenantDAO } from '../../../src/services/tenant';
 import { UserHandler } from '../../../src/services/user/handler';
 import { UserOP } from '../../../src/services/user/optype';
@@ -274,6 +274,8 @@ export class TestUserSVC {
             this.spy.stub(JournalFactoryTenantClient, 'get').returns(this.journal);
             this.spy.stub(SubProjectDAO, 'get').resolves(this.subproject);
             this.spy.stub(Auth, 'isImpersonationToken').returns(false);
+            this.spy.stub(SubprojectAuth, 'getAuthGroups').returns(['test']);
+            this.spy.stub(Auth, 'isUserAuthorized').resolves(true);
             await UserHandler.handler(expReq, expRes, UserOP.Remove);
             Tx.check400(expRes.statusCode, done);
         });

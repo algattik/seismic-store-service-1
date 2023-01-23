@@ -9,7 +9,7 @@ import { ITenantModel } from '../../../../src/services/tenant/model';
 import { UserOP } from '../../../../src/services/user/optype';
 import { UserHandler as Handler } from '../../../../src/services/user/handler';
 import { Tx } from '../../utils';
-
+import { SubprojectAuth } from '../../../../src/services/subproject';
 export class TestServicesUserHandler {
 
     private static sandbox: sinon.SinonSandbox;
@@ -248,6 +248,8 @@ export class TestServicesUserHandler {
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             this.sandbox.stub(TenantDAO, 'get').resolves(tenantModel);
             this.sandbox.stub(SubProjectDAO, 'get').resolves(subProjectModel);
+            this.sandbox.stub(SubprojectAuth, 'getAuthGroups').returns(['test']);
+            this.sandbox.stub(Auth, 'isUserAuthorized').resolves(true);
             this.sandbox.stub(DatasetDAO, 'get').resolves([datasetModel, undefined]);
 
             await Handler.handler(req, res, op);
@@ -270,6 +272,8 @@ export class TestServicesUserHandler {
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             this.sandbox.stub(TenantDAO, 'get').resolves(tenantModel);
             this.sandbox.stub(SubProjectDAO, 'get').resolves(subProjectModel);
+            this.sandbox.stub(SubprojectAuth, 'getAuthGroups').returns(['test']);
+            this.sandbox.stub(Auth, 'isUserAuthorized').resolves(true);
             this.sandbox.stub(DatasetDAO, 'get').resolves([datasetModel, undefined]);
 
             await Handler.handler(req, res, op);
@@ -292,6 +296,8 @@ export class TestServicesUserHandler {
             this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
             this.sandbox.stub(TenantDAO, 'get').resolves(tenantModel);
             this.sandbox.stub(SubProjectDAO, 'get').resolves(subProjectModel);
+            this.sandbox.stub(SubprojectAuth, 'getAuthGroups').returns(['test']);
+            this.sandbox.stub(Auth, 'isUserAuthorized').resolves(true);
             this.sandbox.stub(DatasetDAO, 'getByKey').resolves(datasetModel);
 
             await Handler.handler(req, res, op);
