@@ -21,7 +21,7 @@ import { JournalFactoryTenantClient } from '../../cloud/journal';
 import { Error, Feature, FeatureFlags, Response, Utils } from '../../shared';
 import { ISDPathModel } from '../../shared/sdpath';
 import { DatasetDAO, DatasetModel } from '../dataset';
-import { SubProjectDAO, SubprojectGroups, SubProjectModel } from '../subproject';
+import { SubProjectDAO, SubprojectGroups, SubProjectModel, SubprojectAuth } from '../subproject';
 import { ISubProjectModel } from '../subproject/model';
 import { TenantDAO, TenantGroups, TenantModel } from '../tenant';
 import { ITenantModel } from '../tenant/model';
@@ -232,6 +232,8 @@ export class UserHandler {
         const journalClient = JournalFactoryTenantClient.get(tenant);
         const subproject = await SubProjectDAO.get(journalClient, tenant.name, sdPath.subproject);
 
+        await Auth.isUserAuthorized(req.headers.authorization,
+                SubprojectAuth.getAuthGroups(subproject, AuthRoles.admin), tenant.esd, req[Config.DE_FORWARD_APPKEY]);
 
         if (sdPath.dataset) {
             const datasetModel: DatasetModel = {
