@@ -92,7 +92,6 @@
     - !reference [.set_image_tag,script]
     - !reference [.substitute_image_in_helm,script]
   script:
-    - helm cm-push $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable --username gitlab-ci-token --password $CI_JOB_TOKEN
     - helm cm-push $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable --username gitlab-ci-token --password $CI_JOB_TOKEN
   rules:
     - if: "$OSDU_GCP == '1' && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
@@ -110,7 +109,6 @@
     - !reference [.substitute_image_in_helm,script]
   script:
     - !reference [.define_VER, script]
-    - helm cm-push $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable --version $VER --username gitlab-ci-token --password $CI_JOB_TOKEN
     - helm cm-push $SEISMIC_OSDU_GCP_HELM_DEPLOYMENT_DIR ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable --version $VER --username gitlab-ci-token --password $CI_JOB_TOKEN
   rules:
     - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
@@ -154,91 +152,6 @@
     - docker push $OSDU_GCP_GCR_REGISTRY/$SEISMIC_OSDU_GCP_SERVICE/$IMAGE_NAME
   rules:
     - if: "$OSDU_GCP == '1' && $CI_COMMIT_TAG"
-      when: on_success
-
-.osdu-gcp-deploy-configmap:
-  stage: deploy
-  tags: ["osdu-small"]
-  extends: .osdu-gcp-variables
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
-  cache: {}
-  script:
-    - !reference [.common, script]
-    - >
-      helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR
-      --install
-      --create-namespace
-      --namespace=$OSDU_GCP_HELM_NAMESPACE
-      --wait
-      --history-max=3
-      --set data.appEnvironmentIdentifier=$OSDU_GCP_TENANT
-      --set data.cloudProvider="google"
-      --set data.redisDdmsHost=$REDIS_DDMS_HOST
-      --set data.serviceCloudProject=$OSDU_GCP_PROJECT
-      --set data.googleAudiences=$TARGET_AUDIENCE
-  rules:
-    - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-    - if: '$OSDU_GCP == "1" && $CI_COMMIT_TAG'
-      when: on_success
-
-.osdu-gcp-dev2-deploy-configmap:
-  stage: deploy
-  tags: ["osdu-small"]
-  extends: .osdu-gcp-dev2-variables
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
-  script:
-    - !reference [.common-dev2, script]
-    - !reference [.define_VER, script]
-    - helm repo add $SEISMIC_OSDU_GCP_SERVICE ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable
-    - >
-      helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR --version $VER
-      --install
-      --create-namespace
-      --namespace=$OSDU_GCP_HELM_NAMESPACE
-      --wait
-      --history-max=3
-      --set data.appEnvironmentIdentifier=$OSDU_TENANT
-      --set data.cloudProvider="google"
-      --set data.redisDdmsHost=$REDIS_DDMS_HOST
-      --set data.serviceCloudProject=$OSDU_GCP_PROJECT
-      --set data.googleAudiences=$TARGET_AUDIENCE
-  rules:
-    - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-    - if: '$OSDU_GCP == "1" && $CI_COMMIT_TAG'
-      when: on_success
-
-.osdu-gcp-anthos-deploy-configmap:
-  environment:
-    name: GCP
-  stage: deploy
-  extends: .osdu-gcp-anthos-variables
-  tags: ["osdu-small"]
-  image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
-  retry: 1
-  allow_failure: true
-  script:
-    - gcloud auth activate-service-account --key-file $OSDU_GCP_ANTHOS_DEPLOY_FILE
-    - !reference [.common-anthos, script]
-    - >
-      helm upgrade $SEISMIC_OSDU_GCP_HELM_CONFIG_SERVICE $SEISMIC_OSDU_GCP_HELM_CONFIG_DIR
-      --install
-      --create-namespace
-      --namespace=$OSDU_GCP_HELM_NAMESPACE
-      --wait
-      --timeout=1200s
-      --history-max=3
-      --set data.appEnvironmentIdentifier=$OSDU_TENANT
-      --set data.cloudProvider="anthos"
-      --set data.redisDdmsHost=$REDIS_DDMS_HOST
-      --set data.serviceCloudProject=$OSDU_GCP_PROJECT
-      --set data.googleAudiences=$TARGET_AUDIENCE
-      --set conf.onPremEnabled=true
-  rules:
-    - if: '$OSDU_GCP == "1" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-    - if: '$OSDU_GCP == "1" && $CI_COMMIT_TAG'
       when: on_success
 
 .osdu-gcp-deployment:
