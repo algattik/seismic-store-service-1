@@ -27,35 +27,69 @@ Packages are only needed for installation from a local computer.
 Before installing deploy Helm chart you need to install [configmap Helm chart](../configmap).
 First you need to set variables in **values.yaml** file using any code editor. Some of the values are prefilled, but you need to specify some values as well. You can find more information about them below.
 
-### Common variables
+### Configmap variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
-**requestsCpu** | amount of requested CPU | string | "0.1" | yes
-**requestsMemory** | amount of requested memory| string | "256M" | yes
-**limitsCpu** | CPU limit | string | "1" | yes
-**limitsMemory** | memory limit | string | "1G" | yes
-**serviceAccountName** | name of your service account | string | "seismic-store" | yes
-**imagePullPolicy** | when to pull image | string | "IfNotPresent" | yes
-**image** | service image | string | - | yes
+**data.logLevel** | logging level | string | "ERROR" | yes
+**data.cloudProvider** | cloud provider | string | "google" | yes
+**data.port** | port | string | "5000" | yes
+**data.desServiceHost** | base url of host | string | "https://des" | yes
+**data.partitionHost** | partition service endpoint | string | "http://partition" | yes
+**data.entitlementBaseUrlPath** | url path for entitlements | string | "/entitlements/v2" | yes
+**data.dataPartitionRestHeaderKey** | REST header key for data partition | string | "data-partition-id" | yes
+**data.storageHost** | storage service endpoint | string | "http://storage" | yes
+**data.legalHost** | legal service endpoint | string | "http://legal" | yes
+**data.appEnvironmentIdentifier** | app environment | string | "dev" | yes
+**data.entitlementsHost** | entitlements service endpoint | string | "http://entitlements" | yes
+**data.redisDdmsHost** |  redis instance address | string| "redis-cache-ddms.redis.svc.cluster.local" | yes
+**data.redisPort** | redis instance port | string | "6379" | yes
+**data.urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
+**data.impServiceAccountSigner** | imp SA signer | string | "NA" | yes
+**data.seistoreDesAppkey** | seismic-store app key | string | "NA" | yes
+**data.serviceCloudProject** | project ID of service | string | - | yes
+**data.googleAudiences** | your GCP client ID | string | - | yes
+**data.apiBasePath** | base api url path | string | "/api/v3" | yes
+**data.serviceEnv** | service environment | string | "dev" | yes
+
+### Deployment variables
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|---------|
+**data.requestsCpu** | amount of requested CPU | string | "0.1" | yes
+**data.requestsMemory** | amount of requested memory| string | "256M" | yes
+**data.limitsCpu** | CPU limit | string | "1" | yes
+**data.limitsMemory** | memory limit | string | "1G" | yes
+**data.serviceAccountName** | name of your service account | string | "seismic-store" | yes
+**data.imagePullPolicy** | when to pull image | string | "IfNotPresent" | yes
+**data.image** | service image | string | - | yes
 
 ### Config variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
-**configmap** | configmap to be used | string | "seismic-store-config" | yes
-**appName** | name of the app | string | "seismic-store" | yes
-**urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
+**conf.configmap** | configmap to be used | string | "seismic-store-config" | yes
+**conf.appName** | name of the app | string | "seismic-store" | yes
+**conf.urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
 
 ### On-prem variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
-**database** | secret for database | string | "seismic-store-db-secret" | yes
-**keycloak** | secret for keycloak | string | "seismic-store-keycloak-secret" | yes
-**minio** | secret for minio | string | "seismic-store-minio-secret" | yes
-**onPremEnabled** | whether on-prem is enabled | boolean | false | yes
-**domain** | your domain | string | - | yes
+**conf.database** | secret for database | string | "seismic-store-db-secret" | yes
+**conf.keycloak** | secret for keycloak | string | "seismic-store-keycloak-secret" | yes
+**conf.minio** | secret for minio | string | "seismic-store-minio-secret" | yes
+**conf.onPremEnabled** | whether on-prem is enabled | boolean | false | yes
+**conf.domain** | your domain | string | - | yes
+
+### ISTIO variables
+
+| Name | Description | Type | Default |Required |
+|------|-------------|------|---------|---------|
+**istio.proxyCPU** | CPU request for Envoy sidecars | string | 50m | yes
+**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 500m | yes
+**istio.proxyMemory** | memory request for Envoy sidecars | string | 64Mi | yes
+**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 512Mi | yes
 
 ### Install the helm chart
 

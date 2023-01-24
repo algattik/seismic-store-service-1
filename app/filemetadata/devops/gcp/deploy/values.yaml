@@ -1,4 +1,21 @@
 data:
+  # Configmap
+  logLevel: "INFO"
+  cloudProvider: "google"
+  partitionHost: "http://partition"
+  entitlementBaseUrlPath: "/entitlements/v2"
+  dataPartitionRestHeaderKey: ""
+  storageHost: "http://storage"
+  legalHost: "http://legal"
+  googleAudiences: ""
+  serviceCloudProject: ""
+  appEnvironmentIdentifier: "osdu"
+  impServiceAccountSigner: ""
+  entitlementsHost: "http://entitlements"
+  seistoreDesAppkey: ""
+  redisDdmsHost: "redis-ddms-master.redis.svc.cluster.local"
+  redisPort: "6379"
+  # Deployment
   requestsCpu: "0.1"
   requestsMemory: "256M"
   limitsCpu: "1"
