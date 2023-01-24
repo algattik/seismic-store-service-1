@@ -1,0 +1,13 @@
+include:
+  # global
+  - local: "app/sdms-v4/devops/osdu/global/gitlab.yml"
+
+  # containerize
+  # osdu
+
+  # this job doesn't work for a long time
+  #  - local: "app/sdms-v4/devops/osdu/containerize/osdu.yml"
+
+  # deploy
+  # azure
+  - local: "app/sdms-v4/devops/osdu/cloud-providers/azure.yml"
