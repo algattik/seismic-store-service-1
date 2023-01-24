@@ -21,8 +21,10 @@ FROM node:${docker_node_image_version} as release
 ADD ./ /service
 WORKDIR /service
 
-RUN npm install --production --quiet
-RUN npm run build
+RUN apk --no-cache add --virtual python python3 \
+    && npm install --quiet node-gyp -g \
+    && npm install --production --quiet \
+    && npm run build
 RUN mkdir /seistore-service
 RUN mv node_modules dist /seistore-service
 RUN rm -rf /service

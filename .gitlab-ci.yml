@@ -24,6 +24,9 @@ include:
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
+  
+  # sdms v4
+  - local: "app/sdms-v4/.gitlab-ci.yml"
 
   # file metadata service
   - local: "app/filemetadata/.gitlab-ci.yml"
