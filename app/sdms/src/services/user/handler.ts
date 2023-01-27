@@ -304,7 +304,7 @@ export class UserHandler {
         const admins = new Set();
         const viewers = new Set();
 
-        userListInAuthGroups.map(lst => {
+        userListInAuthGroups.forEach(lst => {
             for (const ele of lst) {
                 if (ele === 'admin' || ele === 'editor') {
                     admins.add(lst[0]);
