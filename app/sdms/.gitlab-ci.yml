@@ -28,8 +28,8 @@ include:
   # aws
   - local: "app/sdms/devops/osdu/cloud-providers/aws.yml"
 
-  # gcp
-  - local: "app/sdms/devops/osdu/cloud-providers/gcp.yml"
+  # Google Cloud
+  - local: "app/sdms/devops/osdu/cloud-providers/gc.yml"
 
   # ibm
   - local: "app/sdms/devops/osdu/cloud-providers/ibm.yml"

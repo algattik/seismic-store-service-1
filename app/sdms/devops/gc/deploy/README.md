@@ -48,7 +48,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **data.impServiceAccountSigner** | imp SA signer | string | "NA" | yes
 **data.seistoreDesAppkey** | seismic-store app key | string | "NA" | yes
 **data.serviceCloudProject** | project ID of service | string | - | yes
-**data.googleAudiences** | your GCP client ID | string | - | yes
+**data.googleAudiences** | your Google Cloud client ID | string | - | yes
 **data.apiBasePath** | base api url path | string | "/api/v3" | yes
 **data.serviceEnv** | service environment | string | "dev" | yes
 
@@ -96,7 +96,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 Run this command from within this directory:
 
 ```console
-helm install gcp-seismic-store-sdms-deploy .
+helm install gc-seismic-store-sdms-deploy .
 ```
 
 ## Uninstalling the Chart
@@ -104,7 +104,7 @@ helm install gcp-seismic-store-sdms-deploy .
 To uninstall the helm deployment:
 
 ```console
-helm uninstall gcp-seismic-store-sdms-deploy
+helm uninstall gc-seismic-store-sdms-deploy
 ```
 
 [Move-to-Top](#deploy-helm-chart)

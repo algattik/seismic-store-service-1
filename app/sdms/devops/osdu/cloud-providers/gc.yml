@@ -1,0 +1,233 @@
+variables:
+  GC_SDMS_PREFIX: /api/seismic-store/v3
+  GC_GCR_REGISTRY: gcr.io/osdu-anthos
+  SEISMIC_GC_DOCKERFILE_NAME: "devops/anthos/runtime.Dockerfile"
+
+sdms-gc-helm-charts-master:
+  extends: .gc-helm-charts-master
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+
+sdms-gc-helm-charts-release:
+  extends: .gc-helm-charts-release
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+
+sdms-gc-containerize-gitlab:
+  extends: .gc-containerize-gitlab
+  needs: ["sdms_compile-and-unit-test"]
+  variables:
+    SEISMIC_GC_SERVICE: seismic-store
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+  before_script:
+    - cd app/$SDMS_SERVICE
+    - sed -i 's|#{SDMS_PREFIX}#|'$GC_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
+  rules:
+    - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$GC == "1"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-containerize-gcr:
+  extends: .gc-containerize-gcr
+  needs: ["sdms_compile-and-unit-test"]
+  variables:
+    SEISMIC_GC_SERVICE: seismic-store
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+  before_script:
+    - cat $GC_DEPLOY_FILE | docker login -u _json_key --password-stdin https://gcr.io
+    - cd app/$SDMS_SERVICE
+    - sed -i 's|#{SDMS_PREFIX}#|'$GC_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
+  rules:
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-deployment:
+  extends: .gc-deployment
+  needs: ["sdms-gc-containerize-gitlab"]
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+  rules:
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$GC == "1"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-dev2-deploy-deployment:
+  extends: .gc-dev2-deploy-deployment
+  needs: ["sdms-gc-containerize-gitlab"]
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+    SEISMIC_GC_CHART: gc-seismic-store-sdms-deploy #var used only in release and tagged pipelines
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+  rules:
+    - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-anthos-deploy-deployment:
+  extends: .gc-anthos-deploy-deployment
+  needs: ["sdms-gc-containerize-gitlab"]
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+  rules:
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$GC == "1"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-test-python:
+  variables:
+    GOOGLE_CREDENTIALS: $GC_R3_INTEGRATION_TESTER
+  extends: .gc-test-python
+  image: node
+  needs: ["sdms-gc-deployment"]
+  allow_failure: true
+  before_script:
+    - cd app/$SDMS_SERVICE
+  script:
+    - apt-get update
+    - apt-get install -y python3
+    - apt-get install -y python3-pip
+    - pip install google
+    - pip install google-auth
+    - pip install google-api-python-client
+    - pip install google-auth-httplib2
+    - pip install google-auth-oauthlib
+    - export GC_AUDIENCE=$INTEGRATION_TEST_AUDIENCE
+    - export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_CREDENTIALS
+    - svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/gc_jwt_client.py)
+    - echo $svctoken > /dev/null
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${GC_UNIT_HOSTNAME}${GC_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$GC_INTEGRATION_TESTER" --tenant="${GC_TENANT}" --admin-email="${GC_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${GC_SEISTORE_LEGALTAG01}" --legaltag02="${GC_SEISTORE_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
+  rules:
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$GC == "1"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-dev2-test-python:
+  variables:
+    GOOGLE_CREDENTIALS: $GC_R3_INTEGRATION_TESTER
+  extends: .gc-dev2-test-python
+  image: node
+  needs: ["sdms-gc-dev2-deploy-deployment"]
+  allow_failure: true
+  before_script:
+    - cd app/$SDMS_SERVICE
+  script:
+    - apt-get update
+    - apt-get install -y python3
+    - apt-get install -y python3-pip
+    - pip install google
+    - pip install google-auth
+    - pip install google-api-python-client
+    - pip install google-auth-httplib2
+    - pip install google-auth-oauthlib
+    - export GC_AUDIENCE=$INTEGRATION_TEST_AUDIENCE
+    - export GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_CREDENTIALS
+    - svctoken=$(python3 ${CI_PROJECT_DIR}/devops/scripts/gc_jwt_client.py)
+    - echo $svctoken > /dev/null
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - ./tests/e2e/run_e2e_tests.sh --seistore-svc-url="https://${GC_UNIT_HOSTNAME}${GC_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$GC_INTEGRATION_TESTER" --tenant="${GC_TENANT}" --admin-email="${GC_SEISTORE_ADMIN_EMAIL}" --datapartition="${DATA_PARTITION_ID}" --legaltag01="${GC_SEISTORE_LEGALTAG01}" --legaltag02="${GC_SEISTORE_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"
+  rules:
+    - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+
+sdms-gc-anthos-test-python:
+  extends: .gc-anthos-test-python
+  image: node
+  needs: ["sdms-gc-anthos-deploy-deployment"]
+  allow_failure: true
+  before_script:
+    - cd app/$SDMS_SERVICE
+  script:
+    - apt-get update
+    - apt-get install -yq jq curl
+    - >
+      GC_ID_TOKEN=$(curl --location --silent --request POST "${TEST_OPENID_PROVIDER_URL}/protocol/openid-connect/token"
+      --header "data-partition-id: ${DATA_PARTITION_ID}"
+      --header 'Content-Type: application/x-www-form-urlencoded'
+      --data-urlencode grant_type=client_credentials
+      --data-urlencode scope=openid
+      --data-urlencode client_id=${TEST_OPENID_PROVIDER_CLIENT_ID}
+      --data-urlencode client_secret=${TEST_OPENID_PROVIDER_CLIENT_SECRET} | jq -r .id_token)
+    - npm install -g newman
+    - chmod +x ./tests/e2e/run_e2e_tests.sh
+    - >
+      ./tests/e2e/run_e2e_tests.sh
+      --seistore-svc-url="${GC_SDMS_HOST}${GC_SDMS_PREFIX}"
+      --seistore-svc-api-key="NA"
+      --user-idtoken="$GC_ID_TOKEN"
+      --tenant="${GC_SDMS_TENANT}"
+      --admin-email="${GC_SEISTORE_ADMIN_EMAIL}"
+      --datapartition="${DATA_PARTITION_ID}"
+      --legaltag01="${GC_SEISTORE_LEGALTAG01}"
+      --legaltag02="${GC_SEISTORE_LEGALTAG02}"
+      --VCS-Provider="${ISGITLAB}"
+  rules:
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$GC == "1"'
+      when: on_success
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
