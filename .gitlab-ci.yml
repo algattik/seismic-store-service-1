@@ -12,8 +12,8 @@ include:
   # aws
   - local: "devops/osdu/cloud-providers/aws.yml"
 
-  # gcp
-  - local: "devops/osdu/cloud-providers/gcp.yml"
+  # Google Cloud
+  - local: "devops/osdu/cloud-providers/gc.yml"
 
   # azure
   - local: "devops/osdu/cloud-providers/azure.yml"
@@ -24,7 +24,7 @@ include:
   # app
   # sdms
   - local: "app/sdms/.gitlab-ci.yml"
-  
+
   # sdms v4
   - local: "app/sdms-v4/.gitlab-ci.yml"
 
