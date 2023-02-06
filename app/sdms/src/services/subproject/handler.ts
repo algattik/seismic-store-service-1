@@ -283,9 +283,13 @@ export class SubProjectHandler {
         // save and replace default SDMS ACLs to delete at the end
         const dataGroupsToDelete = [] as string[];
         if (parsedUserInput?.acls?.admins?.length > 0) {
+            const defaultDataGroupRegEx = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+            dataGroupsToDelete.concat(subproject.acls.admins.filter((group) => group.match(defaultDataGroupRegEx)));
             subproject.acls.admins = parsedUserInput.acls.admins;
         }
         if (parsedUserInput?.acls?.viewers?.length > 0) {
+            const defaultDataGroupRegEx = SubprojectGroups.dataGroupNameRegExp(tenant.name, subproject.name);
+            dataGroupsToDelete.concat(subproject.acls.viewers.filter((group) => group.match(defaultDataGroupRegEx)));
             subproject.acls.viewers = parsedUserInput.acls.viewers;
         }
 
