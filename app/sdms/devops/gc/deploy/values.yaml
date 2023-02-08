@@ -13,6 +13,8 @@ data:
   entitlementsHost: "http://entitlements"
   redisDdmsHost: "redis-ddms-master.redis.svc.cluster.local"
   redisPort: "6379"
+  redisSdmsHost: ""
+  redisSdmsPort: "6379"
   urlPrefix: "/api/seismic-store/v3"
   impServiceAccountSigner: "NA"
   seistoreDesAppkey: "NA"
@@ -27,6 +29,7 @@ data:
   limitsMemory: "1G"
   serviceAccountName: "seismic-store"
   imagePullPolicy: "IfNotPresent"
+  redisImage: "redis:7"
   image: ""
 
 conf:
@@ -37,6 +40,7 @@ conf:
   database: "seismic-store-db-secret"
   keycloak: "seismic-store-keycloak-secret"
   minio: "seismic-store-minio-secret"
+  sdmsRedisSecretName: "seismic-store-redis-secret" # pragma: allowlist secret
   onPremEnabled: false
   domain: ""
 

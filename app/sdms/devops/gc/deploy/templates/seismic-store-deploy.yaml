@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{ .Values.conf.appName | quote }}
-  name: {{ .Values.conf.appName | quote }}
-  namespace: {{ .Release.Namespace | quote }}
+    app: {{ .Values.conf.appName | quote  }}
+  name: {{ .Values.conf.appName  | quote }}
+  namespace: {{ .Release.Namespace  | quote }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.conf.appName | quote }}
+      app: {{ .Values.conf.appName  | quote }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: {{ .Values.conf.appName | quote }}
+        app: {{ .Values.conf.appName  | quote }}
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
         sidecar.istio.io/proxyCPU: {{ .Values.istio.proxyCPU | quote }}
@@ -25,9 +25,15 @@ spec:
         - name: {{ .Values.conf.appName | quote }}
           image: {{ .Values.data.image | quote }}
           imagePullPolicy: {{ .Values.data.imagePullPolicy | quote }}
+          env:
+          - name: DES_REDIS_INSTANCE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.conf.sdmsRedisSecretName | quote }}
+                key: REDIS_PASSWORD
           envFrom:
           - configMapRef:
-              name: {{ .Values.conf.configmap | quote }}
+              name: {{ printf "%s-config" .Values.conf.appName | quote }}
           {{- if .Values.conf.onPremEnabled }}
           - secretRef:
               name: {{ .Values.conf.database | quote }}
