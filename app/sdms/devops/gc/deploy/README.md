@@ -44,6 +44,8 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **data.entitlementsHost** | entitlements service endpoint | string | "http://entitlements" | yes
 **data.redisDdmsHost** |  redis instance address | string| "redis-cache-ddms.redis.svc.cluster.local" | yes
 **data.redisPort** | redis instance port | string | "6379" | yes
+**data.redisSdmsHost** | The host for redis instance. If empty (by default), helm installs an internal redis instance | string | - | yes
+**data.redisSdmsPort** | redis instance port | string | "6379" | yes
 **data.urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
 **data.impServiceAccountSigner** | imp SA signer | string | "NA" | yes
 **data.seistoreDesAppkey** | seismic-store app key | string | "NA" | yes
@@ -63,6 +65,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **data.serviceAccountName** | name of your service account | string | "seismic-store" | yes
 **data.imagePullPolicy** | when to pull image | string | "IfNotPresent" | yes
 **data.image** | service image | string | - | yes
+**data.redisImage** | service image | string | `redis:7` | yes
 
 ### Config variables
 
@@ -71,6 +74,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **conf.configmap** | configmap to be used | string | "seismic-store-config" | yes
 **conf.appName** | name of the app | string | "seismic-store" | yes
 **conf.urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
+**conf.sdmsRedisSecretName** | sdms Redis secret that contains redis password with REDIS_PASSWORD key | string | `seismic-store-redis-secret` | yes
 
 ### On-prem variables
 
