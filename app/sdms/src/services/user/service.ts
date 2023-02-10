@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ router.get('/', async (req: expRequest, res: expResponse) => {
     await UserHandler.handler(req, res, UserOP.List);
 });
 
-// Retrieve user roles
+// Remove a user from subproject
 router.delete('/', async (req: expRequest, res: expResponse) => {
     await UserHandler.handler(req, res, UserOP.Remove);
 });
