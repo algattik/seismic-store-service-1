@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-properties
+  namespace: {{ .Values.global.namespace }}
+data:
+  CLOUD_PROVIDER: {{ .Values.configEnv.cloudProvider }}
+  KEYVAULT_URL: {{ .Values.configEnv.keyvaultUrl }}
+  CORE_SERVICE_HOST: https://{{ .Values.configEnv.desServiceHost }}
+  APIS_BASE_PATH: {{ .Values.configEnv.sdmsPrefix }}

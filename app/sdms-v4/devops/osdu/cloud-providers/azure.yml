@@ -58,3 +58,54 @@ sdms_v4_azure_container_scanning:
       changes:
         - devops/**/*
         - app/sdms-v4/**/*
+
+sdms_azure_deploy:
+  extends: .azure_deploy
+  needs:
+    - sdms_v4_azure_containerize
+    - azure_containerize_helm
+  script:
+    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash -s -- --version v3.9.1
+    - helm show chart $HELM_CHART_OCI --version $HELM_CHART_OCI_VERSION
+    # Uninstall if found in default namespace
+    - helm uninstall ${SDMS_V4_SERVICE_NAME} -n default --wait || echo [INFO] No ${SDMS_V4_SERVICE_NAME} in default
+    # Install/upgrade helm chart
+    - >
+      helm upgrade -i ${SDMS_V4_SERVICE_NAME} $HELM_CHART_OCI --version $HELM_CHART_OCI_VERSION
+      --set azure.tenant=${AZURE_TENANT_ID}
+      --set azure.subscription=$AZURE_SUBSCRIPTION_ID
+      --set azure.resourcegroup=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/base-name-cr --query value -otsv)-rg
+      --set azure.identity=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/base-name-cr --query value -otsv)-osdu-identity
+      --set azure.identity_id=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/osdu-identity-id --query value -otsv)
+      --set azure.keyvault.name=${ENV_VAULT}
+      --set azure.acr=${AZURE_REGISTRY}.azurecr.io
+      --set ingress.dns=${AZURE_DNS_NAME}
+      --set configuration[0].config.DES_SERVICE_HOST="https://${AZURE_DNS_NAME}"
+      --set configuration[0].container.image=${SDMS_V4_SERVICE_NAME}
+      --set configuration[0].container.tag=${CI_COMMIT_SHA}
+      # --set configuration[0].sidecar.container.image=${SDMS_SIDECAR_NAME}
+      --set configuration[0].sidecar.container.tag=${CI_COMMIT_SHA}
+      --create-namespace
+      # -n ${NAMESPACE} -f app/sdms/devops/azure/${SDMS_V4_SERVICE_NAME}.osdu.values.yaml --wait --timeout 10m
+      -n ${NAMESPACE} -f app/sdms-v4/devops/azure/chart/values.yaml --wait --timeout 10m
+    # Wait for service to be running to start
+    - |
+      kubectl rollout status deployment.v1.apps/${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+      RESULT=$?
+      if [ $RESULT == 0 ]; then
+        echo "Rollout succeeded."
+      else
+        kubectl delete pod -l app=${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE}
+        kubectl rollout status deployment.v1.apps/${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+      fi
+    - pod=$(kubectl -n ddms-seismic get po -l app=${SDMS_V4_SERVICE_NAME} --no-headers=true -o custom-columns=":metadata.name" | tail -1)
+    - status=$(kubectl wait -n ${NAMESPACE} --for=condition=Ready pod/$pod --timeout=600s)
+    - if [[ "$status" != *"met"* ]]; then echo "${SDMS_V4_SERVICE_NAME} pod didn't start correctly" ; exit 1 ; fi
+  only:
+    changes:
+      - devops/**/*
+      - app/sdms/**/*
+    refs:
+      - branches
+      - merge_requests
+      - tags

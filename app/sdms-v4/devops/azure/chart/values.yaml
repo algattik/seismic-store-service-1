@@ -1,0 +1,26 @@
+global:
+  replicaCount: #{REPLICA_COUNT}#
+  namespace: osdu
+  podidentity: osdu-identity
+  minReplicaCount: 1
+  maxReplicaCount: 500
+  isAutoscalingEnabled: #{IS_AUTOSCALING_ENABLED}#  
+  nodepool: services
+ 
+configEnv:
+  cloudProvider: azure
+  keyvaultUrl: "osdu-r3mvp-crdev-xmng-kv"
+  desServiceHost: "https://{{ .Values.ingress.dns }}"
+  sdmsPrefix: /seistore-svc/api/v4
+
+image:
+  repository: "osdur3mvpcrdevxmngcr.azurecr.io/seistore-svc-v4-runtime"
+  branch: master
+
+istioDnsHost: "https://{{ .Values.ingress.dns }}"
+
+env: "SERVICE_AUTH_PROVIDER_CREDENTIAL"
+    
+isAutoscalingEnabled: #{IS_AUTOSCALING_ENABLED}#
+aks_node_pool_services: services
+aks_node_pool_internal: #{AKS_NODE_POOL_INTERNAL}#
