@@ -1,10 +1,10 @@
 global:
-  replicaCount: #{REPLICA_COUNT}#
+  replicaCount: 2
   namespace: osdu
   podidentity: osdu-identity
   minReplicaCount: 1
   maxReplicaCount: 500
-  isAutoscalingEnabled: #{IS_AUTOSCALING_ENABLED}#  
+  isAutoscalingEnabled:  
   nodepool: services
  
 configEnv:
@@ -21,6 +21,6 @@ istioDnsHost: "https://{{ .Values.ingress.dns }}"
 
 env: "SERVICE_AUTH_PROVIDER_CREDENTIAL"
     
-isAutoscalingEnabled: #{IS_AUTOSCALING_ENABLED}#
+isAutoscalingEnabled:
 aks_node_pool_services: services
 aks_node_pool_internal: #{AKS_NODE_POOL_INTERNAL}#
