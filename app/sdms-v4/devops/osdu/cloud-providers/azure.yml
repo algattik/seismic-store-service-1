@@ -74,7 +74,7 @@ sdms_v4_azure_deploy:
     # Uninstall if found in default namespace
     - helm uninstall ${SDMS_V4_SERVICE_NAME} -n default --wait || echo [INFO] No ${SDMS_V4_SERVICE_NAME} in default
     # Install/upgrade helm chart
-    - helm install ${SDMS_V4_SERVICE_NAME} devops/azure/chart
+    # - helm install ${SDMS_V4_SERVICE_NAME} devops/azure/chart
     - >
       helm upgrade -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
       --set azure.tenant=${AZURE_TENANT_ID}
