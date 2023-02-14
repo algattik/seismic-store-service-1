@@ -1,7 +1,7 @@
 variables:
   #seismic store service variables
   SDMS_V4_SERVICE_NAME: seismic-ddms-v4
-  ENV_VAULT: $AZURE_ENV_VAULT
+  # ENV_VAULT: $AZURE_ENV_VAULT
   NAMESPACE: ddms-seismic
   HELM_CHART_OCI_V4: standard-ddms-v4
 
