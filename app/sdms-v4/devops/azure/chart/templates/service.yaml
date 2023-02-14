@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   labels:
     app: {{ .Release.Name }}
-    chart: {{ .Values.image.tag }}
+    chart: {{ .Values.container.tag }}
     release: {{ .Release.Name }}
 spec:
   ports:
