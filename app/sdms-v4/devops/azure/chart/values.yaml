@@ -1,7 +1,7 @@
 global:
   replicaCount: 2
-  namespace: osdu
-  podidentity: osdu-identity
+  namespace: ddms-seismic
+  podidentity: {{ $name }}-identity
   minReplicaCount: 1
   maxReplicaCount: 500
   isAutoscalingEnabled: true
@@ -9,7 +9,7 @@ global:
  
 configEnv:
   cloudProvider: azure
-  keyvaultUrl: "osdu-r3mvp-crdev-xmng-kv"
+  keyvaultUrl: ENV_VAULT
   desServiceHost: 
   sdmsPrefix: /seistore-svc/api/v4
 
