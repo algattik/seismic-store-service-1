@@ -74,7 +74,7 @@ sdms_v4_azure_deploy:
     - helm uninstall ${SDMS_V4_SERVICE_NAME} -n default --wait || echo [INFO] No ${SDMS_V4_SERVICE_NAME} in default
     # Install/upgrade helm chart
     - >
-      helm install simplest ../../azure/chart
+      helm install chart ../../azure/chart
       helm upgrade -i ${SDMS_V4_SERVICE_NAME} $HELM_CHART_OCI_V4 --version $HELM_CHART_OCI_VERSION
       --set azure.tenant=${AZURE_TENANT_ID}
       --set azure.subscription=$AZURE_SUBSCRIPTION_ID
