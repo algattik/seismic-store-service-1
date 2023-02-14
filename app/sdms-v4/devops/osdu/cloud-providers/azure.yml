@@ -59,7 +59,7 @@ sdms_v4_azure_container_scanning:
         - devops/**/*
         - app/sdms-v4/**/*
 
-sdms_azure_deploy:
+sdms_v4_azure_deploy:
   extends: .azure_deploy
   needs:
     - sdms_v4_azure_containerize
@@ -79,7 +79,8 @@ sdms_azure_deploy:
       --set azure.identity_id=$(az keyvault secret show --id https://${ENV_VAULT}.vault.azure.net/secrets/osdu-identity-id --query value -otsv)
       --set azure.keyvault.name=${ENV_VAULT}
       --set azure.acr=${AZURE_REGISTRY}.azurecr.io
-      --set ingress.dns=${AZURE_DNS_NAME}
+      --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
+      --set istioDnsHost=${AZURE_DNS_NAME}
       --set configuration[0].config.DES_SERVICE_HOST="https://${AZURE_DNS_NAME}"
       --set configuration[0].container.image=${SDMS_V4_SERVICE_NAME}
       --set configuration[0].container.tag=${CI_COMMIT_SHA}

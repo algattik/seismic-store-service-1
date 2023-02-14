@@ -19,7 +19,7 @@ spec:
         agentpool: {{ .Values.aks_node_pool_services }} 
       containers:
         - name: {{ .Release.Name }}
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          image: {{ .Values.container.image }}:{{ .Values.container.tag }}
           resources:
             requests:
               cpu: "100m"
