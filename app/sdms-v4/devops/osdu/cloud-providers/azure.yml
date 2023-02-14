@@ -105,7 +105,7 @@ sdms_v4_azure_deploy:
   only:
     changes:
       - devops/**/*
-      - app/sdms/**/*
+      - app/sdms-v4/**/*
     refs:
       - branches
       - merge_requests
