@@ -1,7 +1,7 @@
 global:
   replicaCount: 2
   namespace: ddms-seismic
-  podidentity: ${SDMS_SERVICE_NAME}-identity
+  podidentity: 
   minReplicaCount: 1
   maxReplicaCount: 500
   isAutoscalingEnabled: true

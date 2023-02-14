@@ -1,6 +1,8 @@
 variables:
   #seismic store service variables
   SDMS_V4_SERVICE_NAME: seismic-ddms-v4
+  ENV_VAULT: $AZURE_ENV_VAULT
+  NAMESPACE: ddms-seismic
 
 sdms_v4_azure_containerize:
   extends: .azure_containerize
@@ -84,10 +86,10 @@ sdms_v4_azure_deploy:
       --set configuration[0].config.DES_SERVICE_HOST="https://${AZURE_DNS_NAME}"
       --set configuration[0].container.image=${SDMS_V4_SERVICE_NAME}
       --set configuration[0].container.tag=${CI_COMMIT_SHA}
-      # --set configuration[0].sidecar.container.image=${SDMS_SIDECAR_NAME}
       --set configuration[0].sidecar.container.tag=${CI_COMMIT_SHA}
+      --set global.namespace=${NAMESPACE}
+      --set podidentity=${SDMS_SERVICE_NAME}-identity
       --create-namespace
-      # -n ${NAMESPACE} -f app/sdms/devops/azure/${SDMS_V4_SERVICE_NAME}.osdu.values.yaml --wait --timeout 10m
       -n ${NAMESPACE} -f app/sdms-v4/devops/azure/chart/values.yaml --wait --timeout 10m
     # Wait for service to be running to start
     - |
