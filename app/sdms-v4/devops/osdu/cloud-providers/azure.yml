@@ -72,6 +72,18 @@ sdms_v4_azure_deploy:
     # - helm show chart $HELM_CHART_OCI_V4 --version $HELM_CHART_OCI_VERSION
     # Uninstall if found in default namespace
     - helm uninstall ${SDMS_V4_SERVICE_NAME} -n default --wait || echo [INFO] No ${SDMS_V4_SERVICE_NAME} in default
+    # Display helm chart
+    - >
+      helm template -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
+      --set podidentity=${SDMS_SERVICE_NAME}-identity
+      --set configEnv.keyvaultUrl=${ENV_VAULT}
+      --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
+      --set container.image=${AZURE_REGISTRY}.azurecr.io
+      --set container.tag=${SDMS_V4_SERVICE_NAME}:${CI_COMMIT_SHA}
+      --set istioDnsHost=${AZURE_DNS_NAME}
+      --set global.namespace=${NAMESPACE}
+      --create-namespace
+      -n ${NAMESPACE} -f devops/azure/chart/values.yaml --wait --timeout 10m
     # Install/upgrade helm chart
     - >
       helm upgrade -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
