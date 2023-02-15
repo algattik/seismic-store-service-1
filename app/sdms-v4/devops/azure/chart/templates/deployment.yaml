@@ -53,9 +53,3 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-properties
-          env:
-            - name: SERVICE_AUTH_PROVIDER_CREDENTIAL
-              valueFrom:
-                secretKeyRef:
-                  name: extension-secrets
-                  key: sdmsSvcAuthProviderCredential

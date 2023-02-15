@@ -74,7 +74,7 @@ sdms_v4_azure_deploy:
     - helm uninstall ${SDMS_V4_SERVICE_NAME} -n default --wait || echo [INFO] No ${SDMS_V4_SERVICE_NAME} in default
     # Display helm chart
     - >
-      helm template -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
+      helm template ${SDMS_V4_SERVICE_NAME} devops/azure/chart
       --set podidentity=${SDMS_SERVICE_NAME}-identity
       --set configEnv.keyvaultUrl=${ENV_VAULT}
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
