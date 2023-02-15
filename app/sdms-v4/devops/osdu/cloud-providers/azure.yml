@@ -1,6 +1,6 @@
 variables:
   #seismic store service variables
-  SDMS_V4_SERVICE_NAME: seismic-ddms-v4
+  SDMS_V4_SERVICE_NAME: seismic_ddms_v4
   SDMS_SERVICE_NAME: seismic-ddms
   ENV_VAULT: $AZURE_ENV_VAULT
   NAMESPACE: ddms-seismic
