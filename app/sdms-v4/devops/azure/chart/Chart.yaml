@@ -1,5 +1,5 @@
 apiVersion: v2
-name: CHART_NAME
+name: seismic-ddms-v4
 appVersion: "latest"
 description: Helm Chart for installing sdms service.
 version: 0.1.0

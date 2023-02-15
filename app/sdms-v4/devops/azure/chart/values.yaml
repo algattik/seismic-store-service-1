@@ -1,7 +1,7 @@
 global:
   replicaCount: 2
-  namespace: ddms-seismic
-  podidentity: 
+  namespace: ""
+  podidentity: ""
   minReplicaCount: 1
   maxReplicaCount: 500
   isAutoscalingEnabled: true
@@ -9,15 +9,15 @@ global:
  
 configEnv:
   cloudProvider: azure
-  keyvaultUrl: ENV_VAULT
-  desServiceHost: 
+  keyvaultUrl: ""
+  desServiceHost: "" 
   sdmsPrefix: /seistore-svc/api/v4
 
 container:
   image: ""
   tag: ""
 
-istioDnsHost: 
+istioDnsHost: ""
 
 env: "SERVICE_AUTH_PROVIDER_CREDENTIAL"
     
