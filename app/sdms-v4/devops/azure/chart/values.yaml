@@ -14,8 +14,8 @@ configEnv:
   sdmsPrefix: /seistore-svc/api/v4
 
 container:
-  image: 
-  tag: 
+  image: ""
+  tag: ""
 
 istioDnsHost: 
 
