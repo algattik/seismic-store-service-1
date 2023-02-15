@@ -78,8 +78,8 @@ sdms_v4_azure_deploy:
       --set global.podidentity=${SDMS_SERVICE_NAME}-identity
       --set configEnv.keyvaultUrl=${ENV_VAULT}
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
-      --set container.image=${AZURE_REGISTRY}.azurecr.io
-      --set container.tag=${SDMS_V4_SERVICE_NAME}:${CI_COMMIT_SHA}
+      --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
+      --set container.tag=${CI_COMMIT_SHA}
       --set istioDnsHost=${AZURE_DNS_NAME}
       --set global.namespace=${NAMESPACE}
       --create-namespace
@@ -90,8 +90,8 @@ sdms_v4_azure_deploy:
       --set global.podidentity=${SDMS_SERVICE_NAME}-identity
       --set configEnv.keyvaultUrl=${ENV_VAULT}
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
-      --set container.image=${AZURE_REGISTRY}.azurecr.io
-      --set container.tag=${SDMS_V4_SERVICE_NAME}:${CI_COMMIT_SHA}
+      --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
+      --set container.tag=${CI_COMMIT_SHA}
       --set istioDnsHost=${AZURE_DNS_NAME}
       --set global.namespace=${NAMESPACE}
       --create-namespace
