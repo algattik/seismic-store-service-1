@@ -75,7 +75,7 @@ sdms_v4_azure_deploy:
     # Display helm chart
     - >
       helm template ${SDMS_V4_SERVICE_NAME} devops/azure/chart
-      --set podidentity=${SDMS_SERVICE_NAME}-identity
+      --set global.podidentity=${SDMS_SERVICE_NAME}-identity
       --set configEnv.keyvaultUrl=${ENV_VAULT}
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
       --set container.image=${AZURE_REGISTRY}.azurecr.io
@@ -87,7 +87,7 @@ sdms_v4_azure_deploy:
     # Install/upgrade helm chart
     - >
       helm upgrade -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
-      --set podidentity=${SDMS_SERVICE_NAME}-identity
+      --set global.podidentity=${SDMS_SERVICE_NAME}-identity
       --set configEnv.keyvaultUrl=${ENV_VAULT}
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
       --set container.image=${AZURE_REGISTRY}.azurecr.io
