@@ -6,5 +6,5 @@ metadata:
 data:
   CLOUD_PROVIDER: {{ .Values.configEnv.cloudProvider }}
   KEYVAULT_URL: {{ .Values.configEnv.keyvaultUrl }}
-  CORE_SERVICE_HOST: https://{{ .Values.configEnv.desServiceHost }}
+  CORE_SERVICE_HOST: {{ .Values.configEnv.desServiceHost }}
   APIS_BASE_PATH: {{ .Values.configEnv.sdmsPrefix }}

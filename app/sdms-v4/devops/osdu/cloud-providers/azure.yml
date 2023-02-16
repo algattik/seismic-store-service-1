@@ -78,7 +78,7 @@ sdms_v4_azure_deploy:
     - >
       helm template ${SDMS_V4_SERVICE_NAME} devops/azure/chart
       --set global.podidentity=${SDMS_SERVICE_NAME}-identity
-      --set configEnv.keyvaultUrl=${ENV_VAULT}
+      --set configEnv.keyvaultUrl="https://${ENV_VAULT}.vault.azure.net/"
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
       --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
       --set container.tag=${CI_COMMIT_SHA}
@@ -90,7 +90,7 @@ sdms_v4_azure_deploy:
     - >
       helm upgrade -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
       --set global.podidentity=${SDMS_SERVICE_NAME}-identity
-      --set configEnv.keyvaultUrl=${ENV_VAULT}
+      --set configEnv.keyvaultUrl="https://${ENV_VAULT}.vault.azure.net/"
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
       --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
       --set container.tag=${CI_COMMIT_SHA}
