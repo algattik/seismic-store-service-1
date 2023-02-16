@@ -68,8 +68,6 @@ sdms_v4_azure_deploy:
     - sdms_v4_azure_containerize
   script:
     - cd app/$SDMS_V4_SERVICE
-    - kubectl describe deployment.v1.apps/${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE}
-    - kubectl logs deployment.v1.apps/${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE} -c ${SDMS_V4_SERVICE_NAME}
     - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash -s -- --version v3.9.1
     # - helm show chart $HELM_CHART_OCI_V4 --version $HELM_CHART_OCI_VERSION
     # Uninstall if found in default namespace
@@ -111,6 +109,53 @@ sdms_v4_azure_deploy:
     - pod=$(kubectl -n ddms-seismic get po -l app=${SDMS_V4_SERVICE_NAME} --no-headers=true -o custom-columns=":metadata.name" | tail -1)
     - status=$(kubectl wait -n ${NAMESPACE} --for=condition=Ready pod/$pod --timeout=600s)
     - if [[ "$status" != *"met"* ]]; then echo "${SDMS_V4_SERVICE_NAME} pod didn't start correctly" ; exit 1 ; fi
+  only:
+    changes:
+      - devops/**/*
+      - app/sdms-v4/**/*
+    refs:
+      - branches
+      - merge_requests
+      - tags
+
+sdms_v4_azure_test:
+  image: node:18
+  extends: .azure_test
+  needs:
+    - sdms_v4_azure_deploy
+  variables:
+    AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
+    AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
+    AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
+    INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
+  script:
+    - apt-get update
+    - apt-get install -y jq
+    - cd app/$SDMS_SERVICE
+    - sed -i "/anthos/d" src/cloud/providers/index.ts
+    - rm -Rf src/cloud/providers/anthos
+    - sed -i "/google/d" src/cloud/providers/index.ts
+    - rm -Rf src/cloud/providers/aws
+    - sed -i "/aws/d" src/cloud/providers/index.ts
+    - rm -Rf src/cloud/providers/google
+    - sed -i "/ibm/d" src/cloud/providers/index.ts
+    - rm -Rf src/cloud/providers/ibm
+    - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
+    - jq "del(.prisma)" package.json > cleaned_package.json
+    - mv cleaned_package.json package.json
+    - export directoryToScan=$PWD
+    - export currentDirectory=$PWD
+    - chmod +x devops/scripts/detect_unused_packages.sh
+    - devops/scripts/detect_unused_packages.sh
+    - chmod +x devops/scripts/clean_package_json.sh
+    - devops/scripts/clean_package_json.sh
+    - echo $svctoken > /dev/null
+    - npm install -g newman
+    - npm install -g husky
+    - npm ci
+    # - cd ./app/sdms-v4
+    - chmod +x ./tests/e2e/run.sh
+    - ./tests/e2e/run.sh --seistore-svc-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"  --subproject="${E2E_SUBPROJECT}"
   only:
     changes:
       - devops/**/*
