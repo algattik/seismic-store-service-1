@@ -165,7 +165,7 @@ sdms_v4_azure_test:
     - npm install
     - chmod +x ./tests/e2e/run.sh
     - ./tests/e2e/run.sh \
-        --osdu-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" \
+        --osdu-url="https://${AZURE_DNS_NAME}" \
         --access-token="$svctoken" \
         --partition="${E2E_DATA_PARTITION}" 
   only:
