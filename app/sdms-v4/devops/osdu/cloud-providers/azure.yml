@@ -4,6 +4,15 @@ variables:
   SDMS_SERVICE_NAME: seismic-ddms
   ENV_VAULT: $AZURE_ENV_VAULT
   NAMESPACE: ddms-seismic
+  AZURE_SDMS_PREFIX: /seistore-svc/api/v4
+  SDMS_SIDECAR_NAME: seismic-ddms-sidecar
+  E2E_SUBPROJECT: demosandbox08
+  E2E_ADMIN_EMAIL: $AZURE_AD_USER_EMAIL
+  E2E_DATA_PARTITION: $TENANT_NAME
+  E2E_LEGALTAG01: $LEGAL_TAG
+  E2E_LEGALTAG02: opendes-dps-integration-test-valid2-legal-tag
+  E2E_TENANT: $TENANT_NAME
+
 
 sdms_v4_azure_containerize:
   extends: .azure_containerize
@@ -155,7 +164,15 @@ sdms_v4_azure_test:
     # - npm ci
     - npm install
     - chmod +x ./tests/e2e/run.sh
-    - ./tests/e2e/run.sh --seistore-svc-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" --admin-email="${E2E_ADMIN_EMAIL}" --datapartition="${E2E_DATA_PARTITION}" --legaltag01="${E2E_LEGALTAG01}" --legaltag02="${E2E_LEGALTAG02}" --VCS-Provider="${ISGITLAB}"  --subproject="${E2E_SUBPROJECT}"
+    - ./tests/e2e/run.sh \
+        --seistore-svc-url="https://${AZURE_DNS_NAME}${AZURE_SDMS_PREFIX}" \
+        --seistore-svc-api-key="NA" --user-idtoken="$svctoken" --tenant="${E2E_TENANT}" \
+        --admin-email="${E2E_ADMIN_EMAIL}" \
+        --datapartition="${E2E_DATA_PARTITION}" \
+        --legaltag01="${E2E_LEGALTAG01}" \
+        --legaltag02="${E2E_LEGALTAG02}" \
+        --VCS-Provider="${ISGITLAB}"  \
+        --subproject="${E2E_SUBPROJECT}"
   only:
     changes:
       - devops/**/*
