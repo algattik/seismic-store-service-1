@@ -9,7 +9,7 @@ spec:
   hosts:
   - {{ .Values.istioDnsHost }}
   gateways:
-  - istio-gateway
+  - istio-system/istio-gateway
   http:  
   - match:
     - uri:
