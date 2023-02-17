@@ -4,15 +4,8 @@ variables:
   SDMS_SERVICE_NAME: seismic-ddms
   ENV_VAULT: $AZURE_ENV_VAULT
   NAMESPACE: ddms-seismic
-  AZURE_SDMS_PREFIX: /seistore-svc/api/v4
-  SDMS_SIDECAR_NAME: seismic-ddms-sidecar
-  E2E_SUBPROJECT: demosandbox08
-  E2E_ADMIN_EMAIL: $AZURE_AD_USER_EMAIL
+  AZURE_V4_SDMS_PREFIX: /seistore-svc/api/v4
   E2E_DATA_PARTITION: $TENANT_NAME
-  E2E_LEGALTAG01: $LEGAL_TAG
-  E2E_LEGALTAG02: opendes-dps-integration-test-valid2-legal-tag
-  E2E_TENANT: $TENANT_NAME
-
 
 sdms_v4_azure_containerize:
   extends: .azure_containerize
@@ -138,34 +131,10 @@ sdms_v4_azure_test:
     AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
-    - apt-get update
-    - apt-get install -y jq
     - cd app/sdms-v4
-    # - sed -i "/anthos/d" src/cloud/providers/index.ts
-    # - rm -Rf src/cloud/providers/anthos
-    # - sed -i "/google/d" src/cloud/providers/index.ts
-    # - rm -Rf src/cloud/providers/aws
-    # - sed -i "/aws/d" src/cloud/providers/index.ts
-    # - rm -Rf src/cloud/providers/google
-    # - sed -i "/ibm/d" src/cloud/providers/index.ts
-    # - rm -Rf src/cloud/providers/ibm
-    # - sed -i 's|#{SDMS_PREFIX}#|'$AZURE_SDMS_PREFIX'|' ./docs/api/openapi.osdu.yaml
-    # - jq "del(.prisma)" package.json > cleaned_package.json
-    # - mv cleaned_package.json package.json
-    # - export directoryToScan=$PWD
-    # - export currentDirectory=$PWD
-    # - chmod +x devops/scripts/detect_unused_packages.sh
-    # - devops/scripts/detect_unused_packages.sh
-    # - chmod +x devops/scripts/clean_package_json.sh
-    # - devops/scripts/clean_package_json.sh
-    # - echo $svctoken > /dev/null
-    # - npm install -g newman
-    # - npm install -g husky
-    # - npm ci
-    # ${AZURE_SDMS_PREFIX}
     - npm install
     - chmod +x ./tests/e2e/run.sh
-    - ./tests/e2e/run.sh --osdu-url="https://${AZURE_DNS_NAME}" --access-token="$svctoken" --partition="${E2E_DATA_PARTITION}" 
+    - ./tests/e2e/run.sh --osdu-url="https://${AZURE_DNS_NAME}" --sdms-svc-path="${AZURE_V4_SDMS_PREFIX}" --access-token="$svctoken" --partition="${E2E_DATA_PARTITION}" 
   only:
     changes:
       - devops/**/*
