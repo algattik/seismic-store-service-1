@@ -131,7 +131,7 @@ sdms_v4_azure_test:
     AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
-    - cd cd app/$SDMS_V4_SERVICE
+    - cd app/$SDMS_V4_SERVICE
     - echo $svctoken
     - npm install
     - chmod +x ./tests/e2e/run.sh
