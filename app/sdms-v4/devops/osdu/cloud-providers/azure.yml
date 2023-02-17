@@ -131,7 +131,7 @@ sdms_v4_azure_test:
     AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
-    - cd app/sdms-v4
+    - cd cd app/$SDMS_V4_SERVICE
     - npm install
     - chmod +x ./tests/e2e/run.sh
     - ./tests/e2e/run.sh --osdu-url="https://${AZURE_DNS_NAME}" --sdms-svc-path="${AZURE_V4_SDMS_PREFIX}" --access-token="$svctoken" --partition="${E2E_DATA_PARTITION}" 
