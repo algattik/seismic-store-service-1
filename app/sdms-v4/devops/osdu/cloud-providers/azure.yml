@@ -78,7 +78,7 @@ sdms_v4_azure_deploy:
     - >
       helm template ${SDMS_V4_SERVICE_NAME} devops/azure/chart
       --set global.podidentity=${SDMS_SERVICE_NAME}-identity
-      --set configEnv.keyvaultUrl="https://${ENV_VAULT}.vault.azure.net/"
+      --set configEnv.keyvaultUrl="${ENV_VAULT}"
       --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
       --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
       --set container.tag=${CI_COMMIT_SHA}
@@ -132,6 +132,8 @@ sdms_v4_azure_test:
     INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
   script:
     - cd app/$SDMS_V4_SERVICE
+    - apt-get update
+    - apt-get install -y jq
     - echo $svctoken
     - npm install
     - chmod +x ./tests/e2e/run.sh
