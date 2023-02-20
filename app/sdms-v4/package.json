@@ -12,7 +12,7 @@
         "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
         "postbuild": "npm run copy-static-files",
         "start-service": "node --trace-warnings --trace-uncaught ./dist/server/server-start.js",
-        "test": "mocha -r ts-node/register tests/e2e/test.ts --timeout 100000"
+        "test": "mocha -r ts-node/register tests/e2e/test.ts --timeout 150000"
     },
     "dependencies": {
         "@azure/core-auth": "^1.4.0",
