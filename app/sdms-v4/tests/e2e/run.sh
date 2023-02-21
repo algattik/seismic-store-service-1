@@ -152,14 +152,10 @@ if [ -z "${partition}" ]; then usage "partition not defined"; fi
 if [ -z "${sdms_svc_path}" ]; then sdms_svc_path="/seistore-svc/api/v4"; fi
 
 # compute osdu resources
-# printf "\n" && legal_tag="sdms-e2e" && createLegalTag "$legal_tag" && legal_tag="$partition-"$legal_tag
-# printf "\n" && acl_owners="data.sdms-e2e.owners" && createEntitlementGroup "$acl_owners"
-# printf "\n" && acl_viewers="data.sdms-e2e.viewers" && createEntitlementGroup "$acl_viewers"
-# printf "\n" && getEntitlementDomain && acl_owners=$acl_owners"@"$domain && acl_viewers=$acl_viewers"@"$domain
-
-legal_tag=opendes-sdms-e2e
-acl_owners=data.sdms-e2e.owners@opendes.contoso.com
-acl_viewers=data.sdms-e2e.viewers@opendes.contoso.com
+printf "\n" && legal_tag="sdms-e2e" && createLegalTag "$legal_tag" && legal_tag="$partition-"$legal_tag
+printf "\n" && acl_owners="data.sdms-e2e.owners" && createEntitlementGroup "$acl_owners"
+printf "\n" && acl_viewers="data.sdms-e2e.viewers" && createEntitlementGroup "$acl_viewers"
+printf "\n" && getEntitlementDomain && acl_owners=$acl_owners"@"$domain && acl_viewers=$acl_viewers"@"$domain
 
 # print execution configurations
 printf "\n%s\n" "--------------------------------------------"
