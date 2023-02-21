@@ -145,4 +145,3 @@ sdms_v4_azure_test:
       - branches
       - merge_requests
       - tags
-
