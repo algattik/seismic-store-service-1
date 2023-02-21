@@ -1,0 +1,25 @@
+global:
+  replicaCount: 2
+  namespace: ""
+  podidentity: ""
+  minReplicaCount: 1
+  maxReplicaCount: 500
+  isAutoscalingEnabled: true
+  nodepool: services
+ 
+configEnv:
+  cloudProvider: azure
+  keyvaultUrl: ""
+  desServiceHost: "" 
+  sdmsPrefix: /seistore-svc/api/v4
+
+container:
+  image: ""
+  tag: ""
+
+istioDnsHost: ""
+
+env: "SERVICE_AUTH_PROVIDER_CREDENTIAL"
+    
+isAutoscalingEnabled: true
+aks_node_pool_services: services

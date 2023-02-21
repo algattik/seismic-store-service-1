@@ -1,6 +1,11 @@
 variables:
   #seismic store service variables
   SDMS_V4_SERVICE_NAME: seismic-ddms-v4
+  SDMS_SERVICE_NAME: seismic-ddms
+  ENV_VAULT: $AZURE_ENV_VAULT
+  NAMESPACE: ddms-seismic
+  AZURE_V4_SDMS_PREFIX: /seistore-svc/api/v4
+  E2E_DATA_PARTITION: $TENANT_NAME
 
 sdms_v4_azure_containerize:
   extends: .azure_containerize
@@ -58,3 +63,86 @@ sdms_v4_azure_container_scanning:
       changes:
         - devops/**/*
         - app/sdms-v4/**/*
+
+sdms_v4_azure_deploy:
+  extends: .azure_deploy
+  needs:
+    - sdms_v4_azure_containerize
+  script:
+    - cd app/$SDMS_V4_SERVICE
+    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash -s -- --version v3.9.1
+    # - helm show chart $HELM_CHART_OCI_V4 --version $HELM_CHART_OCI_VERSION
+    # Uninstall if found in default namespace
+    - helm uninstall ${SDMS_V4_SERVICE_NAME} -n default --wait || echo [INFO] No ${SDMS_V4_SERVICE_NAME} in default
+    # Display helm chart
+    - >
+      helm template ${SDMS_V4_SERVICE_NAME} devops/azure/chart
+      --set global.podidentity=${SDMS_SERVICE_NAME}-identity
+      --set configEnv.keyvaultUrl="${ENV_VAULT}"
+      --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
+      --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
+      --set container.tag=${CI_COMMIT_SHA}
+      --set istioDnsHost=${AZURE_DNS_NAME}
+      --set global.namespace=${NAMESPACE}
+      --create-namespace
+      -n ${NAMESPACE} -f devops/azure/chart/values.yaml --wait --timeout 10m
+    # Install/upgrade helm chart
+    - >
+      helm upgrade -i ${SDMS_V4_SERVICE_NAME} devops/azure/chart
+      --set global.podidentity=${SDMS_SERVICE_NAME}-identity
+      --set configEnv.keyvaultUrl="${ENV_VAULT}"
+      --set configEnv.desServiceHost="https://${AZURE_DNS_NAME}"
+      --set container.image=${AZURE_REGISTRY}.azurecr.io/${SDMS_V4_SERVICE_NAME}
+      --set container.tag=${CI_COMMIT_SHA}
+      --set istioDnsHost=${AZURE_DNS_NAME}
+      --set global.namespace=${NAMESPACE}
+      --create-namespace
+      -n ${NAMESPACE} -f devops/azure/chart/values.yaml --wait --timeout 10m
+    # Wait for service to be running to start
+    - |
+      kubectl rollout status deployment.v1.apps/${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+      RESULT=$?
+      if [ $RESULT == 0 ]; then
+        echo "Rollout succeeded."
+      else
+        kubectl delete pod -l app=${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE}
+        kubectl rollout status deployment.v1.apps/${SDMS_V4_SERVICE_NAME} -n ${NAMESPACE} --timeout=900s
+      fi
+    - pod=$(kubectl -n ddms-seismic get po -l app=${SDMS_V4_SERVICE_NAME} --no-headers=true -o custom-columns=":metadata.name" | tail -1)
+    - status=$(kubectl wait -n ${NAMESPACE} --for=condition=Ready pod/$pod --timeout=600s)
+    - if [[ "$status" != *"met"* ]]; then echo "${SDMS_V4_SERVICE_NAME} pod didn't start correctly" ; exit 1 ; fi
+  only:
+    changes:
+      - devops/**/*
+      - app/sdms-v4/**/*
+    refs:
+      - branches
+      - merge_requests
+      - tags
+
+sdms_v4_azure_test:
+  image: node:18
+  extends: .azure_test
+  needs:
+    - sdms_v4_azure_deploy
+  variables:
+    AZURE_AD_APP_RESOURCE_ID: $AZURE_APP_ID
+    AZURE_AD_TENANT_ID: $AZURE_TENANT_ID
+    AZURE_TESTER_SERVICEPRINCIPAL_SECRET: $AZURE_PRINCIPAL_SECRET
+    INTEGRATION_TESTER: $AZURE_PRINCIPAL_ID
+  script:
+    - cd app/$SDMS_V4_SERVICE
+    - apt-get update
+    - apt-get install -y jq
+    - echo $svctoken
+    - npm install
+    - chmod +x ./tests/e2e/run.sh
+    - ./tests/e2e/run.sh --osdu-url="https://${AZURE_DNS_NAME}" --sdms-svc-path="${AZURE_V4_SDMS_PREFIX}" --access-token=$svctoken --partition="${E2E_DATA_PARTITION}"
+  only:
+    changes:
+      - devops/**/*
+      - app/sdms-v4/**/*
+    refs:
+      - branches
+      - merge_requests
+      - tags
