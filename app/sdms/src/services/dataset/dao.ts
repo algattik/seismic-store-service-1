@@ -133,33 +133,25 @@ export class DatasetDAO {
 
     public static async paginatedListContent(
         journalClient: IJournal, dataset: DatasetModel,
-        wmode: string, pagination: PaginationModel):
+        workingMode: string, pagination: PaginationModel):
         Promise<{ datasets: string[], nextPageCursor: string; }> {
 
         const output = { datasets: [], nextPageCursor: null };
 
-        if (wmode !== Config.LS_MODE.DATASETS && !pagination.cursor) {
-
-            // Retrieve directories
-            const q = journalClient.createQuery(
-                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-                .select(['path']).groupBy('path');
-
-            const query = q instanceof AzureCosmosDbQuery
-                ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
-                : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
-
-            const [hierarchicalEntities] = await journalClient.runQuery(query);
-            output.datasets = hierarchicalEntities.map(
-                (entity) => ((entity.path || '') as string).substr(dataset.path.length));
-            output.datasets = output.datasets.map(
-                (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
-                    (elem, index, self) => index === self.indexOf(elem));
+        // list directories if no pagination is requested
+        if (workingMode !== Config.LS_MODE.DATASETS && !pagination.cursor) {
+            const [hierarchicalEntities] = await journalClient.listFolders(dataset);
+            if (hierarchicalEntities) {
+                output.datasets = hierarchicalEntities.map(
+                    (entity) => (entity.path || '').substring(dataset.path.length));
+                output.datasets = output.datasets.map(
+                    (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
+                        (elem, index, self) => index === self.indexOf(elem));
+            }
         }
 
-        if (wmode !== Config.LS_MODE.DIRS) {
-
-            // Retrieve datasets
+        // list datasets
+        if (workingMode !== Config.LS_MODE.DIRS) {
             let query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .filter('path', dataset.path);
@@ -169,7 +161,6 @@ export class DatasetDAO {
             if (pagination.limit) {
                 query = query.limit(pagination.limit);
             }
-
             const [datasetEntities, info] = await journalClient.runQuery(query);
             if (datasetEntities.length !== 0 || info.endCursor) {
                 output.datasets = output.datasets.concat(datasetEntities.map((item) => item.name));
@@ -178,6 +169,7 @@ export class DatasetDAO {
                 }
             }
         }
+
         return output;
     }
 
@@ -212,37 +204,29 @@ export class DatasetDAO {
 
     public static async listContent(
         journalClient: IJournal, dataset: DatasetModel,
-        wmode: string = Config.LS_MODE.ALL): Promise<{ datasets: string[], directories: string[]; }> {
+        workingMode: string = Config.LS_MODE.ALL): Promise<{ datasets: string[], directories: string[]; }> {
 
         const results = { datasets: [], directories: [] };
 
-        // Retrieve the content datasets
-        if (wmode !== Config.LS_MODE.DIRS) {
+        // list datasets
+        if (workingMode !== Config.LS_MODE.DIRS) {
             const query = journalClient.createQuery(
                 Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
                 .filter('path', dataset.path);
-
             const [datasetEntities] = await journalClient.runQuery(query);
-
             if (datasetEntities.length !== 0) { results.datasets = datasetEntities.map((item) => item.name); }
         }
 
-        // Extract all the directories structure and get the subdirectories for the required directory
-        if (wmode !== Config.LS_MODE.DATASETS) {
-            const q = journalClient.createQuery(
-                Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
-                .select(['path']).groupBy('path');
-
-            const query = q instanceof AzureCosmosDbQuery
-                ? (q as AzureCosmosDbQuery).filter('path', 'RegexMatch', dataset.path + '[^/]+/$')
-                : q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
-
-            const [hierarchicalEntities] = await journalClient.runQuery(query);
-            results.directories = hierarchicalEntities.map(
-                (entity) => (entity.path as string).substr(dataset.path.length));
-            results.directories = results.directories.map(
-                (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
-                    (elem, index, self) => index === self.indexOf(elem));
+        // list directories
+        if (workingMode !== Config.LS_MODE.DATASETS) {
+            const [hierarchicalEntities] = await journalClient.listFolders(dataset);
+            if (hierarchicalEntities) {
+                results.directories = hierarchicalEntities.map(
+                    (entity) => (entity.path).substring(dataset.path.length));
+                results.directories = results.directories.map(
+                    (entity) => entity.substr(0, entity.indexOf('/') + 1)).filter(
+                        (elem, index, self) => index === self.indexOf(elem));
+            }
         }
 
         return results;
