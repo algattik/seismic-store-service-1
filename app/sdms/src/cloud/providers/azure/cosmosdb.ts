@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import { Config } from '../..';
 import { Error } from '../../../shared';
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { DatasetModel } from '../../../services/dataset';
 
 @JournalFactory.register('azure')
 export class AzureCosmosDbDAO extends AbstractJournal {
@@ -185,6 +186,52 @@ export class AzureCosmosDbDAO extends AbstractJournal {
 
     public createQuery(namespace: string, kind: string): IJournalQueryModel {
         return new AzureCosmosDbQuery(namespace, kind);
+    }
+
+    public async listFolders(dataset: DatasetModel): Promise<any[]> {
+        let sqlQuery = 'SELECT SUBSTRING(c.data.path, LENGTH("' + dataset.path + '") - 1,';
+        sqlQuery += ' INDEX_OF(c.data.path, "/", LENGTH("' + dataset.path + '")) -';
+        sqlQuery += ' LENGTH("' + dataset.path + '") + 2) as path';
+        sqlQuery += ' FROM c';
+        sqlQuery += ' WHERE RegexMatch(c.id, "^(ds-' + dataset.tenant + '-' + dataset.subproject + '-)([a-z0-9]+)$")';
+        sqlQuery += ' AND STARTSWITH(c.data.path, "' + dataset.path + '", true) AND c.data.path != "' + dataset.path + '"';
+        sqlQuery += ' GROUP BY SUBSTRING(c.data.path, LENGTH("' + dataset.path + '") - 1,'
+        sqlQuery += ' INDEX_OF(c.data.path, "/", LENGTH("' + dataset.path + '")) - LENGTH("' + dataset.path + '") + 2)'
+        if (AzureConfig.SIDECAR_ENABLE_QUERY) {
+            const cParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);
+            const url = AzureConfig.SIDECAR_URL + '/query-path'
+            const payload = {
+                'cs': 'AccountEndpoint=' + cParams.endpoint + ';' + 'AccountKey=' + cParams.key + ';',
+                'sql': sqlQuery
+            };
+            try {
+                const result = await AzureCosmosDbDAO.axiosInstance.post(url, payload);
+                if (!result.data.records) { return; }
+                const records = result.data.records;
+                const resultsList: {path: string}[] = []
+                for (const record of records) {
+                    resultsList.push({
+                        path: (dataset.path + record.path).replace('//', '/')
+                    });
+                }
+                return Promise.resolve([resultsList]);
+            } catch (error) {
+                this.checkAndParseCosmosError(error);
+            }
+        } else {
+            const response = await (await this.getCosmoContainer()).items.query(sqlQuery).fetchAll();
+            const results = response.resources.map(result => {
+                if (!result.data) {
+                    return result;
+                }
+                if (result.data[this.KEY.toString()]) {
+                    result.data[this.KEY] = result.data[this.KEY.toString()];
+                    delete result.data[this.KEY.toString()];
+                }
+                return result.data;
+            });
+            return Promise.resolve(results);
+        }
     }
 
     public async runQuery(query: IJournalQueryModel): Promise<[any[], { endCursor?: string }]> {

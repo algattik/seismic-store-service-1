@@ -110,6 +110,9 @@ export class TestAzureCosmosDbDAO {
                 getQueryFilterSymbolContains: function (): string {
                     return "=";
                 },
+                listFolders(dataset: DatasetModel): Promise<any[]> {
+                    return Promise.resolve([]);
+                },
                 KEY: undefined
             };
             

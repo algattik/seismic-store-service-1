@@ -108,6 +108,9 @@ export class DatasetDAOTest {
                 getQueryFilterSymbolContains: function (): string {
                     return "=";
                 },
+                listFolders(dataset: DatasetModel): Promise<any[]> {
+                    return Promise.resolve([]);
+                },
                 KEY: undefined
             };
 
