@@ -65,7 +65,13 @@ namespace Sidecar.Controllers
         {
             try
             {
-                return Ok(await _dataAccess.Query(body.cs, body.sql, body.ctoken, body.limit));
+                if(body.cs != null && body.sql != null) {
+                    return Ok(await _dataAccess.Query(body.cs, body.sql, body.ctoken, body.limit));
+                } else if(body.cs == null) {
+                    return Problem(400 + "- cs query argument is required");                    
+                } else {
+                    return Problem(400 + "- sql query argument is required");
+                }
             }
             catch (CosmosException ex)
             {
@@ -79,7 +85,14 @@ namespace Sidecar.Controllers
         {
             try
             {
-                return Ok(await _dataAccess.QueryPath(body.cs, body.sql, body.ctoken, body.limit));
+                if(body.cs != null && body.sql != null) {
+                    return Ok(await _dataAccess.QueryPath(body.cs, body.sql, body.ctoken, body.limit));
+                } else if(body.cs == null) {
+                    return Problem(400 + "- cs query argument is required");                    
+                } else {
+                    return Problem(400 + "- sql query argument is required");
+                }
+
             }
             catch (CosmosException ex)
             {

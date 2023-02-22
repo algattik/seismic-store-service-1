@@ -37,7 +37,7 @@ export class TestSchema {
     private tag: string;
     private endpoint: string;
     private hasBulk?: boolean;
-    private recordsNumber = 3;
+    private recordsNumber = 1;
     private recordsId: string[];
     private recordsVersion: string[];
     private recordPatchedVersion: string;

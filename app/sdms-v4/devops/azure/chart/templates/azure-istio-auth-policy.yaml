@@ -1,0 +1,23 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Release.Name }}-jwt-authz
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  action: DENY
+  rules:
+    - from:
+        - source:
+            notRequestPrincipals: ["*"]
+      to:
+        - operation:
+            notPaths: ["/", "*/index.html", "*/v2/api-docs", "*/configuration/ui",
+                       "*/configuration/security", "*/swagger", "*/swagger-ui.html/",
+                       "*/swagger-ui.html/swagger-ui-bundle.js", "*/swagger-ui.html/swagger-ui-init.js",
+                       "*/swagger-ui.html/swagger-ui-standalone-preset.js", "*/swagger-ui.html/swagger-ui.css",
+                       "*/swagger-ui.html", "*/swagger-ui.html*", "*/swagger-ui.html/*",
+                       "*/swagger-resources","{{ .Values.configEnv.sdmsPrefix }}/swagger-resources/*",
+                       "{{ .Values.configEnv.sdmsPrefix }}/webjars/*","{{ .Values.configEnv.sdmsPrefix }}/status"]

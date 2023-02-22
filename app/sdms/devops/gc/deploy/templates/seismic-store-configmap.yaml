@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   labels:
     app: {{ .Values.conf.appName | quote }}
-  name: {{ .Values.conf.configmap | quote }}
+  name: {{  printf "%s-config" .Values.conf.appName | quote }}
   namespace: {{ .Release.Namespace | quote }}
 data:
   CLOUDPROVIDER: {{ .Values.data.cloudProvider | quote }}
@@ -23,11 +23,17 @@ data:
   SEISTORE_DES_TARGET_AUDIENCE: {{ .Values.data.googleAudiences | quote }}
   SERVICE_CLOUD_PROJECT: {{ .Values.data.serviceCloudProject | quote }}
   {{- end }}
+  {{- if .Values.data.redisSdmsHost }}
+  REDIS_SDMS_HOST: {{ .Values.data.redisSdmsHost | quote }}
+  {{- else }}
+  REDIS_SDMS_HOST: {{ printf "redis-%s" .Values.conf.appName | quote }}
+  {{- end}}
+  REDIS_SDMS_PORT: {{ .Values.data.redisSdmsPort | quote }}
   DES_SERVICE_HOST_ENTITLEMENT: {{ ternary .Values.data.entitlementsHost (printf "%s/api" .Values.data.entitlementsHost) .Values.conf.onPremEnabled | quote}}
-  DES_REDIS_INSTANCE_ADDRESS: {{ .Values.data.redisDdmsHost | quote }}
-  DES_REDIS_INSTANCE_PORT: {{ .Values.data.redisPort | quote }}
-  LOCKSMAP_REDIS_INSTANCE_ADDRESS: {{ .Values.data.redisDdmsHost | quote }}
-  LOCKSMAP_REDIS_INSTANCE_PORT: {{ .Values.data.redisPort | quote }}
+  DES_REDIS_INSTANCE_ADDRESS: {{ .Values.data.redisSdmsHost | quote }}
+  DES_REDIS_INSTANCE_PORT: {{ .Values.data.redisSdmsPort | quote }}
+  LOCKSMAP_REDIS_INSTANCE_ADDRESS: {{ .Values.data.redisSdmsHost | quote }}
+  LOCKSMAP_REDIS_INSTANCE_PORT: {{ .Values.data.redisSdmsPort | quote }}
   {{- if .Values.conf.onPremEnabled }}
   SERVICE_ENV: {{ .Values.data.serviceEnv | quote }}
   API_BASE_PATH: {{ .Values.data.apiBasePath | quote }}

@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import { Config } from './config';
 import { CloudFactory } from './cloud';
 import { TenantModel } from '../services/tenant';
+import { DatasetModel } from '../services/dataset';
 
 export interface IJournalQueryModel {
     filter(property: string, value: {}): IJournalQueryModel;
@@ -39,6 +40,7 @@ export interface IJournal {
     createKey(specs: any): object;
     getTransaction(): IJournalTransaction;
     getQueryFilterSymbolContains(): string;
+    listFolders(dataset: DatasetModel): Promise<any[]>;
     KEY: symbol;
 }
 
@@ -65,6 +67,14 @@ export abstract class AbstractJournal implements IJournal {
     public abstract createKey(specs: any): object;
     public abstract getTransaction(): IJournalTransaction;
     public abstract getQueryFilterSymbolContains(): string;
+    public async listFolders(dataset: DatasetModel): Promise<any[]> {
+        const q = this.createQuery(
+            Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject, Config.DATASETS_KIND)
+            .select(['path']).groupBy('path');
+        const query = q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
+        const [res] = [await this.runQuery(query)];
+        return res;
+    }
 }
 
 export abstract class AbstractJournalTransaction implements IJournalTransaction {

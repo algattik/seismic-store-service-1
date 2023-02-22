@@ -1,5 +1,4 @@
 fossa-analyze:
-  needs: ['sdms_compile-and-unit-test']
   image: $CI_REGISTRY/divido/fossa-with-cache:v0.8
   stage: scan
   tags: ['osdu-medium']

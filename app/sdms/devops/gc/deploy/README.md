@@ -44,6 +44,8 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **data.entitlementsHost** | entitlements service endpoint | string | "http://entitlements" | yes
 **data.redisDdmsHost** |  redis instance address | string| "redis-cache-ddms.redis.svc.cluster.local" | yes
 **data.redisPort** | redis instance port | string | "6379" | yes
+**data.redisSdmsHost** | The host for redis instance. If empty (by default), helm installs an internal redis instance | string | - | yes
+**data.redisSdmsPort** | redis instance port | string | "6379" | yes
 **data.urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
 **data.impServiceAccountSigner** | imp SA signer | string | "NA" | yes
 **data.seistoreDesAppkey** | seismic-store app key | string | "NA" | yes
@@ -56,13 +58,14 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|---------|
-**data.requestsCpu** | amount of requested CPU | string | "0.1" | yes
-**data.requestsMemory** | amount of requested memory| string | "256M" | yes
+**data.requestsCpu** | amount of requested CPU | string | "10m" | yes
+**data.requestsMemory** | amount of requested memory| string | "200Mi" | yes
 **data.limitsCpu** | CPU limit | string | "1" | yes
 **data.limitsMemory** | memory limit | string | "1G" | yes
 **data.serviceAccountName** | name of your service account | string | "seismic-store" | yes
 **data.imagePullPolicy** | when to pull image | string | "IfNotPresent" | yes
 **data.image** | service image | string | - | yes
+**data.redisImage** | service image | string | `redis:7` | yes
 
 ### Config variables
 
@@ -71,6 +74,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **conf.configmap** | configmap to be used | string | "seismic-store-config" | yes
 **conf.appName** | name of the app | string | "seismic-store" | yes
 **conf.urlPrefix** | url prefix for seismic-store | string | "/api/seismic-store/v3" | yes
+**conf.sdmsRedisSecretName** | sdms Redis secret that contains redis password with REDIS_PASSWORD key | string | `seismic-store-redis-secret` | yes
 
 ### On-prem variables
 
@@ -86,9 +90,9 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
-**istio.proxyCPU** | CPU request for Envoy sidecars | string | 50m | yes
+**istio.proxyCPU** | CPU request for Envoy sidecars | string | 10m | yes
 **istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 500m | yes
-**istio.proxyMemory** | memory request for Envoy sidecars | string | 64Mi | yes
+**istio.proxyMemory** | memory request for Envoy sidecars | string | 100Mi | yes
 **istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 512Mi | yes
 
 ### Install the helm chart

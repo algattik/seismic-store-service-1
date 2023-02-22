@@ -1,5 +1,5 @@
 #  ***************************************************************************
-#  Copyright 2017 - 2021, Schlumberger
+#  Copyright 2017 - 2023, Schlumberger
 #
 #  Licensed under the Apache License, Version 2.0(the "License");
 #  you may not use this file except in compliance with the License.
@@ -1352,7 +1352,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/impersonation-token:
+  /impersonation-token:
     post:
       summary: "Create an impersonation token credential."
       description: "<ul><li>Generate a credential token to impersonate user access for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"
