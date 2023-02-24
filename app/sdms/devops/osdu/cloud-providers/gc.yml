@@ -60,8 +60,8 @@ sdms-gc-containerize-gcr:
         - devops/**/*
         - app/sdms/**/*
 
-sdms-gc-deployment:
-  extends: .gc-deployment
+sdms-gc-deploy:
+  extends: .gc-deploy
   needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
@@ -78,8 +78,8 @@ sdms-gc-deployment:
         - devops/**/*
         - app/sdms/**/*
 
-sdms-gc-dev2-deploy-deployment:
-  extends: .gc-dev2-deploy-deployment
+sdms-gc-dev2-deploy:
+  extends: .gc-dev2-deploy
   needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
@@ -99,8 +99,8 @@ sdms-gc-dev2-deploy-deployment:
         - devops/**/*
         - app/sdms/**/*
 
-sdms-gc-anthos-deploy-deployment:
-  extends: .gc-anthos-deploy-deployment
+sdms-gc-anthos-deploy:
+  extends: .gc-anthos-deploy
   needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
@@ -122,7 +122,7 @@ sdms-gc-test-python:
     GOOGLE_CREDENTIALS: $GC_R3_INTEGRATION_TESTER
   extends: .gc-test-python
   image: node
-  needs: ["sdms-gc-deployment"]
+  needs: ["sdms-gc-deploy"]
   allow_failure: true
   before_script:
     - cd app/$SDMS_SERVICE
@@ -158,7 +158,7 @@ sdms-gc-dev2-test-python:
     GOOGLE_CREDENTIALS: $GC_R3_INTEGRATION_TESTER
   extends: .gc-dev2-test-python
   image: node
-  needs: ["sdms-gc-dev2-deploy-deployment"]
+  needs: ["sdms-gc-dev2-deploy"]
   allow_failure: true
   before_script:
     - cd app/$SDMS_SERVICE
@@ -193,7 +193,7 @@ sdms-gc-dev2-test-python:
 sdms-gc-anthos-test-python:
   extends: .gc-anthos-test-python
   image: node
-  needs: ["sdms-gc-anthos-deploy-deployment"]
+  needs: ["sdms-gc-anthos-deploy"]
   allow_failure: true
   before_script:
     - cd app/$SDMS_SERVICE
