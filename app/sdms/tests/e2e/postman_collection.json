@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "270b7c0d-7626-491a-beab-3dbc007ea7bc",
+		"_postman_id": "73edeac2-4e70-415e-9c94-0c761a04a501",
 		"name": "SDMS-E2E ver.M15 - Release 0.18",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "11702291"
+		"_exporter_id": "17166992"
 	},
 	"item": [
 		{
@@ -12937,6 +12937,836 @@
 									"postman.setEnvironmentVariable('execCounter', 1);",
 									"",
 									"console.log('Dataset variables were removed for utility folder');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "utility_ls",
+			"item": [
+				{
+					"name": "MULTI LS SET",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log('Multi ls test variables have been initialized');",
+									"postman.setEnvironmentVariable('execCounter', 1)",
+									"pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function makeID_multiLs(length) {\r",
+									"   var result           = '';\r",
+									"   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+									"   var charactersLength = characters.length;\r",
+									"   for ( var i = 0; i < length - 1; i++ ) {\r",
+									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"   }\r",
+									"   return 'W' + result;\r",
+									"}\r",
+									"\r",
+									"// unset \r",
+									"pm.environment.unset('lsMultiOriginalSet')\r",
+									"pm.environment.unset('lsMultiDatasetsRoot')\r",
+									"pm.environment.unset('lsMultiCurrentSet')\r",
+									"pm.environment.unset('lsMultiDatasetName')\r",
+									"pm.environment.unset('lsMultiPath')\r",
+									"pm.environment.unset('lsMultiBasePath')\r",
+									"pm.environment.unset('nextPageCursor')\r",
+									"pm.environment.unset('resArray')\r",
+									"\r",
+									"\r",
+									"const lsMultiOriginalSet = [];\r",
+									"\r",
+									"// create 10 datasets\r",
+									"for(let ii=0; ii<10; ii++) {\r",
+									"    lsMultiOriginalSet.push(\"dsx0\" + ii);\r",
+									"}\r",
+									"postman.setEnvironmentVariable(\"lsMultiDatasetsRoot\", lsMultiOriginalSet);\r",
+									"\r",
+									"// create 2 dataset in 5 folders\r",
+									"for(let ii=0; ii<5; ii++) {\r",
+									"    lsMultiOriginalSet.push(\"folder0\" + ii + '/fsx01');\r",
+									"    lsMultiOriginalSet.push(\"folder0\" + ii + '/fsx02');\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable(\"lsMultiOriginalSet\", lsMultiOriginalSet);\r",
+									"postman.setEnvironmentVariable(\"lsMultiBasePath\", makeID_multiLs(8));\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS GENERATE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    let lsMultiCurrentSet = pm.environment.get(\"lsMultiCurrentSet\");",
+									"",
+									"    if(lsMultiCurrentSet.length > 0) {",
+									"        postman.setNextRequest('MULTI LS GENERATE');",
+									"    } else {",
+									"        pm.environment.unset('lsMultiCurrentSet');",
+									"        const provider = pm.environment.get('serviceCloudProvider');",
+									"        if (provider !== 'azure' && provider !== 'ibm') {",
+									"            postman.setNextRequest('MULTI LS DATASETS');",
+									"        }",
+									"    }",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"let lsMultiCurrentSet = pm.environment.get(\"lsMultiCurrentSet\");\r",
+									"if(!lsMultiCurrentSet) {\r",
+									"    lsMultiCurrentSet = pm.environment.get(\"lsMultiOriginalSet\").split(',');\r",
+									"}\r",
+									"\r",
+									"const basePath = pm.environment.get(\"lsMultiBasePath\").split(',');\r",
+									"\r",
+									"lsMultiDatasetName = lsMultiCurrentSet[0];\r",
+									"const tmp = lsMultiDatasetName.split('/')\r",
+									"if(tmp.length == 1) {\r",
+									"    pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\");\r",
+									"    pm.environment.set(\"lsMultiDatasetName\", tmp[0]);\r",
+									"} else {\r",
+									"    pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\" + tmp[0]);\r",
+									"    pm.environment.set(\"lsMultiDatasetName\", tmp[1]);\r",
+									"}\r",
+									"lsMultiCurrentSet.shift()\r",
+									"pm.environment.set(\"lsMultiCurrentSet\", lsMultiCurrentSet);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{lsMultiDatasetName}}?path={{lsMultiPath}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{lsMultiDatasetName}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{lsMultiPath}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS DIRS",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const basePath = pm.environment.get(\"lsMultiBasePath\");\r",
+									"pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\");\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {\r",
+									"    console.log(pm.response.text())\r",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));\r",
+									"\r",
+									"} else {\r",
+									"\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"\r",
+									"    const orignalSet = pm.environment.get(\"lsMultiOriginalSet\").split(',');\r",
+									"    let dirs = [];\r",
+									"    for(const ele of orignalSet) {\r",
+									"        const tmp = ele.split('/');\r",
+									"        if(tmp.length > 1) {\r",
+									"            dirs.push(tmp[0] + '/')\r",
+									"        }\r",
+									"    }\r",
+									"    pm.test(\"Check if two arrays are equal only for directories\", function () {\r",
+									"        pm.expect([...new Set(dirs)].sort().toString()).to.eql(pm.response.json().sort().toString());\r",
+									"    });\r",
+									"\r",
+									"    // Reset environment variables if _.retryOnFailure function was used before\r",
+									"    var key = request.name + '_counter';\r",
+									"    pm.environment.unset(key);\r",
+									"    postman.setEnvironmentVariable('execCounter', 1)\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/utility/ls?sdpath=sd://{{tenant}}/{{subproject}}{{lsMultiPath}}&wmode=dirs",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"utility",
+								"ls"
+							],
+							"query": [
+								{
+									"key": "sdpath",
+									"value": "sd://{{tenant}}/{{subproject}}{{lsMultiPath}}"
+								},
+								{
+									"key": "wmode",
+									"value": "dirs"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS DIRS AND DATASETS",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const basePath = pm.environment.get(\"lsMultiBasePath\");\r",
+									"pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\");\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {\r",
+									"    console.log(pm.response.text())\r",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));\r",
+									"\r",
+									"} else {\r",
+									"\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"\r",
+									"    const orignalSet = pm.environment.get(\"lsMultiOriginalSet\").split(',');\r",
+									"    let dirs = [];\r",
+									"    let datasets = []\r",
+									"    for(const ele of orignalSet) {\r",
+									"        const tmp = ele.split('/');\r",
+									"        if(tmp.length > 1) {\r",
+									"            dirs.push(tmp[0] + '/')\r",
+									"        } else {\r",
+									"            datasets.push(tmp[0])\r",
+									"        }\r",
+									"    }\r",
+									"\r",
+									"    var result = pm.response.json();\r",
+									"    let resultsDirs = [];\r",
+									"    let resultDatasets = [];\r",
+									"    for(const ele of result) {\r",
+									"        const tmp = ele.split('/');\r",
+									"        if(tmp.length > 1) {\r",
+									"            resultsDirs.push(tmp[0] + '/')\r",
+									"        } else {\r",
+									"            resultDatasets.push(tmp[0]);\r",
+									"        }\r",
+									"    }\r",
+									"\r",
+									"    pm.test(\"Check if two arrays are equal for directories\", function () {\r",
+									"        pm.expect([...new Set(dirs)].sort().toString()).to.eql([...new Set(resultsDirs)].sort().toString());\r",
+									"    });\r",
+									"\r",
+									"    pm.test(\"Check if two arrays are equal for datasets\", function () {\r",
+									"        pm.expect([...new Set(datasets)].sort().toString()).to.eql([...new Set(resultDatasets)].sort().toString());\r",
+									"    });\r",
+									"\r",
+									"    // Reset environment variables if _.retryOnFailure function was used before\r",
+									"    var key = request.name + '_counter';\r",
+									"    pm.environment.unset(key);\r",
+									"    postman.setEnvironmentVariable('execCounter', 1)\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/utility/ls?sdpath=sd://{{tenant}}/{{subproject}}{{lsMultiPath}}&wmode=all",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"utility",
+								"ls"
+							],
+							"query": [
+								{
+									"key": "sdpath",
+									"value": "sd://{{tenant}}/{{subproject}}{{lsMultiPath}}"
+								},
+								{
+									"key": "wmode",
+									"value": "all"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS DATASETS",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const basePath = pm.environment.get(\"lsMultiBasePath\");\r",
+									"pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\");\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {\r",
+									"    console.log(pm.response.text())\r",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));\r",
+									"\r",
+									"} else {\r",
+									"\r",
+									"    // Reset environment variables if _.retryOnFailure function was used before\r",
+									"    var key = request.name + '_counter';\r",
+									"    pm.environment.unset(key);\r",
+									"    postman.setEnvironmentVariable('execCounter', 1)\r",
+									"\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"\r",
+									"    var result = pm.response.json();\r",
+									"    let resultDatasets = [];\r",
+									"    for(const ele of result) {\r",
+									"        const tmp = ele.split('/');\r",
+									"        if(tmp.length == 1) {\r",
+									"            resultDatasets.push(tmp[0])\r",
+									"        }\r",
+									"    }\r",
+									"    const datasets = pm.environment.get(\"lsMultiDatasetsRoot\").split(',');\r",
+									"    pm.test(\"Check if two arrays are equal only for datasets\", function () {\r",
+									"        pm.expect([...new Set(datasets)].sort().toString()).to.eql([...new Set(resultDatasets)].sort().toString());\r",
+									"    });\r",
+									"\r",
+									"    const provider = pm.environment.get('serviceCloudProvider');\r",
+									"    if( provider === 'aws' ||  provider === 'ibm') {\r",
+									"        postman.setNextRequest('MULTI LS DELETE');\r",
+									"    }\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/utility/ls?sdpath=sd://{{tenant}}/{{subproject}}{{lsMultiPath}}&wmode=datasets",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"utility",
+								"ls"
+							],
+							"query": [
+								{
+									"key": "sdpath",
+									"value": "sd://{{tenant}}/{{subproject}}{{lsMultiPath}}"
+								},
+								{
+									"key": "wmode",
+									"value": "datasets"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS DATASET PAGE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {\r",
+									"    console.log(pm.response.text())\r",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));\r",
+									"    \r",
+									"} else {\r",
+									"\r",
+									"    // reset retry counter\r",
+									"    var key = request.name + '_counter';\r",
+									"    pm.environment.unset(key);\r",
+									"    postman.setEnvironmentVariable('execCounter', 1)\r",
+									"\r",
+									"    // check status code    \r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"\r",
+									"    // extract the response and set next page cursor\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"nextPageCursor\",jsonData.nextPageCursor);\r",
+									"\r",
+									"    // fill the results array\r",
+									"    let resArray = [];\r",
+									"    if ((pm.environment.get(\"resArray\"))) {\r",
+									"        resArray =pm.environment.get(\"resArray\");\r",
+									"    }\r",
+									"    for (var i=0; i<jsonData.datasets.length; i++) {\r",
+									"        resArray.push(jsonData.datasets[i]);\r",
+									"    }\r",
+									"    resArray.sort();\r",
+									"    pm.environment.set(\"resArray\",resArray);\r",
+									"\r",
+									"    // if there is a next page token re-execute this call for retrieve the new page otherwise check the results and move to the next call\r",
+									"    const provider = pm.environment.get('serviceCloudProvider');\r",
+									"    const pageTerminator = provider == 'google' ? \"\" : null;\r",
+									"    if (jsonData.nextPageCursor != pageTerminator) {\r",
+									"        postman.setNextRequest('MULTI LS DATASET PAGE');\r",
+									"    } else {\r",
+									"        pm.test(\"Check pagination for datasets\", function () {\r",
+									"            pm.expect([...new Set(pm.environment.get(\"lsMultiDatasetsRoot\").split(','))].sort().toString()).to.eql([...new Set(resArray)].sort().toString());\r",
+									"        });\r",
+									"        pm.environment.unset('resArray');\r",
+									"    }\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const basePath = pm.environment.get(\"lsMultiBasePath\");\r",
+									"pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\");\r",
+									"\r",
+									"if (pm.environment.get(\"nextPageCursor\")) {\r",
+									"    var cursor = pm.environment.get(\"nextPageCursor\");\r",
+									"    pm.request.url.query.add('cursor=' + encodeURIComponent(cursor));\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/utility/ls?sdpath=sd://{{tenant}}/{{subproject}}{{lsMultiPath}}&wmode=datasets&limit=3",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"utility",
+								"ls"
+							],
+							"query": [
+								{
+									"key": "sdpath",
+									"value": "sd://{{tenant}}/{{subproject}}{{lsMultiPath}}"
+								},
+								{
+									"key": "wmode",
+									"value": "datasets"
+								},
+								{
+									"key": "limit",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS DELETE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    let lsMultiCurrentSet = pm.environment.get(\"lsMultiCurrentSet\");",
+									"",
+									"    // Delete datasets and folders",
+									"    if(lsMultiCurrentSet.length > 0) {",
+									"        postman.setNextRequest('MULTI LS DELETE');",
+									"    } else {",
+									"        pm.environment.unset('lsMultiCurrentSet')",
+									"    }    ",
+									"",
+									"    ",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"let lsMultiCurrentSet = pm.environment.get(\"lsMultiCurrentSet\");\r",
+									"if(!lsMultiCurrentSet) {\r",
+									"    lsMultiCurrentSet = pm.environment.get(\"lsMultiOriginalSet\").split(',');\r",
+									"}\r",
+									"\r",
+									"const basePath = pm.environment.get(\"lsMultiBasePath\").split(',');\r",
+									"\r",
+									"lsMultiDatasetName = lsMultiCurrentSet[0];\r",
+									"const tmp = lsMultiDatasetName.split('/')\r",
+									"if(tmp.length == 1) {\r",
+									"    pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\");\r",
+									"    pm.environment.set(\"lsMultiDatasetName\", tmp[0]);\r",
+									"} else {\r",
+									"    pm.environment.set(\"lsMultiPath\", \"/\" + basePath + \"/\" + tmp[0]);\r",
+									"    pm.environment.set(\"lsMultiDatasetName\", tmp[1]);\r",
+									"}\r",
+									"lsMultiCurrentSet.shift()\r",
+									"pm.environment.set(\"lsMultiCurrentSet\", lsMultiCurrentSet);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{lsMultiDatasetName}}?path={{lsMultiPath}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{lsMultiDatasetName}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{lsMultiPath}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MULTI LS UNSET",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.unset('lsMultiOriginalSet')",
+									"pm.environment.unset('lsMultiCurrentSet')",
+									"pm.environment.unset('lsMultiDatasetName')",
+									"pm.environment.unset('lsMultiPath')",
+									"pm.environment.unset('lsMultiBasePath')",
+									"pm.environment.unset('lsMultiDatasetsRoot')",
+									"pm.environment.unset('nextPageCursor')",
+									"pm.environment.unset('resArray')",
+									"postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"console.log('Multi ls test variables have been uninitialized');"
 								],
 								"type": "text/javascript"
 							}
