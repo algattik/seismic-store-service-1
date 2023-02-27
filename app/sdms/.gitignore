@@ -10,7 +10,7 @@ dist
 
 # test
 .nyc_output
-coverage
+coverage 
 test-results.xml
 
 # artifact
