@@ -1,0 +1,4 @@
+{{- template "common.virtualservice" (list . "os-seismic-store.virtualservice") -}}
+{{- define "os-seismic-store.virtualservice" -}}
+## Define overrides for the service's virtual service resource here
+{{- end -}}
