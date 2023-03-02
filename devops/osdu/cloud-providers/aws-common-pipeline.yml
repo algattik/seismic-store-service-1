@@ -5,7 +5,7 @@ aws-containerize:
   only:
       - $DISABLED == 'true'
   
-aws-update-eks:
+aws-update-helm:
   script:
       echo 'empty'
   only:
@@ -21,7 +21,7 @@ aws-update-eks:
     variables:
       - $AWS == '1'
 
-.aws-update-eks:
+.aws-update-helm:
   extends:
     - .aws
     - .aws_variables
@@ -30,4 +30,4 @@ aws-update-eks:
   retry: 1
   only:
     variables:
-      - $AWS_SKIP_DEPLOY != 'true' && $AWS == '1' && $AWS_DEPLOY_TARGET == 'EKS'
+      - $AWS_SKIP_DEPLOY != 'true' && $AWS == '1' && $AWS_DEPLOY_TARGET == 'HELM'
