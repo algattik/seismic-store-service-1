@@ -1,0 +1,4 @@
+{{- template "common.hpa" (list . "os-seismic-store.hpa") -}}
+{{- define "os-seismic-store.hpa" -}}
+## Define overrides for the service HPA resource here
+{{- end -}}
