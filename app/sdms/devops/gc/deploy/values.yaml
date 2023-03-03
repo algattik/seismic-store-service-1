@@ -15,6 +15,7 @@ data:
   redisPort: "6379"
   redisSdmsHost: ""
   redisSdmsPort: "6379"
+  redisSdmsTlsDisabled: true
   urlPrefix: "/api/seismic-store/v3"
   impServiceAccountSigner: "NA"
   seistoreDesAppkey: "NA"
