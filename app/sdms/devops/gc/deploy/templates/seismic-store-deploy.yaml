@@ -31,6 +31,11 @@ spec:
               secretKeyRef:
                 name: {{ .Values.conf.sdmsRedisSecretName | quote }}
                 key: REDIS_PASSWORD
+          - name: LOCKSMAP_REDIS_INSTANCE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.conf.sdmsRedisSecretName | quote }}
+                key: REDIS_PASSWORD
           envFrom:
           - configMapRef:
               name: {{ printf "%s-config" .Values.conf.appName | quote }}

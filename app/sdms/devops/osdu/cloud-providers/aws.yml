@@ -64,8 +64,9 @@ sdms_aws-containerize:
 sdms_aws-update-helm:
   allow_failure: false
   extends:
-    - .aws-update-eks
+    - .aws-update-helm
   needs: ['sdms_aws-containerize']
+  image: $CI_REGISTRY/osdu/platform/deployment-and-operations/base-containers-aws/aws-deploy/aws-deploy:v1.0-helm3.8.2
   script:
     - cd app/$SDMS_SERVICE
 
