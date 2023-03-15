@@ -1,5 +1,5 @@
 #  ***************************************************************************
-#  Copyright 2017 - 2021, Schlumberger
+#  Copyright 2017 - 2023, Schlumberger
 #
 #  Licensed under the Apache License, Version 2.0(the "License");
 #  you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ schemes:
 # ===========================================================================
 
 paths:
-  /api/v3/svcstatus:
+  /svcstatus:
     get:
       summary: "Seismic store service status (fast check)."
       description: "<ul><li>Return the seismic store service status.</li><li>Required roles: none</li></ul>"
@@ -62,7 +62,7 @@ paths:
             type: string
             example: "service OK"
 
-  /api/v3/svcstatus/access:
+  /svcstatus/access:
     get:
       summary: "Seismic store service access check."
       description: "<ul><li>Validates if the token audience is allowed</li><li>Required roles: none</li></ul>"
@@ -79,7 +79,7 @@ paths:
         403:
           description: "Forbidden."
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}:
     post:
       summary: "Register a new dataset."
       description: "<ul><li>Register a new dataset in the seismic store.</li><li>Required roles: subproject.admin</li></ul>"
@@ -368,7 +368,7 @@ paths:
             <li>CL (Cannot be Locked).</li>
             <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/lock:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/lock:
     put:
       summary: "Acquire a lock for a dataset id"
       description: |
@@ -452,7 +452,7 @@ paths:
             <li>CL (Cannot be Locked).</li>
             <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/unlock:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/unlock:
     put:
       summary: "Remove the lock associated with a dataset id."
       description: |
@@ -518,7 +518,7 @@ paths:
             <li>CL (Cannot be Locked).</li>
             <li>UL (Cannot be Unlocked).</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/permission:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/permission:
     get:
       summary: "Retrieve the access permissions of a user on a dataset id."
       description: |
@@ -579,7 +579,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/ctagcheck:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/ctagcheck:
     get:
       summary: "Validate if a dataset ctag matches the pre-existing ctag in metadata catalog."
       description: "<ul><li>Check if the provided dataset cTag match the one stored in the metadata catalog.</li><li>Required roles: subproject.admin, subproject.viewer</li></ul>"
@@ -638,7 +638,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/gtags:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/gtags:
     put:
       summary: "Upsert tags to a dataset."
       description: |
@@ -707,7 +707,7 @@ paths:
           description: "Not found."
 
   # To deprecate in favor of /utility/ls
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/readdsdirfulllist:
     get:
       summary: "Content list."
       description: |
@@ -745,7 +745,7 @@ paths:
           schema:
             $ref: "#/definitions/DatasetAndDirectories"
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}:
     get:
       summary: "Get the list of datasets in a subproject."
       description: |
@@ -865,7 +865,7 @@ paths:
         404:
           description: Not found.
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/exist:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/exist:
     post:
       summary: "Check to see if a list of datasets exists in the subproject."
       description: |
@@ -917,7 +917,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/dataset/tenant/{tenantid}/subproject/{subprojectid}/sizes:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/sizes:
     post:
       summary: "Retrieve the size of datasets."
       description: |
@@ -969,7 +969,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/utility/ls:
+  /utility/ls:
     get:
       summary: "Retrieve the list of datasets and sub-directories inside a seismic store path."
       description: |
@@ -1023,7 +1023,7 @@ paths:
           description: "Forbidden."
         404:
           description: "Not found."
-  /api/v3/utility/storage-tiers:
+  /utility/storage-tiers:
     get:
       summary: "Retrieve the list of supported storage tiers"
       description: "<ul><li>Return the list of storage tiers</ul>"
@@ -1042,7 +1042,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/utility/cp:
+  /utility/cp:
     post:
       summary: "Copy dataset."
       description: |
@@ -1105,7 +1105,7 @@ paths:
             <li>CL (Cannot be Locked)</li>
             <li>UL (Cannot be Unlocked)</ul>\nFor example the reason code <b>[RCODE:RL3600]</b> indicates the dataset is Read Locked with a TTL of 3600 seconds.
 
-  /api/v3/utility/gcs-access-token:
+  /utility/gcs-access-token:
     get:
       summary: "Generate a GCS access token."
       description: |
@@ -1152,7 +1152,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/utility/upload-connection-string:
+  /utility/upload-connection-string:
     get:
       summary: "Generate the upload connection credentials string"
       description: "<ul>
@@ -1232,7 +1232,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/utility/download-connection-string:
+  /utility/download-connection-string:
     get:
       summary: "Generate the download connection credentials string"
       description: "<ul>
@@ -1312,7 +1312,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/imptoken:
+  /imptoken:
     post:
       summary: "Generate impersonation credentials token."
       description: |
@@ -1402,7 +1402,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/impersonation-token:
+  /impersonation-token:
     post:
       summary: "Create an impersonation token credential."
       description: "<ul><li>Generate a credential token to impersonate user access for a set of subproject resources.</li><li>Required roles: app.trusted</li></ul>"
@@ -1468,7 +1468,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/subproject/tenant/{tenantid}/subproject/{subprojectid}:
+  /subproject/tenant/{tenantid}/subproject/{subprojectid}:
     post:
       summary: 'Create a new subproject.'
       description: |
@@ -1646,7 +1646,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/subproject/tenant/{tenantid}:
+  /subproject/tenant/{tenantid}:
     get:
       summary: "List subprojects in a tenant."
       description: "<ul><li>Return the list of sub-projects in a tenant.</li><li>Required roles: users.datalake.admin</li></ul>"
@@ -1676,7 +1676,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/tenant/{tenantid}:
+  /tenant/{tenantid}:
     post:
       summary: "Register a seismic-dms tenant."
       description: "<ul><li>Register a data partition in seismic-dms.</li><li>Required roles: users.datalake.admin</li></ul>"
@@ -1737,7 +1737,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/tenant/sdpath:
+  /tenant/sdpath:
     get:
       summary: "Retrieve the tenant seismic store path."
       description: "<ul><li>Return the seistore path to a tenant associated with the data partition.</li><li>Required roles: none</li></ul>"
@@ -1765,9 +1765,9 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/user:
+  /user:
     put:
-      summary: "Add a user to a seismic store subproject authorization group." 
+      summary: "Add a user to a seismic store subproject authorization group."
       description: "<ul><li>Add a user to a subproject default authorization group if it exists, otherwise, add the user to the first group.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-add
       tags:
@@ -1825,7 +1825,7 @@ paths:
           description: "Not found."
 
     delete:
-      summary: "Remove a user from a subproject."\
+      summary: "Remove a user from a subproject."
       description: "<ul><li>Remove a user from subproject default authorization groups if exists, otherwise, remove it from the first authorization group.</li><li>Required roles: subproject.admin</li></ul>"
       operationId: user-rm
       tags:
@@ -1848,7 +1848,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/user/roles:
+  /user/roles:
     get:
       summary: "Retrieve user role in all subprojects of the tenant."
       description: "<ul><li>Retrieve user role in all subprojects of the tenant.</li><li>Required roles: none/li></ul>"
@@ -1875,7 +1875,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/app:
+  /app:
     post:
       summary: "Register a new application."
       description: "<ul><li>Register a new application in the seismic store.</li><li>Required roles: users.datalake.admin</li></ul>"
@@ -1938,7 +1938,7 @@ paths:
         404:
           description: "Not found."
 
-  /api/v3/app/trusted:
+  /app/trusted:
     post:
       summary: "Set a registered application as a trusted application."
       description: |

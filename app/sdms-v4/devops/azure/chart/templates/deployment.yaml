@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        aadpodidbinding: {{ .Values.global.podidentity }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.container.image }}:{{ .Values.container.tag }}
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "1Gi"
+            limits:
+              cpu: "500m"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.configEnv.sdmsPrefix }}/status
+              port: 5000
+              httpHeaders:
+                - name: X-Api-Key
+                  value: ""
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            periodSeconds: 60
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.configEnv.sdmsPrefix }}/status
+              port: 5000
+              httpHeaders:
+                - name: X-Api-Key
+                  value: ""
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            periodSeconds: 60  
+          ports:
+            - protocol: TCP
+              containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-properties

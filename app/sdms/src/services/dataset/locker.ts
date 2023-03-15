@@ -54,7 +54,7 @@ export class Locker {
         } else {
 
             if (Config.LOCKSMAP_REDIS_INSTANCE_KEY) {
-                Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE ?
+                if (Config.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE) {
                     this.redisClient = new Redis({
                         host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                         port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
@@ -63,7 +63,17 @@ export class Locker {
                         retryStrategy: this.retryStrategy,
                         commandTimeout: 60000,
                         connectionName: 'sdms-locker'
-                    }) :
+                    });
+                    this.redisSubscriptionClient = new Redis({
+                        host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                        port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                        password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
+                        maxRetriesPerRequest: 10,
+                        retryStrategy: this.retryStrategy,
+                        commandTimeout: 60000,
+                        connectionName: 'sdms-locker-subscription'
+                    });
+                } else {
                     this.redisClient = new Redis({
                         host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                         port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
@@ -73,18 +83,18 @@ export class Locker {
                         retryStrategy: this.retryStrategy,
                         commandTimeout: 60000,
                         connectionName: 'sdms-locker'
-                    }
-                    );
-                this.redisSubscriptionClient = new Redis({
-                    host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-                    port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
-                    password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
-                    tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
-                    maxRetriesPerRequest: 10,
-                    retryStrategy: this.retryStrategy,
-                    commandTimeout: 60000,
-                    connectionName: 'sdms-locker-subscription'
-                });
+                    });
+                    this.redisSubscriptionClient = new Redis({
+                        host: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
+                        port: Config.LOCKSMAP_REDIS_INSTANCE_PORT,
+                        password: Config.LOCKSMAP_REDIS_INSTANCE_KEY,
+                        tls: { servername: Config.LOCKSMAP_REDIS_INSTANCE_ADDRESS },
+                        maxRetriesPerRequest: 10,
+                        retryStrategy: this.retryStrategy,
+                        commandTimeout: 60000,
+                        connectionName: 'sdms-locker-subscription'
+                    });
+                }
 
             }
             else {

@@ -1,0 +1,14 @@
+include:
+  # gc-community
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gc-com-variables.yml"
+
+  # gc-dev2
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gc-dev2-variables.yml"
+
+  # anthos
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gc-anthos-variables.yml"
+
+  - local: "devops/osdu/cloud-providers/gc-common-pipeline.yml"

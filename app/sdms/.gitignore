@@ -5,12 +5,12 @@ dist
 # python
 *.pyc
 
-# Log Files
+# Log Files 
 *.log
 
-# test
+# test 
 .nyc_output
-coverage
+coverage 
 test-results.xml
 
 # artifact
@@ -37,3 +37,4 @@ newman
 
 # dump file
 *.rdb
+

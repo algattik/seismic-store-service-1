@@ -13,6 +13,9 @@ data:
   entitlementsHost: "http://entitlements"
   redisDdmsHost: "redis-ddms-master.redis.svc.cluster.local"
   redisPort: "6379"
+  redisSdmsHost: ""
+  redisSdmsPort: "6379"
+  redisSdmsTlsDisabled: true
   urlPrefix: "/api/seismic-store/v3"
   impServiceAccountSigner: "NA"
   seistoreDesAppkey: "NA"
@@ -21,12 +24,13 @@ data:
   apiBasePath: "/api/v3"
   serviceEnv: "dev"
   # Deployment
-  requestsCpu: "0.1"
-  requestsMemory: "256M"
+  requestsCpu: "10m"
+  requestsMemory: "200Mi"
   limitsCpu: "1"
   limitsMemory: "1G"
   serviceAccountName: "seismic-store"
   imagePullPolicy: "IfNotPresent"
+  redisImage: "docker.io/library/redis:7"
   image: ""
 
 conf:
@@ -37,11 +41,12 @@ conf:
   database: "seismic-store-db-secret"
   keycloak: "seismic-store-keycloak-secret"
   minio: "seismic-store-minio-secret"
+  sdmsRedisSecretName: "seismic-store-redis-secret" # pragma: allowlist secret
   onPremEnabled: false
   domain: ""
 
 istio:
-  proxyCPU: "50m"
+  proxyCPU: "10m"
   proxyCPULimit: "500m"
-  proxyMemory: "64Mi"
+  proxyMemory: "100Mi"
   proxyMemoryLimit: "512Mi"

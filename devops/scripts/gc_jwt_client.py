@@ -5,7 +5,7 @@ import google.oauth2.id_token
 from google.auth.transport.requests import Request
 
 def get_id_token():
-    audience = os.environ.get("OSDU_GCP_AUDIENCE")
+    audience = os.environ.get("GC_AUDIENCE")
     id_token = google.oauth2.id_token.fetch_id_token(Request(), audience)
     print(id_token)
     return id_token
