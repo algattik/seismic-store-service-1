@@ -77,7 +77,7 @@ sdms_aws-update-helm:
 
     - sed -i "s|__CHART_VERSION__|0.1.0|"  $CHART_DIR/Chart.yaml
     - sed -i "s|__VERSION__|0.1.0|"  $CHART_DIR/Chart.yaml
-    - sed -i "s|__HELM_REPO__/osdu-aws-lib/|$AWS_HELM_REPO|"  $CHART_DIR/Chart.yaml
+    - sed -i "s|__HELM_REPO__|$AWS_HELM_REPO|"  $CHART_DIR/Chart.yaml
     - sed -i "s|__CONTAINER__|$AWS_IMAGE_TAG_BASE:$CI_COMMIT_SHA|"  $CHART_DIR/values.yaml
 
     - helm dependency update $CHART_DIR
