@@ -181,7 +181,7 @@
       --history-max=3
       --set data.image=$CI_REGISTRY_IMAGE/gc-$SEISMIC_GC_SERVICE:$CI_COMMIT_SHORT_SHA
       --set data.serviceAccountName=$SEISMIC_GC_SERVICE-k8s
-      --set data.domain=$DOMAIN
+      --set global.domain=$DOMAIN
     - !reference [.verify_deploy, script]
   rules:
     - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
@@ -210,7 +210,7 @@
       --set data.image=$CI_REGISTRY_IMAGE/$IMAGE_NAME:${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}
       --set data.imagePullPolicy=Always
       --set data.serviceAccountName=$SEISMIC_GC_SERVICE-k8s
-      --set data.domain=$DOMAIN
+      --set global.domain=$DOMAIN
     - !reference [.verify_deploy, script]
   rules:
     - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
@@ -267,8 +267,8 @@
       --set data.cloudProvider=anthos
       --set data.image=$CI_REGISTRY_IMAGE/gc-$SEISMIC_GC_SERVICE:$CI_COMMIT_SHORT_SHA
       --set data.serviceAccountName=$SEISMIC_GC_SERVICE
-      --set data.domain=$DOMAIN
-      --set conf.onPremEnabled=true
+      --set global.domain=$DOMAIN
+      --set global.onPremEnabled=true
     - !reference [.verify_deploy, script]
   rules:
     - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
