@@ -39,7 +39,7 @@ spec:
           envFrom:
           - configMapRef:
               name: {{ printf "%s-config" .Values.conf.appName | quote }}
-          {{- if .Values.conf.onPremEnabled }}
+          {{- if .Values.global.onPremEnabled }}
           - secretRef:
               name: {{ .Values.conf.database | quote }}
           - secretRef:
