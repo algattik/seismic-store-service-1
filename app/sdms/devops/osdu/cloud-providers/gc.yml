@@ -3,15 +3,22 @@ variables:
   GC_GCR_REGISTRY: gcr.io/osdu-anthos
   SEISMIC_GC_DOCKERFILE_NAME: "devops/anthos/runtime.Dockerfile"
 
-sdms-gc-helm-charts-master:
-  extends: .gc-helm-charts-master
+sdms-gc-helm-charts-gitlab:
+  extends: .gc-helm-charts-gitlab
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
     IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
 
-sdms-gc-helm-charts-release:
-  extends: .gc-helm-charts-release
+sdms-gc-helm-charts-release-gitlab:
+  extends: .gc-helm-charts-release-gitlab
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+
+sdms-gc-helm-charts-release-gcr:
+  extends: .gc-helm-charts-release-gcr
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
