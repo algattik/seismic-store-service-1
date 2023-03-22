@@ -5,6 +5,7 @@ variables:
 
 sdms-gc-helm-charts-gitlab:
   extends: .gc-helm-charts-gitlab
+  needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
@@ -12,6 +13,7 @@ sdms-gc-helm-charts-gitlab:
 
 sdms-gc-helm-charts-release-gitlab:
   extends: .gc-helm-charts-release-gitlab
+  needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
@@ -19,6 +21,7 @@ sdms-gc-helm-charts-release-gitlab:
 
 sdms-gc-helm-charts-release-gcr:
   extends: .gc-helm-charts-release-gcr
+  needs: ["sdms-gc-containerize-gcr"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
@@ -69,7 +72,7 @@ sdms-gc-containerize-gcr:
 
 sdms-gc-deploy:
   extends: .gc-deploy
-  needs: ["sdms-gc-containerize-gitlab"]
+  needs: ["sdms-gc-helm-charts-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
@@ -87,7 +90,7 @@ sdms-gc-deploy:
 
 sdms-gc-dev2-deploy:
   extends: .gc-dev2-deploy
-  needs: ["sdms-gc-containerize-gitlab"]
+  needs: ["sdms-gc-helm-charts-release-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
@@ -131,7 +134,7 @@ sdms-gc-preship-deploy:
 
 sdms-gc-anthos-deploy:
   extends: .gc-anthos-deploy
-  needs: ["sdms-gc-containerize-gitlab"]
+  needs: ["sdms-gc-helm-charts-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
