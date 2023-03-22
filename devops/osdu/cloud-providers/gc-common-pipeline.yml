@@ -126,7 +126,7 @@ variables:
 
 
 .gc-helm-charts-gitlab:
-  stage: build
+  stage: containerize
   tags: ["osdu-small"]
   image:
     name: alpine/helm:3.9.0
@@ -148,7 +148,7 @@ variables:
       when: on_success
 
 .gc-helm-charts-release-gitlab:
-  stage: build
+  stage: containerize
   tags: ["osdu-small"]
   image:
     name: alpine/helm:3.9.0
@@ -168,7 +168,7 @@ variables:
       when: on_success
 
 .gc-helm-charts-release-gcr:
-  stage: build
+  stage: containerize
   tags: ["osdu-small"]
   image:
     name: alpine/helm:3.9.0
