@@ -1,3 +1,7 @@
+variables:
+  GC_GCR_REGISTRY: "gcr.io/osdu-anthos"
+  APP_VERSION: "$GC_HELM_PACKAGE_VERSION-SNAPSHOT"
+  
 .common:
   script:
     - gcloud auth activate-service-account --key-file $GC_DEPLOY_FILE
@@ -6,6 +10,13 @@
     - export USE_GKE_GCLOUD_AUTH_PLUGIN=True
     - gcloud container clusters get-credentials $GC_CLUSTER --zone $GC_ZONE --project $GC_PROJECT
     - curl https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+    - apk update && apk add jq
+    - >
+      if helm status $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -n $GC_HELM_NAMESPACE;
+      then
+        HELM_REVISION=$(helm history $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -o json | jq '.[] | select(.status == "pending-upgrade").revision')
+        if [[ ! -z "$HELM_REVISION" ]]; then kubectl delete secret sh.helm.release.v1.$SEISMIC_GC_HELM_DEPLOYMENT_SERVICE.v$HELM_REVISION; fi
+      fi
 
 .common-dev2:
   script:
@@ -15,6 +26,13 @@
     - export USE_GKE_GCLOUD_AUTH_PLUGIN=True
     - gcloud container clusters get-credentials $GC_CLUSTER --zone $GC_ZONE --project $GC_PROJECT
     - curl https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+    - apk update && apk add jq
+    - >
+      if helm status $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -n $GC_HELM_NAMESPACE;
+      then
+        HELM_REVISION=$(helm history $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -o json | jq '.[] | select(.status == "pending-upgrade").revision')
+        if [[ ! -z "$HELM_REVISION" ]]; then kubectl delete secret sh.helm.release.v1.$SEISMIC_GC_HELM_DEPLOYMENT_SERVICE.v$HELM_REVISION; fi
+      fi
 
 .common-preship:
   script:
@@ -24,6 +42,13 @@
     - export USE_GKE_GCLOUD_AUTH_PLUGIN=True
     - gcloud container clusters get-credentials $GC_CLUSTER --zone $GC_ZONE --project $GC_PROJECT
     - curl https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+    - apk update && apk add jq
+    - >
+      if helm status $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -n $GC_HELM_NAMESPACE;
+      then
+        HELM_REVISION=$(helm history $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -o json | jq '.[] | select(.status == "pending-upgrade").revision')
+        if [[ ! -z "$HELM_REVISION" ]]; then kubectl delete secret sh.helm.release.v1.$SEISMIC_GC_HELM_DEPLOYMENT_SERVICE.v$HELM_REVISION; fi
+      fi
 
 .common-anthos:
   script:
@@ -33,20 +58,34 @@
     - export USE_GKE_GCLOUD_AUTH_PLUGIN=True
     - gcloud container clusters get-credentials $GC_CLUSTER --zone $GC_ZONE --project $GC_PROJECT
     - curl https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz -s -o helm.tgz; tar -zxf helm.tgz; mv linux-amd64/helm /usr/local/bin/
+    - apk update && apk add jq
+    - >
+      if helm status $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -n $GC_HELM_NAMESPACE;
+      then
+        HELM_REVISION=$(helm history $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE -o json | jq '.[] | select(.status == "pending-upgrade").revision')
+        if [[ ! -z "$HELM_REVISION" ]]; then kubectl delete secret sh.helm.release.v1.$SEISMIC_GC_HELM_DEPLOYMENT_SERVICE.v$HELM_REVISION; fi
+      fi
 
-.define_VER:
+.define_version:
   script:
     - >
       if [[ -z $CI_COMMIT_TAG ]] && [[ $CI_COMMIT_BRANCH =~ ^release\/[0-9]{1,2}.[0-9]{1,2}$ ]];
       then
-          RELEASE_VER=$(echo $CI_COMMIT_BRANCH | sed "s?^release/??");
-          VER="$RELEASE_VER.0-release"
+        RELEASE_VERSION=$(echo $CI_COMMIT_BRANCH | sed "s?^release/??");
+        VERSION="$RELEASE_VERSION.0-release";
       elif [[ $CI_COMMIT_TAG =~ ^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}$ ]];
       then
-          VER=$(echo $CI_COMMIT_TAG | sed "s/^v//");
+        VERSION=$(echo $CI_COMMIT_TAG | sed "s/^v//");
       else
-          VER="0.0.0-invalid";
-      fi;
+        VERSION="0.0.0-invalid";
+      fi
+
+.define_app_version:
+  script:
+    - >
+      if [[ "$CI_COMMIT_TAG" != "" ]];
+      then APP_VERSION=$(echo $CI_COMMIT_TAG | sed "s/^v//");
+      fi
 
 # Requires variables: IMAGE_TAG, IMAGE_NAME
 .substitute_image_in_helm:
@@ -56,8 +95,13 @@
     - yq -e '.data | has("bootstrapImage")' $SEISMIC_GC_HELM_DEPLOYMENT_DIR/values.yaml &>/dev/null && BOOTSTRAP_IMAGE="$CI_REGISTRY_IMAGE/$IMAGE_BOOTSTRAP_NAME:$IMAGE_TAG" yq -i '.data.bootstrapImage = env(BOOTSTRAP_IMAGE)' $SEISMIC_GC_HELM_DEPLOYMENT_DIR/values.yaml
     - cat $SEISMIC_GC_HELM_DEPLOYMENT_DIR/values.yaml | grep -i image
 
-.set_image_tag:
+.set_image_name:
   script:
+    - >
+      if echo $CI_COMMIT_REF_NAME | grep -Eq "^release\/[0-9]{1,2}.[0-9]{1,2}$";
+      then
+        export IMAGE_NAME=$IMAGE_NAME-release;
+      fi
     - >
       if [[ "$CI_COMMIT_TAG" != "" ]];
       then
@@ -80,49 +124,68 @@
       if [[ "$STATUS" != *"met"* ]];
       then echo "POD didn't start correctly"; exit 1; fi
 
-.set_image_name:
-  script:
-    - >
-      if echo $CI_COMMIT_REF_NAME | grep -Eq "^release\/[0-9]{1,2}.[0-9]{1,2}$";
-      then
-        export IMAGE_NAME=$IMAGE_NAME-release;
-      fi;
 
-.gc-helm-charts-master:
+.gc-helm-charts-gitlab:
   stage: build
   tags: ["osdu-small"]
   image:
-    name: alpine/helm:3.6.3
+    name: alpine/helm:3.9.0
     entrypoint: [""]
   before_script:
-    - helm plugin install https://github.com/chartmuseum/helm-push.git
+    - helm registry login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - !reference [.set_image_name, script]
-    - !reference [.set_image_tag, script]
     - !reference [.substitute_image_in_helm, script]
   script:
-    - helm cm-push $SEISMIC_GC_HELM_DEPLOYMENT_DIR ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable --username gitlab-ci-token --password $CI_JOB_TOKEN
+    - !reference [.define_app_version, script]
+    - helm package $SEISMIC_GC_HELM_DEPLOYMENT_DIR -u --version $GC_HELM_PACKAGE_VERSION-$IMAGE_TAG --app-version $APP_VERSION
+    - helm push gc-$SEISMIC_GC_SERVICE-deploy-$GC_HELM_PACKAGE_VERSION-$IMAGE_TAG.tgz oci://$CI_REGISTRY_IMAGE/gc-helm
   rules:
-    - if: "$GC == '1' && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+    - if: "$CI_COMMIT_BRANCH =~ /^release/"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: '$GC == "1"'
+      when: on_success
 
-.gc-helm-charts-release:
+.gc-helm-charts-release-gitlab:
   stage: build
   tags: ["osdu-small"]
   image:
-    name: alpine/helm:3.6.3
+    name: alpine/helm:3.9.0
     entrypoint: [""]
   before_script:
-    - helm plugin install https://github.com/chartmuseum/helm-push.git
+    - helm registry login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - !reference [.set_image_name, script]
-    - !reference [.set_image_tag, script]
     - !reference [.substitute_image_in_helm, script]
   script:
-    - !reference [.define_VER, script]
-    - helm cm-push $SEISMIC_GC_HELM_DEPLOYMENT_DIR ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable --version $VER --username gitlab-ci-token --password $CI_JOB_TOKEN
+    - !reference [.define_version, script]
+    - helm package $SEISMIC_GC_HELM_DEPLOYMENT_DIR -u --version $VERSION --app-version $VERSION
+    - helm push gc-$SEISMIC_GC_SERVICE-deploy-$VERSION.tgz oci://$CI_REGISTRY_IMAGE/gc-helm
   rules:
     - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
-    - if: "$GC == '1' && $CI_COMMIT_TAG"
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
       when: on_success
+
+.gc-helm-charts-release-gcr:
+  stage: build
+  tags: ["osdu-small"]
+  image:
+    name: alpine/helm:3.9.0
+    entrypoint: [""]
+  before_script:
+    - cat $GC_DEPLOY_FILE | helm registry login -u _json_key --password-stdin https://gcr.io
+    - !reference [.substitute_image_in_helm, script]
+  script:
+    - !reference [.define_version, script]
+    - helm package $SEISMIC_GC_HELM_DEPLOYMENT_DIR -u --version $VERSION --app-version $VERSION
+    - helm push gc-$SEISMIC_GC_SERVICE-deploy-$VERSION.tgz oci://$GC_GCR_REGISTRY/helm
+  rules:
+    - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: on_success
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
+      when: on_success
+
 
 .gc-containerize-gitlab:
   stage: containerize
@@ -142,10 +205,6 @@
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE/$IMAGE_NAME
   rules:
-    - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
-      when: on_success
-    - if: '$GC == "1" && $CI_COMMIT_TAG'
-      when: on_success
     - if: '$GC == "1"'
       when: on_success
 
@@ -171,8 +230,11 @@
   cache: {}
   script:
     - !reference [.common, script]
+    - !reference [.define_version, script]
+    - !reference [.set_image_name, script]
     - >
-      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE $SEISMIC_GC_HELM_DEPLOYMENT_DIR
+      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE oci://$CI_REGISTRY_IMAGE/gc-helm/gc-$SEISMIC_GC_SERVICE-deploy
+      --version $GC_HELM_PACKAGE_VERSION-$IMAGE_TAG
       --install
       --create-namespace
       --namespace=$GC_HELM_NAMESPACE
@@ -197,11 +259,11 @@
   image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
   script:
     - !reference [.common-dev2, script]
-    - !reference [.define_VER, script]
+    - !reference [.define_version, script]
     - !reference [.set_image_name, script]
-    - helm repo add $SEISMIC_GC_SERVICE ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable
     - >
-      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE $SEISMIC_GC_HELM_DEPLOYMENT_DIR --version $VER
+      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE oci://$CI_REGISTRY_IMAGE/gc-helm/gc-$SEISMIC_GC_SERVICE-deploy
+      --version $VERSION
       --install
       --create-namespace
       --namespace=$GC_HELM_NAMESPACE
@@ -226,11 +288,11 @@
   image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
   script:
     - !reference [.common-preship, script]
-    - !reference [.define_VER, script]
+    - !reference [.define_version, script]
     - !reference [.set_image_name, script]
-    - helm repo add $SEISMIC_GC_SERVICE ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/stable
     - >
-      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE $SEISMIC_GC_HELM_DEPLOYMENT_DIR --version $VER
+      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE oci://$CI_REGISTRY_IMAGE/gc-helm/gc-$SEISMIC_GC_SERVICE-deploy 
+      --version $VERSION
       --install
       --create-namespace
       --namespace=$GC_HELM_NAMESPACE
@@ -257,8 +319,11 @@
   script:
     - gcloud auth activate-service-account --key-file $GC_ANTHOS_DEPLOY_FILE
     - !reference [.common-anthos, script]
+    - !reference [.define_version, script]
+    - !reference [.set_image_name, script]
     - >
-      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE $SEISMIC_GC_HELM_DEPLOYMENT_DIR
+      helm upgrade $SEISMIC_GC_HELM_DEPLOYMENT_SERVICE oci://$CI_REGISTRY_IMAGE/gc-helm/gc-$SEISMIC_GC_SERVICE-deploy
+      --version $GC_HELM_PACKAGE_VERSION-$IMAGE_TAG
       --install
       --create-namespace
       --namespace=$GC_HELM_NAMESPACE
