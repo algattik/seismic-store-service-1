@@ -2,7 +2,7 @@ variables:
   #aws variables
   AWS_BUILD_SUBDIR: src/cloud/providers/aws/build-aws
   AWS_TEST_SUBDIR: tests
-  AWS_CHART_SUBDIR: app/sdms/devops/aws/chart
+  AWS_CHART_SUBDIR: devops/aws/chart
   AWS_SERVICE: seismic-store
   AWS_SERVICE_NAMESPACE: osdu-seismic-ddms
   AWS_SERVICE_GATEWAY: osdu-services/osdu-gateway
