@@ -53,7 +53,6 @@ export class MinIOStorage extends AbstractStorage {
                 },
                 endpoint: AnthosConfig.MINIO_ENDPOINT,
                 forcePathStyle: true,
-                bucketEndpoint: false,
                 region: 'us-east-1'
             }
         );
