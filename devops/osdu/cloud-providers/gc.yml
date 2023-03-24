@@ -11,4 +11,8 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/gc-anthos-variables.yml"
 
+  # preship
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gc-preship-variables.yml"
+
   - local: "devops/osdu/cloud-providers/gc-common-pipeline.yml"

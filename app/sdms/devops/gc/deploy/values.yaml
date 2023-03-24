@@ -1,3 +1,7 @@
+global:
+  domain: ""
+  onPremEnabled: false
+
 data:
   # Configmap
   logLevel: "ERROR"
@@ -42,8 +46,6 @@ conf:
   keycloak: "seismic-store-keycloak-secret"
   minio: "seismic-store-minio-secret"
   sdmsRedisSecretName: "seismic-store-redis-secret" # pragma: allowlist secret
-  onPremEnabled: false
-  domain: ""
 
 istio:
   proxyCPU: "10m"

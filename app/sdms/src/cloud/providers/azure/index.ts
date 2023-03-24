@@ -16,7 +16,6 @@
 
 export { AzureCloudStorage } from './cloudstorage';
 export { AzureCosmosDbDAO, AzureCosmosDbQuery } from './cosmosdb';
-export { AzureCosmosDbDAORegular, AzureCosmosDbQueryRegular } from './cosmosdb-regular';
 export { AzureInsightsLogger } from './insights';
 export { AzureConfig } from './config';
 export { AzureCredentials } from './credentials';

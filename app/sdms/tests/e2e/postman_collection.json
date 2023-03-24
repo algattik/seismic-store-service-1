@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "b2d777d8-fb16-4604-866d-73f44b31083c",
-		"name": "SDMS-E2E ver.M15 - Release 0.18",
+		"_postman_id": "5bed183e-6dd4-4017-a66e-200ec7283e9e",
+		"name": "SDMS-E2E ver.M17 - Release 0.20",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17166992"
 	},
@@ -11663,7 +11663,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY LS 2",
+					"name": "UTILITY LS AFTER DATASET DELETE",
 					"event": [
 						{
 							"listen": "test",
@@ -11681,18 +11681,18 @@
 									"    });",
 									"",
 									"    pm.test(\"Check Data List\", function () {",
+									"        var test = false;",
 									"        if(jsonData.length >=1) {",
-									"            var test = false;",
 									"            for(var i = 0; i < jsonData.length; i++) {",
-									"                if(jsonData[i] !== pm.environment.get('dsx01')) {",
+									"                if(jsonData[i] === pm.environment.get('dsx01')) {",
 									"                    test = true",
+									"                break;",
 									"                }",
 									"            }",
-									"        } else {",
-									"            test=true",
-									"        }     ",
-									"        pm.expect(test).to.eql(true);",
+									"        } ",
+									"        pm.expect(test).to.eql(false);",
 									"    });",
+									"",
 									"",
 									"    // Reset environment variables if _.retryOnFailure function was used before",
 									"    var key = request.name + '_counter';",
