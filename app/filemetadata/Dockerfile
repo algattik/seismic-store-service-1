@@ -1,10 +1,8 @@
 FROM ubuntu:20.04
 
-RUN apt-get update \
-    && apt-get install -y python3-pip python3-dev curl \
-    && cd /usr/local/bin \
-    && ln -s /usr/bin/python3 python \
-    && pip3 install --upgrade pip
+RUN apt-get update 
+RUN apt-get install -y python3-pip python3-dev curl libcpprest libjsoncpp1 libstdc++6 libcurl4
+RUN cd /usr/local/bin && ln -s /usr/bin/python3 python && pip3 install --upgrade pip
 
 # Prepare App folder 
 RUN mkdir -p /app
@@ -30,8 +28,8 @@ ADD ./app/requirements.txt /app/
 RUN pip install -r requirements.txt
 
 # OpenZgy Bundle packages available on https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/seismic/open-zgy/-/packages
-# Current version 2158481 OpenZGY.focal.sdms-bundle-azure-curl.aws.ibm.0.2.901.tar.gz
-ARG OPENZGY_BUNDLE_URL="https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/seismic/open-zgy/-/package_files/2158481/download"
+# Current version OpenZGY.focal.sdms-bundle-azure-curl.aws.ibm.anthos.0.2.970.tar.gz based on SDAPI 3.18
+ARG OPENZGY_BUNDLE_URL="https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/seismic/open-zgy/-/package_files/2807737/download"
 
 #Get openzgy bundle
 RUN mkdir -p /app/openzgy-bundle
