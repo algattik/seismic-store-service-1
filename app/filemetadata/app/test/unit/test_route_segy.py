@@ -38,7 +38,7 @@ class MockSegySession:
     def is_3d(self):
         return self.is3d
 
-    def get_trace_header_fields(self):
+    def get_trace_header_field_count(self):
         return self.trace_header_field_count
 
     def get_ascii_headers_as_json(self):
