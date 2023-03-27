@@ -15,7 +15,7 @@ data:
   DES_SERVICE_HOST_PARTITION: {{ ternary .Values.data.partitionHost (printf "%s/api/partition/v1/" .Values.data.partitionHost) .Values.global.onPremEnabled | quote}}
   ENTITLEMENT_BASE_URL_PATH: {{ .Values.data.entitlementBaseUrlPath | quote }}
   DATA_PARTITION_REST_HEADER_KEY: {{ .Values.data.dataPartitionRestHeaderKey | quote }}
-  DES_SERVICE_HOST_STORAGE: {{ ternary .Values.data.storageHost (printf "%s/api/storage/v2" .Values.data.storageHost) .Values.global.onPremEnabled | quote}}
+  DES_SERVICE_HOST_STORAGE: {{ ternary .Values.data.storageHost (printf "%s/api" .Values.data.storageHost) .Values.global.onPremEnabled | quote}}
   DES_SERVICE_HOST_COMPLIANCE: {{ ternary .Values.data.legalHost (printf "%s/api" .Values.data.legalHost) .Values.global.onPremEnabled | quote}}
   {{- if not .Values.global.onPremEnabled }}
   IMP_SERVICE_ACCOUNT_SIGNER: {{ .Values.data.impServiceAccountSigner | quote }}
