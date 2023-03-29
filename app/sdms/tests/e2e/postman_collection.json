@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5bed183e-6dd4-4017-a66e-200ec7283e9e",
+		"_postman_id": "e9b02431-26e1-4c73-b4cb-9390e421394d",
 		"name": "SDMS-E2E ver.M17 - Release 0.20",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17166992"
@@ -2795,6 +2795,321 @@
 									"postman.setEnvironmentVariable('execCounter', 1)",
 									"",
 									"console.log('Dataset variables were removed for datasets folder');"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "dataset ls pagination",
+			"item": [
+				{
+					"name": "DATASET LS SET",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log('Dataset list test variables have been initialized');",
+									"postman.setEnvironmentVariable('execCounter', 1)",
+									"pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));",
+									"//skip this folder for ibm",
+									"const provider = pm.environment.get('serviceCloudProvider');",
+									"if (provider === 'ibm') {",
+									"    postman.setNextRequest('DATASET LS UNSET');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// unset \r",
+									"pm.environment.unset('nextPageCursor')\r",
+									"pm.environment.unset('resArray')\r",
+									"pm.environment.unset('datasetArray')\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/svcstatus",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET LS GET",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    pm.test(\"Check content type\", function () {",
+									"        pm.response.to.be.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    });",
+									"    ",
+									"    pm.test(\"Data List\", function () {",
+									"        pm.expect(jsonData.length).gte(1);",
+									"    });",
+									"    ",
+									"    //Get the list of datasets and stored it in a variable",
+									"    let datasetArray = [];",
+									"    for (var i=0;i<jsonData.length;i++) {",
+									"        datasetArray.push(jsonData[i].name);",
+									"    }",
+									"    datasetArray.sort();",
+									"    pm.environment.set(\"datasetArray\",datasetArray);",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET LS POST",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    // reset retry counter",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    // check status code    ",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    // extract the response and set next page cursor",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"nextPageCursor\",jsonData.nextPageCursor);",
+									"    ",
+									"    // fill the results array",
+									"    let resArray = [];",
+									"    if ((pm.environment.get(\"resArray\"))) {",
+									"        resArray =pm.environment.get(\"resArray\");",
+									"    }",
+									"    for (var i=0;i<jsonData.datasets.length;i++) {",
+									"        resArray.push(jsonData.datasets[i].name);",
+									"    }",
+									"    resArray.sort();",
+									"    pm.environment.set(\"resArray\",resArray);",
+									"    ",
+									"    // if there is a next page token re-execute this call for retrieve the new page otherwise check the results and move to the next call",
+									"    const provider = pm.environment.get('serviceCloudProvider');",
+									"    const pageTerminator = (provider === 'google' || provider === 'ibm') ? \"\" : null;",
+									"    if (jsonData.nextPageCursor != \"\") {",
+									"        postman.setNextRequest('DATASET LS POST');",
+									"    } else {",
+									"        pm.test(\"Check pagination for dataset list\", function () {",
+									"            pm.expect([...new Set(pm.environment.get(\"datasetArray\"))].sort().toString()).to.eql([...new Set(resArray)].sort().toString());",
+									"        });",
+									"        pm.environment.unset('resArray');",
+									"    }",
+									"};"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.environment.get(\"nextPageCursor\")) {\r",
+									"   const body = JSON.parse(pm.request.body.raw);\r",
+									"    body.cursor = pm.environment.get(\"nextPageCursor\");\r",
+									"    pm.request.body.raw = body;\r",
+									"}\r",
+									"console.log(pm.request.body)\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"limit\": \"3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET LS UNSET",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.unset('nextPageCursor')",
+									"pm.environment.unset('resArray')",
+									"pm.environment.unset('datasetArray')",
+									"postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"console.log('Dataset list test variables have been uninitialized');"
 								],
 								"type": "text/javascript"
 							}
