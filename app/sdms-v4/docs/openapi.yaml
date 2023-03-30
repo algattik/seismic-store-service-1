@@ -69,23 +69,9 @@ paths:
         The [segy 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/dataset/FileCollection.SEGY.1.0.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request.
 
-        Reference to bulk files, composing the dataset, are requested to be specified in the
+        Reference to bulk files, composing the dataset, can be specified in the
         *DatasetProperties* property of the model.
 
-        **schema: dataset collection and files**
-        ```
-        "data": {
-          "DatasetProperties": {
-              "FileCollectionPath": "dataset-collection-name"
-              "FileSourceInfos": [
-                { "FileSource": "file-name-1" },
-                { "FileSource": "file-name-2" },
-                ...
-                { "FileSource": "file-name-n" },
-              ]
-          }
-        }
-        ```
 
         **example: dataset collection and files**
         ```
@@ -270,23 +256,8 @@ paths:
         The [openzgy 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/dataset/FileCollection.Slb.OpenZGY.1.0.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request.
 
-        Reference to bulk files, composing the dataset, are requested to be specified in the
+        Reference to bulk files, composing the dataset, can be specified in the
         *DatasetProperties* property of the model.
-
-        **schema: dataset collection and files**
-        ```
-        "data": {
-          "DatasetProperties": {
-              "FileCollectionPath": "dataset-collection-name"
-              "FileSourceInfos": [
-                { "FileSource": "file-name-1" },
-                { "FileSource": "file-name-2" },
-                ...
-                { "FileSource": "file-name-n" },
-              ]
-          }
-        }
-        ```
 
         **example: dataset collection and files**
         ```
@@ -471,23 +442,8 @@ paths:
         The [openvds 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/dataset/FileCollection.Bluware.OpenVDS.1.0.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request.
 
-        Reference to bulk files, composing the dataset, are requested to be specified in the
+        Reference to bulk files, composing the dataset, can be specified in the
         *DatasetProperties* property of the model.
-
-        **schema: dataset collection and files**
-        ```
-        "data": {
-          "DatasetProperties": {
-              "FileCollectionPath": "dataset-collection-name"
-              "FileSourceInfos": [
-                { "FileSource": "file-name-1" },
-                { "FileSource": "file-name-2" },
-                ...
-                { "FileSource": "file-name-n" },
-              ]
-          }
-        }
-        ```
 
         **example: dataset collection and files**
         ```
@@ -672,23 +628,8 @@ paths:
         The [generic 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/dataset/FileCollection.Generic.1.0.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request.
 
-        Reference to bulk files, composing the dataset, are requested to be specified in the
+        Reference to bulk files, composing the dataset, can be specified in the
         *DatasetProperties* property of the model.
-
-        **schema: dataset collection and files**
-        ```
-        "data": {
-          "DatasetProperties": {
-              "FileCollectionPath": "dataset-collection-name"
-              "FileSourceInfos": [
-                { "FileSource": "file-name-1" },
-                { "FileSource": "file-name-2" },
-                ...
-                { "FileSource": "file-name-n" },
-              ]
-          }
-        }
-        ```
 
         **example: dataset collection and files**
         ```
@@ -873,7 +814,7 @@ paths:
         The [TraceData 1.3.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicTraceData.1.3.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
@@ -989,7 +930,7 @@ paths:
         The [bin grid 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicBinGrid.1.0.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
@@ -1105,7 +1046,7 @@ paths:
         The [line geometry 1.0.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/work-product-component/SeismicLineGeometry.1.0.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
@@ -1221,7 +1162,7 @@ paths:
         The [2D interpretation set 1.1.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/Seismic2DInterpretationSet.1.1.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
@@ -1337,7 +1278,7 @@ paths:
         The [3D interpretation set 1.1.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/Seismic3DInterpretationSet.1.1.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
@@ -1454,7 +1395,7 @@ paths:
         The [acquisition survey 1.2.0](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/master-data/SeismicAcquisitionSurvey.1.2.0.json)
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
@@ -1571,7 +1512,7 @@ paths:
 
         data representation is defined by the OSDU authority and is required as a body parameter in this request. 
 
-        References to datasets, as record id, are requested to be specified in the
+        References to datasets, as record id, can be specified in the
         *Dataset* property of the model. These referenced datasets must exist in SDDMS.
 
         The API returns a list of versioned records ID for the registered or updated datasets.
