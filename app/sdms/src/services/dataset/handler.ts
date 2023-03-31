@@ -730,6 +730,8 @@ export class DatasetHandler {
             } else {
                 // attach the gcpid for fast check
                 datasetOUT.ctag = datasetOUT.ctag + tenant.gcpid + ';' + DESUtils.getDataPartitionID(tenant.esd);
+                // attach access policy
+                datasetOUT.access_policy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
                 return datasetOUT;
             }
         }
