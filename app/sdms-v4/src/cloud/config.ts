@@ -45,9 +45,7 @@ export abstract class Config implements IConfig {
     public static CORE_SERVICE_HOST: string;
     public static CORE_SERVICE_PARTITION_BASE_PATH: string;
     public static CORE_SERVICE_STORAGE_BASE_PATH: string;
-    public static CORE_SERVICE_COMPLIANCE_BASE_PATH: string;
     public static CORE_SERVICE_SCHEMA_BASE_PATH: string;
-    public static CORE_SERVICE_ENTITLEMENT_BASE_PATH: string;
     public static CORE_SEARCH_BASE_PATH: string;
 
     // Keys
@@ -85,16 +83,11 @@ export abstract class Config implements IConfig {
         Config.CORE_SERVICE_HOST = this.getEnvString('CORE_SERVICE_HOST');
         Config.CORE_SERVICE_STORAGE_BASE_PATH = this.getEnvString('STORAGE_SERVICE_BASE_PATH', '/api/storage/v2');
         Config.CORE_SERVICE_PARTITION_BASE_PATH = this.getEnvString('PARTITION_SERVICE_BASE_PATH', '/api/partition/v1');
-        Config.CORE_SERVICE_COMPLIANCE_BASE_PATH = this.getEnvString('COMPLIANCE_SERVICE_BASE_PATH', '/api/legal/v1');
         Config.CORE_SERVICE_SCHEMA_BASE_PATH = this.getEnvString(
             'CORE_SERVICE_SCHEMA_BASE_PATH',
             '/api/schema-service/v1'
         );
         Config.CORE_SEARCH_BASE_PATH = this.getEnvString('SEARCH_SERVICE_BASE_PATH', '/api/search/v2');
-        Config.CORE_SERVICE_ENTITLEMENT_BASE_PATH = this.getEnvString(
-            'ENTITLEMENT_SERVICE_BASE_PATH',
-            '/api/entitlements/v2'
-        );
         Config.CORE_SERVICE_PARTITION_STORAGE_ACCOUNT_KEY = this.getEnvString(
             'PARTITION_SVC_STORAGE_ACCOUNT_KEY',
             'sdms-storage-account-name'

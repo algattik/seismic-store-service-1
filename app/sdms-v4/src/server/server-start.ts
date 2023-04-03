@@ -37,7 +37,7 @@ async function ServerStart() {
               })
             : hpropagate();
 
-        console.log(`- Initializing openapi documentation`);
+        console.log(`- Initializing swagger ui`);
         const swaggerDocument = await Utils.resolveJsonReferences(path.join(__dirname, '..', 'docs', 'openapi.yaml'));
 
         new (await import('./server')).Server(swaggerDocument).start();

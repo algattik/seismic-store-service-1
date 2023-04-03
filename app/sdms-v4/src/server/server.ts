@@ -35,19 +35,21 @@ export class Server {
         this.app.use(express.json());
         this.app.disable('x-powered-by');
         this.app.use(cors(corsOptions));
-        this.app.use(
-            Config.APIS_BASE_PATH + '/swagger-ui.html',
-            swaggerUi.serve,
-            swaggerUi.setup(swaggerDocument, {
-                customCss: '.swagger-ui .topbar { display: none }',
-            })
-        );
-        this.app.use(this.sddmsMiddleware);
+        if (swaggerDocument) {
+            this.app.use(
+                Config.APIS_BASE_PATH + '/swagger-ui.html',
+                swaggerUi.serve,
+                swaggerUi.setup(swaggerDocument, {
+                    customCss: '.swagger-ui .topbar { display: none }',
+                })
+            );
+        }
+        this.app.use(this.sdmsMiddleware);
         this.app.use(ServiceRouter);
     }
 
     // Set of operations to perform before serving the request
-    public sddmsMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
+    public sdmsMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
         // Required data-partition-id header
         if (!req.headers['data-partition-id']) {
             const statusCall = req.url.endsWith('status');

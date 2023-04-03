@@ -14,7 +14,5 @@
 // Limitations under the License.
 // ============================================================================
 
-export { ComplianceCoreService } from './compliance';
-export { EntitlementCoreService } from './entitlement';
 export { PartitionCoreService } from './partition';
 export { StorageCoreService } from './storage';

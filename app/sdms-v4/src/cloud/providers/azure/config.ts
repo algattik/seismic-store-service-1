@@ -1,5 +1,5 @@
 // ============================================================================
-// Copyright 2017-2022, Schlumberger
+// Copyright 2017-2023, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ export class AzureConfig extends Config {
     public static AI_INSTRUMENTATION_KEY: string;
     private static CORRELATION_ID = 'correlation-id';
 
-    // Keyvault Url
+    // KeyVault Url
     public static KEYVAULT_URL: string;
 
     public async init(): Promise<void> {
