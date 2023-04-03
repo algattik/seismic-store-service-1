@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e9b02431-26e1-4c73-b4cb-9390e421394d",
+		"_postman_id": "c8a794fd-2f8d-40d0-b58f-256dd5ec5d4f",
 		"name": "SDMS-E2E ver.M17 - Release 0.20",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17166992"
@@ -2871,6 +2871,36 @@
 									"pm.environment.unset('nextPageCursor')\r",
 									"pm.environment.unset('resArray')\r",
 									"pm.environment.unset('datasetArray')\r",
+									"pm.environment.unset('lsDataOriginalSet')\r",
+									"pm.environment.unset('lsDataCurrentSet')\r",
+									"pm.environment.unset('lsDatasetName')\r",
+									"pm.environment.unset('lsDataPath')\r",
+									"pm.environment.unset('lsDataBasePath')\r",
+									"\r",
+									"\r",
+									"function makeID_DataLs(length) {\r",
+									"   var result           = '';\r",
+									"   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+									"   var charactersLength = characters.length;\r",
+									"   for ( var i = 0; i < length - 1; i++ ) {\r",
+									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
+									"   }\r",
+									"   return 'W' + result;\r",
+									"}\r",
+									"const lsDataOriginalSet = [];\r",
+									"// create 2 datasets\r",
+									"for(let ii=0; ii<2; ii++) {\r",
+									"    lsDataOriginalSet.push(\"dsx\" + ii);\r",
+									"}\r",
+									"\r",
+									"// create 2 datasets in 2 folders\r",
+									"for(let ii=0; ii<1; ii++) {\r",
+									"    lsDataOriginalSet.push(\"folder0\" + ii + '/fsx1');\r",
+									"    lsDataOriginalSet.push(\"folder0\" + ii + '/fsx2');\r",
+									"}\r",
+									"\r",
+									"postman.setEnvironmentVariable(\"lsDataOriginalSet\", lsDataOriginalSet);\r",
+									"postman.setEnvironmentVariable(\"lsDataBasePath\", makeID_DataLs(8));\r",
 									""
 								],
 								"type": "text/javascript"
@@ -2902,6 +2932,117 @@
 							],
 							"path": [
 								"svcstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET LS GENERATE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    let lsDataCurrentSet = pm.environment.get(\"lsDataCurrentSet\");",
+									"",
+									"    if(lsDataCurrentSet.length > 0) {",
+									"        postman.setNextRequest('DATASET LS GENERATE');",
+									"    } else {",
+									"        pm.environment.unset('lsDataCurrentSet');",
+									"    }",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let lsDataCurrentSet = pm.environment.get(\"lsDataCurrentSet\");\r",
+									"if(!lsDataCurrentSet) {\r",
+									"    lsDataCurrentSet = pm.environment.get(\"lsDataOriginalSet\").split(',');\r",
+									"}\r",
+									"\r",
+									"const basePath = pm.environment.get(\"lsDataBasePath\").split(',');\r",
+									"\r",
+									"lsDatasetName = lsDataCurrentSet[0];\r",
+									"const tmp = lsDatasetName.split('/')\r",
+									"if(tmp.length == 1) {\r",
+									"    pm.environment.set(\"lsDataPath\", \"/\" + basePath + \"/\");\r",
+									"    pm.environment.set(\"lsDatasetName\", tmp[0]);\r",
+									"} else {\r",
+									"    pm.environment.set(\"lsDataPath\", \"/\" + basePath + \"/\" + tmp[0]);\r",
+									"    pm.environment.set(\"lsDatasetName\", tmp[1]);\r",
+									"}\r",
+									"lsDataCurrentSet.shift()\r",
+									"pm.environment.set(\"lsDataCurrentSet\", lsDataCurrentSet);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{lsDatasetName}}?path={{lsDataPath}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{lsDatasetName}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{lsDataPath}}"
+								}
 							]
 						}
 					},
@@ -2996,7 +3137,6 @@
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"",
 									"    // reset retry counter",
 									"    var key = request.name + '_counter';",
 									"    pm.environment.unset(key);",
@@ -3010,7 +3150,7 @@
 									"    // extract the response and set next page cursor",
 									"    var jsonData = pm.response.json();",
 									"    pm.environment.set(\"nextPageCursor\",jsonData.nextPageCursor);",
-									"    ",
+									"",
 									"    // fill the results array",
 									"    let resArray = [];",
 									"    if ((pm.environment.get(\"resArray\"))) {",
@@ -3021,10 +3161,19 @@
 									"    }",
 									"    resArray.sort();",
 									"    pm.environment.set(\"resArray\",resArray);",
-									"    ",
+									"",
+									"    if(!(pm.environment.get(\"limitValue\"))) {",
+									"        const reqbody = JSON.parse(pm.request.body.raw);",
+									"        const limitValue = parseInt(reqbody.limit);",
+									"        pm.environment.set(\"limitValue\",limitValue);",
+									"    }",
+									"     // Test to compare limit parameter with number of datasets returned",
+									"    pm.test(\"Verify number of datasets returned should be less than or equal to limit parameter\", function () {",
+									"        // Check if number of datasets returned is less than or equal to limit parameter",
+									"        pm.expect(jsonData.datasets.length).to.be.at.most((pm.environment.get(\"limitValue\")));",
+									"    });",
+									"",
 									"    // if there is a next page token re-execute this call for retrieve the new page otherwise check the results and move to the next call",
-									"    const provider = pm.environment.get('serviceCloudProvider');",
-									"    const pageTerminator = (provider === 'google' || provider === 'ibm') ? \"\" : null;",
 									"    if (jsonData.nextPageCursor != \"\") {",
 									"        postman.setNextRequest('DATASET LS POST');",
 									"    } else {",
@@ -3033,7 +3182,8 @@
 									"        });",
 									"        pm.environment.unset('resArray');",
 									"    }",
-									"};"
+									"};",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -3042,14 +3192,11 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"if (pm.environment.get(\"nextPageCursor\")) {\r",
+									"\tif (pm.environment.get(\"nextPageCursor\")) {\r",
 									"   const body = JSON.parse(pm.request.body.raw);\r",
 									"    body.cursor = pm.environment.get(\"nextPageCursor\");\r",
 									"    pm.request.body.raw = body;\r",
-									"}\r",
-									"console.log(pm.request.body)\r",
-									"\r",
-									""
+									"}"
 								],
 								"type": "text/javascript"
 							}
@@ -3098,6 +3245,118 @@
 					"response": []
 				},
 				{
+					"name": "DATASET LS DELETE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"",
+									"    // Reset environment variables if _.retryOnFailure function was used before",
+									"    var key = request.name + '_counter';",
+									"    pm.environment.unset(key);",
+									"    postman.setEnvironmentVariable('execCounter', 1)",
+									"",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"",
+									"    let lsDataCurrentSet = pm.environment.get(\"lsDataCurrentSet\");",
+									"",
+									"    // Delete datasets and folders",
+									"    if(lsDataCurrentSet.length > 0) {",
+									"        postman.setNextRequest('DATASET LS DELETE');",
+									"    } else {",
+									"        pm.environment.unset('lsDataCurrentSet')",
+									"    }        ",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"let lsDataCurrentSet = pm.environment.get(\"lsDataCurrentSet\");\r",
+									"if(!lsDataCurrentSet) {\r",
+									"    lsDataCurrentSet = pm.environment.get(\"lsDataOriginalSet\").split(',');\r",
+									"}\r",
+									"\r",
+									"const basePath = pm.environment.get(\"lsDataBasePath\").split(',');\r",
+									"\r",
+									"lsDatasetName = lsDataCurrentSet[0];\r",
+									"const tmp = lsDatasetName.split('/')\r",
+									"if(tmp.length == 1) {\r",
+									"    pm.environment.set(\"lsDataPath\", \"/\" + basePath + \"/\");\r",
+									"    pm.environment.set(\"lsDatasetName\", tmp[0]);\r",
+									"} else {\r",
+									"    pm.environment.set(\"lsDataPath\", \"/\" + basePath + \"/\" + tmp[0]);\r",
+									"    pm.environment.set(\"lsDatasetName\", tmp[1]);\r",
+									"}\r",
+									"lsDataCurrentSet.shift()\r",
+									"pm.environment.set(\"lsDataCurrentSet\", lsDataCurrentSet);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{lsDatasetName}}?path={{lsDataPath}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{lsDatasetName}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{lsDataPath}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "DATASET LS UNSET",
 					"event": [
 						{
@@ -3107,6 +3366,12 @@
 									"pm.environment.unset('nextPageCursor')",
 									"pm.environment.unset('resArray')",
 									"pm.environment.unset('datasetArray')",
+									"pm.environment.unset('lsDataOriginalSet')",
+									"pm.environment.unset('lsDataCurrentSet')",
+									"pm.environment.unset('lsDatasetName')",
+									"pm.environment.unset('lsDataPath')",
+									"pm.environment.unset('lsDataBasePath')",
+									"pm.environment.unset('limitValue')",
 									"postman.setEnvironmentVariable('execCounter', 1)",
 									"",
 									"console.log('Dataset list test variables have been uninitialized');"
