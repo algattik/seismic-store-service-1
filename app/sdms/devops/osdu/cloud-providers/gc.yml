@@ -21,7 +21,7 @@ sdms-gc-helm-charts-release-gitlab:
 
 sdms-gc-helm-charts-release-gcr:
   extends: .gc-helm-charts-release-gcr
-  needs: ["sdms-gc-containerize-gcr"]
+  needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
