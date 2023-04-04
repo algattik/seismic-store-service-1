@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c8a794fd-2f8d-40d0-b58f-256dd5ec5d4f",
+		"_postman_id": "7858d05f-f367-453e-954a-e5a678c545a2",
 		"name": "SDMS-E2E ver.M17 - Release 0.20",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17166992"
@@ -2856,7 +2856,7 @@
 									"pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));",
 									"//skip this folder for ibm",
 									"const provider = pm.environment.get('serviceCloudProvider');",
-									"if (provider === 'ibm') {",
+									"if( provider === 'aws' ||  provider === 'ibm') {",
 									"    postman.setNextRequest('DATASET LS UNSET');",
 									"}"
 								],
