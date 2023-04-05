@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { CloudFactory } from './cloud';
+import { Error } from '../shared';
 
 export interface IStorage {
     createBucket(
@@ -28,6 +29,7 @@ export interface IStorage {
     copy(bucketIn: string, prefixIn: string, bucketOut: string, prefixOut: string, ownerEmail: string): Promise<void>;
     randomBucketName(): Promise<string>;
     getStorageTiers(): string[];
+    getObjectSize(bucketName: string, prefix?: string): Promise<number>;
 }
 
 export abstract class AbstractStorage implements IStorage {
@@ -43,6 +45,9 @@ export abstract class AbstractStorage implements IStorage {
         prefixOut: string, ownerEmail: string): Promise<void>;
     public abstract randomBucketName(): Promise<string>;
     public abstract getStorageTiers(): string[];
+    public getObjectSize(bucketName: string, prefix?: string): Promise<number> {
+        throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
+    };
 }
 
 export class StorageFactory extends CloudFactory {

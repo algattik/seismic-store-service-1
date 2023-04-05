@@ -39,6 +39,8 @@ export interface IDatasetModel {
     access_policy: string;
     storageSchemaRecordType?: string;
     storageSchemaRecord?: any;
+    computed_size?: number;
+    computed_size_date?: string;
 
 }
 

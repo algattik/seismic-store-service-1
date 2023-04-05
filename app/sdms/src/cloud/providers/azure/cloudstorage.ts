@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { TokenCredential } from '@azure/identity';
-import { BlobBatchClient, BlobServiceClient } from '@azure/storage-blob';
+import { BlobBatchClient, BlobItem, BlobServiceClient } from '@azure/storage-blob';
 import { BlockBlobTier } from '@azure/storage-blob';
 import { Readable } from 'stream';
 import { AzureInsightsLogger } from '.';
@@ -175,6 +175,29 @@ export class AzureCloudStorage extends AbstractStorage {
 
     public getStorageTiers(): string[] {
         return Object.keys(BlockBlobTier);
+    }
+
+    public async getObjectSize(bucketName: string, prefix?: string): Promise<number> {
+
+        const container = (await this.getBlobServiceClient()).getContainerClient(bucketName);
+        let totalSize = 0;
+
+        // if access_policy == 'uniform' go to if path
+        // if access_policy == 'dataset' go to else path
+        if (prefix) {
+            const items = container.listBlobsByHierarchy('/', { prefix: prefix + '/' });
+            for await (const item of items) {
+                if (item.kind !== 'prefix') {
+                    totalSize += item.properties.contentLength;
+                }
+            }
+        } else {
+            const items = container.listBlobsFlat();
+            for await (const item of items) {
+                totalSize += item.properties.contentLength;
+            }
+        }
+        return totalSize;
     }
 
 }
