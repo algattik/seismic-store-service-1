@@ -664,7 +664,7 @@ paths:
         404:
           description: "Not found."
 
-  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/compute_size:
+  /dataset/tenant/{tenantid}/subproject/{subprojectid}/dataset/{datasetid}/size:
     post:
       summary: "Compute and retrieve the size of a dataset and the date of when the size was computed"
       description: |
@@ -2696,17 +2696,17 @@ definitions:
 
   # OK
   DatasetSize:
-    required: ["compute_size", "compute_size_date"]
+    required: ["computed_size", "computed_size_date"]
     properties:
-      compute_size:
+      computed_size:
         type: number
-        description: Size of a dataset.
-      compute_size_date:
+        description: The size of the dataset in bytes..
+      computed_size_date:
         type: string
-        description: Date of when dateset size was computed.
+        description: The date of when the dateset size was computed.
     example:
-      compute_size_byte: "5"
-      compute_size_date: "Thu Mar 16 2023 16:16:40 GMT-0500 (Central Daylight Time)"
+      computed_size: "35461"
+      computed_size_date: "Thu Mar 16 2023 16:16:40 GMT-0500 (Central Daylight Time)"
 
 # ===========================================================================
 # Endpoints Security Section
