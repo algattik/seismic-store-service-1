@@ -70,3 +70,8 @@ export interface SchemaTransformModel {
     data: any,
     nextTransformFuncID: string;
 }
+
+export interface ComputedSizeResponse {
+    computed_size: number;
+    computed_size_date: any;
+}

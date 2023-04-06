@@ -81,7 +81,7 @@ router.post('/tenant/:tenantid/subproject/:subprojectid/sizes',
     });
 
 // compute and return the dataset size and the date of when it was computed
-router.post('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/compute_size',
+router.post('/tenant/:tenantid/subproject/:subprojectid/dataset/:datasetid/size',
     async (req: expRequest, res: expResponse) => {
         await DatasetHandler.handler(req, res, DatasetOP.ComputeSize);
     });

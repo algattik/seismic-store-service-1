@@ -30,6 +30,7 @@ import { IWriteLockSession, Locker } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
 import { SchemaManagerFactory } from './schema-manager';
+import { ComputedSizeResponse } from './model';
 
 export class DatasetHandler {
 
@@ -879,7 +880,8 @@ export class DatasetHandler {
 
     // Compute and retrieve the size and the date of a dataset
     // Required role: subproject.admin
-    private static async computeSize(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
+    private static async computeSize(
+        req: expRequest, tenant: TenantModel, subproject: SubProjectModel): Promise<ComputedSizeResponse> {
 
         // parse user request
         // Retrieve the dataset information
@@ -952,9 +954,9 @@ export class DatasetHandler {
             await Locker.removeWriteLock(writeLockSession);
 
             return {
-                compute_size_byte: size,
-                compute_size_date: now
-            };
+                computed_size: size,
+                computed_size_date: now
+            } as ComputedSizeResponse;
 
         } catch (err) {
 
