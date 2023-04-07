@@ -227,7 +227,7 @@ sdms-gc-anthos-test-python:
   extends: .gc-anthos-test-python
   image: node
   needs: ["sdms-gc-anthos-deploy"]
-  allow_failure: true
+  allow_failure: false
   before_script:
     - cd app/$SDMS_SERVICE
   script:
