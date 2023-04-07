@@ -84,7 +84,8 @@ cors:
     - Data-Partition-Id
     - Correlation-Id
     - Content-Type
-securityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
 podSecurityContext: 
   fsGroup: 1337
   seccompProfile:
