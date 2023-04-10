@@ -39,6 +39,8 @@ export interface IDatasetModel {
     access_policy: string;
     storageSchemaRecordType?: string;
     storageSchemaRecord?: any;
+    computed_size?: number;
+    computed_size_date?: string;
 
 }
 
@@ -67,4 +69,9 @@ export interface SchemaTransformModel {
     transformFuncID: string,
     data: any,
     nextTransformFuncID: string;
+}
+
+export interface ComputedSizeResponse {
+    computed_size: number;
+    computed_size_date: any;
 }

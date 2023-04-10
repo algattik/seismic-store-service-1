@@ -21,7 +21,7 @@ sdms-gc-helm-charts-release-gitlab:
 
 sdms-gc-helm-charts-release-gcr:
   extends: .gc-helm-charts-release-gcr
-  needs: ["sdms-gc-containerize-gcr"]
+  needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
@@ -227,7 +227,7 @@ sdms-gc-anthos-test-python:
   extends: .gc-anthos-test-python
   image: node
   needs: ["sdms-gc-anthos-deploy"]
-  allow_failure: true
+  allow_failure: false
   before_script:
     - cd app/$SDMS_SERVICE
   script:

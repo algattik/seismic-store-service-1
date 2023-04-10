@@ -276,6 +276,10 @@ export class DatasetParser {
         return this.exists(req);
     }
 
+    public static size(req: expRequest): DatasetModel {
+        return this.createDatasetModelFromRequest(req);
+    }
+
     public static listContent(req: expRequest): DatasetModel {
         return this.createDatasetModelFromRequest(req);
     }

@@ -30,6 +30,7 @@ import { IWriteLockSession, Locker } from './locker';
 import { DatasetOP } from './optype';
 import { DatasetParser } from './parser';
 import { SchemaManagerFactory } from './schema-manager';
+import { ComputedSizeResponse } from './model';
 
 export class DatasetHandler {
 
@@ -61,6 +62,8 @@ export class DatasetHandler {
                 Response.writeOK(res, await this.exists(req, tenant, subproject));
             } else if (op === DatasetOP.Sizes) {
                 Response.writeOK(res, await this.sizes(req, tenant, subproject));
+            } else if (op === DatasetOP.ComputeSize) {
+                Response.writeOK(res, await this.computeSize(req, tenant, subproject));
             } else if (op === DatasetOP.Permission) {
                 Response.writeOK(res, await this.checkPermissions(req, tenant, subproject));
             } else if (op === DatasetOP.ListContent) {
@@ -875,6 +878,95 @@ export class DatasetHandler {
 
     }
 
+    // Compute and retrieve the size and the date of a dataset
+    // Required role: subproject.admin
+    private static async computeSize(
+        req: expRequest, tenant: TenantModel, subproject: SubProjectModel): Promise<ComputedSizeResponse> {
+
+        // parse user request
+        // Retrieve the dataset information
+        const requestedDateset = DatasetParser.size(req);
+        let writeLockSession: IWriteLockSession;
+
+        // retrieve journalClient client
+        const journalClient = JournalFactoryTenantClient.get(tenant);
+
+        // check if the dataset does not exist
+        let dataset: DatasetModel;
+        let key: any;
+        if (subproject.enforce_key) {
+            dataset = await DatasetDAO.getByKey(journalClient, requestedDateset);
+            key = journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + requestedDateset.tenant + '-' + requestedDateset.subproject,
+                path: [Config.DATASETS_KIND],
+                enforcedKey: requestedDateset.path.slice(0, -1) + '/' + requestedDateset.name
+            });
+        } else {
+            const results = await DatasetDAO.get(journalClient, requestedDateset);
+            dataset = results[0];
+            key = results[1];
+        }
+
+        if (!dataset) {
+            throw (Error.make(Error.Status.NOT_FOUND,
+                'The dataset ' + Config.SDPATHPREFIX + requestedDateset.tenant + '/' +
+                requestedDateset.subproject + requestedDateset.path + requestedDateset.name + ' does not exist'));
+        }
+
+        // Check if legal tag is valid
+        if (dataset.ltag) {
+            await Auth.isLegalTagValid(req.headers.authorization, dataset.ltag,
+                tenant.esd, req[Config.DE_FORWARD_APPKEY]);
+        }
+
+        // check if the user is write authorized
+        await Auth.isWriteAuthorized(req.headers.authorization,
+            DatasetAuth.getAuthGroups(subproject, dataset, AuthRoles.admin),
+            tenant, dataset.subproject,
+            req[Config.DE_FORWARD_APPKEY],
+            req.headers['impersonation-token-context'] as string);
+
+        try {
+
+            // attempt to acquire a mutex on the dataset name and set the lock for the dataset in redis
+            // a mutex is applied on the resource on the shared cache (removed at the end of the method)
+            const datasetLockKey = dataset.tenant + '/' + dataset.subproject + dataset.path + dataset.name;
+            writeLockSession = await Locker.createWriteLock(
+                datasetLockKey, req.headers['x-seismic-dms-lockid'] as string);
+
+            // Get the container and dataset information
+            const bucket = DatasetUtils.getBucketFromDatasetResourceUri(dataset.gcsurl);
+            const virtualFolder = DatasetUtils.getVirtualFolderFromDatasetResourceUri(dataset.gcsurl);
+            const accessPolicy = subproject.access_policy || Config.UNIFORM_ACCESS_POLICY;
+
+            // Get the size and date
+            const size = await StorageFactory.build(
+            Config.CLOUDPROVIDER, tenant).getObjectSize(
+                bucket, accessPolicy === Config.UNIFORM_ACCESS_POLICY ? virtualFolder : undefined);
+            const now = new Date().toString();
+
+            // Update dataset table
+            dataset.computed_size = size;
+            dataset.computed_size_date = now;
+            await DatasetDAO.update(journalClient, dataset, key);
+
+            // release the mutex and unlock the resource
+            await Locker.removeWriteLock(writeLockSession);
+
+            return {
+                computed_size: size,
+                computed_size_date: now
+            } as ComputedSizeResponse;
+
+        } catch (err) {
+
+            // release the mutex and unlock the resource
+            await Locker.removeWriteLock(writeLockSession);
+            throw (err);
+        }
+
+    }
+
     // List the content of a path folder sd://<tenant>/<subproject>/<path>/*
     // Required role: subproject.viewer
     private static async listContent(req: expRequest, tenant: TenantModel, subproject: SubProjectModel) {
@@ -1005,5 +1097,4 @@ export class DatasetHandler {
         return res;
 
     }
-
 }
