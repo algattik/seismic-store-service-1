@@ -143,8 +143,20 @@
   "overrides": {
     "@azure/identity": {
       "@azure/msal-node": {
-        "jsonwebtoken": "9.0.0"
+        "jsonwebtoken": "$jsonwebtoken"
       }
+    },
+    "jwtproxy": {
+      "jsonwebtoken": "$jsonwebtoken"
+    },
+    "express": {
+      "qs": "$qs"
+    },
+    "@cloudant/cloudant": {
+      "qs": "$qs"
+    },
+    "newman": {
+      "qs": "$qs"
     }
   },
   "config": {

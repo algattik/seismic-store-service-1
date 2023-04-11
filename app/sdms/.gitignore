@@ -2,10 +2,10 @@
 **/node_modules/**
 dist
 
-# python
+# python 
 *.pyc
 
-# Log Files 
+# Log Files  
 *.log
 
 # test 
@@ -37,4 +37,3 @@ newman
 
 # dump file
 *.rdb
-

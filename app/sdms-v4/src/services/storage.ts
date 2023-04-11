@@ -20,8 +20,16 @@ import { Config } from '../cloud';
 import axios from 'axios';
 
 export class StorageCoreService {
-    public static async insertRecords(userToken: string, records: object[], dataPartition: string): Promise<string[]> {
-        const url = Config.CORE_SERVICE_HOST + Config.CORE_SERVICE_STORAGE_BASE_PATH + '/records';
+    public static async insertRecords(
+        userToken: string,
+        records: object[],
+        dataPartition: string,
+        skipDupes = false
+    ): Promise<string[]> {
+        let url = Config.CORE_SERVICE_HOST + Config.CORE_SERVICE_STORAGE_BASE_PATH + '/records';
+        if (skipDupes === true) {
+            url = url + '?skipdupes=true';
+        }
         const data = JSON.stringify(records);
         const options: any = {
             headers: {

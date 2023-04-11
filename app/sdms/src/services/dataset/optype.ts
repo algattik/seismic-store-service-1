@@ -16,6 +16,6 @@
 
 export enum DatasetOP {
     Register, Get, List, Delete, Patch,
-    Exists, Sizes, Permission, ListContent,
+    Exists, Sizes, ComputeSize, Permission, ListContent,
     CheckCTag, Lock, UnLock, PutTags,
 }

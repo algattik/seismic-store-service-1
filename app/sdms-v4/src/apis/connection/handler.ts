@@ -14,18 +14,17 @@
 // Limitations under the License.
 // ============================================================================
 
-import { ComplianceCoreService, EntitlementCoreService, StorageCoreService } from '../../services';
 import { Config, CredentialsFactory } from '../../cloud';
-import { Error, Response, Utils, getInMemoryCacheInstance } from '../../shared';
+import { Error, Response, Utils } from '../../shared';
 import { Request as expRequest, Response as expResponse } from 'express';
 import { Context } from '../../shared/context';
 import { Operation } from './operations';
 import { Parser } from './parser';
-import crypto from 'crypto';
+import { StorageCoreService } from '../../services';
 
 export class ConnectionsHandler {
     public static async handler(req: expRequest, res: expResponse, op: Operation) {
-        if (!Context.schemaEndpoint.hasBulks) {
+        if (Context.schemaEndpoint && Context.schemaEndpoint.hasBulks === false) {
             throw Error.make(
                 Error.Status.BAD_REQUEST,
                 'Connection strings cannot be released for ' + Context.schemaEndpoint.kind
@@ -47,71 +46,25 @@ export class ConnectionsHandler {
     private static async getConnectionString(req: expRequest, dataPartition: string, readonly: boolean) {
         const recordId = Parser.getParamRecordId(req);
         const recordVersion = Parser.getParamRecordVersion(req);
-        const storageRecord = await StorageCoreService.getRecord(
+
+        // ensure the record exist (this will enforce dynamic policy check)
+        const record = await StorageCoreService.getRecord(
             req.headers.authorization,
             recordId,
             dataPartition,
             recordVersion
         );
 
-        const legalTags = storageRecord['legal']['legaltags'];
-        for (const legalTag of legalTags) {
-            await this.isLegalTagValid(req.headers.authorization, legalTag, dataPartition);
+        // for upload connection strings only
+        if (!readonly) {
+            // ensure the user is owner by trying upsert an entry (skip-dupes-applies)
+            await StorageCoreService.insertRecords(req.headers.authorization, [record], dataPartition, true);
         }
-
-        const viewers = storageRecord['acl']['owners'] as string[];
-        const owners = storageRecord['acl']['viewers'] as string[];
-        this.isAccessAuthorized(
-            req.headers.authorization,
-            dataPartition,
-            readonly ? viewers.concat(owners) : owners,
-            recordId,
-            readonly ? 'viewer' : 'admin',
-            recordVersion
-        );
 
         const bucketId = Utils.constructBucketID(recordId);
         const storageCredentials = await CredentialsFactory.build(Config.CLOUD_PROVIDER, {
             dataPartition,
         }).getStorageCredentials(bucketId, readonly, dataPartition);
         return storageCredentials;
-    }
-
-    private static async isLegalTagValid(userToken: string, legalTag: string, dataPartition: string): Promise<boolean> {
-        const isValid = await ComplianceCoreService.isLegalTagValid(userToken, legalTag, dataPartition);
-        if (!isValid) {
-            throw Error.make(
-                Error.Status.NOT_FOUND,
-                'The record legal tag "' + legalTag + '" is not valid or expired.'
-            );
-        }
-        return isValid;
-    }
-
-    public static async isAccessAuthorized(
-        userToken: string,
-        dataPartition: string,
-        authGroups: string[],
-        recordId: string,
-        authRole: string,
-        recordVersion?: string
-    ): Promise<boolean> {
-        const cache = getInMemoryCacheInstance();
-        const userTokenSHA = crypto.createHash('sha1').update(userToken).digest('base64');
-        const cacheKey = userTokenSHA + ':' + authRole + ':' + recordId + (recordVersion ? ':' + recordVersion : '');
-
-        const cacheResult = cache.get<boolean>(cacheKey);
-        if (cacheResult) {
-            return cacheResult;
-        }
-
-        const groups = await EntitlementCoreService.getUserGroups(userToken, dataPartition);
-        const result = authGroups.some((authGroup) => groups.map((group) => group.email).includes(authGroup));
-        if (!result) {
-            throw Error.make(Error.Status.PERMISSION_DENIED, 'User not authorized to perform this operation');
-        }
-
-        cache.set<boolean>(cacheKey, result, 60);
-        return result;
     }
 }

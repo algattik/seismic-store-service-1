@@ -60,7 +60,7 @@ async def get_trace_header_field_count(
         api_key: APIKey = Depends(get_api_key)):
     segy = __create_segy_session(bearer, api_key, sdpath)
     try:
-        count = segy.get_trace_header_fields()
+        count = segy.get_trace_header_field_count()
     except segysdk.SegyException as se:
         raise segy_error(se)
     except Exception as e:

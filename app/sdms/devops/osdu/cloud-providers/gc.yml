@@ -3,15 +3,25 @@ variables:
   GC_GCR_REGISTRY: gcr.io/osdu-anthos
   SEISMIC_GC_DOCKERFILE_NAME: "devops/anthos/runtime.Dockerfile"
 
-sdms-gc-helm-charts-master:
-  extends: .gc-helm-charts-master
+sdms-gc-helm-charts-gitlab:
+  extends: .gc-helm-charts-gitlab
+  needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
     IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
 
-sdms-gc-helm-charts-release:
-  extends: .gc-helm-charts-release
+sdms-gc-helm-charts-release-gitlab:
+  extends: .gc-helm-charts-release-gitlab
+  needs: ["sdms-gc-containerize-gitlab"]
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+
+sdms-gc-helm-charts-release-gcr:
+  extends: .gc-helm-charts-release-gcr
+  needs: ["sdms-gc-containerize-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
     SEISMIC_GC_SERVICE: seismic-store
@@ -62,7 +72,7 @@ sdms-gc-containerize-gcr:
 
 sdms-gc-deploy:
   extends: .gc-deploy
-  needs: ["sdms-gc-containerize-gitlab"]
+  needs: ["sdms-gc-helm-charts-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
@@ -80,7 +90,7 @@ sdms-gc-deploy:
 
 sdms-gc-dev2-deploy:
   extends: .gc-dev2-deploy
-  needs: ["sdms-gc-containerize-gitlab"]
+  needs: ["sdms-gc-helm-charts-release-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
@@ -99,9 +109,32 @@ sdms-gc-dev2-deploy:
         - devops/**/*
         - app/sdms/**/*
 
+sdms-gc-preship-deploy:
+  extends: .gc-preship-deploy
+  needs: ["sdms-gc-dev2-deploy"]
+  variables:
+    SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
+    SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
+    SEISMIC_GC_SERVICE: seismic-store
+    SEISMIC_GC_CHART: gc-seismic-store-sdms-deploy #var used only in release and tagged pipelines
+    IMAGE_NAME: gc-$SEISMIC_GC_SERVICE
+  rules:
+    - if: '$GC == "1" && $CI_COMMIT_TAG'
+      when: manual
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+      allow_failure: true
+    - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
+      when: manual
+      changes:
+        - devops/**/*
+        - app/sdms/**/*
+      allow_failure: true
+
 sdms-gc-anthos-deploy:
   extends: .gc-anthos-deploy
-  needs: ["sdms-gc-containerize-gitlab"]
+  needs: ["sdms-gc-helm-charts-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
     SEISMIC_GC_HELM_DEPLOYMENT_DIR: "app/sdms/devops/gc/deploy"
@@ -194,7 +227,7 @@ sdms-gc-anthos-test-python:
   extends: .gc-anthos-test-python
   image: node
   needs: ["sdms-gc-anthos-deploy"]
-  allow_failure: true
+  allow_failure: false
   before_script:
     - cd app/$SDMS_SERVICE
   script:
