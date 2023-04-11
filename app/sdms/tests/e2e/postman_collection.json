@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "b2f6393c-b1f2-4ab7-b2d1-d090957ec952",
+		"_postman_id": "9e0ad568-3090-4ab9-8796-4b25f448230f",
 		"name": "SDMS-E2E ver.M18 - Release 0.21",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "11702291"
+		"_exporter_id": "17166992"
 	},
 	"item": [
 		{
@@ -2854,6 +2854,7 @@
 									"console.log('Dataset list test variables have been initialized');",
 									"postman.setEnvironmentVariable('execCounter', 1)",
 									"pm.environment.set('serviceCloudProvider', pm.response.headers.get('Service-Provider'));",
+									"",
 									"//skip this folder for ibm",
 									"const provider = pm.environment.get('serviceCloudProvider');",
 									"if( provider === 'aws' ||  provider === 'ibm') {",
@@ -2888,12 +2889,13 @@
 									"   return 'W' + result;\r",
 									"}\r",
 									"const lsDataOriginalSet = [];\r",
+									"\r",
 									"// create 2 datasets\r",
 									"for(let ii=0; ii<2; ii++) {\r",
 									"    lsDataOriginalSet.push(\"dsx\" + ii);\r",
 									"}\r",
 									"\r",
-									"// create 2 datasets in 2 folders\r",
+									"// create 2 datasets in 1 folder\r",
 									"for(let ii=0; ii<1; ii++) {\r",
 									"    lsDataOriginalSet.push(\"folder0\" + ii + '/fsx1');\r",
 									"    lsDataOriginalSet.push(\"folder0\" + ii + '/fsx2');\r",
@@ -2949,7 +2951,6 @@
 									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
 									"",
 									"} else {",
-									"",
 									"    // Reset environment variables if _.retryOnFailure function was used before",
 									"    var key = request.name + '_counter';",
 									"    pm.environment.unset(key);",
@@ -3071,7 +3072,7 @@
 									"    });",
 									"    ",
 									"    pm.test(\"Data List\", function () {",
-									"        pm.expect(jsonData.length).gte(1);",
+									"        pm.expect(jsonData.length).gte(4);",
 									"    });",
 									"    ",
 									"    //Get the list of datasets and stored it in a variable",
@@ -3192,7 +3193,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"\tif (pm.environment.get(\"nextPageCursor\")) {\r",
+									"if (pm.environment.get(\"nextPageCursor\")) {\r",
 									"   const body = JSON.parse(pm.request.body.raw);\r",
 									"    body.cursor = pm.environment.get(\"nextPageCursor\");\r",
 									"    pm.request.body.raw = body;\r",
@@ -3283,7 +3284,6 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"\r",
 									"let lsDataCurrentSet = pm.environment.get(\"lsDataCurrentSet\");\r",
 									"if(!lsDataCurrentSet) {\r",
 									"    lsDataCurrentSet = pm.environment.get(\"lsDataOriginalSet\").split(',');\r",
