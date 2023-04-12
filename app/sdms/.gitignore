@@ -2,13 +2,13 @@
 **/node_modules/**
 dist
 
-# python 
+# python  
 *.pyc
 
 # Log Files  
 *.log
 
-# test 
+# test  
 .nyc_output
 coverage 
 test-results.xml
