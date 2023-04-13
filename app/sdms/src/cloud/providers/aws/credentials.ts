@@ -104,9 +104,9 @@ export class AWSCredentials extends AbstractCredentials {
 
             credentials = await this.awsSTSHelper.getCredentials(s3bucket, keyPath,roleArn,flagUpload,expDuration);
 
-                const result = {
+            const result = {
                 access_token: credentials,
-                expires_in: 3599,
+                expires_in: +expDuration,
                 token_type: 'Bearer',
             };
             return result;
