@@ -86,6 +86,11 @@ cors:
     - Content-Type
 securityContext:
   allowPrivilegeEscalation: false
+  capabilities:
+    # This cap is needed for SwaggerManager.init()
+    add: ["DAC_OVERRIDE"]
+    drop:
+      - ALL
 podSecurityContext: 
   fsGroup: 1337
   seccompProfile:
