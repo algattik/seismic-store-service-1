@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9e0ad568-3090-4ab9-8796-4b25f448230f",
+		"_postman_id": "1410053e-acba-41b1-acfe-2b6c9da90d15",
 		"name": "SDMS-E2E ver.M18 - Release 0.21",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17166992"
@@ -541,86 +541,6 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"subproject",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "SUBPROJECT REGISTER",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code != 200) {",
-									"    console.log(pm.response.text())",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    var jsonData = pm.response.json();",
-									"",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    pm.test(\"Subproject created\", function () {",
-									"        pm.expect(jsonData.name).to.eql(pm.environment.get(\"subproject\"));",
-									"        pm.expect(jsonData.tenant).to.eql(pm.environment.get(\"tenant\"));",
-									"        pm.expect(jsonData.ltag).to.exist;",
-									"        pm.expect(jsonData.gcs_bucket).to.exist;",
-									"        if(pm.environment.get('serviceCloudProvider') === 'google') {",
-									"            pm.expect(jsonData.storage_class).to.eql('REGIONAL');",
-									"            pm.expect(jsonData.storage_location).to.eql('US-CENTRAL1');",
-									"        }",
-									"    });",
-									"    ",
-									"    postman.setNextRequest(\"SUBPROJECT GET NEW\");",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "ltag",
-								"value": "{{legaltag01}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"admin\": \"{{adminEmail}}\",\n\t\"storage_class\": \"REGIONAL\",\n\t\"storage_location\": \"US-CENTRAL1\"\n}"
-						},
 						"url": {
 							"raw": "{{SVC_URL}}/subproject/tenant/{{tenant}}/subproject/{{subproject}}",
 							"host": [
@@ -9017,7 +8937,63 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE WITH SEGY_V1",
+					"name": "DATASET DELETE WITH SEGY_V1 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 500) {",
+									"    console.log(pm.response.text())",
+									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
+									"",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.expect(pm.response.code).to.be.eql(200)",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{STOKEN}}"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{SVC_API_KEY}}"
+							},
+							{
+								"key": "appkey",
+								"value": "{{DE_APP_KEY}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx03}}",
+							"host": [
+								"{{SVC_URL}}"
+							],
+							"path": [
+								"dataset",
+								"tenant",
+								"{{tenant}}",
+								"subproject",
+								"{{subproject}}",
+								"dataset",
+								"{{dsx03}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DATASET DELETE WITH OPENZGY_V1 2",
 					"event": [
 						{
 							"listen": "test",
@@ -11008,7 +10984,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded01}}",
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}?path={{testPathEncoded02}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -11019,12 +10995,12 @@
 								"subproject",
 								"{{subproject}}",
 								"dataset",
-								"{{dsx01}}"
+								"{{dsx02}}"
 							],
 							"query": [
 								{
 									"key": "path",
-									"value": "{{testPathEncoded01}}"
+									"value": "{{testPathEncoded02}}"
 								}
 							]
 						}
@@ -11075,7 +11051,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPathEncoded01}}",
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx03}}?path={{testPathEncoded03}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -11086,12 +11062,12 @@
 								"subproject",
 								"{{subproject}}",
 								"dataset",
-								"{{dsx01}}"
+								"{{dsx03}}"
 							],
 							"query": [
 								{
 									"key": "path",
-									"value": "{{testPathEncoded01}}"
+									"value": "{{testPathEncoded03}}"
 								}
 							]
 						}
@@ -12861,140 +12837,6 @@
 								{
 									"key": "path",
 									"value": "{{testPathEncoded01}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "UTILITY DATASET DELETE IN P1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code != 200) {",
-									"    console.log(pm.response.text())",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    // Reset environment variables if _.retryOnFailure function was used before",
-									"    var key = request.name + '_counter';",
-									"    pm.environment.unset(key);",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path=/p1",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx01}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "/p1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "UTILITY DATASET DELETE IN P2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (responseCode.code != 200) {",
-									"    console.log(pm.response.text())",
-									"    _.retryOnFailure(postman, pm.response.code, request.name, pm.environment.get(\"maxAmountOfRetries\"));",
-									"",
-									"} else {",
-									"    pm.test(\"Status code is 200\", function () {",
-									"        pm.response.to.have.status(200);",
-									"    });",
-									"",
-									"    // Reset environment variables if _.retryOnFailure function was used before",
-									"    var key = request.name + '_counter';",
-									"    pm.environment.unset(key);",
-									"    postman.setEnvironmentVariable('execCounter', 1)",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{STOKEN}}"
-							},
-							{
-								"key": "x-api-key",
-								"value": "{{SVC_API_KEY}}"
-							},
-							{
-								"key": "appkey",
-								"value": "{{DE_APP_KEY}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}?path=/p1/p2",
-							"host": [
-								"{{SVC_URL}}"
-							],
-							"path": [
-								"dataset",
-								"tenant",
-								"{{tenant}}",
-								"subproject",
-								"{{subproject}}",
-								"dataset",
-								"{{dsx02}}"
-							],
-							"query": [
-								{
-									"key": "path",
-									"value": "/p1/p2"
 								}
 							]
 						}
@@ -16531,7 +16373,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx01}}?path={{testPath}}",
+							"raw": "{{SVC_URL}}/dataset/tenant/{{tenant}}/subproject/{{subproject}}/dataset/{{dsx02}}?path={{testPath}}",
 							"host": [
 								"{{SVC_URL}}"
 							],
@@ -16542,7 +16384,7 @@
 								"subproject",
 								"{{subproject}}",
 								"dataset",
-								"{{dsx01}}"
+								"{{dsx02}}"
 							],
 							"query": [
 								{

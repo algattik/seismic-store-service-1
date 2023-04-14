@@ -5,7 +5,7 @@ dist
 # python  
 *.pyc
 
-# Log Files  
+# Log Files   
 *.log
 
 # test  
@@ -20,7 +20,7 @@ seismic-store-service.tar.gz
 # keyfiles
 keys
 
-# vscode configurations
+# vscode configurations 
 .vscode
 
 # dotenv file
