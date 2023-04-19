@@ -17,22 +17,19 @@
 import { Config, ConfigFactory } from '../../config';
 import { LoggerFactory } from '../../logger';
 import { AzureInsightsLogger } from './insights';
-import { Keyvault } from './keyvault';
+import { KeyVault } from './keyvault';
 
 @ConfigFactory.register('azure')
 export class AzureConfig extends Config {
 
-    // Vars to hold service principal configurations
-    public static SP_TENANT_ID: string;
-    public static SP_CLIENT_ID: string;
-    public static SP_CLIENT_SECRET: string;
-    public static SP_APP_RESOURCE_ID: string;
+    // Application resource id
+    public static APP_RESOURCE_ID: string;
 
     // Instrumentation key
     public static AI_INSTRUMENTATION_KEY: string;
     public static CORRELATION_ID = 'correlation-id';
 
-    // keyvault id
+    // KeyVault id
     public static KEYVAULT_URL: string;
 
     // Apis base url path
@@ -62,10 +59,10 @@ export class AzureConfig extends Config {
 
         try {
 
-            // set up secrets from Azure Keyvault
+            // set up secrets from Azure KeyVault
             AzureConfig.KEYVAULT_URL = process.env.KEYVAULT_URL;
             Config.checkRequiredConfig(AzureConfig.KEYVAULT_URL, 'KEYVAULT_URL');
-            await Keyvault.loadSecrets(Keyvault.CreateSecretClient());
+            await KeyVault.loadSecrets(KeyVault.CreateSecretClient());
 
             // data ecosystem host url and appkey
             AzureConfig.DES_SERVICE_HOST_COMPLIANCE = process.env.DES_SERVICE_HOST_COMPLIANCE ||
