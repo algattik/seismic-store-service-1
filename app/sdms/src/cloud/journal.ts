@@ -18,6 +18,7 @@ import { Config } from './config';
 import { CloudFactory } from './cloud';
 import { TenantModel } from '../services/tenant';
 import { DatasetModel } from '../services/dataset';
+import { Error } from '../shared';
 
 export interface IJournalQueryModel {
     filter(property: string, value: {}): IJournalQueryModel;
@@ -33,6 +34,7 @@ export interface IJournalQueryModel {
 
 export interface IJournal {
     get(key: any): Promise<[any | any[]]>;
+    getIdByKeys(keys: any[]): Promise<string[]>;
     save(entity: any): Promise<void>;
     delete(key: any): Promise<void>;
     createQuery(namespace: string, kind: string): IJournalQueryModel;
@@ -74,6 +76,9 @@ export abstract class AbstractJournal implements IJournal {
         const query = q.filter('path', '>', dataset.path).filter('path', '<', dataset.path + '\ufffd');
         const [res] = [await this.runQuery(query)];
         return res;
+    }
+    public getIdByKeys(keys: any[]): Promise<string[]> {
+        throw (Error.make(Error.Status.NOT_IMPLEMENTED, 'Method not implemented.'));
     }
 }
 

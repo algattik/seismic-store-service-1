@@ -40,6 +40,27 @@ export class DatasetDAO {
         return entity ? await this.fixOldModel(entity, dataset.tenant, dataset.subproject) : entity;
     }
 
+    public static async exists(journalClient: IJournal, datasets: DatasetModel[]): Promise<boolean[]> {
+        const keys = [];
+        const bools = [] as boolean[];
+
+        for(const dataset of datasets)
+        {
+            keys.push(journalClient.createKey({
+                namespace: Config.SEISMIC_STORE_NS + '-' + dataset.tenant + '-' + dataset.subproject,
+                path: [Config.DATASETS_KIND],
+                enforcedKey: dataset.path.slice(0, -1) + '/' + dataset.name
+            }));
+        }
+        const results = await journalClient.getIdByKeys(keys);
+
+        for(const key of keys) {
+            bools.push(results.includes(key.partitionKey));
+        }
+
+        return bools;
+    }
+
     public static async get(
         journalClient: IJournal,
         dataset: DatasetModel): Promise<[DatasetModel, any]> {

@@ -87,6 +87,9 @@ export class DatasetDAOTest {
                 get: function (key: any): Promise<[any]> {
                     return Promise.resolve([ datasetModel ]);
                 },
+                getIdByKeys: function (key: any): Promise<[any]> {
+                    return Promise.resolve(["exit getMulti"]);
+                },
                 save: function (entity: any): Promise<any> {
                     return Promise.resolve("exit saved");
                 },
