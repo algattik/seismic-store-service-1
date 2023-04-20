@@ -818,11 +818,14 @@ export class DatasetHandler {
 
         // Check if the required datasets exist
         Config.disableStrongConsistencyEmulation();
-        const results: boolean[] = [];
+        let results: boolean[] = [];
         if (subproject.enforce_key) {
-            for (const dataset of datasets) {
-                results.push((await DatasetDAO.getByKey(journalClient, dataset)) !== undefined);
+            if(Config.CLOUDPROVIDER !== 'azure') {
+                for (const dataset of datasets) {
+                    results.push((await DatasetDAO.getByKey(journalClient, dataset)) !== undefined);
+                }
             }
+            else { results = await DatasetDAO.exists(journalClient, datasets) }
         } else {
             for (const dataset of datasets) {
                 results.push((await DatasetDAO.get(journalClient, dataset))[0] !== undefined);
