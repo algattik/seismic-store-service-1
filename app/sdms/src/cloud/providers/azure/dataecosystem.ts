@@ -111,7 +111,7 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
                 cosmosKeyConfigs.value)).value;
         }
 
-        cache.set<string>(dataPartitionID, JSON.stringify({
+        cache.set<string>(cacheKey, JSON.stringify({
             endpoint: cosmosEndpointConfigs.value, key: cosmosKeyConfigs.value
         }), 3600);
 
