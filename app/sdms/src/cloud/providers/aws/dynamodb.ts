@@ -31,6 +31,10 @@ export class AWSDynamoDbDAO extends AbstractJournal {
     private dataPartition: string;
     private tenant: TenantModel;
     private tenantTablePrefix: string;
+    private static ALLOWED_NAMES_REGEX: Map<string, RegExp> = new Map([
+        [AWSConfig.SUBPROJECTS_KIND, new RegExp('^[^\\-]+$')]
+    ]);
+
     public constructor(tenant: TenantModel) {
         super();
         this.tenant = tenant;
@@ -59,15 +63,26 @@ export class AWSDynamoDbDAO extends AbstractJournal {
         }
         for (const entity of datasetEntity) {
             const item  = entity.data;
+            // The following is required due to the possibility that subprojects may have the `-` character.
+            // We need to disallow it.
+            // tslint:disable-next-line: max-line-length
+            // https://community.opengroup.org/osdu/platform/domain-data-mgmt-services/seismic/seismic-dms-suite/seismic-store-sdutil/-/issues/10
+            const tableKind = entity.key.tableKind;
+            const mustMatchRegex = AWSDynamoDbDAO.ALLOWED_NAMES_REGEX.get(tableKind);
+            if (mustMatchRegex !== undefined) {
+                const name = entity.key.name;
+                if (!(mustMatchRegex.test(name)))
+                    throw new Error(`Invalid name ${name} for ${tableKind}`);
+            }
             // id attribute is used by aws as partitionKey.
             // For tenant, id = name, for subproject, id=tenant:name;
             // for dataset, id=tenant:subproject:name:path; for app, id=tenant:email
             const strs = entity.key.partitionKey.split(':');
-            if(entity.key.tableKind === AWSConfig.DATASETS_KIND && strs.length === 2){
+            if(tableKind === AWSConfig.DATASETS_KIND && strs.length === 2){
                 // fill in data name and path to the key
                 entity.key.partitionKey = entity.key.partitionKey+':'+item.name+':'+item.path;
             }
-            if(entity.key.tableKind === AWSConfig.APPS_KIND){
+            if(tableKind === AWSConfig.APPS_KIND){
                 item['tenant'] = strs[0]; // add tenant entry for App table
             }
             item['id'] = entity.key.partitionKey;
