@@ -28,8 +28,8 @@ data:
   apiBasePath: "/api/v3"
   serviceEnv: "dev"
   # Deployment
-  requestsCpu: "10m"
-  requestsMemory: "200Mi"
+  requestsCpu: "5m"
+  requestsMemory: "150Mi"
   limitsCpu: "1"
   limitsMemory: "1G"
   serviceAccountName: "seismic-store"
@@ -48,7 +48,7 @@ conf:
   sdmsRedisSecretName: "seismic-store-redis-secret" # pragma: allowlist secret
 
 istio:
-  proxyCPU: "10m"
+  proxyCPU: "6m"
   proxyCPULimit: "500m"
-  proxyMemory: "100Mi"
+  proxyMemory: "50Mi"
   proxyMemoryLimit: "512Mi"
