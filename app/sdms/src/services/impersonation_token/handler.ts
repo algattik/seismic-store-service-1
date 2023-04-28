@@ -201,4 +201,16 @@ export class ImpersonationTokenHandler {
 
     }
 
+    public static decodeContext(tokenContext: string): ImpersonationTokenContextModel {
+        const authClientSecret = AuthProviderFactory.build(
+            Config.SERVICE_AUTH_PROVIDER).getClientSecret();
+
+        // decrypt the impersonation token context
+        return JSON.parse(Utils.decrypt(
+            tokenContext.split('.')[0],
+            tokenContext.split('.')[1],
+            authClientSecret)) as ImpersonationTokenContextModel;
+    }
+
+
 }
