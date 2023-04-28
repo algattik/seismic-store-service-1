@@ -18,7 +18,8 @@ import sinon from 'sinon';
 
 import { Datastore } from '@google-cloud/datastore';
 import { Request as expRequest, Response as expResponse } from 'express';
-import { Auth } from '../../../src/auth';
+import { Auth, AuthProviderFactory } from '../../../src/auth';
+import { IAuthProvider } from '../../../src/auth/auth';
 import { Config, google, StorageFactory } from '../../../src/cloud';
 import { DESStorage, DESUtils, DESUserAssociation } from '../../../src/dataecosystem';
 import { IStorage } from '../../../src/cloud/storage';
@@ -31,6 +32,8 @@ import { DatasetParser } from '../../../src/services/dataset/parser';
 import { SubProjectDAO, SubProjectModel } from '../../../src/services/subproject';
 import { TenantDAO, TenantModel } from '../../../src/services/tenant';
 import { Response } from '../../../src/shared';
+import { ImpersonationTokenModel, ImpersonationTokenContextModel } from '../../../src/services/impersonation_token/model';
+import { Utils } from '../../../src/shared';
 import { Tx } from '../utils';
 
 export class TestDatasetSVC {
@@ -108,6 +111,7 @@ export class TestDatasetSVC {
             this.lock();
             this.unlock();
             this.listPost();
+            this.parser();
 
         });
 
@@ -179,10 +183,12 @@ export class TestDatasetSVC {
     private static register() {
 
         Tx.sectionInit('register');
+        let datasetCopy = JSON.parse(JSON.stringify(this.dataset))
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
             this.sandbox.stub(DatasetDAO, 'get').resolves([] as any);
             this.sandbox.stub(DatasetDAO, 'register').resolves();
+            this.sandbox.stub(DatasetParser, 'register').resolves(datasetCopy);
             this.sandbox.stub(DESStorage, 'insertRecord').resolves();
             this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(true);
             this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
@@ -195,6 +201,7 @@ export class TestDatasetSVC {
         });
 
         Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            this.sandbox.stub(DatasetParser, 'register').resolves(datasetCopy);
             this.sandbox.stub(DatasetDAO, 'get').resolves([{ ltag: 'l' }] as any);
             this.sandbox.stub(Auth, 'isWriteAuthorized').resolves(true);
             this.sandbox.stub(Auth, 'isLegalTagValid').resolves(true);
@@ -220,7 +227,7 @@ export class TestDatasetSVC {
                 data: { msg: 'seismic metadata' },
                 kind: 'slb:seistore:seismic2d:1.0.0',
             };
-
+            this.sandbox.stub(DatasetParser, 'register').resolves(datasetCopy);
             this.sandbox.stub(DatasetDAO, 'get').resolves([] as any);
             this.sandbox.stub(DatasetDAO, 'register').resolves();
             this.sandbox.stub(DESStorage, 'insertRecord').resolves();
@@ -935,6 +942,56 @@ export class TestDatasetSVC {
             this.sandbox.stub(DatasetDAO, 'get').resolves([undefined, undefined]);
             await DatasetHandler.handler(expReq, expRes, DatasetOP.UnLock);
             Tx.check404(expRes.statusCode, done);
+        });
+
+    }
+
+    private static parser() {
+
+        Tx.sectionInit('parser');
+        const clientsecret = Math.random().toString(16).substring(2, 48);
+        const info = {
+            user: 'not-x-user-id',
+            metadata: {},
+            resources: [ {resource: 'resource', readonly: false} ],
+            impersonated_by: Math.random().toString(16).substring(2, 33),
+        } as ImpersonationTokenContextModel;
+        const encryptedContext = Utils.encrypt(JSON.stringify(info), clientsecret);
+        const context = encryptedContext.encryptedText + '.' + encryptedContext.encryptedTextIV;
+
+        let iAuthProvider: IAuthProvider = {
+            generateAuthCredential: function (): Promise<any> {
+                throw new Error('Function not implemented.');
+            },
+            generateScopedAuthCredential: function (scopes: string[]): Promise<any> {
+                throw new Error('Function not implemented.');
+            },
+            convertToImpersonationTokenModel: function (credential: any): ImpersonationTokenModel {
+                throw new Error('Function not implemented.');
+            },
+            getClientID: function (): string {
+                throw new Error('Function not implemented.');
+            },
+            getClientSecret: function (): string {
+                return clientsecret;
+            },
+            exchangeCredentialAudience: function (credential: string, audience: string): Promise<string> {
+                throw new Error('Function not implemented.');
+            }
+        };
+
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(false);
+            const data = await DatasetParser.register(expReq);
+            Tx.checkTrue(data.created_by === undefined, done);
+        });
+
+        Tx.testExp(async (done: any, expReq: expRequest, expRes: expResponse) => {
+            this.sandbox.stub(Auth, 'isImpersonationToken').returns(true);
+            this.sandbox.stub(AuthProviderFactory, 'build').returns(iAuthProvider);
+            this.sandbox.stub(expReq, 'get').returns(context);
+            const data = await DatasetParser.register(expReq);
+            Tx.checkTrue(data.created_by === info.user, done);
         });
 
     }

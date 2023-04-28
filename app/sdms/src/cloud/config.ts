@@ -217,6 +217,9 @@ export abstract class Config implements IConfig {
     // data partition id association
     public static DATA_PARTITION_ID: string;
 
+    // OSDU x-user-id header
+    public static USER_ID_HEADER_KEY_NAME: string;
+
     public static setCloudProvider(cloudProvider: string) {
         Config.CLOUDPROVIDER = cloudProvider;
         if (Config.CLOUDPROVIDER === undefined) {
@@ -334,7 +337,10 @@ export abstract class Config implements IConfig {
 
 
         // strong consistency emulation
-        Config.ENABLE_STRONG_CONSISTENCY_EMULATION = process.env.ENABLE_STRONG_CONSISTENCY_EMULATION !== 'false'
+        Config.ENABLE_STRONG_CONSISTENCY_EMULATION = process.env.ENABLE_STRONG_CONSISTENCY_EMULATION !== 'false';
+
+        // OSDU x-user-id header
+        Config.USER_ID_HEADER_KEY_NAME = process.env.USER_ID_HEADER_KEY_NAME || 'x-user-id';
 
     }
 
