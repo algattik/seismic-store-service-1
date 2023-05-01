@@ -55,8 +55,8 @@ export class AWSCredentials extends AbstractCredentials {
         return undefined;
     }
 
-    async getBucketFolder(folder:string, tenantId:string): Promise<string> {
-        const tableName = AWSConfig.AWS_ENVIRONMENT+'-'+tenantId+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
+    async getBucketFolder(folder: string, tenantId: string): Promise<string> {
+        const tableName = AWSConfig.AWS_TENANT_GROUP_NAME+'-'+tenantId+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
         const params = {
             TableName: tableName,
             Key: {
@@ -83,8 +83,9 @@ export class AWSCredentials extends AbstractCredentials {
             const dataPartition = tenant;
             const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(dataPartition);
 
-            const s3bucket = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/tenants/'+tenantId+ '/seismic-store/SeismicDDMSBucket/name');
-            const expDuration = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/tenants/'+tenantId+'/seismic-store/temp-cred-expiration-duration')
+            const tenantSsmPrefix = '/osdu/tenant-groups/' + AWSConfig.AWS_TENANT_GROUP_NAME + '/tenants/' + tenantId;
+            const s3bucket = await AWSCredentials.awsSSMHelper.getSSMParameter(tenantSsmPrefix+ '/seismic-ddms/SeismicDDMSBucket/name');
+            const expDuration = await AWSCredentials.awsSSMHelper.getSSMParameter(tenantSsmPrefix+'/seismic-ddms/temp-cred-expiration-duration')
             let roleArn='';
             let credentials='';
 
@@ -92,13 +93,14 @@ export class AWSCredentials extends AbstractCredentials {
 
             const keyPath =  await this.getBucketFolder(tenant+':'+subproject, tenantId);
 
+            const osduTenantGroupSsmPrefix = '/osdu/tenant-groups/' + AWSConfig.AWS_TENANT_GROUP_NAME;
             // tslint:disable-next-line:triple-equals
             if(readonly ) { // readOnly True
-                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
+                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-store/iam/download-role-arn')
                 flagUpload = false;
             } else   // readOnly False
             {
-                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
+                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-store/iam/upload-role-arn')
                 flagUpload = true;
             }
 
@@ -119,10 +121,10 @@ export class AWSCredentials extends AbstractCredentials {
             return AWSCredentials.servicePrincipalCredential.access_token;
         }
 
-        const tokenUrlSsmPath = '/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/oauth-token-uri';
-        const oauthCustomScopeSsmPath='/osdu/'+ AWSConfig.AWS_ENVIRONMENT+'/oauth-custom-scope';
-        const clientIdSsmPath='/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/client-credentials-client-id';
-        const clientSecretName='/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/client_credentials_secret';
+        const tokenUrlSsmPath = '/osdu/'+AWSConfig.OSDU_INSTANCE_NAME+'/oauth-token-uri';
+        const oauthCustomScopeSsmPath='/osdu/'+ AWSConfig.OSDU_INSTANCE_NAME+'/oauth-custom-scope';
+        const clientIdSsmPath='/osdu/'+AWSConfig.OSDU_INSTANCE_NAME+'/client-credentials-client-id';
+        const clientSecretName='/osdu/'+AWSConfig.OSDU_INSTANCE_NAME+'/client_credentials_secret';
         // pragma: allowlist nextline secret
         const clientSecretDictKey='client_credentials_client_secret'
 

@@ -39,8 +39,9 @@ export class AWSStorage extends AbstractStorage {
         if (this.awsBucket === '') {
             const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(this.dataPartition);
             const awsSSMHelper = new AWSSSMhelper();
-            this.awsBucket = await awsSSMHelper.getSSMParameter('/osdu/' +
-                AWSConfig.AWS_ENVIRONMENT + '/tenants/' + tenantId + '/seismic-store/SeismicDDMSBucket/name');
+            const tenantSsmPrefix = '/osdu/tenant-groups/' + AWSConfig.AWS_TENANT_GROUP_NAME + '/tenants/' + tenantId;
+            this.awsBucket = await awsSSMHelper.getSSMParameter(
+                tenantSsmPrefix + '/seismic-ddms/SeismicDDMSBucket/name');
         }
     }
 

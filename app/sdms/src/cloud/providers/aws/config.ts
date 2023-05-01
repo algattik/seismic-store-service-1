@@ -13,14 +13,15 @@
 // limitations under the License.
 
 import { Config, ConfigFactory } from '../../config';
-
+import { AWSSSMhelper } from './ssmhelper';
 @ConfigFactory.register('aws')
 export class AWSConfig extends Config {
     // scopes
     public static AWS_EP_OAUTH2: string;
     public static AWS_EP_IAM: string;
     public static AWS_REGION: string;
-    public static AWS_ENVIRONMENT: string;
+    public static OSDU_INSTANCE_NAME: string;
+    public static AWS_TENANT_GROUP_NAME: string;
     // Logger
     public static LOGGER_LEVEL: string;
     // max len for a group name in DE
@@ -32,8 +33,10 @@ export class AWSConfig extends Config {
         AWSConfig.AWS_EP_OAUTH2 = process.env.WS_EP_OAUTH2;
         AWSConfig.AWS_EP_IAM = process.env.AWS_EP_IAM;
         AWSConfig.AWS_REGION = process.env.AWS_REGION;
-        AWSConfig.AWS_ENVIRONMENT = process.env.ENVIRONMENT;
-
+        AWSConfig.OSDU_INSTANCE_NAME = process.env.OSDU_INSTANCE_NAME;
+        const awsSSMHelper = new AWSSSMhelper();
+        AWSConfig.AWS_TENANT_GROUP_NAME = await awsSSMHelper.getSSMParameter(
+            '/osdu/instances/' + AWSConfig.OSDU_INSTANCE_NAME + '/config/tenant-group/name');
         // Logger
         AWSConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';
 
