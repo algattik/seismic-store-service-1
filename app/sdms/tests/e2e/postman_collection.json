@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "1410053e-acba-41b1-acfe-2b6c9da90d15",
+		"_postman_id": "d885576d-6d9a-40ee-a9d4-b69aa0e3ce8a",
 		"name": "SDMS-E2E ver.M18 - Release 0.21",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "17166992"
@@ -10,7 +10,7 @@
 			"name": "general",
 			"item": [
 				{
-					"name": "STATUS SET",
+					"name": "GENERAL STATUS SET: Check Seismic store service status",
 					"event": [
 						{
 							"listen": "test",
@@ -121,7 +121,7 @@
 					"response": []
 				},
 				{
-					"name": "ACCESS",
+					"name": "GENERAL ACCESS: Check Seismic store service access",
 					"event": [
 						{
 							"listen": "test",
@@ -181,13 +181,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests return status and checks access for seismic store service."
 		},
 		{
 			"name": "tenant",
 			"item": [
 				{
-					"name": "TENANT GET",
+					"name": "TENANT GET: Retrieve tenant metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -250,7 +251,7 @@
 					"response": []
 				},
 				{
-					"name": "GET sdpath",
+					"name": "TENANT GET sdpath: Retrieve the tenant seismic store path",
 					"event": [
 						{
 							"listen": "test",
@@ -317,13 +318,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests retrieve the tenant metadata and return the seistore path to a tenant."
 		},
 		{
 			"name": "subproject",
 			"item": [
 				{
-					"name": "SUBPROJECT REGISTER NEGATIVE",
+					"name": "SUBPROJECT REGISTER NEGATIVE: Create subproject failure scenario",
 					"event": [
 						{
 							"listen": "test",
@@ -412,7 +414,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT DELETE",
+					"name": "SUBPROJECT DELETE: Delete subproject long name if created",
 					"event": [
 						{
 							"listen": "test",
@@ -475,7 +477,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT GET",
+					"name": "SUBPROJECT GET: Retrieve the subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -495,7 +497,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"",
-									"    postman.setNextRequest(\"SUBPROJECT REGISTER default admin\");",
+									"    postman.setNextRequest(\"SUBPROJECT REGISTER default admin: Create a new subproject with default admin\");",
 									"",
 									"} else {",
 									"    pm.test(\"Status code is 200\", function () {",
@@ -513,7 +515,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"",
-									"    postman.setNextRequest(\"SUBPROJECT LIST\");",
+									"    postman.setNextRequest(\"SUBPROJECT LIST: List subprojects in a tenant\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -558,7 +560,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT REGISTER default admin",
+					"name": "SUBPROJECT REGISTER default admin: Create a new subproject with default admin",
 					"event": [
 						{
 							"listen": "test",
@@ -638,7 +640,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT GET NEW",
+					"name": "SUBPROJECT GET NEW: Retrieve the new subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -715,7 +717,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT LIST",
+					"name": "SUBPROJECT LIST: List subprojects in a tenant",
 					"event": [
 						{
 							"listen": "test",
@@ -800,7 +802,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT PATCH",
+					"name": "SUBPROJECT PATCH: Patch a subproject metadata with legaltag02",
 					"event": [
 						{
 							"listen": "test",
@@ -890,7 +892,7 @@
 					"response": []
 				},
 				{
-					"name": "SUBPROJECT PATCH 2",
+					"name": "SUBPROJECT PATCH 2: Patch a subproject metadata with legaltag01",
 					"event": [
 						{
 							"listen": "test",
@@ -979,13 +981,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests perform different opearations on subproject such as REGISTER,GET,LIST,PATCH and DELETE including a negative test for registering long subproject name."
 		},
 		{
 			"name": "datasets",
 			"item": [
 				{
-					"name": "STATUS SET DATASETS",
+					"name": "DATASET STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -1053,7 +1056,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER",
+					"name": "DATASET REGISTER: Register a new dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -1168,7 +1171,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER 2",
+					"name": "DATASET REGISTER 2: Register a new dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -1349,7 +1352,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"",
-									"    postman.setNextRequest('PATCHING DATASET USING AN ALLOWED HIERARCHY PATH');",
+									"    postman.setNextRequest('DATASET PATCHING USING AN ALLOWED HIERARCHY PATH');",
 									"}"
 								],
 								"type": "text/javascript"
@@ -1405,7 +1408,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCHING DATASET USING AN ALLOWED HIERARCHY PATH",
+					"name": "DATASET PATCHING USING AN ALLOWED HIERARCHY PATH",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -1533,7 +1536,7 @@
 									"        pm.environment.unset(key);",
 									"        postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"        postman.setNextRequest('DATASET DSX01 GET')",
+									"        postman.setNextRequest('DATASET DSX01 GET: Retrieve the dataset dsx01')",
 									"    }",
 									"}"
 								],
@@ -1583,7 +1586,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DSX01 GET",
+					"name": "DATASET DSX01 GET: Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -1703,7 +1706,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK",
+					"name": "DATASET LOCK: Acquire lock for dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -1793,7 +1796,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LIST",
+					"name": "DATASET LIST: Get list of datasets in a subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -1862,7 +1865,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DSX01 CHECK CTAG TRUE",
+					"name": "DATASET DSX01 CHECK CTAG TRUE: Validate ctag to equal true",
 					"event": [
 						{
 							"listen": "test",
@@ -1938,7 +1941,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PATCH",
+					"name": "DATASET PATCH: Patch a dataset dsx01 metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -2032,7 +2035,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DSX01 CHECK CTAG FALSE",
+					"name": "DATASET DSX01 CHECK CTAG FALSE: Validate ctag to equal false",
 					"event": [
 						{
 							"listen": "test",
@@ -2108,7 +2111,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET EXIST",
+					"name": "DATASET EXIST: Check list of datasets exist in subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -2180,7 +2183,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET SIZES",
+					"name": "DATASET SIZES: Retrieve list of sizes of all the datasets",
 					"event": [
 						{
 							"listen": "test",
@@ -2252,7 +2255,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET READDIR",
+					"name": "DATASET READDIR: Retrieve list of datasets and directories in the requested path",
 					"event": [
 						{
 							"listen": "test",
@@ -2332,7 +2335,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PERMISSIONS",
+					"name": "DATASET PERMISSIONS: Retrieve the access permission of a user on a dataset",
 					"event": [
 						{
 							"listen": "test",
@@ -2408,7 +2411,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE",
+					"name": "DATASET DELETE: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -2475,7 +2478,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LIST AFTER DELETE",
+					"name": "DATASET LIST AFTER DELETE: Ensure the deleted dataset not present in list",
 					"event": [
 						{
 							"listen": "test",
@@ -2544,7 +2547,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PATCH 2",
+					"name": "DATASET PATCH 2: Patch a dataset dsx02 metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -2631,7 +2634,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE 2",
+					"name": "DATASET DELETE 2: Delete a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -2698,7 +2701,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET DATASETS",
+					"name": "DATASET STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -2759,13 +2762,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests start by registering two datasets and then perform various actions on them. These actions include using endpoints like REGISTER, GET, LIST, PATCH, DELETE, CTAG CHECK, EXIST, SIZES, READDIR, and PERMISSIONS. These endpoints allow us to retrieve metadata, update information, delete datasets, and perform other functions related to dataset management. By utilizing these different endpoints, we can effectively manage and manipulate our datasets"
 		},
 		{
 			"name": "dataset ls pagination",
 			"item": [
 				{
-					"name": "DATASET LS SET",
+					"name": "DATASET LS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -2778,7 +2782,7 @@
 									"//skip this folder for ibm",
 									"const provider = pm.environment.get('serviceCloudProvider');",
 									"if( provider === 'aws' ||  provider === 'ibm') {",
-									"    postman.setNextRequest('DATASET LS UNSET');",
+									"    postman.setNextRequest('DATASET LS UNSET: Cleanup test environment');",
 									"}"
 								],
 								"type": "text/javascript"
@@ -2860,7 +2864,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LS GENERATE",
+					"name": "DATASET LS GENERATE: Register datasets",
 					"event": [
 						{
 							"listen": "test",
@@ -2883,7 +2887,7 @@
 									"    let lsDataCurrentSet = pm.environment.get(\"lsDataCurrentSet\");",
 									"",
 									"    if(lsDataCurrentSet.length > 0) {",
-									"        postman.setNextRequest('DATASET LS GENERATE');",
+									"        postman.setNextRequest('DATASET LS GENERATE: Register datasets');",
 									"    } else {",
 									"        pm.environment.unset('lsDataCurrentSet');",
 									"    }",
@@ -2970,7 +2974,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LS GET",
+					"name": "DATASET LS GET: Get list of datasets in a subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -3047,7 +3051,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LS POST",
+					"name": "DATASET LS POST: Implement datasets list pagination",
 					"event": [
 						{
 							"listen": "test",
@@ -3090,14 +3094,14 @@
 									"        pm.environment.set(\"limitValue\",limitValue);",
 									"    }",
 									"",
-									"     // Test to compare the number of datasets returned is less than or equal to limit parameter",
+									"    // Test to compare the number of datasets returned is less than or equal to limit parameter",
 									"    pm.test(\"Verify number of datasets returned should be less than or equal to limit parameter\", function () {",
 									"        pm.expect(jsonData.datasets.length).to.be.at.most((pm.environment.get(\"limitValue\")));",
 									"    });",
 									"",
 									"    // if there is a next page token re-execute this call for retrieve the new page otherwise check the results and move to the next call",
 									"    if (jsonData.nextPageCursor != \"\") {",
-									"        postman.setNextRequest('DATASET LS POST');",
+									"        postman.setNextRequest('DATASET LS POST: Implement datasets list pagination');",
 									"    } else {",
 									"        pm.test(\"Check pagination for dataset list\", function () {",
 									"            pm.expect([...new Set(pm.environment.get(\"datasetArray\"))].sort().toString()).to.eql([...new Set(resArray)].sort().toString());",
@@ -3167,7 +3171,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LS DELETE",
+					"name": "DATASET LS DELETE: Delete datasets",
 					"event": [
 						{
 							"listen": "test",
@@ -3192,7 +3196,7 @@
 									"",
 									"    // Delete datasets and folders",
 									"    if(lsDataCurrentSet.length > 0) {",
-									"        postman.setNextRequest('DATASET LS DELETE');",
+									"        postman.setNextRequest('DATASET LS DELETE: Delete datasets');",
 									"    } else {",
 									"        pm.environment.unset('lsDataCurrentSet')",
 									"    }        ",
@@ -3278,7 +3282,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LS UNSET",
+					"name": "DATASET LS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -3340,13 +3344,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests verify Dataset LS pagination using limit and cursor parameters, create datasets, use the dataset list get request to list the datasets and compare the resulting datasets to the originals confirming pagination. Cursor is used to list the next set of datasets and we should expect datasets less than or equal to the limit parameter."
 		},
 		{
 			"name": "dataset lock",
 			"item": [
 				{
-					"name": "STATUS SET LOCKS",
+					"name": "DATASET LOCK STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -3408,7 +3413,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CREATE LOCKS",
+					"name": "DATASET LOCK CREATE: Register  a new dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -3513,7 +3518,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK READ 1",
+					"name": "DATASET LOCK READ 1: Lock dataset for write",
 					"event": [
 						{
 							"listen": "test",
@@ -3593,7 +3598,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK READ SBIT 1",
+					"name": "DATASET LOCK READ SBIT 1: Open dataset for read",
 					"event": [
 						{
 							"listen": "test",
@@ -3673,7 +3678,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK WRITE 1",
+					"name": "DATASET LOCK WRITE 1: Write a dataset already locked for writing",
 					"event": [
 						{
 							"listen": "test",
@@ -3753,7 +3758,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK WRITE SBIT 1",
+					"name": "DATASET LOCK WRITE SBIT 1: Open datatset for write",
 					"event": [
 						{
 							"listen": "test",
@@ -3843,7 +3848,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE WRONG SBIT 1",
+					"name": "DATASET LOCK CLOSE WRONG SBIT 1: Close dataset using wrong sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -3922,7 +3927,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE SBIT 1",
+					"name": "DATASET LOCK CLOSE SBIT 1: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -4007,7 +4012,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET LOCKS 1",
+					"name": "DATASET LOCK GET 1: Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -4094,7 +4099,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK WRITE 2",
+					"name": "DATASET LOCK WRITE 2: Lock dataset for write",
 					"event": [
 						{
 							"listen": "test",
@@ -4181,7 +4186,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK READ 2",
+					"name": "DATASET LOCK READ 2: Read a dataset locked for writing",
 					"event": [
 						{
 							"listen": "test",
@@ -4261,7 +4266,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK WRITE 2",
+					"name": "DATASET LOCK WRITE 2: Write a dataset already locked for writing",
 					"event": [
 						{
 							"listen": "test",
@@ -4341,7 +4346,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK WRITE SBIT 2",
+					"name": "DATASET LOCK WRITE SBIT 2: Open a dataset for write",
 					"event": [
 						{
 							"listen": "test",
@@ -4431,7 +4436,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE WRONG SBIT 2",
+					"name": "DATASET LOCK CLOSE WRONG SBIT 2: Close dataset using wrong sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -4510,7 +4515,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE SBIT 2",
+					"name": "DATASET LOCK CLOSE SBIT 2:  Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -4595,7 +4600,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET LOCKS 2",
+					"name": "DATASET LOCK GET 2: Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -4682,7 +4687,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK READ  3",
+					"name": "DATASET LOCK READ  3: Lock a dataset for reading",
 					"event": [
 						{
 							"listen": "test",
@@ -4770,7 +4775,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK WRITE 3",
+					"name": "DATASET LOCK WRITE 3: Write a dataset locked for reading",
 					"event": [
 						{
 							"listen": "test",
@@ -4850,7 +4855,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET LOCK READ 3",
+					"name": "DATASET LOCK READ 3: Read a data locked for reading",
 					"event": [
 						{
 							"listen": "test",
@@ -4933,7 +4938,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE LOCKS 1",
+					"name": "DATASET LOCK CLOSE 1: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -5018,7 +5023,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE LOCKS 2",
+					"name": "DATASET LOCK CLOSE 2: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -5103,7 +5108,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET LOCKS 3",
+					"name": "DATASET LOCK GET 3: Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -5190,7 +5195,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE LOCKS 1",
+					"name": "DATASET LOCK DELETE 1: Delete dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -5251,7 +5256,7 @@
 					"response": []
 				},
 				{
-					"name": "CREATE DATASET LOCKS 2",
+					"name": "DATASET LOCK CREATE 2:  Register  a new dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -5356,7 +5361,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE LOCKS 3",
+					"name": "DATASET LOCK CLOSE 3: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -5441,7 +5446,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET MAKE READONLY",
+					"name": "DATASET LOCK MAKE READONLY: Make a dataset readonly true",
 					"event": [
 						{
 							"listen": "test",
@@ -5516,7 +5521,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET READONLY LOCK READ",
+					"name": "DATASET LOCK READONLY LOCK READ: Lock a readonly dataset for read",
 					"event": [
 						{
 							"listen": "test",
@@ -5592,7 +5597,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET READONLY LOCK WRITE",
+					"name": "DATASET LOCK READONLY LOCK WRITE: Lock a readonly dataset for write",
 					"event": [
 						{
 							"listen": "test",
@@ -5672,7 +5677,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE LOCKS 2",
+					"name": "DATASET LOCK DELETE 2: Delete dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -5733,7 +5738,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET LOCKS",
+					"name": "DATASET LOCK STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -5791,13 +5796,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests can open datasets for reading or writing and lock their state using openmode ('read' or 'write') and session identifier (wid). Testing invalid wid values can help ensure that the locking mechanism is functioning correctly."
 		},
 		{
 			"name": "seismicmeta",
 			"item": [
 				{
-					"name": "STATUS SET SEISMICMETA",
+					"name": "SEISMICMETA STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -5863,7 +5869,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER + SEISMICMETA",
+					"name": "SEISMICMETA DATASET REGISTER: Register a dataset dsx01 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -5983,7 +5989,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET + SEISMICMETA (FROM POST)",
+					"name": "SEISMICMETA DATASET GET(FROM POST): Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -6118,7 +6124,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PATCH + SEISMICMETA",
+					"name": "SEISMICMETA DATASET PATCH: Patch a dataset dsx01 metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -6256,7 +6262,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET + SEISMICMETA (FROM PATCH)",
+					"name": "SEISMICMETA DATASET GET (FROM PATCH): Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -6390,7 +6396,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE SEISMICMETA 1",
+					"name": "SEISMICMETA DATASET DELETE 1: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -6457,7 +6463,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH SEISMICMETA (RECORD_TYPE USED)",
+					"name": "SEISMICMETA DATASET REGISTER (RECORD_TYPE USED): Register a dataset dsx01 with seismicmeta (recordType)",
 					"event": [
 						{
 							"listen": "test",
@@ -6582,7 +6588,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE SEISMICMETA 1",
+					"name": "SEISMICMETA DATASET CLOSE 1: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -6670,7 +6676,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET AND CHECK IF THE RECORD_TYPE IS USED IN THE SEISMICMETA_GUID",
+					"name": "SEISMICMETA DATASET GET AND CHECK IF THE RECORD_TYPE IS USED: Retrieve the dataset and check if recordType used in seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -6810,7 +6816,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE SEISMICMETA 2",
+					"name": "SEISMICMETA DATASET DELETE 2: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -6877,7 +6883,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH SEISMICMETA (Customer_acl_ID)",
+					"name": "SEISMICMETA DATASET REGISTER (Customer_acl_ID): Register a dataset dsx01 with seismicmeta (Customer_acl_ID)",
 					"event": [
 						{
 							"listen": "test",
@@ -6988,7 +6994,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE SEISMICMETA 2",
+					"name": "SEISMICMETA DATASET CLOSE 2: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -7076,7 +7082,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET AND CHECK IF  it exist or not",
+					"name": "SEISMICMETA DATASET GET AND CHECK EXIST: Retrieve the dataset and check if exist or not",
 					"event": [
 						{
 							"listen": "test",
@@ -7182,7 +7188,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE SEISMICMETA 2",
+					"name": "SEISMICMETA DATASET DELETE 2: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -7249,7 +7255,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITHOUT SEISMICMETA",
+					"name": "SEISMICMETA DATASET REGISTER WITHOUT SEISMICMETA: Register a dataset without seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -7325,7 +7331,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PATCH + SEISMICMETA",
+					"name": "SEISMICMETA DATASET PATCH 2: Patch a dataset dsx01 metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -7410,7 +7416,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE SEISMICMETA 3",
+					"name": "SEISMICMETA DATASET DELETE 3: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -7477,7 +7483,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET SEISMICMETA",
+					"name": "SEISMICMETA STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -7537,13 +7543,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests can manipulate datasets with SeismicMeta by setting the status, registering, getting, patching, and closing the dataset. We can also register datasets using record type and Customer_acl_ID or without passing seismicmeta. To ensure required fields in SeismicMeta exist, we can check their existence by getting the dataset."
 		},
 		{
-			"name": "domain-api-schema-management",
+			"name": "domain api schema management",
 			"item": [
 				{
-					"name": "CHECK IF DOMAIN API TESTS ARE ENABLED Copy",
+					"name": "API SCHEMA CHECK IF DOMAIN API TESTS ARE ENABLED",
 					"event": [
 						{
 							"listen": "test",
@@ -7563,7 +7570,7 @@
 									"    });",
 									"",
 									"    if(pm.environment.get(\"runDomainAPITests\") == 'false' || pm.environment.get(\"runDomainAPITests\") == undefined  ){",
-									"        postman.setNextRequest(\"STATUS SET TAGS\")",
+									"        postman.setNextRequest(\"TAGS STATUS SET: Create test environment\")",
 									"    }",
 									"",
 									"}"
@@ -7612,7 +7619,7 @@
 					"response": []
 				},
 				{
-					"name": "INITIALIZE",
+					"name": "API SCHEMA STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -7691,7 +7698,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH MORE THAN ONE STORAGE SCHEMA RECORD",
+					"name": "API SCHEMA DATASET REGISTER: Register a dataset with more than one storage schema record",
 					"event": [
 						{
 							"listen": "test",
@@ -7761,7 +7768,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER + SEISMICMETA",
+					"name": "API SCHEMA DATASET REGISTER: Register a dataset dsx01 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -7876,7 +7883,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET + SEISMICMETA (FROM POST)",
+					"name": "API SCHEMA DATASET GET (FROM POST): Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -8006,7 +8013,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PATCH + SEISMICMETA",
+					"name": "API SCHEMA DATASET PATCH: Patch the dataset dsx01 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -8139,7 +8146,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET + SEISMICMETA (FROM PATCH)",
+					"name": "API SCHEMA DATASET GET (FROM PATCH): Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -8268,7 +8275,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE SEISMICMETA 1",
+					"name": "API SCHEMA DATASET DELETE 1: Delete dataset dsx02 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -8324,7 +8331,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH OPENZGY_V1(schema validation error for missing kind)",
+					"name": "API SCHEMA DATASET REGISTER WITH OPENZGY_V1: Register a dataset with openzgy (schema validation error for missing kind)",
 					"event": [
 						{
 							"listen": "test",
@@ -8392,7 +8399,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH OPENZGY_V1 (schema validation errors for incorrect kind)",
+					"name": "API SCHEMA DATASET REGISTER WITH OPENZGY_V1: Register a dataset with openzgy (schema validation errors for incorrect kind)",
 					"event": [
 						{
 							"listen": "test",
@@ -8462,7 +8469,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH OPENZGY_V1 (storage record id is computed by backend and returned to client)",
+					"name": "API SCHEMA DATASET REGISTER WITH OPENZGY_V1: Register a dataset with openzgy (storage record id is computed by backend and returned to client)",
 					"event": [
 						{
 							"listen": "test",
@@ -8563,7 +8570,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET WITH OPENZGY_V1",
+					"name": "API SCHEMA DATASET GET WITH OPENZGY_V1: Retrieve the dataset with openzgy_v1",
 					"event": [
 						{
 							"listen": "test",
@@ -8671,7 +8678,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE WITH SEGY_V1",
+					"name": "API SCHEMA DATASET DELETE WITH SEGY_V1: Delete the dataset with segy_v1",
 					"event": [
 						{
 							"listen": "test",
@@ -8727,7 +8734,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER WITH SEGY_V1 (storage record id is computed by backend and returned to client)",
+					"name": "API SCHEMA DATASET REGISTER WITH SEGY_V1: Register a dataset with segy (storage record id is computed by backend and returned to client)",
 					"event": [
 						{
 							"listen": "test",
@@ -8828,7 +8835,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET WITH SEGY_V1",
+					"name": "API SCHEMA DATASET GET WITH SEGY_V1: Retrieve the dataset with segy_v1",
 					"event": [
 						{
 							"listen": "test",
@@ -8937,7 +8944,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE WITH SEGY_V1 2",
+					"name": "API SCHEMA DATASET DELETE WITH SEGY_V1 2: Delete the dataset with segy_v1",
 					"event": [
 						{
 							"listen": "test",
@@ -8993,7 +9000,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE WITH OPENZGY_V1 2",
+					"name": "API SCHEMA DATASET DELETE WITH OPENZGY_V1 2: Delete the dataset with openzgy_v1",
 					"event": [
 						{
 							"listen": "test",
@@ -9049,7 +9056,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET SEISMICMETA",
+					"name": "API SCHEMA STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -9123,13 +9130,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests perform domain api tests on datasets with OpenZGY_V1 and SEGY_V1, including registering datasets and handling schema validation errors. We can get the storage record ID computed by the backend while registering a dataset."
 		},
 		{
 			"name": "tags",
 			"item": [
 				{
-					"name": "STATUS SET TAGS",
+					"name": "TAGS STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -9138,7 +9146,7 @@
 									"console.log('Dataset variables are initialized for tags folder');\r",
 									"\r",
 									"if(pm.environment.get('serviceCloudProvider') === 'ibm') { \r",
-									"    postman.setNextRequest(\"STATUS UNSET TAGS\");\r",
+									"    postman.setNextRequest(\"TAGS STATUS UNSET: Cleanup test environment\");\r",
 									"}"
 								],
 								"type": "text/javascript"
@@ -9208,7 +9216,7 @@
 					"response": []
 				},
 				{
-					"name": "REGISTER TAGGED DATA",
+					"name": "TAGS DATASET REGISTER: Register the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -9300,7 +9308,7 @@
 					"response": []
 				},
 				{
-					"name": "GET TAGGED DATASET",
+					"name": "TAGS DATASET GET: Retrieve the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -9377,7 +9385,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE TAGS",
+					"name": "TAGS DATASET CLOSE: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -9471,7 +9479,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE TAGGED DATA 2",
+					"name": "TAGS DATASET DELETE 2: Delete a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -9538,7 +9546,7 @@
 					"response": []
 				},
 				{
-					"name": "REGISTER TAGGED DATA 2",
+					"name": "TAGS DATASET REGISTER 2: Register the dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -9631,7 +9639,7 @@
 					"response": []
 				},
 				{
-					"name": "GET TAGGED DATASET 02",
+					"name": "TAGS DATASET GET 02: Retrieve the dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -9708,7 +9716,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE TAGS 2",
+					"name": "TAGS DATASET CLOSE 2: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -9802,7 +9810,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE TAGGED DATA 3",
+					"name": "TAGS DATASET DELETE 3: Delete a dataset dsx03",
 					"event": [
 						{
 							"listen": "test",
@@ -9869,7 +9877,7 @@
 					"response": []
 				},
 				{
-					"name": "REGISTER TAGGED DATA 3",
+					"name": "TAGS DATASET REGISTER 3: Register the dataset dsx03",
 					"event": [
 						{
 							"listen": "test",
@@ -9963,7 +9971,7 @@
 					"response": []
 				},
 				{
-					"name": "GET TAGGED DATASET 03",
+					"name": "TAGS DATASET GET 03: Retrieve the dataset dsx03",
 					"event": [
 						{
 							"listen": "test",
@@ -10040,7 +10048,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE TAGS 3",
+					"name": "TAGS DATASET CLOSE 3: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -10128,7 +10136,7 @@
 					"response": []
 				},
 				{
-					"name": "SEARCH BY FAKE TAG",
+					"name": "TAGS SEARCH BY FAKE: Search by fake tag",
 					"event": [
 						{
 							"listen": "test",
@@ -10203,7 +10211,7 @@
 					"response": []
 				},
 				{
-					"name": "SEARCH BY SINGLE TAG",
+					"name": "TAGS SEARCH BY SINGLE: Search by single tag",
 					"event": [
 						{
 							"listen": "test",
@@ -10290,7 +10298,7 @@
 					"response": []
 				},
 				{
-					"name": "SEARCH BY MULTIPLE TAG",
+					"name": "TAGS SEARCH BY MULTIPLE: Search by multiple tags",
 					"event": [
 						{
 							"listen": "test",
@@ -10385,7 +10393,7 @@
 					"response": []
 				},
 				{
-					"name": "ADD TAG",
+					"name": "TAGS ADD: Add tag to existing dataset",
 					"event": [
 						{
 							"listen": "test",
@@ -10471,7 +10479,7 @@
 					"response": []
 				},
 				{
-					"name": "CHECK ADDED TAG",
+					"name": "TAGS CHECK: Check added tag",
 					"event": [
 						{
 							"listen": "test",
@@ -10555,7 +10563,7 @@
 					"response": []
 				},
 				{
-					"name": "SEARCH BY ADDED TAG",
+					"name": "TAGS SEARCH BY ADDED: Search by added tag",
 					"event": [
 						{
 							"listen": "test",
@@ -10637,7 +10645,7 @@
 					"response": []
 				},
 				{
-					"name": "REPLACE TAG",
+					"name": "TAGS REPLACE: Replace tag within subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -10720,7 +10728,7 @@
 					"response": []
 				},
 				{
-					"name": "SEARCH BY OLD TAG",
+					"name": "TAGS SEARCH BY OLD: Search by old tag",
 					"event": [
 						{
 							"listen": "test",
@@ -10791,7 +10799,7 @@
 					"response": []
 				},
 				{
-					"name": "SEARCH BY NEW TAG",
+					"name": "TAGS SEARCH BY NEW: Search by new tag",
 					"event": [
 						{
 							"listen": "test",
@@ -10874,7 +10882,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE TAGGED DATA",
+					"name": "TAGS DATASET DELETE: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -10941,7 +10949,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE TAGGED DATA 2",
+					"name": "TAGS DATASET DELETE 2: Delete a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -11008,7 +11016,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE TAGGED DATA 3",
+					"name": "TAGS DATASET DELETE 3: Delete a dataset dsx03",
 					"event": [
 						{
 							"listen": "test",
@@ -11075,7 +11083,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET TAGS",
+					"name": "TAGS STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -11138,13 +11146,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests effectively manage tagged datasets, we can register tagged datasets, get them, and close their tags. We can search for data using fake tags or a single/multiple tags, and add tags to the dataset. To verify the addition of tags, we can check by searching for data using the added tags. We can also replace tags and search for data using either the old or new tags."
 		},
 		{
 			"name": "utility",
 			"item": [
 				{
-					"name": "STATUS SET UTILITY",
+					"name": "UTILITY STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -11214,7 +11223,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET MAIN REGISTER",
+					"name": "UTILITY DATASET REGISTER: Register the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -11339,7 +11348,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET MAIN CLOSE",
+					"name": "UTILITY DATASET CLOSE: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -11355,7 +11364,7 @@
 									"    });",
 									"",
 									"    if ( (pm.environment.get('serviceCloudProvider') != 'azure') && (pm.environment.get('serviceCloudProvider') != 'google') ){",
-									"        postman.setNextRequest(\"UTILITY DATASET DELETE\");",
+									"        postman.setNextRequest(\"UTILITY DATASET DELETE: Delete a dataset dsx01\");",
 									"    }",
 									"",
 									"    // Reset environment variables if _.retryOnFailure function was used before",
@@ -11431,7 +11440,7 @@
 					"response": []
 				},
 				{
-					"name": "GET ACCESS TOKEN",
+					"name": "UTILITY ACCESS TOKEN: Generate GCS access token",
 					"event": [
 						{
 							"listen": "test",
@@ -11458,7 +11467,7 @@
 									"    })",
 									"",
 									"    if (pm.environment.get('serviceCloudProvider') === 'google') {",
-									"        postman.setNextRequest(\"UPLOAD NEW TO GCS\");",
+									"        postman.setNextRequest(\"UTILITY UPLOAD NEW TO GCS: Upload utility to GCS\");",
 									"    }  ",
 									"}"
 								],
@@ -11507,7 +11516,7 @@
 					"response": []
 				},
 				{
-					"name": "GET UPLOAD CONNECTION STRING",
+					"name": "UTILITY UPLOAD CONNECTION STRING: Generate upload connection credentials",
 					"event": [
 						{
 							"listen": "test",
@@ -11538,12 +11547,12 @@
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"",
 									"    if (pm.environment.get('serviceCloudProvider') === 'azure') {",
-									"        postman.setNextRequest(\"UPLOAD NEW TO ACS\");",
+									"        postman.setNextRequest(\"UTILITY UPLOAD NEW TO ACS - CONNECTION STRING: Upload connection string to ACS\");",
 									"    } else if (pm.environment.get('serviceCloudProvider') === 'google') {",
 									"        pm.expect(jsonData.token_type).to.eql('Bearer');",
-									"        postman.setNextRequest(\"UPLOAD NEW TO GCS\");",
+									"        postman.setNextRequest(\"UTILITY UPLOAD NEW TO GCS: Upload utility to GCS\");",
 									"    } else {",
-									"        postman.setNextRequest(\"UTILITY DATASET DELETE\");",
+									"        postman.setNextRequest(\"UTILITY DATASET DELETE: Delete a dataset dsx01\");",
 									"    }",
 									"}"
 								],
@@ -11588,7 +11597,7 @@
 					"response": []
 				},
 				{
-					"name": "UPLOAD NEW TO GCS",
+					"name": "UTILITY UPLOAD NEW TO GCS: Upload utility to GCS",
 					"event": [
 						{
 							"listen": "test",
@@ -11616,7 +11625,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    ",
-									"    postman.setNextRequest(\"DOWNLOAD NEW FROM GCS\");",
+									"    postman.setNextRequest(\"UTILITY DOWNLOAD NEW FROM GCS: Download utility from GCS\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11671,7 +11680,7 @@
 					"response": []
 				},
 				{
-					"name": "UPLOAD NEW TO ACS",
+					"name": "UTILITY UPLOAD NEW TO ACS: Upload utility to ACS",
 					"event": [
 						{
 							"listen": "test",
@@ -11738,7 +11747,7 @@
 					"response": []
 				},
 				{
-					"name": "UPLOAD NEW TO ACS - CONNECTION STRING",
+					"name": "UTILITY UPLOAD NEW TO ACS - CONNECTION STRING: Upload connection string to ACS",
 					"event": [
 						{
 							"listen": "test",
@@ -11762,7 +11771,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"    postman.setNextRequest(\"DOWNLOAD NEW FROM ACS\");",
+									"    postman.setNextRequest(\"UTILITY DOWNLOAD NEW FROM ACS - CONNECTION STRING: Download connection string from ACS\");",
 									"",
 									"}"
 								],
@@ -11807,7 +11816,7 @@
 					"response": []
 				},
 				{
-					"name": "DOWNLOAD NEW FROM GCS",
+					"name": "UTILITY DOWNLOAD NEW FROM GCS: Download utility from GCS",
 					"event": [
 						{
 							"listen": "test",
@@ -11837,7 +11846,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    ",
-									"    postman.setNextRequest(\"UTILITY LS\");",
+									"    postman.setNextRequest(\"UTILITY LS: Retrieve list of datasets and directories\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -11878,7 +11887,7 @@
 					"response": []
 				},
 				{
-					"name": "DOWNLOAD NEW FROM ACS",
+					"name": "UTILITY DOWNLOAD NEW FROM ACS: Download utility from ACS",
 					"event": [
 						{
 							"listen": "test",
@@ -11940,7 +11949,7 @@
 					"response": []
 				},
 				{
-					"name": "DOWNLOAD NEW FROM ACS - CONNECTION STRING",
+					"name": "UTILITY DOWNLOAD NEW FROM ACS - CONNECTION STRING: Download connection string from ACS",
 					"event": [
 						{
 							"listen": "test",
@@ -11968,7 +11977,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"    postman.setNextRequest(\"UTILITY LS\");",
+									"    postman.setNextRequest(\"UTILITY LS: Retrieve list of datasets and directories\");",
 									"    ",
 									"}"
 								],
@@ -12004,7 +12013,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY LS",
+					"name": "UTILITY LS: Retrieve list of datasets and directories",
 					"event": [
 						{
 							"listen": "test",
@@ -12079,7 +12088,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY DATASET DELETE",
+					"name": "UTILITY DATASET DELETE: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -12146,7 +12155,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY DATASET GET",
+					"name": "UTILITY DATASET GET: Retrieve deleted dataset",
 					"event": [
 						{
 							"listen": "test",
@@ -12220,7 +12229,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY LS AFTER DATASET DELETE",
+					"name": "UTILITY LS AFTER DATASET DELETE: Check if deleted dataset present in list",
 					"event": [
 						{
 							"listen": "test",
@@ -12298,7 +12307,7 @@
 					"response": []
 				},
 				{
-					"name": "NEW DATASET REGISTER",
+					"name": "UTILITY DATASET REGISTER: Register the dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -12413,7 +12422,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE SBIT UTILITY",
+					"name": "UTILITY DATASET CLOSE SBIT: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -12502,7 +12511,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY CP",
+					"name": "UTILITY CP: Copy dataset from one sdpath to other",
 					"event": [
 						{
 							"listen": "test",
@@ -12568,7 +12577,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY LS AFTER COPY",
+					"name": "UTILITY LS AFTER COPY: Utility list after copy",
 					"event": [
 						{
 							"listen": "test",
@@ -12643,7 +12652,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE COPY",
+					"name": "UTILITY DELETE COPY: Delete a dataset dsx02 copy",
 					"event": [
 						{
 							"listen": "test",
@@ -12710,7 +12719,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE ORIGINAL",
+					"name": "UTILITY DELETE ORIGINAL: Delete a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -12777,7 +12786,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET MAIN DELETE",
+					"name": "UTILITY DATASET MAIN DELETE: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -12844,7 +12853,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET UTILITY",
+					"name": "UTILITY STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -12911,13 +12920,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests perform a variety of operations with datasets, including registering them, obtaining access tokens, and uploading/downloading them to/from Google Cloud Storage (GCS) and Azure Cloud Storage (ACS). We can use the utility commands ls to list them or cp to copy them to/from a destination, which can be in a different subproject within the same tenant."
 		},
 		{
-			"name": "utility_ls",
+			"name": "pagination utility ls",
 			"item": [
 				{
-					"name": "MULTI LS SET",
+					"name": "PAGINATION UTILITY SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -13008,7 +13018,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS GENERATE",
+					"name": "PAGINATION UTILITY GENERATE: Register datasets and datasets in directories",
 					"event": [
 						{
 							"listen": "test",
@@ -13032,12 +13042,12 @@
 									"    let lsMultiCurrentSet = pm.environment.get(\"lsMultiCurrentSet\");",
 									"",
 									"    if(lsMultiCurrentSet.length > 0) {",
-									"        postman.setNextRequest('MULTI LS GENERATE');",
+									"        postman.setNextRequest('PAGINATION UTILITY GENERATE: Register datasets and datasets in directories');",
 									"    } else {",
 									"        pm.environment.unset('lsMultiCurrentSet');",
 									"        const provider = pm.environment.get('serviceCloudProvider');",
 									"        if (provider !== 'azure' && provider !== 'ibm') {",
-									"            postman.setNextRequest('MULTI LS DATASETS');",
+									"            postman.setNextRequest('PAGINATION UTILITY LIST DATASETS:  List datasets only');",
 									"        }",
 									"    }",
 									"",
@@ -13124,7 +13134,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS DIRS",
+					"name": "PAGINATION UTILITY LIST DIRS: List directories only",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -13222,7 +13232,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS DIRS AND DATASETS",
+					"name": "PAGINATION UTILITY LIST DIRS AND DATASETS: List directories and datasets",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -13340,7 +13350,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS DATASETS",
+					"name": "PAGINATION UTILITY LIST DATASETS:  List datasets only",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -13387,7 +13397,7 @@
 									"\r",
 									"    const provider = pm.environment.get('serviceCloudProvider');\r",
 									"    if( provider === 'aws' ||  provider === 'ibm') {\r",
-									"        postman.setNextRequest('MULTI LS DELETE');\r",
+									"        postman.setNextRequest('PAGINATION UTILITY DELETE: Delete datasets and directories');\r",
 									"    }\r",
 									"\r",
 									"}"
@@ -13444,7 +13454,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS DATASET PAGE",
+					"name": "PAGINATION UTILITY LIST: Implement dataset pagination",
 					"event": [
 						{
 							"listen": "test",
@@ -13486,13 +13496,13 @@
 									"    var limit = pm.request.url.query.get(\"limit\");\r",
 									"    // Check if number of datasets returned is less than or equal to limit parameter\r",
 									"    pm.expect(jsonData.datasets.length).to.be.at.most(parseInt(limit));\r",
-									"});\r",
+									"    });\r",
 									"\r",
 									"    // if there is a next page token re-execute this call for retrieve the new page otherwise check the results and move to the next call\r",
 									"    const provider = pm.environment.get('serviceCloudProvider');\r",
 									"    const pageTerminator = provider == 'google' ? \"\" : null;\r",
 									"    if (jsonData.nextPageCursor != pageTerminator) {\r",
-									"        postman.setNextRequest('MULTI LS DATASET PAGE');\r",
+									"        postman.setNextRequest('PAGINATION UTILITY LIST: Implement dataset pagination');\r",
 									"    } else {\r",
 									"        pm.test(\"Check pagination for datasets\", function () {\r",
 									"            pm.expect([...new Set(pm.environment.get(\"lsMultiDatasetsRoot\").split(','))].sort().toString()).to.eql([...new Set(resArray)].sort().toString());\r",
@@ -13573,7 +13583,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS DELETE",
+					"name": "PAGINATION UTILITY DELETE: Delete datasets and directories",
 					"event": [
 						{
 							"listen": "test",
@@ -13598,7 +13608,7 @@
 									"",
 									"    // Delete datasets and folders",
 									"    if(lsMultiCurrentSet.length > 0) {",
-									"        postman.setNextRequest('MULTI LS DELETE');",
+									"        postman.setNextRequest('PAGINATION UTILITY DELETE: Delete datasets and directories');",
 									"    } else {",
 									"        pm.environment.unset('lsMultiCurrentSet')",
 									"    }    ",
@@ -13687,7 +13697,7 @@
 					"response": []
 				},
 				{
-					"name": "MULTI LS UNSET",
+					"name": "PAGINATION UTILITY UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -13748,13 +13758,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests verify Utility LS pagination using limit and cursor parameters, create datasets in designated directories, use the \"working mode\" parameter to list datasets, and compare the resulting datasets to the originals. Cursor is used to list the next set of items and we should expect datasets less than or equal to the limit parameter."
 		},
 		{
 			"name": "users",
 			"item": [
 				{
-					"name": "USER STATUS SET",
+					"name": "USER STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -13762,10 +13773,10 @@
 								"exec": [
 									"if (pm.environment.get(\"VCS_Provider\") === 'gitlab') {",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"    postman.setNextRequest(\"APP REGISTER\");",
+									"    postman.setNextRequest(\"APP REGISTER: Register a new application\");",
 									"} else {",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
-									"    postman.setNextRequest(\"USER ROLES\");",
+									"    postman.setNextRequest(\"USER ROLES: Retrieve user roles in all subprojects\");",
 									"};",
 									"",
 									""
@@ -13814,7 +13825,7 @@
 					"response": []
 				},
 				{
-					"name": "USER ROLES",
+					"name": "USER ROLES: Retrieve user roles in all subprojects",
 					"event": [
 						{
 							"listen": "test",
@@ -13886,7 +13897,7 @@
 					"response": []
 				},
 				{
-					"name": "USER ADD",
+					"name": "USER ADD: Add user to subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -13951,7 +13962,7 @@
 					"response": []
 				},
 				{
-					"name": "USER LIST",
+					"name": "USER LIST: List users in subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -14031,7 +14042,7 @@
 					"response": []
 				},
 				{
-					"name": "USER REMOVE",
+					"name": "USER REMOVE: Remove user from subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -14094,7 +14105,7 @@
 					"response": []
 				},
 				{
-					"name": "USER LIST AFTER REMOVE",
+					"name": "USER LIST AFTER REMOVE: List after user remove",
 					"event": [
 						{
 							"listen": "test",
@@ -14173,7 +14184,7 @@
 					"response": []
 				},
 				{
-					"name": "USER ADD GROUP",
+					"name": "USER ADD GROUP:  Add user group to subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -14238,7 +14249,7 @@
 					"response": []
 				},
 				{
-					"name": "USER LIST GROUP",
+					"name": "USER LIST GROUP: List user groups in subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -14317,7 +14328,7 @@
 					"response": []
 				},
 				{
-					"name": "USER REMOVE GROUP",
+					"name": "USER REMOVE GROUP: Remove user group from subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -14380,7 +14391,7 @@
 					"response": []
 				},
 				{
-					"name": "USER LIST AFTER REMOVE GROUP",
+					"name": "USER LIST AFTER REMOVE GROUP: List after user group remove",
 					"event": [
 						{
 							"listen": "test",
@@ -14457,13 +14468,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests manages users and groups in a seismic store subproject's role-based authorization groups, including adding a registered user with the role of admin/viewer, listing users, removing users from the authorization groups, adding a registered group with the role of admin, listing registered groups, and removing a registered group from the authorization groups."
 		},
 		{
 			"name": "app",
 			"item": [
 				{
-					"name": "APP REGISTER",
+					"name": "APP REGISTER: Register a new application",
 					"event": [
 						{
 							"listen": "test",
@@ -14529,7 +14541,7 @@
 					"response": []
 				},
 				{
-					"name": "APP LIST",
+					"name": "APP LIST: Retrieve the list of the registered applications",
 					"event": [
 						{
 							"listen": "test",
@@ -14605,7 +14617,7 @@
 					"response": []
 				},
 				{
-					"name": "APP REGISTER TRUSTED",
+					"name": "APP REGISTER TRUSTED: Set a registered application as a trusted application",
 					"event": [
 						{
 							"listen": "test",
@@ -14671,7 +14683,7 @@
 					"response": []
 				},
 				{
-					"name": "APP REGISTER TRUSTED NEGATIVE",
+					"name": "APP REGISTER TRUSTED NEGATIVE: Set a registered application as a trusted application with fake email",
 					"event": [
 						{
 							"listen": "test",
@@ -14737,7 +14749,7 @@
 					"response": []
 				},
 				{
-					"name": "APP LIST TRUSTED",
+					"name": "APP LIST TRUSTED: Return the list of the trusted application",
 					"event": [
 						{
 							"listen": "test",
@@ -14827,13 +14839,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests enable you to register and list service emails as applications, as well as register and list trusted applications. Note that to register a service email as a trusted application, it must have been pre-registered in the same tenant as an application."
 		},
 		{
-			"name": "impersonation_token",
+			"name": "impersonation token",
 			"item": [
 				{
-					"name": "STATUS SET IMPERSONATION TOKEN",
+					"name": "IMPERSONATION STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -14871,11 +14884,11 @@
 									"        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);",
 									"    }).join('')));",
 									"    if(!tokenPayload.hasOwnProperty('sub')) {",
-									"        postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"        postman.setNextRequest(\"IMPERONATION STATUS UNSET: Cleanup test environment\");",
 									"    }",
 									"    postman.setEnvironmentVariable(\"trustedApplicationID\", tokenPayload['sub']);",
 									"} catch(error) {",
-									"    postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"    postman.setNextRequest(\"IMPERONATION STATUS UNSET: Cleanup test environment\");",
 									"}",
 									"",
 									"postman.setEnvironmentVariable('execCounter', 1)",
@@ -14917,7 +14930,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPERSONATION  APP REGISTER",
+					"name": "IMPERSONATION  APP REGISTER: Register a new application",
 					"event": [
 						{
 							"listen": "test",
@@ -14985,7 +14998,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPERSONATION  APP REGISTER TRUSTED",
+					"name": "IMPERSONATION  APP REGISTER TRUSTED: Set a registered application as a trusted application",
 					"event": [
 						{
 							"listen": "test",
@@ -15051,7 +15064,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPERSONATION  IMPTOKEN GENERATE",
+					"name": "IMPERSONATION  IMPTOKEN GENERATE: Create a impersonation token credentials",
 					"event": [
 						{
 							"listen": "test",
@@ -15092,7 +15105,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"    postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"    postman.setNextRequest(\"IMPERONATION STATUS UNSET: Cleanup test environment\");",
 									"};"
 								],
 								"type": "text/javascript"
@@ -15144,7 +15157,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPERSONATION  IMPTOKEN REFRESH",
+					"name": "IMPERSONATION  IMPTOKEN REFRESH: Refresh an impersonation credential token",
 					"event": [
 						{
 							"listen": "test",
@@ -15186,7 +15199,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"    postman.setNextRequest(\"STATUS UNSET IMPERONATION TOKEN\");",
+									"    postman.setNextRequest(\"IMPERONATION STATUS UNSET: Cleanup test environment\");",
 									"};"
 								],
 								"type": "text/javascript"
@@ -15243,7 +15256,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPERSONATION  DATASET REGISTER",
+					"name": "IMPERSONATION  DATASET REGISTER: Register a test dataset",
 					"event": [
 						{
 							"listen": "test",
@@ -15324,7 +15337,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPERSONATION  DATASET DELETE",
+					"name": "IMPERSONATION  DATASET DELETE: Delete a test dataset",
 					"event": [
 						{
 							"listen": "test",
@@ -15405,7 +15418,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET IMPERONATION TOKEN",
+					"name": "IMPERONATION STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -15462,13 +15475,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests will generate and refresh an impersonation token. Additionally, the tests will register a dataset using the generated impersonation token."
 		},
 		{
 			"name": "imptoken",
 			"item": [
 				{
-					"name": "IMPTOKEN STATUS SET",
+					"name": "IMPTOKEN STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -15483,9 +15497,9 @@
 									"    pm.environment.unset('dsx02');",
 									"    pm.environment.unset('testPath');",
 									"    pm.environment.unset('testPathEncoded');",
-									"    postman.setNextRequest(\"CP STATUS SET\");",
+									"    postman.setNextRequest(\"CP STATUS SET: Create test environment\");",
 									"} else {",
-									"    postman.setNextRequest(\"STATUS UNSET IMPTOKEN\");",
+									"    postman.setNextRequest(\"IMPTOKEN STATUS UNSET: Cleanup test environment\");",
 									"};",
 									""
 								],
@@ -15548,7 +15562,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN GENERATE",
+					"name": "IMPTOKEN GENERATE: Generate a impersonation token creadentials",
 					"event": [
 						{
 							"listen": "test",
@@ -15593,7 +15607,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"",
-									"    postman.setNextRequest(\"STATUS UNSET IMPTOKEN\");",
+									"    postman.setNextRequest(\"IMPTOKEN STATUS UNSET: Cleanup test environment\");",
 									"};"
 								],
 								"type": "text/javascript"
@@ -15640,7 +15654,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER 01",
+					"name": "IMPTOKEN DATASET REGISTER 01: Register a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -15760,7 +15774,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE IMPTOKEN",
+					"name": "IMPTOKEN DATASET CLOSE: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -15848,7 +15862,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN REFRESH",
+					"name": "IMPTOKEN REFRESH: Refresh a impersonation token creadentials",
 					"event": [
 						{
 							"listen": "test",
@@ -15917,7 +15931,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER 02",
+					"name": "IMPTOKEN DATASET REGISTER 02: Register a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -16037,7 +16051,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE IMPTOKEN 2",
+					"name": "IMPTOKEN DATASET CLOSE 2: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -16125,7 +16139,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN PATCH",
+					"name": "IMPTOKEN PATCH: Patch a impersonation token creadentials",
 					"event": [
 						{
 							"listen": "test",
@@ -16198,7 +16212,7 @@
 					"response": []
 				},
 				{
-					"name": "IMPTOKEN PATCH REFRESH",
+					"name": "IMPTOKEN PATCH REFRESH: Refresh a patched impersonation token creadentials",
 					"event": [
 						{
 							"listen": "test",
@@ -16263,7 +16277,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE IMPTOKEN 01",
+					"name": "IMPTOKEN DATASET DELETE 01: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -16330,7 +16344,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE IMPTOKEN 02",
+					"name": "IMPTOKEN DATASET DELETE 02: Delete a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -16397,7 +16411,7 @@
 					"response": []
 				},
 				{
-					"name": "STATUS UNSET IMPTOKEN",
+					"name": "IMPTOKEN STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -16457,13 +16471,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests will generate, refresh and patch the imptoken. Additionally, the tests will register a dataset using the generated impersonation token."
 		},
 		{
-			"name": "CP Command",
+			"name": "utility cp command",
 			"item": [
 				{
-					"name": "CP STATUS SET",
+					"name": "CP STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -16537,7 +16552,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER X1 + SeimicMeta",
+					"name": "CP DATASET REGISTER: Register a dataset dsx01 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -16639,7 +16654,7 @@
 					"response": []
 				},
 				{
-					"name": "GET DATASET X1 + SEISMIC META",
+					"name": "CP DATASET GET X1: Retrieve a dataset dsx01 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -16769,7 +16784,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET CLOSE SBIT CP",
+					"name": "CP DATASET CLOSE SBIT: Close dataset using sbit",
 					"event": [
 						{
 							"listen": "test",
@@ -16858,7 +16873,7 @@
 					"response": []
 				},
 				{
-					"name": "GET GCS TOKEN CP",
+					"name": "CP GCS TOKEN GET: Generate GCS access token",
 					"event": [
 						{
 							"listen": "test",
@@ -16891,12 +16906,12 @@
 									"        postman.setEnvironmentVariable(\"tokenType\", jsonData.token_type);",
 									"        postman.setEnvironmentVariable('execCounter', 1);",
 									"        if(pm.environment.get('serviceCloudProvider') === 'azure') {",
-									"            postman.setNextRequest(\"UPLOAD OBJECT X1 IN ACS\");",
+									"            postman.setNextRequest(\"CP UPLOAD OBJECT X1 TO ACS: Upload utility to ACS\");",
 									"        } else if(pm.environment.get('serviceCloudProvider') === 'google') {",
 									"            pm.expect(jsonData.token_type).to.eql('Bearer');",
-									"            postman.setNextRequest(\"UPLOAD OBJECT X1 IN GCS\");",
+									"            postman.setNextRequest(\"CP UPLOAD OBJECT X1 TO GCS: Upload utility to GCS\");",
 									"        } else {",
-									"            postman.setNextRequest(\"DATASET DELETE X1\");",
+									"            postman.setNextRequest(\"CP DATASET DELETE X1: Delete a dataset dsx01\");",
 									"        }",
 									"    });",
 									"}"
@@ -16946,7 +16961,7 @@
 					"response": []
 				},
 				{
-					"name": "UPLOAD OBJECT X1 IN GCS",
+					"name": "CP UPLOAD OBJECT X1 TO GCS: Upload utility to GCS",
 					"event": [
 						{
 							"listen": "test",
@@ -16972,7 +16987,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    ",
-									"    postman.setNextRequest(\"UTILITY CP X1 TO X2\");",
+									"    postman.setNextRequest(\"CP COPY X1 TO X2: Copy dataset from one sdpath to other\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -17038,7 +17053,7 @@
 					"response": []
 				},
 				{
-					"name": "UPLOAD OBJECT X1 IN ACS",
+					"name": "CP UPLOAD OBJECT X1 TO ACS: Upload utility to ACS",
 					"event": [
 						{
 							"listen": "test",
@@ -17062,7 +17077,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    ",
-									"    postman.setNextRequest(\"UTILITY CP X1 TO X2\");",
+									"    postman.setNextRequest(\"CP COPY X1 TO X2: Copy dataset from one sdpath to other\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -17111,7 +17126,7 @@
 					"response": []
 				},
 				{
-					"name": "UTILITY CP X1 TO X2",
+					"name": "CP COPY X1 TO X2: Copy dataset from one sdpath to other",
 					"event": [
 						{
 							"listen": "test",
@@ -17177,7 +17192,7 @@
 					"response": []
 				},
 				{
-					"name": "GET DATASET X2 + SEISMIC META",
+					"name": "CP DATASET GET X2: Retrieve a dataset dsx02 with seismicmeta",
 					"event": [
 						{
 							"listen": "test",
@@ -17297,7 +17312,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET GET X2",
+					"name": "CP DATASET GET X2: Retrieve a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -17349,9 +17364,9 @@
 									"    postman.setEnvironmentVariable('execCounter', 1)",
 									"",
 									"    if (pm.variables.get(\"tokenType\") == \"SasUrl\") {",
-									"        postman.setNextRequest(\"DOWNLOAD X2 FROM ACS\");",
+									"        postman.setNextRequest(\"CP DOWNLOAD X2 FROM ACS: Download utility from ACS\");",
 									"    } else {",
-									"        postman.setNextRequest(\"DOWNLOAD X2 FROM GCS\");",
+									"        postman.setNextRequest(\"CP DOWNLOAD X2 FROM GCS: Download utility from GCS\");",
 									"    }",
 									"}"
 								],
@@ -17401,7 +17416,7 @@
 					"response": []
 				},
 				{
-					"name": "DOWNLOAD X2 FROM GCS",
+					"name": "CP DOWNLOAD X2 FROM GCS: Download utility from GCS",
 					"event": [
 						{
 							"listen": "test",
@@ -17431,7 +17446,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    ",
-									"    postman.setNextRequest(\"DATASET DELETE X1\");",
+									"    postman.setNextRequest(\"CP DATASET DELETE X1: Delete a dataset dsx01\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -17472,7 +17487,7 @@
 					"response": []
 				},
 				{
-					"name": "DOWNLOAD X2 FROM ACS",
+					"name": "CP DOWNLOAD X2 FROM ACS: Download utility from ACS",
 					"event": [
 						{
 							"listen": "test",
@@ -17500,7 +17515,7 @@
 									"    pm.environment.unset(key);",
 									"    postman.setEnvironmentVariable('execCounter', 1);",
 									"    ",
-									"    postman.setNextRequest(\"DATASET DELETE X1\");",
+									"    postman.setNextRequest(\"CP DATASET DELETE X1: Delete a dataset dsx01\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -17536,7 +17551,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE X1",
+					"name": "CP DATASET DELETE X1: Delete a dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -17603,7 +17618,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE X2",
+					"name": "CP DATASET DELETE X2: Delete a dataset dsx02",
 					"event": [
 						{
 							"listen": "test",
@@ -17670,7 +17685,7 @@
 					"response": []
 				},
 				{
-					"name": "CP STATUS UNSET",
+					"name": "CP STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -17737,13 +17752,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests work for datasets created with seismicmeta.It will generate access token,upload/download them to/from Google Cloud Storage (GCS) and Azure Cloud Storage (ACS).We can use the utility command cp to copy them to/from a destination, which can be in a different subproject within the same tenant."
 		},
 		{
-			"name": "Idempotency",
+			"name": "idempotency",
 			"item": [
 				{
-					"name": "IDM STATUS SET",
+					"name": "IDM STATUS SET: Create test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -17815,7 +17831,7 @@
 					"response": []
 				},
 				{
-					"name": "IDM DATASET REGISTER",
+					"name": "IDM DATASET REGISTER: Register the dataset dsx01",
 					"event": [
 						{
 							"listen": "test",
@@ -17950,7 +17966,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET REGISTER IDEMPOTENT CALL",
+					"name": "IDM DATASET REGISTER IDEMPOTENT CALL: Register the dataset dsx01 with idempotency key",
 					"event": [
 						{
 							"listen": "test",
@@ -18075,7 +18091,7 @@
 					"response": []
 				},
 				{
-					"name": "IDM DATASET PATCH",
+					"name": "IDM DATASET PATCH: Patch a dataset dsx01 metadata",
 					"event": [
 						{
 							"listen": "test",
@@ -18169,7 +18185,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET PATCH IDEMPOTENT CALL",
+					"name": "IDM DATASET PATCH IDEMPOTENT CALL: Patch a dataset dsx01 metadata idempotent call",
 					"event": [
 						{
 							"listen": "test",
@@ -18258,7 +18274,7 @@
 					"response": []
 				},
 				{
-					"name": "IDM DATASET DELETE",
+					"name": "IDM DATASET DELETE: Delete a dataset",
 					"event": [
 						{
 							"listen": "test",
@@ -18325,7 +18341,7 @@
 					"response": []
 				},
 				{
-					"name": "DATASET DELETE IDEMPOTENT CALL",
+					"name": "IDM DATASET DELETE IDEMPOTENT CALL: Delete a dataset idempotent call",
 					"event": [
 						{
 							"listen": "test",
@@ -18392,7 +18408,7 @@
 					"response": []
 				},
 				{
-					"name": "IDM STATUS UNSET",
+					"name": "IDM STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -18409,7 +18425,7 @@
 									"",
 									"if (pm.environment.get(\"hold_subproject\") == \"true\") {",
 									"    console.log('Subproject ' + pm.environment.get('subproject') + ' will not be deleted');",
-									"    postman.setNextRequest(\"CLEANUP STATUS UNSET\");",
+									"    postman.setNextRequest(\"CLEANUP STATUS UNSET: Cleanup test environment\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -18455,13 +18471,14 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests will check the idempotency of the dataset register, dataset patch and dataset delete endpoints."
 		},
 		{
 			"name": "cleanup",
 			"item": [
 				{
-					"name": "CLEANUP SUBPROJECT DELETE",
+					"name": "CLEANUP SUBPROJECT DELETE: Delete a subproject",
 					"event": [
 						{
 							"listen": "test",
@@ -18524,7 +18541,7 @@
 					"response": []
 				},
 				{
-					"name": "CLEANUP STATUS UNSET",
+					"name": "CLEANUP STATUS UNSET: Cleanup test environment",
 					"event": [
 						{
 							"listen": "test",
@@ -18578,7 +18595,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "These tests are designed for cleaning up by resetting the environment variables. Additionally, the subproject hold feature is enabled to ensure subproject is alive."
 		}
 	],
 	"event": [
