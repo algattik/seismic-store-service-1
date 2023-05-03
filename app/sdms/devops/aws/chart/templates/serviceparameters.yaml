@@ -1,4 +1,4 @@
-{{- template "common.serviceparameters" (list . "os-seismic-store.serviceparameters") -}}
-{{- define "os-seismic-store.serviceparameters" -}}
+{{- template "common.serviceparameters" (list . "os-seismic-ddms.serviceparameters") -}}
+{{- define "os-seismic-ddms.serviceparameters" -}}
 ## Define overrides for the service parameters here
 {{- end -}}
