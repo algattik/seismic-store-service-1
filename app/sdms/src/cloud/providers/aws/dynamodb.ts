@@ -178,6 +178,7 @@ export class AWSDynamoDbDAO extends AbstractJournal {
         const name = specs.path[1];  // our key
         let partitionKey = name; // partitionKey
 
+
         const strs = specs.namespace.split('-');
         if (tableKind === AWSConfig.SUBPROJECTS_KIND) {
             partitionKey = strs[strs.length - 1] + ':' + partitionKey; // tenant:subproject for id
