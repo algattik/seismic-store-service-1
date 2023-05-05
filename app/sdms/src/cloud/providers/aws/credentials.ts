@@ -96,11 +96,11 @@ export class AWSCredentials extends AbstractCredentials {
             const osduTenantGroupSsmPrefix = '/osdu/tenant-groups/' + AWSConfig.AWS_TENANT_GROUP_NAME;
             // tslint:disable-next-line:triple-equals
             if(readonly ) { // readOnly True
-                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-store/iam/download-role-arn')
+                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-ddms/iam/download-role-arn')
                 flagUpload = false;
             } else   // readOnly False
             {
-                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-store/iam/upload-role-arn')
+                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-ddms/iam/upload-role-arn')
                 flagUpload = true;
             }
 
