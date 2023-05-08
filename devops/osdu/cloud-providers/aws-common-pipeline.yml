@@ -10,6 +10,12 @@ aws-update-helm:
       echo 'empty'
   only:
       - $DISABLED == 'true'
+
+aws-update-tf:
+  script:
+      echo 'empty'
+  only:
+      - $DISABLED == 'true'
   
 .aws-containerize:
   extends:
@@ -31,3 +37,14 @@ aws-update-helm:
   only:
     variables:
       - $AWS_SKIP_DEPLOY != 'true' && $AWS == '1' && $AWS_DEPLOY_TARGET == 'HELM'
+
+.aws-update-tf:
+  extends:
+    - .aws
+    - .aws_variables
+    - .aws_common_variables
+  stage: deploy
+  retry: 1
+  only:
+    variables:
+      - $AWS_SKIP_DEPLOY != 'true' && $AWS == '1' && $AWS_DEPLOY_TARGET == 'TF'
