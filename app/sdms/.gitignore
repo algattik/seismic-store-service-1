@@ -2,13 +2,13 @@
 **/node_modules/**
 dist
 
-# python 
+# python  
 *.pyc
 
-# Log Files  
+# Log Files   
 *.log
 
-# test 
+# test  
 .nyc_output
 coverage 
 test-results.xml
@@ -17,13 +17,13 @@ test-results.xml
 artifact
 seismic-store-service.tar.gz
 
-# keyfiles
+# keyfiles 
 keys
 
-# vscode configurations
+# vscode configurations  
 .vscode
 
-# dotenv file
+# dotenv file 
 .env
 
 # newman junit output

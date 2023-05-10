@@ -221,11 +221,15 @@ export class UserHandler {
         userEmail = Utils.checkSauthV1EmailDomainName(userEmail);
 
         // user cannot remove himself
-        // DE allows this operation, why do we disallow?
-        if (Utils.getPropertyFromTokenPayload(req.headers.authorization,
-            Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC) === userEmail) {
-            throw (Error.make(Error.Status.BAD_REQUEST, 'A user cannot remove himself.'));
+        // DE allows this operation, why do we disallow it?
+        const payloadEntitlementClaim = Utils.getPropertyFromTokenPayload(req.headers.authorization,
+            Config.USER_ID_CLAIM_FOR_ENTITLEMENTS_SVC);
+        if (payloadEntitlementClaim &&
+            ((userEmail.includes('@') && payloadEntitlementClaim === userEmail) ||
+            payloadEntitlementClaim.split('@')[0] === userEmail)) {
+                throw (Error.make(Error.Status.BAD_REQUEST, 'A user cannot remove himself.'));
         }
+
         // retrieve the tenant information
         const tenant = await TenantDAO.get(sdPath.tenant);
 

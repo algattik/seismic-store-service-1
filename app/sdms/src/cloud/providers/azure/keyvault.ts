@@ -18,15 +18,12 @@ import { SecretClient } from '@azure/keyvault-secrets';
 import { AzureConfig } from './config';
 import { AzureCredentials } from './credentials';
 
-export class Keyvault {
+export class KeyVault {
     public static AI_INSTRUMENTATION_KEY = 'appinsights-key';
     public static REDIS_HOST = 'redis-queue-hostname';
     public static REDIS_KEY = 'redis-queue-password';
-    public static SP_TENANT_ID = 'app-dev-sp-tenant-id';
-    public static SP_CLIENT_ID = 'app-dev-sp-username';
     // pragma: allowlist nextline secret
-    public static SP_CLIENT_SECRET = 'app-dev-sp-password';
-    public static SP_APP_RESOURCE_ID = 'aad-client-id';
+    public static APP_RESOURCE_ID = 'aad-client-id';
     public static DATA_PARTITION_STORAGE_ACCOUNT_NAME = 'sdms-storage-account-name';
     public static DATA_PARTITION_COSMOS_ENDPOINT = 'cosmos-endpoint';
     public static DATA_PARTITION_COSMOS_PRIMARY_KEY = 'cosmos-primary-key';
@@ -60,21 +57,14 @@ export class Keyvault {
         try {
             AzureConfig.SERVICE_AUTH_PROVIDER_CREDENTIAL = (
                 await client.getSecret(this.SERVICE_AUTH_PROVIDER_CREDENTIAL)).value;
-        } catch(error) {
-            if(!(error && error['statusCode'] && error['statusCode'] === 404)) {
+        } catch (error) {
+            if (!(error && error['statusCode'] && error['statusCode'] === 404)) {
                 throw error;
             }
         }
 
-        // service principal secrets
-        AzureConfig.SP_TENANT_ID =
-            AzureConfig.SP_TENANT_ID = (await client.getSecret(this.SP_TENANT_ID)).value;
-        AzureConfig.SP_CLIENT_ID =
-            AzureConfig.SP_CLIENT_ID = (await client.getSecret(this.SP_CLIENT_ID)).value;
-        AzureConfig.SP_CLIENT_SECRET =
-            AzureConfig.SP_CLIENT_SECRET = (await client.getSecret(this.SP_CLIENT_SECRET)).value;
-        AzureConfig.SP_APP_RESOURCE_ID =
-            AzureConfig.SP_APP_RESOURCE_ID = (await client.getSecret(this.SP_APP_RESOURCE_ID)).value;
+        // application resource id
+        AzureConfig.APP_RESOURCE_ID = (await client.getSecret(this.APP_RESOURCE_ID)).value;
 
     }
 }

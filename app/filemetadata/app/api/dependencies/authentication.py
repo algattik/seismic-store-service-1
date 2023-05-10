@@ -15,9 +15,10 @@ async def get_bearer(
 ):
     return bearer_header
 
-
+# api_key_header is not used internally. set 'DEFAULT_API_KEY' as workaround.
+# TODO: remove api_key_header related code once sdms_app_key parameter get removed from segysdk.
 async def get_api_key(
-        api_key_header: str = Security(api_key_header)
+        api_key_header: str = 'DEFAULT_API_KEY'
 ):
     return api_key_header
 

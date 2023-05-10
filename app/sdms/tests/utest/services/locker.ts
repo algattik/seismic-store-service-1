@@ -70,7 +70,7 @@ export class TestLocker {
 	private static dataset: DatasetModel;
 	private static writeLockValueInCache;
 	private static multiSessionReadLockValueInCache;
-	private static redisClient: redis.Redis;
+	private static redisClient: any;
 	private static datasetKey: string;
 	private static sampleRedlock: object;
 	private static journal: any;

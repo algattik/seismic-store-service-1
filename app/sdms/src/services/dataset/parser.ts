@@ -16,9 +16,11 @@
 
 import { Request as expRequest } from 'express';
 import { DatasetListRequest, DatasetModel } from '.';
+import { Auth } from '../../auth';
 import { Config } from '../../cloud';
 import { Error, Params, Utils } from '../../shared';
 import { SchemaManagerFactory } from './schema-manager';
+import { ImpersonationTokenHandler } from '../impersonation_token/handler';
 
 export class DatasetParser {
 
@@ -47,7 +49,14 @@ export class DatasetParser {
         const dataset = this.createDatasetModelFromRequest(req);
         dataset.ltag = (req.headers.ltag) as string;
         dataset.type = req.body ? req.body.type : undefined;
-        dataset.created_by = Utils.getUserIdFromUserToken(req.headers.authorization);
+        if (Auth.isImpersonationToken(req.headers.authorization)) {
+            const tokenContext = ImpersonationTokenHandler.decodeContext(req.get('impersonation-token-context'));
+            dataset.created_by = tokenContext.user;
+        }
+        else {
+            dataset.created_by = req.get(Config.USER_ID_HEADER_KEY_NAME) ||
+            Utils.getUserIdFromUserToken(req.headers.authorization);
+        }
 
         dataset.created_date = dataset.last_modified_date = new Date().toString();
         dataset.gtags = req.body ? req.body.gtags : undefined;

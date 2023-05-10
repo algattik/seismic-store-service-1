@@ -170,6 +170,25 @@ export class AzureCosmosDbDAO extends AbstractJournal {
         }
     }
 
+    public async getIdByKeys(keys: any[]): Promise<string[]> {
+        const ids = [] as string[]
+        let query = 'SELECT c.id FROM c WHERE c.id = ';
+        for(let i = 0; i < keys.length; i++) {
+            if(i === 0) {
+                query += '\"' + keys[i].partitionKey + '\"';
+            }
+            else {
+                query += ' OR c.id = \"' + keys[i].partitionKey + '\"';
+            }
+        }
+
+        const results = (await (await this.getCosmoContainer()).items.query(query).fetchAll()).resources;
+        for(const res of results) {
+            ids.push(res['id']);
+        }
+        return ids;
+    }
+
     public async delete(key: any): Promise<void> {
         if (key.partitionKey.startsWith('ds-') && AzureConfig.SIDECAR_ENABLE_DELETE) {
             const connectionParams = await AzureDataEcosystemServices.getCosmosConnectionParams(this.dataPartition);

@@ -17,22 +17,19 @@
 import { Config, ConfigFactory } from '../../config';
 import { LoggerFactory } from '../../logger';
 import { AzureInsightsLogger } from './insights';
-import { Keyvault } from './keyvault';
+import { KeyVault } from './keyvault';
 
 @ConfigFactory.register('azure')
 export class AzureConfig extends Config {
 
-    // Vars to hold service principal configurations
-    public static SP_TENANT_ID: string;
-    public static SP_CLIENT_ID: string;
-    public static SP_CLIENT_SECRET: string;
-    public static SP_APP_RESOURCE_ID: string;
+    // Application resource id
+    public static APP_RESOURCE_ID: string;
 
     // Instrumentation key
     public static AI_INSTRUMENTATION_KEY: string;
     public static CORRELATION_ID = 'correlation-id';
 
-    // keyvault id
+    // KeyVault id
     public static KEYVAULT_URL: string;
 
     // Apis base url path
@@ -62,10 +59,10 @@ export class AzureConfig extends Config {
 
         try {
 
-            // set up secrets from Azure Keyvault
+            // set up secrets from Azure KeyVault
             AzureConfig.KEYVAULT_URL = process.env.KEYVAULT_URL;
             Config.checkRequiredConfig(AzureConfig.KEYVAULT_URL, 'KEYVAULT_URL');
-            await Keyvault.loadSecrets(Keyvault.CreateSecretClient());
+            await KeyVault.loadSecrets(KeyVault.CreateSecretClient());
 
             // data ecosystem host url and appkey
             AzureConfig.DES_SERVICE_HOST_COMPLIANCE = process.env.DES_SERVICE_HOST_COMPLIANCE ||
@@ -96,11 +93,14 @@ export class AzureConfig extends Config {
             AzureConfig.LOCKSMAP_REDIS_INSTANCE_PORT = +process.env.REDIS_INSTANCE_PORT;
             AzureConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS = process.env.REDIS_INSTANCE_ADDRESS ||
                 AzureConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS;
+            AzureConfig.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE =
+                process.env.REDIS_INSTANCE_TLS_DISABLE === 'true';  // enabled by default
             AzureConfig.LOCKSMAP_REDIS_INSTANCE_KEY = process.env.REDIS_INSTANCE_KEY ||
                 AzureConfig.LOCKSMAP_REDIS_INSTANCE_KEY;
             Config.checkRequiredConfig(AzureConfig.LOCKSMAP_REDIS_INSTANCE_PORT, 'REDIS_INSTANCE_PORT');
             Config.checkRequiredConfig(AzureConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS, 'REDIS_INSTANCE_ADDRESS');
             Config.checkRequiredConfig(AzureConfig.LOCKSMAP_REDIS_INSTANCE_KEY, 'REDIS_INSTANCE_KEY');
+
 
             // set the auth provider
             AzureConfig.SERVICE_AUTH_PROVIDER = process.env.SERVICE_AUTH_PROVIDER;
@@ -132,6 +132,7 @@ export class AzureConfig extends Config {
                 IMP_SERVICE_ACCOUNT_SIGNER: AzureConfig.IMP_SERVICE_ACCOUNT_SIGNER,
                 LOCKSMAP_REDIS_INSTANCE_ADDRESS: AzureConfig.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
                 LOCKSMAP_REDIS_INSTANCE_PORT: AzureConfig.LOCKSMAP_REDIS_INSTANCE_PORT,
+                LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE: AzureConfig.LOCKSMAP_REDIS_INSTANCE_TLS_DISABLE,
                 LOCKSMAP_REDIS_INSTANCE_KEY: AzureConfig.LOCKSMAP_REDIS_INSTANCE_KEY,
                 DES_REDIS_INSTANCE_ADDRESS: AzureConfig.DES_REDIS_INSTANCE_ADDRESS,
                 DES_REDIS_INSTANCE_PORT: AzureConfig.DES_REDIS_INSTANCE_PORT,

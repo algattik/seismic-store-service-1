@@ -23,7 +23,7 @@ import {
 } from '../../dataecosystem';
 import { AzureConfig } from './config';
 import { AzureCredentials } from './credentials';
-import { Keyvault } from './keyvault';
+import { KeyVault } from './keyvault';
 
 @DataEcosystemCoreFactory.register('azure')
 export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
@@ -55,30 +55,12 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         const options = {
             headers: {
                 'Accept': 'application/json',
-                'Authorization': 'Bearer ' + (await AzureCredentials.getAzureServicePrincipalAccessToken(
-                    AzureConfig.SP_CLIENT_ID, AzureConfig.SP_CLIENT_SECRET,
-                    AzureConfig.SP_TENANT_ID, AzureConfig.SP_APP_RESOURCE_ID)).access_token,
+                'Authorization': 'Bearer ' + (
+                    await  AzureCredentials.getCredential().getToken(AzureConfig.APP_RESOURCE_ID + '/.default')).token,
                 'Content-Type': 'application/json'
             }
         };
         const url = AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions/' + dataPartitionID;
-        const results = await axios.get(url, options).catch((error) => {
-            throw (Error.makeForHTTPRequest(error));
-        });
-        return results.data;
-    }
-
-    public static async getPartitions(): Promise<string[]> {
-        const options = {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + (await AzureCredentials.getAzureServicePrincipalAccessToken(
-                    AzureConfig.SP_CLIENT_ID, AzureConfig.SP_CLIENT_SECRET,
-                    AzureConfig.SP_TENANT_ID, AzureConfig.SP_APP_RESOURCE_ID)).access_token,
-                'Content-Type': 'application/json'
-            }
-        };
-        const  url = AzureConfig.DES_SERVICE_HOST_PARTITION + '/api/partition/v1/partitions';
         const results = await axios.get(url, options).catch((error) => {
             throw (Error.makeForHTTPRequest(error));
         });
@@ -93,11 +75,11 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
         if (res !== undefined) { return res; };
 
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
-        const storageConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_STORAGE_ACCOUNT_NAME] as {
+        const storageConfigs = (dataPartitionConfigurations[KeyVault.DATA_PARTITION_STORAGE_ACCOUNT_NAME] as {
             sensitive: boolean, value: string;
         });
         if (storageConfigs.sensitive) {
-            storageConfigs.value = (await Keyvault.CreateSecretClient().getSecret(storageConfigs.value)).value;
+            storageConfigs.value = (await KeyVault.CreateSecretClient().getSecret(storageConfigs.value)).value;
         }
         cache.set<string>(cacheKey, storageConfigs.value, 3600);
         return storageConfigs.value;
@@ -113,23 +95,23 @@ export class AzureDataEcosystemServices extends AbstractDataEcosystemCore {
 
         const dataPartitionConfigurations = await AzureDataEcosystemServices.getPartitionConfiguration(dataPartitionID);
 
-        const cosmosEndpointConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_ENDPOINT] as {
+        const cosmosEndpointConfigs = (dataPartitionConfigurations[KeyVault.DATA_PARTITION_COSMOS_ENDPOINT] as {
             sensitive: boolean, value: string;
         });
         if (cosmosEndpointConfigs.sensitive) {
-            cosmosEndpointConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
+            cosmosEndpointConfigs.value = (await KeyVault.CreateSecretClient().getSecret(
                 cosmosEndpointConfigs.value)).value;
         }
 
-        const cosmosKeyConfigs = (dataPartitionConfigurations[Keyvault.DATA_PARTITION_COSMOS_PRIMARY_KEY] as {
+        const cosmosKeyConfigs = (dataPartitionConfigurations[KeyVault.DATA_PARTITION_COSMOS_PRIMARY_KEY] as {
             sensitive: boolean, value: string;
         });
         if (cosmosKeyConfigs.sensitive) {
-            cosmosKeyConfigs.value = (await Keyvault.CreateSecretClient().getSecret(
+            cosmosKeyConfigs.value = (await KeyVault.CreateSecretClient().getSecret(
                 cosmosKeyConfigs.value)).value;
         }
 
-        cache.set<string>(dataPartitionID, JSON.stringify({
+        cache.set<string>(cacheKey, JSON.stringify({
             endpoint: cosmosEndpointConfigs.value, key: cosmosKeyConfigs.value
         }), 3600);
 

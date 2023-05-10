@@ -3,3 +3,5 @@ __pycache__
 .idea
 /app/static/
 /app/node_modules/
+/app/openzgy-bundle/
+/app/venv/
