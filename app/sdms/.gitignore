@@ -8,16 +8,16 @@ dist
 # Log Files   
 *.log
 
-# test  
+# test   
 .nyc_output
-coverage 
+coverage  
 test-results.xml
 
 # artifact
 artifact
 seismic-store-service.tar.gz
 
-# keyfiles 
+# keyfiles  
 keys
 
 # vscode configurations  
