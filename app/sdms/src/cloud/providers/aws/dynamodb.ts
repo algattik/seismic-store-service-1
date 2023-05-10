@@ -21,7 +21,6 @@ import DynamoDB, { ScanInput } from 'aws-sdk/clients/dynamodb';
 import aws from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import { AWSDataEcosystemServices } from './dataecosystem';
-
 const converter = aws.DynamoDB.Converter;
 
 @JournalFactory.register('aws')
@@ -45,7 +44,7 @@ export class AWSDynamoDbDAO extends AbstractJournal {
 
     public async getPartitionTenant()
     {
-        if(this.tenantTablePrefix === ''){
+        if (this.tenantTablePrefix === '') {
             const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(this.dataPartition);
             this.tenantTablePrefix = tenantId;
         }
@@ -179,6 +178,7 @@ export class AWSDynamoDbDAO extends AbstractJournal {
         const name = specs.path[1];  // our key
         let partitionKey = name; // partitionKey
 
+
         const strs = specs.namespace.split('-');
         if (tableKind === AWSConfig.SUBPROJECTS_KIND) {
             partitionKey = strs[strs.length - 1] + ':' + partitionKey; // tenant:subproject for id
@@ -190,7 +190,7 @@ export class AWSDynamoDbDAO extends AbstractJournal {
             partitionKey = strs[strs.length - 1] + ':' + name; // tenant:subproject for id
         }
 
-        const tableName = AWSConfig.AWS_ENVIRONMENT + '-' + 'SeismicStore.' + specs.path[0];
+        const tableName = AWSConfig.AWS_TENANT_GROUP_NAME + '-' + 'SeismicStore.' + specs.path[0];
         return { tableName, name, tableKind, partitionKey };
     }
 
@@ -454,8 +454,7 @@ export class AWSDynamoDbQuery implements IJournalQueryModel {
             delete this.queryStatement.ExpressionAttributeNames;
             delete this.queryStatement.ExpressionAttributeValues;
         }
-
-        this.queryStatement.TableName = AWSConfig.AWS_ENVIRONMENT+'-'+tenantTablePrefix
+        this.queryStatement.TableName = AWSConfig.AWS_TENANT_GROUP_NAME+'-'+tenantTablePrefix
         + '-' + 'SeismicStore.'+ tableName;
         return this.queryStatement;
     }

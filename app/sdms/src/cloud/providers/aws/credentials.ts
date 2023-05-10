@@ -55,8 +55,8 @@ export class AWSCredentials extends AbstractCredentials {
         return undefined;
     }
 
-    async getBucketFolder(folder:string, tenantId:string): Promise<string> {
-        const tableName = AWSConfig.AWS_ENVIRONMENT+'-'+tenantId+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
+    async getBucketFolder(folder: string, tenantId: string): Promise<string> {
+        const tableName = AWSConfig.AWS_TENANT_GROUP_NAME+'-'+tenantId+'-SeismicStore.'+AWSConfig.SUBPROJECTS_KIND;
         const params = {
             TableName: tableName,
             Key: {
@@ -83,8 +83,9 @@ export class AWSCredentials extends AbstractCredentials {
             const dataPartition = tenant;
             const tenantId = await AWSDataEcosystemServices.getTenantIdFromPartitionID(dataPartition);
 
-            const s3bucket = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/tenants/'+tenantId+ '/seismic-store/SeismicDDMSBucket/name');
-            const expDuration = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/tenants/'+tenantId+'/seismic-store/temp-cred-expiration-duration')
+            const tenantSsmPrefix = '/osdu/tenant-groups/' + AWSConfig.AWS_TENANT_GROUP_NAME + '/tenants/' + tenantId;
+            const s3bucket = await AWSCredentials.awsSSMHelper.getSSMParameter(tenantSsmPrefix+ '/seismic-ddms/SeismicDDMSBucket/name');
+            const expDuration = await AWSCredentials.awsSSMHelper.getSSMParameter(tenantSsmPrefix+'/seismic-ddms/temp-cred-expiration-duration')
             let roleArn='';
             let credentials='';
 
@@ -92,21 +93,22 @@ export class AWSCredentials extends AbstractCredentials {
 
             const keyPath =  await this.getBucketFolder(tenant+':'+subproject, tenantId);
 
+            const osduTenantGroupSsmPrefix = '/osdu/tenant-groups/' + AWSConfig.AWS_TENANT_GROUP_NAME;
             // tslint:disable-next-line:triple-equals
             if(readonly ) { // readOnly True
-                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/download-role-arn')
+                 roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-ddms/iam/download-role-arn')
                 flagUpload = false;
             } else   // readOnly False
             {
-                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter('/osdu/' + AWSConfig.AWS_ENVIRONMENT + '/seismic-store/iam/upload-role-arn')
+                roleArn = await AWSCredentials.awsSSMHelper.getSSMParameter(osduTenantGroupSsmPrefix + '/seismic-ddms/iam/upload-role-arn')
                 flagUpload = true;
             }
 
             credentials = await this.awsSTSHelper.getCredentials(s3bucket, keyPath,roleArn,flagUpload,expDuration);
 
-                const result = {
+            const result = {
                 access_token: credentials,
-                expires_in: 3599,
+                expires_in: +expDuration,
                 token_type: 'Bearer',
             };
             return result;
@@ -118,11 +120,12 @@ export class AWSCredentials extends AbstractCredentials {
             AWSCredentials.servicePrincipalCredential.expires_in > Math.floor(Date.now() / 1000)){
             return AWSCredentials.servicePrincipalCredential.access_token;
         }
-
-        const tokenUrlSsmPath = '/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/oauth-token-uri';
-        const oauthCustomScopeSsmPath='/osdu/'+ AWSConfig.AWS_ENVIRONMENT+'/oauth-custom-scope';
-        const clientIdSsmPath='/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/client-credentials-client-id';
-        const clientSecretName='/osdu/'+AWSConfig.AWS_ENVIRONMENT+'/client_credentials_secret';
+        const cogNameSsm = '/osdu/instances/'+AWSConfig.OSDU_INSTANCE_NAME+'/config/cognito/name'
+        const cognitoName = await AWSCredentials.awsSSMHelper.getSSMParameter(cogNameSsm);
+        const tokenUrlSsmPath = '/osdu/cognito/'+cognitoName+'/oauth/token-uri';
+        const oauthCustomScopeSsmPath='/osdu/cognito/'+ cognitoName+'/oauth/custom-scope';
+        const clientIdSsmPath='/osdu/cognito/'+cognitoName+'/client/client-credentials/id';
+        const clientSecretName='/osdu/cognito/'+cognitoName+'/client-credentials-secret';
         // pragma: allowlist nextline secret
         const clientSecretDictKey='client_credentials_client_secret'
 

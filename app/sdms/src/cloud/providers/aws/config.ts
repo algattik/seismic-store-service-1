@@ -13,6 +13,9 @@
 // limitations under the License.
 
 import { Config, ConfigFactory } from '../../config';
+import { AWSSSMhelper } from './ssmhelper';
+import * as f from 'fs';
+import path from 'path';
 
 @ConfigFactory.register('aws')
 export class AWSConfig extends Config {
@@ -20,7 +23,8 @@ export class AWSConfig extends Config {
     public static AWS_EP_OAUTH2: string;
     public static AWS_EP_IAM: string;
     public static AWS_REGION: string;
-    public static AWS_ENVIRONMENT: string;
+    public static OSDU_INSTANCE_NAME: string;
+    public static AWS_TENANT_GROUP_NAME: string;
     // Logger
     public static LOGGER_LEVEL: string;
     // max len for a group name in DE
@@ -32,22 +36,33 @@ export class AWSConfig extends Config {
         AWSConfig.AWS_EP_OAUTH2 = process.env.WS_EP_OAUTH2;
         AWSConfig.AWS_EP_IAM = process.env.AWS_EP_IAM;
         AWSConfig.AWS_REGION = process.env.AWS_REGION;
-        AWSConfig.AWS_ENVIRONMENT = process.env.ENVIRONMENT;
-
+        AWSConfig.OSDU_INSTANCE_NAME = process.env.OSDU_INSTANCE_NAME;
+        const awsSSMHelper = new AWSSSMhelper();
+        AWSConfig.AWS_TENANT_GROUP_NAME = await awsSSMHelper.getSSMParameter(
+            '/osdu/instances/' + AWSConfig.OSDU_INSTANCE_NAME + '/config/tenant-group/name');
         // Logger
         AWSConfig.LOGGER_LEVEL = process.env.LOGGER_LEVEL || 'info';
 
+        // read from files
+        const fileLocation = process.env.PARAMETER_MOUNT_PATH
+        const keyFile = path.join(fileLocation, 'LOCKSMAP_REDIS_INSTANCE_KEY');
+        const keyData = f.readFileSync(keyFile).toString();
+        const keyContent = JSON.parse(keyData).token;
+        const addressFile = path.join(fileLocation, 'LOCKSMAP_REDIS_INSTANCE_ADDRESS');
+        const addressContent = f.readFileSync(addressFile).toString();
+        const portFile = path.join(fileLocation, 'LOCKSMAP_REDIS_INSTANCE_PORT');
+        const portContent = f.readFileSync(portFile).toString();
         await Config.initServiceConfiguration({
             SERVICE_ENV: process.env.SERVICE_ENV,
             SERVICE_PORT: +process.env.PORT || 5000,
             API_BASE_PATH: process.env.API_BASE_PATH,
             IMP_SERVICE_ACCOUNT_SIGNER: process.env.IMP_SERVICE_ACCOUNT_SIGNER || '',
-            LOCKSMAP_REDIS_INSTANCE_ADDRESS: process.env.LOCKSMAP_REDIS_INSTANCE_ADDRESS,
-            LOCKSMAP_REDIS_INSTANCE_PORT: +process.env.LOCKSMAP_REDIS_INSTANCE_PORT,
-            LOCKSMAP_REDIS_INSTANCE_KEY: process.env.LOCKSMAP_REDIS_INSTANCE_KEY || '',
-            DES_REDIS_INSTANCE_ADDRESS: process.env.DES_REDIS_INSTANCE_ADDRESS,
-            DES_REDIS_INSTANCE_PORT: +process.env.DES_REDIS_INSTANCE_PORT,
-            DES_REDIS_INSTANCE_KEY: process.env.DES_REDIS_INSTANCE_KEY,
+            LOCKSMAP_REDIS_INSTANCE_ADDRESS: addressContent,
+            LOCKSMAP_REDIS_INSTANCE_PORT: +portContent,
+            LOCKSMAP_REDIS_INSTANCE_KEY: keyContent,
+            DES_REDIS_INSTANCE_ADDRESS: addressContent,
+            DES_REDIS_INSTANCE_PORT: +portContent,
+            DES_REDIS_INSTANCE_KEY: keyContent,
             DES_SERVICE_HOST_COMPLIANCE: process.env.LEGAL_BASE_URL,
             DES_SERVICE_HOST_ENTITLEMENT: process.env.ENTITLEMENTS_BASE_URL,
             DES_SERVICE_HOST_STORAGE: process.env.STORAGE_BASE_URL,
@@ -85,7 +100,6 @@ export class AWSConfig extends Config {
             SDMS_PREFIX: process.env.SDMS_PREFIX ? process.env.SDMS_PREFIX : '/seistore-svc/api/v3',
             DES_POLICY_SERVICE_HOST: process.env.DES_POLICY_SERVICE_HOST || process.env.DES_SERVICE_HOST
         });
-
     }
 
 }

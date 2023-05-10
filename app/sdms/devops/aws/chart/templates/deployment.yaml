@@ -1,4 +1,4 @@
-{{- template "common.deployment" (list . "os-seismic-store.deployment") -}}
-{{- define "os-seismic-store.deployment" -}}
+{{- template "common.deployment" (list . "os-seismic-ddms.deployment") -}}
+{{- define "os-seismic-ddms.deployment" -}}
 ## Define overrides for the service deployment resource here
 {{- end -}}
