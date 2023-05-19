@@ -148,8 +148,8 @@ sdms-gc-preship-deploy:
         - app/sdms/**/*
       allow_failure: true
 
-sdms-gc-anthos-deploy:
-  extends: .gc-anthos-deploy
+sdms-gc-baremetal-deploy:
+  extends: .gc-baremetal-deploy
   needs: ["sdms-gc-helm-charts-gitlab"]
   variables:
     SEISMIC_GC_HELM_DEPLOYMENT_SERVICE: seismic-store-deploy
@@ -239,10 +239,10 @@ sdms-gc-dev2-test-python:
         - devops/**/*
         - app/sdms/**/*
 
-sdms-gc-anthos-test-python:
-  extends: .gc-anthos-test-python
+sdms-gc-baremetal-test-python:
+  extends: .gc-baremetal-test-python
   image: node
-  needs: ["sdms-gc-anthos-deploy"]
+  needs: ["sdms-gc-baremetal-deploy"]
   allow_failure: false
   before_script:
     - cd app/$SDMS_SERVICE

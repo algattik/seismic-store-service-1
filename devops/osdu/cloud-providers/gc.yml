@@ -7,9 +7,9 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/gc-dev2-variables.yml"
 
-  # anthos
+  # baremetal
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/gc-anthos-variables.yml"
+    file: "cloud-providers/gc-baremetal-variables.yml"
 
   # preship
   - project: "osdu/platform/ci-cd-pipelines"

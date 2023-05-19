@@ -50,9 +50,9 @@ variables:
         if [[ ! -z "$HELM_REVISION" ]]; then kubectl delete secret sh.helm.release.v1.$SEISMIC_GC_HELM_DEPLOYMENT_SERVICE.v$HELM_REVISION; fi
       fi
 
-.common-anthos:
+.common-baremetal:
   script:
-    - gcloud auth activate-service-account --key-file $GC_ANTHOS_DEPLOY_FILE
+    - gcloud auth activate-service-account --key-file $GC_BAREMETAL_DEPLOY_FILE
     - gcloud config set project $GC_PROJECT
     - gcloud components install kubectl --quiet
     - export USE_GKE_GCLOUD_AUTH_PLUGIN=True
@@ -317,15 +317,15 @@ variables:
       when: manual
       allow_failure: true
 
-.gc-anthos-deploy:
+.gc-baremetal-deploy:
   stage: deploy
   retry: 1
   tags: ["osdu-small"]
-  extends: .gc-anthos-variables
+  extends: .gc-baremetal-variables
   image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
   script:
-    - gcloud auth activate-service-account --key-file $GC_ANTHOS_DEPLOY_FILE
-    - !reference [.common-anthos, script]
+    - gcloud auth activate-service-account --key-file $GC_BAREMETAL_DEPLOY_FILE
+    - !reference [.common-baremetal, script]
     - !reference [.define_version, script]
     - !reference [.set_image_name, script]
     - >
@@ -375,10 +375,10 @@ variables:
     - if: '$GC == "1" && $CI_COMMIT_TAG'
       when: on_success
 
-.gc-anthos-test-python:
+.gc-baremetal-test-python:
   stage: integration
   tags: ["osdu-small"]
-  extends: .gc-anthos-variables
+  extends: .gc-baremetal-variables
   rules:
     - if: '$GC == "1" && $CI_COMMIT_BRANCH =~ /^release/'
       when: on_success
