@@ -18,6 +18,12 @@ In vscode, open the `app/sdms` as a project and reopen as devcontainer.
 
 ## Populate Azure resources
 
+Use the provided Terraform code to spin Azure resources required by the runtime (Service Principal, App Insights, Cosmos DB, Redis, Storage account) and populate a Key Vault with config values.
+
+In `azure.tf`, adapt `base_resource_name` to a globally unique string with only lowercase letters.
+
+Run:
+
 ```
 terraform init
 terraform apply
