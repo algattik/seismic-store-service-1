@@ -2,6 +2,22 @@
 
 ## Required infrastructure
 
+### Partition Server
+
+SDMS requires access to a Partition Server (REST API).
+
+```git checkout remotes/origin/release/0.21
+git clone -b release/0.21 https://community.opengroup.org/osdu/platform/system/partition.git
+```
+
+```
+docker run -it --rm -v "$PWD/partition":/c -v $HOME/.m2:/root/.m2 -w /c maven:3.8.6-jdk-8-slim mvn package --projects :partition-azure --also-make -Djacoco.skip=true
+```
+
+ ````
+cp partition/provider/partition-azure/target/partition-azure-*-spring-boot.jar partition-server.jar
+ ````
+
 ### Azure resources
 
 Use the provided Terraform code to spin Azure resources required by the runtime (Service Principal, App Insights, Cosmos DB, Redis, Storage account) and populate a Key Vault with config values.
@@ -20,14 +36,13 @@ Then, run:
 ````
 terraform output -raw config > .env
 terraform output -raw script_config > local-config.sh
-terraform output -raw partition_server_config > partition-server-config.sh
 ````
-
-
 
 ### Access Token
 
 The codebase contains a Python script to generate a JWT token.
+
+#### Generate access token
 
 Install required Python libraries:
 
@@ -48,42 +63,10 @@ Run Python script:
 python3 ../../devops/scripts/azure_jwt_client.py > local-token
 ```
 
-### Partition Server
-
-SDMS requires access to a Partition Server (REST API).
-
-#### Build
-
-Outside of devcontainer:
-
-```git checkout remotes/origin/release/0.21
-git clone -b release/0.21 https://community.opengroup.org/osdu/platform/system/partition.git
-```
-
-```
-docker run -it --rm -v "$PWD/partition":/c -v $HOME/.m2:/root/.m2 -w /c maven:3.8.6-jdk-8-slim mvn package --projects :partition-azure --also-make -Djacoco.skip=true
-```
-
- ````
- cp partition/provider/partition-azure/target/partition-azure-*-spring-boot.jar partition-server.jar
- ````
-
-#### Run
-
-In devcontainer:
-
-```
-sudo apt install -y openjdk-11-jre
-```
-
-```
-java -Dspring.application.name=ps -Dspring.profiles.active=local -jar partition-server.jar
-```
-
 #### Test unauthenticated query
 
 ```curl http://localhost:8080/api/partition/v1/info
-curl http://localhost:8080/api/partition/v1/info
+curl $ACI_PARTITION_SERVER/api/partition/v1/info
 ```
 
 ```curl http://localhost:8080/api/partition/v1/info
@@ -93,7 +76,7 @@ curl http://localhost:8080/api/partition/v1/info
 #### Test authenticated query
 
 ```
-curl -H "Authorization: Bearer $(cat local-token)" http://localhost:8080/api/partition/v1/partitions                                                                                                                                        
+curl -H "Authorization: Bearer $(cat local-token)" $curl $ACI_PARTITION_SERVER/api/partition/v1/partitions                                                                                                                                        
 ```
 
 ```
@@ -170,7 +153,7 @@ curl -H "Authorization: Bearer $(cat local-token)" http://localhost:5000/seistor
 *TODO: this requires additional properties for Cosmos DB config*
 
 ```
-curl -v -H "Authorization: Bearer $(cat local-token)" 'http://localhost:8080/api/partition/v1/partitions/dp00' -H 'Content-Type: application/json' -d '{ "properties": { "compliance-ruleset": { "value": "shared" } } }'
+curl -v -H "Authorization: Bearer $(cat local-token)" "$ACI_PARTITION_SERVER/api/partition/v1/partitions/dp00" -H 'Content-Type: application/json' -d '{ "properties": { "compliance-ruleset": { "value": "shared" } } }'
 ```
 
 #### List partition in SDMS

@@ -222,6 +222,76 @@ resource "azurerm_key_vault_secret" "SERVICE_AUTH_PROVIDER_CREDENTIAL" {
   key_vault_id = azurerm_key_vault.sdms.id
 }
 
+####
+
+resource "azurerm_storage_share" "partition-server" {
+  name                 = "sharename"
+  storage_account_name = azurerm_storage_account.sdms.name
+  quota                = 50
+}
+
+resource "azurerm_storage_share_file" "partition-server" {
+  name             = "partition-server.jar"
+  storage_share_id = azurerm_storage_share.partition-server.id
+  source           = "partition-server.jar"
+}
+
+resource "azurerm_container_group" "partition-server" {
+  name                = var.base_resource_name
+  location            = azurerm_resource_group.sdms.location
+  resource_group_name = azurerm_resource_group.sdms.name
+  ip_address_type     = "Public"
+  dns_name_label      = var.base_resource_name
+  os_type             = "Linux"
+
+  container {
+    name   = "partition-server"
+    image  = "openjdk:8-jdk-alpine"
+    cpu    = "2"
+    memory = "4"
+
+    ports {
+      port     = 8080
+      protocol = "TCP"
+    }
+
+    environment_variables = {
+      azure_istioauth_enabled = "false"
+      aad_client_id           = azuread_service_principal.sdms.application_id
+      KEYVAULT_URI            = azurerm_key_vault.sdms.vault_uri
+      AZURE_CLIENT_ID         = azuread_service_principal.sdms.application_id
+      AZURE_TENANT_ID         = data.azurerm_client_config.current.tenant_id
+      REDIS_DATABASE          = "0"
+      ENVIRONMENT             = "local"
+      ACCEPT_HTTP = "true"
+    }
+
+    secure_environment_variables = {
+      AZURE_CLIENT_SECRET = azuread_service_principal_password.sdms.value
+      appinsights_key         = azurerm_application_insights.default.instrumentation_key
+    }
+
+    volume {
+      name       = "app"
+      mount_path = "/app"
+      read_only  = true
+      share_name = azurerm_storage_share.partition-server.name
+
+      storage_account_name  = azurerm_storage_account.sdms.name
+      storage_account_key   = azurerm_storage_account.sdms.primary_access_key
+    }
+
+    commands = [
+      "sh",
+      "-c",
+      "java -Dspring.application.name=ps -Dspring.profiles.active=local -jar /app/partition-server.jar"
+    ]
+
+  }
+}
+
+#####
+
 output "config" {
   # based on app/sdms/docs/templates/.env-sample-azure
   value     = <<EOT
@@ -246,7 +316,7 @@ APP_ENVIRONMENT_IDENTIFIER=local
 REDIS_INSTANCE_PORT=${azurerm_redis_cache.queue.ssl_port}
 
 # DataEcosystem deployment URL (example https://evd.osdu.cloud.com")
-DES_SERVICE_HOST=http://localhost:5000
+DES_SERVICE_HOST=http://${azurerm_container_group.partition-server.fqdn}
 
 # Features to disable ONLY the service run locally
 FEATURE_FLAG_TRACE="true"
@@ -262,22 +332,8 @@ export AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
 export AZURE_AD_APP_RESOURCE_ID=${azuread_service_principal.sdms.application_id}
 export INTEGRATION_TESTER=${azuread_service_principal.sdms.application_id}
 export AZURE_TESTER_SERVICEPRINCIPAL_SECRET=${azuread_service_principal_password.sdms.value}
-EOT
-  sensitive = true
-}
 
-
-output "partition_server_config" {
-  value     = <<EOT
-export azure_istioauth_enabled=false
-export aad_client_id=${azuread_service_principal.sdms.application_id}
-export KEYVAULT_URI=${azurerm_key_vault.sdms.vault_uri}
-export AZURE_CLIENT_ID=${azuread_service_principal.sdms.application_id}
-export AZURE_CLIENT_SECRET=${azuread_service_principal_password.sdms.value}
-export AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
-export appinsights_key=${azurerm_application_insights.default.instrumentation_key}
-export REDIS_DATABASE=0
-export ENVIRONMENT=local
+export ACI_PARTITION_SERVER=http://${azurerm_container_group.partition-server.fqdn}
 EOT
   sensitive = true
 }
