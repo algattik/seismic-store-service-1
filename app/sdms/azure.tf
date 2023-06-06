@@ -185,3 +185,13 @@ AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
 EOT
   sensitive = true
 }
+
+output "script_config" {
+  value = <<EOT
+export AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
+export AZURE_AD_APP_RESOURCE_ID=${azuread_service_principal.sdms.application_id}
+export INTEGRATION_TESTER=${azuread_service_principal.sdms.application_id}
+export AZURE_TESTER_SERVICEPRINCIPAL_SECRET=${azuread_service_principal_password.sdms.value}
+EOT
+  sensitive = true
+}

@@ -32,7 +32,7 @@ terraform apply
 Then, run:
 
 ````
-terraform output config 
+terraform output -raw config 
 ````
 
 Copy `app/sdms/docs/templates/.env-sample-azure` to `app/sdms/.env`, and update the values in the file with the output of  `terraform output config `.
@@ -49,6 +49,55 @@ npm run build
 npm run start
 ```
 
+See [README.md](README.md) for additional commands that can be run.
+
 ## Fix AWS
 
-If getting an error around `resolvedPath` in `aws-sdk`, delete all folders under `app/sdms/src/cloud/providers` except `azure`, and adapt `src/cloud/providers/index.ts` to remove all exports except `azure`.
+If getting an error around `resolvedPath` in `aws-sdk`, delete all folders under `app/sdms/src/cloud/providers` except `azure`, and adapt `src/cloud/providers/index.ts` to remove all exports except `azure`.
+
+## Access API
+
+### Unauthenticated endpoint
+
+The readiness endpoint can be accessed without authentication:
+
+```
+curl http://localhost:5000/seistore-svc/api/v3/svcstatus/readiness
+```
+
+```
+{"ready":true}
+```
+
+### Generate Token
+
+In the VSCode integrated terminal, run:
+
+```
+sudo apt-get install -y python3-pip
+pip3 install msal
+```
+
+````
+terraform output -raw script_config > local-config.sh
+source local-config.sh
+````
+
+```
+python3 ../../devops/scripts/azure_jwt_client.py > local-token
+```
+
+### Use Token
+
+TODO: does not work
+
+```
+curl -H "Authorization: Bearer $(cat local-token)" -v http://localhost:5000/seistore-svc/api/v3/tenant/gtc
+```
+
+```
+Cannot read property 'status' of undefined
+```
+
+
+

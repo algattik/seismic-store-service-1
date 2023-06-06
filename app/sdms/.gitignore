@@ -40,3 +40,5 @@ newman
 
 *.tfstate*
 .terraform*
+local-config.sh
+local-token
