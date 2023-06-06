@@ -71,6 +71,55 @@ resource "azurerm_key_vault" "sdms" {
   }
 }
 
+####
+
+resource "azurerm_storage_account" "partition" {
+  name                     = "${var.base_resource_name}ps"
+  location                 = azurerm_resource_group.sdms.location
+  resource_group_name      = azurerm_resource_group.sdms.name
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  min_tls_version          = "TLS1_2"
+}
+
+resource "azurerm_key_vault_secret" "tbl-storage" {
+  name         = "tbl-storage"
+  value        = azurerm_storage_account.partition.name
+  key_vault_id = azurerm_key_vault.sdms.id
+}
+
+resource "azurerm_key_vault_secret" "tbl-storage-key" {
+  name         = "tbl-storage-key"
+  value        = azurerm_storage_account.partition.primary_access_key
+  key_vault_id = azurerm_key_vault.sdms.id
+}
+
+resource "azurerm_key_vault_secret" "app-dev-sp-tenant-id" {
+  name         = "app-dev-sp-tenant-id"
+  value        = data.azurerm_client_config.current.tenant_id
+  key_vault_id = azurerm_key_vault.sdms.id
+}
+
+resource "azurerm_key_vault_secret" "app-dev-sp-username" {
+  name         = "app-dev-sp-username"
+  value        = azuread_service_principal.sdms.application_id
+  key_vault_id = azurerm_key_vault.sdms.id
+}
+
+resource "azurerm_key_vault_secret" "app-dev-sp-password" {
+  name         = "app-dev-sp-password"
+  value        = azuread_service_principal_password.sdms.value
+  key_vault_id = azurerm_key_vault.sdms.id
+}
+
+resource "azurerm_key_vault_secret" "app-dev-sp-id" {
+  name         = "app-dev-sp-id"
+  value        = azuread_service_principal.sdms.application_id
+  key_vault_id = azurerm_key_vault.sdms.id
+}
+
+####
+
 resource "azurerm_log_analytics_workspace" "default" {
   name                = var.base_resource_name
   resource_group_name = azurerm_resource_group.sdms.name
@@ -213,6 +262,22 @@ export AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
 export AZURE_AD_APP_RESOURCE_ID=${azuread_service_principal.sdms.application_id}
 export INTEGRATION_TESTER=${azuread_service_principal.sdms.application_id}
 export AZURE_TESTER_SERVICEPRINCIPAL_SECRET=${azuread_service_principal_password.sdms.value}
+EOT
+  sensitive = true
+}
+
+
+output "partition_server_config" {
+  value     = <<EOT
+export azure_istioauth_enabled=false
+export aad_client_id=${azuread_service_principal.sdms.application_id}
+export KEYVAULT_URI=${azurerm_key_vault.sdms.vault_uri}
+export AZURE_CLIENT_ID=${azuread_service_principal.sdms.application_id}
+export AZURE_CLIENT_SECRET=${azuread_service_principal_password.sdms.value}
+export AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
+export appinsights_key=${azurerm_application_insights.default.instrumentation_key}
+export REDIS_DATABASE=0
+export ENVIRONMENT=local
 EOT
   sensitive = true
 }
