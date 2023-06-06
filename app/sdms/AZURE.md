@@ -57,6 +57,8 @@ If getting an error around `resolvedPath` in `aws-sdk`, delete all folders under
 
 ## Access API
 
+The API is documented at [adme-samples](https://microsoft.github.io/adme-samples/) (Seismic DDMS Service).
+
 ### Unauthenticated endpoint
 
 The readiness endpoint can be accessed without authentication:
@@ -93,16 +95,16 @@ Run Python script:
 python3 ../../devops/scripts/azure_jwt_client.py > local-token
 ```
 
-### Use Token
+### Check Token
 
 TODO: does not work
 
 ```
-curl -H "Authorization: Bearer $(cat local-token)" -v http://localhost:5000/seistore-svc/api/v3/tenant/gtc
+curl -H "Authorization: Bearer $(cat local-token)" -v http://localhost:5000/seistore-svc/api/v3/svcstatus/access
 ```
 
 ```
-Cannot read property 'status' of undefined
+{"status":"running"}
 ```
 
 
