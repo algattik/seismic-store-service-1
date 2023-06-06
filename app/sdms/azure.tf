@@ -1,9 +1,9 @@
 variable "base_resource_name" {
- default = "agsdms"
+  default = "agsdms"
 }
 
 variable "location" {
-default = "westeurope"
+  default = "westeurope"
 }
 
 data "azuread_client_config" "current" {}
@@ -40,7 +40,7 @@ resource "azurerm_resource_group" "sdms" {
 }
 
 resource "azurerm_key_vault" "sdms" {
-  name     = var.base_resource_name
+  name                        = var.base_resource_name
   location                    = azurerm_resource_group.sdms.location
   resource_group_name         = azurerm_resource_group.sdms.name
   enabled_for_disk_encryption = true
@@ -55,7 +55,7 @@ resource "azurerm_key_vault" "sdms" {
     object_id = data.azurerm_client_config.current.object_id
 
     secret_permissions = [
-"Backup", "Delete", "Get", "List", "Purge", "Recover", "Restore", "Set"
+      "Backup", "Delete", "Get", "List", "Purge", "Recover", "Restore", "Set"
     ]
 
   }
@@ -65,23 +65,23 @@ resource "azurerm_key_vault" "sdms" {
     object_id = azuread_service_principal.sdms.object_id
 
     secret_permissions = [
-"Get", "List"
+      "Get", "List"
     ]
 
   }
 }
 
 resource "azurerm_log_analytics_workspace" "default" {
-  name     = var.base_resource_name
-  resource_group_name         = azurerm_resource_group.sdms.name
+  name                = var.base_resource_name
+  resource_group_name = azurerm_resource_group.sdms.name
   location            = var.location
   sku                 = "PerGB2018"
   retention_in_days   = 30
 }
 
 resource "azurerm_application_insights" "default" {
-  name     = var.base_resource_name
-  resource_group_name         = azurerm_resource_group.sdms.name
+  name                = var.base_resource_name
+  resource_group_name = azurerm_resource_group.sdms.name
   location            = var.location
   workspace_id        = azurerm_log_analytics_workspace.default.id
   application_type    = "other"
@@ -95,9 +95,9 @@ resource "azurerm_key_vault_secret" "AI_INSTRUMENTATION_KEY" {
 }
 
 resource "azurerm_redis_cache" "queue" {
-  name     = var.base_resource_name
-  location                    = azurerm_resource_group.sdms.location
-  resource_group_name         = azurerm_resource_group.sdms.name
+  name                = var.base_resource_name
+  location            = azurerm_resource_group.sdms.location
+  resource_group_name = azurerm_resource_group.sdms.name
   capacity            = 0
   family              = "C"
   sku_name            = "Basic"
@@ -123,9 +123,9 @@ resource "azurerm_key_vault_secret" "APP_RESOURCE_ID" {
 }
 
 resource "azurerm_storage_account" "sdms" {
-  name     = var.base_resource_name
-  location                    = azurerm_resource_group.sdms.location
-  resource_group_name         = azurerm_resource_group.sdms.name
+  name                     = var.base_resource_name
+  location                 = azurerm_resource_group.sdms.location
+  resource_group_name      = azurerm_resource_group.sdms.name
   account_tier             = "Standard"
   account_replication_type = "LRS"
   min_tls_version          = "TLS1_2"
@@ -138,9 +138,9 @@ resource "azurerm_key_vault_secret" "DATA_PARTITION_STORAGE_ACCOUNT_NAME" {
 }
 
 resource "azurerm_cosmosdb_account" "sdms" {
-  name     = var.base_resource_name
-  location                    = azurerm_resource_group.sdms.location
-  resource_group_name         = azurerm_resource_group.sdms.name
+  name                = var.base_resource_name
+  location            = azurerm_resource_group.sdms.location
+  resource_group_name = azurerm_resource_group.sdms.name
   offer_type          = "Standard"
 
   consistency_policy {
@@ -174,20 +174,41 @@ resource "azurerm_key_vault_secret" "SERVICE_AUTH_PROVIDER_CREDENTIAL" {
 }
 
 output "config" {
-  value = <<EOT
-  # the central KeyVault, secret values used to seed AzureConfig
+  # based on app/sdms/docs/templates/.env-sample-azure
+  value     = <<EOT
+# cloud provider is set to azure
+CLOUDPROVIDER= "azure"
+
+# the central KeyVault, secret values used to seed AzureConfig
 KEYVAULT_URL=${azurerm_key_vault.sdms.vault_uri}
 
 # the service principal (SP) with right to access the previous keyvault
 AZURE_CLIENT_ID=${azuread_service_principal.sdms.application_id}
 AZURE_CLIENT_SECRET=${azuread_service_principal_password.sdms.value}
 AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
+
+# specify service port, default is 5000
+PORT=5000
+
+# e.g. 'evd'
+APP_ENVIRONMENT_IDENTIFIER=local
+
+# redis default port (osdu default 6380)
+REDIS_INSTANCE_PORT=${azurerm_redis_cache.queue.ssl_port}
+
+# DataEcosystem deployment URL (example https://evd.osdu.cloud.com")
+DES_SERVICE_HOST=http://localhost:5000
+
+# Features to disable ONLY the service run locally
+FEATURE_FLAG_TRACE="true"
+FEATURE_FLAG_LOGGING="true"
+FEATURE_FLAG_STACKDRIVER_EXPORTER="false"
 EOT
   sensitive = true
 }
 
 output "script_config" {
-  value = <<EOT
+  value     = <<EOT
 export AZURE_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
 export AZURE_AD_APP_RESOURCE_ID=${azuread_service_principal.sdms.application_id}
 export INTEGRATION_TESTER=${azuread_service_principal.sdms.application_id}

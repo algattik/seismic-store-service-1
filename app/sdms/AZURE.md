@@ -14,7 +14,9 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/y
 
 ### Run container
 
-In vscode, open the `app/sdms` as a project and reopen as devcontainer. 
+In vscode, open the `app/sdms` as a project and reopen as devcontainer. 
+
+Run shell commands in the next sections within the VSCode integrated terminal.
 
 ## Populate Azure resources
 
@@ -32,10 +34,8 @@ terraform apply
 Then, run:
 
 ````
-terraform output -raw config 
+terraform output -raw config > .env
 ````
-
-Copy `app/sdms/docs/templates/.env-sample-azure` to `app/sdms/.env`, and update the values in the file with the output of  `terraform output config `.
 
 ## Debug
 
@@ -49,7 +49,7 @@ npm run build
 npm run start
 ```
 
-See [README.md](README.md) for additional commands that can be run.
+See [README.md](README.md) for additional commands that can be run.
 
 ## Fix AWS
 
@@ -71,17 +71,23 @@ curl http://localhost:5000/seistore-svc/api/v3/svcstatus/readiness
 
 ### Generate Token
 
-In the VSCode integrated terminal, run:
+The codebase contains a Python script to generate a token.
+
+Install required Python libraries:
 
 ```
 sudo apt-get install -y python3-pip
 pip3 install msal
 ```
 
-````
+Generate Python script configuration:
+
+```
 terraform output -raw script_config > local-config.sh
 source local-config.sh
-````
+```
+
+Run Python script:
 
 ```
 python3 ../../devops/scripts/azure_jwt_client.py > local-token
