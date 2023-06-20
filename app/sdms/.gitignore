@@ -37,3 +37,11 @@ newman
 
 # dump file
 *.rdb
+
+*.tfstate*
+.terraform*
+local-config.sh
+local-token
+partition-server-config.sh
+partition-server.jar
+partition/

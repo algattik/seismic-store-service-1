@@ -17,6 +17,10 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 ARG USERNAME=node
 
+RUN curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/yarnkey.gpg
+
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list > /dev/null
+
 RUN sudo apt-get -y update && sudo apt-get install -y redis-server
 
 # [Optional] Update UID/GID if needed
